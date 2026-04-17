@@ -151,6 +151,26 @@
             overflow: hidden;
         }
 
+        .card-image-side {
+            background-size: cover;
+            background-position: center top; /* Privilégie le haut de l'image pour l'aperçu */
+            cursor: zoom-in;
+            transition: all 0.3s ease;
+        }
+        
+        /* Optionnel : un petit effet au survol pour montrer que c'est cliquable */
+        .card-image-side::after {
+            content: "🔍";
+            position: absolute;
+            opacity: 0;
+            font-size: 1.5rem;
+            transition: opacity 0.3s;
+        }
+        
+        .card-image-side:hover::after {
+            opacity: 1;
+        }
+
         /* Actions */
         .card-actions {
             display: flex;
@@ -217,7 +237,9 @@
     <main class="grid">
         
         <article class="card">
-            <div class="card-image-side" style="background-image: url('assets/preview-eveil.png');">
+            <div class="card-image-side" style="background-image: url('assets/eveil-preview.png');"
+                data-full="assets/eveil-full.png"
+                title="Cliquez pour agrandir">
                 </div>
             <div class="card-content">
                 <div>
@@ -248,14 +270,26 @@
 </div>
 
 <script>
-    document.querySelectorAll('.card-image-side').forEach(item => {
-        item.addEventListener('click', function() {
-            const imageUrl = this.style.backgroundImage.slice(5, -2); // Récupère l'URL
-            if(imageUrl && imageUrl !== "ne") { // Vérifie qu'il y a une image
-                document.getElementById('modal-img').src = imageUrl;
-                document.getElementById('modal').style.display = 'flex';
+    // Sélectionne toutes les zones d'image
+    const imageSides = document.querySelectorAll('.card-image-side');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modal-img');
+
+    imageSides.forEach(side => {
+        side.addEventListener('click', function() {
+            // On récupère l'URL de la grande image stockée dans "data-full"
+            const fullImageUrl = this.getAttribute('data-full');
+            
+            if(fullImageUrl) {
+                modalImg.src = fullImageUrl;
+                modal.style.display = 'flex';
             }
         });
+    });
+
+    // Fermer la modale si on appuie sur la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") modal.style.display = 'none';
     });
 </script>
 
