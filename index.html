@@ -5,92 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soi-Libre | Bibliothèque d'outils d'introspection</title>
     <style>
-        /* Variables de design pour une cohérence totale */
         :root {
-            --primary: #5d737e; /* Gris-bleu sobre */
-            --accent: #a3b18a;  /* Vert sauge apaisant */
-            --text: #333;
-            --light-bg: #f9f9f9;
-            --white: #ffffff;
-            --border: #e0e0e0;
+            --primary: #8e7dc4;      /* Le violet de votre outil Eveil */
+            --primary-light: #f4f1fa;
+            --accent: #7eb87e;       /* Un vert doux pour l'équilibre */
+            --text-main: #2c3e50;
+            --text-light: #6a737d;
+            --bg-site: #ffffff;      /* Fond blanc pur pour la luminosité */
+            --bg-card: #ffffff;
+            --shadow: 0 10px 30px rgba(142, 125, 196, 0.08);
+            --radius: 16px;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
-            color: var(--text);
-            background-color: var(--light-bg);
+            color: var(--text-main);
+            background-color: var(--bg-site);
             margin: 0;
             padding: 0;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px; /* Largeur augmentée */
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 60px 24px;
         }
 
-        /* En-tête */
+        /* Header aérien */
         header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 80px;
         }
 
         header h1 {
+            font-size: 3rem;
             font-weight: 300;
-            font-size: 2.5rem;
-            letter-spacing: -1px;
-            margin-bottom: 10px;
             color: var(--primary);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
         }
 
         header p {
-            font-size: 1.1rem;
-            color: #666;
-            max-width: 600px;
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 700px;
             margin: 0 auto;
+            font-weight: 300;
         }
 
-        /* Grille des outils */
+        /* Grille large */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Cartes plus larges */
+            gap: 40px;
         }
 
-        /* Carte de SPA */
+        /* Cartes horizontales */
         .card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            display: flex; /* Format horizontal */
             overflow: hidden;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
+            border: 1px solid #f0f0f0;
+            box-shadow: var(--shadow);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(142, 125, 196, 0.15);
+            border-color: var(--primary-light);
         }
 
-        /* Image / Aperçu */
-        .card-preview {
-            width: 100%;
-            height: 180px;
-            background-color: #eee;
+        /* Zone Image gauche */
+        .card-image-side {
+            width: 180px;
+            min-width: 180px;
+            background-color: var(--primary-light);
             background-size: cover;
             background-position: center;
-            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ccc;
+            position: relative;
         }
 
-        /* Contenu de la carte */
-        .card-body {
-            padding: 20px;
+        /* Texte de secours uniquement si pas d'image */
+        .card-image-side span {
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            opacity: 0.5;
+        }
+
+        /* Contenu droite */
+        .card-content {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             flex-grow: 1;
         }
 
@@ -98,73 +114,87 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .card-title {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.4rem;
             color: var(--primary);
+            font-weight: 500;
         }
 
         .version-tag {
             font-family: monospace;
-            font-size: 0.75rem;
-            background: #eee;
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: #666;
+            font-size: 0.7rem;
+            background: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: var(--primary);
         }
 
         .card-description {
             font-size: 0.95rem;
-            color: #555;
-            margin-bottom: 20px;
+            color: var(--text-light);
+            margin-bottom: 25px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        /* Boutons */
+        /* Actions */
         .card-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 0 20px 20px 20px;
+            display: flex;
+            gap: 15px;
         }
 
         .btn {
+            flex: 1;
             text-align: center;
             text-decoration: none;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px 20px;
+            border-radius: 10px;
             font-size: 0.9rem;
             font-weight: 500;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
         }
 
         .btn-visit {
             background-color: var(--primary);
-            color: var(--white);
+            color: white;
+        }
+
+        .btn-visit:hover {
+            background-color: #7a6ab1;
         }
 
         .btn-download {
-            border: 1px solid var(--primary);
+            background-color: transparent;
+            border: 1.5px solid var(--primary);
             color: var(--primary);
         }
 
-        .btn:hover {
-            opacity: 0.8;
+        .btn-download:hover {
+            background-color: var(--primary-light);
         }
 
+        /* Footer */
         footer {
+            margin-top: 100px;
             text-align: center;
-            margin-top: 80px;
-            padding-bottom: 40px;
-            font-size: 0.85rem;
-            color: #999;
+            padding: 40px;
+            border-top: 1px solid #f5f5f5;
+            color: #bdc3c7;
+            font-size: 0.9rem;
         }
 
-        /* Responsive */
+        /* Mobile */
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr; }
+            .card { flex-direction: column; }
+            .card-image-side { width: 100%; height: 150px; }
+            .container { padding: 30px 15px; }
         }
     </style>
 </head>
@@ -173,37 +203,35 @@
 <div class="container">
     <header>
         <h1>Soi-Libre</h1>
-        <p>Une collection d'outils numériques sobres pour l'exploration intérieure, accessibles partout, tout le temps.</p>
+        <p>Des outils numériques en plein air. Simples, autonomes et gratuits pour cultiver votre jardin intérieur.</p>
     </header>
 
     <main class="grid">
         
         <article class="card">
-            <div class="card-preview" style="background-image: url('assets/preview-eveil.png');">
-                <span>Sans image</span>
-            </div>
-            <div class="card-body">
-                <div class="card-header">
-                    <h2 class="card-title">Éveil ✦ Companion d'Évolution</h2>
-                    <span class="version-tag">v0.1-alpha</span>
+            <div class="card-image-side" style="background-image: url('assets/preview-eveil.png');">
                 </div>
-                <p class="card-description">
-                    Un sanctuaire numérique conçu pour soutenir votre cheminement intérieur. Entre sagesse théorique et exercices pratiques, cet outil vous invite à explorer les profondeurs de votre être, à cultiver votre présence et à nourrir votre jardin intérieur, à votre propre rythme.
-                </p>
-            </div>
-            <div class="card-actions">
-                <a href="creations/eveil.html" class="btn btn-visit">Ouvrir</a>
-                <a href="creations/eveil.html" download="soi-libre-eveil-v0.1-alpha.html" class="btn btn-download">Télécharger</a>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Éveil</h2>
+                        <span class="version-tag">v0.1-alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Un sanctuaire numérique interactif pour soutenir votre cheminement intérieur. Explorez vos profondeurs, apprenez et évoluez grâce à ce compagnon d'éveil.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/eveil.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/eveil.html" download="soi-libre-eveil-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
             </div>
         </article>
-
 
     </main>
 
     <footer>
-        <p>&copy; 2026 Soi-Libre &bull; Tous les outils sont mis à disposition gratuitement.</p>
-        <p>Conçu pour fonctionner hors-ligne après téléchargement.</p>
-        <p>Fonctionnalité de sauvegarde incluse (navigateur et import/export fichier json)</p>
+        <p>&copy; 2026 Soi-Libre &bull; ✦ &bull; Outils Libres pour Consciences Libres</p>
     </footer>
 </div>
 
