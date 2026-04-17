@@ -32,6 +32,8 @@
             padding: 60px 24px;
         }
 
+        
+
         /* Header aérien */
         header {
             text-align: center;
@@ -89,6 +91,12 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            cursor: zoom-in; /* Indique qu'on peut cliquer pour agrandir */
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-image-side {
+            filter: brightness(1.1); /* Rend l'image un peu plus lumineuse au survol */
         }
 
         /* Texte de secours uniquement si pas d'image */
@@ -234,6 +242,22 @@
         <p>&copy; 2026 Soi-Libre &bull; ✦ &bull; Outils Libres pour Consciences Libres</p>
     </footer>
 </div>
+
+<div id="modal" onclick="this.style.display='none'" style="display:none; position:fixed; z-index:1000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); cursor:zoom-out; align-items:center; justify-content:center;">
+    <img id="modal-img" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 0 20px rgba(0,0,0,0.5);">
+</div>
+
+<script>
+    document.querySelectorAll('.card-image-side').forEach(item => {
+        item.addEventListener('click', function() {
+            const imageUrl = this.style.backgroundImage.slice(5, -2); // Récupère l'URL
+            if(imageUrl && imageUrl !== "ne") { // Vérifie qu'il y a une image
+                document.getElementById('modal-img').src = imageUrl;
+                document.getElementById('modal').style.display = 'flex';
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
