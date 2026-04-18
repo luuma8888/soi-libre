@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="application-name" content="Espace Intérieur - Soi-Libre">
+<meta name="version" content="v0.1-alpha">
+<meta name="description" content="Outil d'introspection et de connaissance de soi - utilisable hors-ligne.">
+    
+<title>Espace Intérieur - Soi-Libre</title>
+<style>
+
+:root{--fd:Georgia,serif;--fb:Optima,Candara,'Segoe UI',sans-serif;
+--bg:#F7F4EF;--bgs:#FFF;--bg2:#F0EDE8;--bgn:#FFF;
+--p:#6B9E97;--pl:#8FBDB6;--pd:#4D7A73;--sec:#C4A882;--acc:#D4847A;--gold:#C8A96E;
+--tx:#2C2C2C;--tx2:#5A5A5A;--txm:#8A8A8A;--bdr:#E0DAD3;
+--sh1:0 1px 3px rgba(0,0,0,.06);--sh2:0 4px 12px rgba(0,0,0,.08);--sh3:0 12px 40px rgba(0,0,0,.10);
+--r1:4px;--r2:12px;--r3:20px;--tr:.22s ease;--trs:.38s ease;--nw:236px;--hh:56px}
+[data-theme=dark]{--bg:#1C1C28;--bgs:#252535;--bg2:#1E1E2E;--bgn:#1A1A28;--p:#7BBFB8;--pl:#95D0C8;--pd:#5A9E96;--tx:#E8E4DC;--tx2:#B0ACA4;--txm:#606070;--bdr:#363648;--sh1:0 1px 3px rgba(0,0,0,.35);--sh2:0 4px 12px rgba(0,0,0,.45);--sh3:0 12px 40px rgba(0,0,0,.55)}
+[data-theme=terre]{--bg:#F2EBE0;--bgs:#FAF5EE;--bg2:#EDE4D6;--bgn:#FAF5EE;--p:#8B6F47;--pl:#A8875C;--pd:#6B5234;--sec:#9E8060;--acc:#B8735A;--gold:#A8924E;--tx:#2A1E12;--tx2:#5C4A38;--txm:#9A8878;--bdr:#D4C4B0}
+[data-theme=cosmos]{--bg:#0D0D1A;--bgs:#151525;--bg2:#0A0A18;--bgn:#10102A;--p:#7B9EC8;--pl:#95B5D8;--pd:#5A7EA8;--sec:#8A6E9E;--acc:#C87B9E;--gold:#C8A86E;--tx:#D8D4F0;--tx2:#A8A4C0;--txm:#686080;--bdr:#252540;--sh1:0 1px 3px rgba(0,0,0,.6);--sh2:0 4px 12px rgba(0,0,0,.7);--sh3:0 12px 40px rgba(0,0,0,.8)}
+[data-theme=foret]{--bg:#EFF4EC;--bgs:#F8FBF6;--bg2:#E4EDE0;--bgn:#F8FBF6;--p:#5C8B5A;--pl:#78A876;--pd:#3D6B3B;--sec:#7A9E6A;--acc:#9E7A5A;--gold:#8A9E5A;--tx:#1A2818;--tx2:#3A5438;--txm:#6A8468;--bdr:#C8DAC4}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:var(--fb);font-size:16px;line-height:1.65;color:var(--tx);background:var(--bg);transition:background var(--trs),color var(--trs);min-height:100vh}
+ul{list-style:none}
+/* Layout */
+#app{display:flex;min-height:100vh}
+#sb{width:var(--nw);background:var(--bgn);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform var(--tr),background var(--trs);box-shadow:var(--sh1)}
+#slog{padding:20px 18px 12px;border-bottom:1px solid var(--bdr)}
+.lgt{font-family:var(--fd);font-size:1.1rem;color:var(--p);letter-spacing:.02em}
+.lgsub{font-size:.62rem;color:var(--txm);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+#nav{padding:8px 0;flex:1;overflow-y:auto}
+#nav li{margin:2px 8px}
+#nav a{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--r1);text-decoration:none;color:var(--tx2);font-size:.84rem;transition:all var(--tr);cursor:pointer}
+#nav a:hover{background:var(--bg2);color:var(--tx)}
+#nav a.active{background:var(--p);color:#fff}
+#nav .ni{font-size:.9rem;width:18px;text-align:center}
+#ati{display:none;margin:4px 8px;padding:8px 11px;background:rgba(107,158,151,.1);border:1px solid var(--pl);border-radius:var(--r2);font-size:.75rem;color:var(--pd)}
+#ati.show{display:block}
+.ati-l{font-weight:600;margin-bottom:2px}.ati-s{color:var(--txm)}
+#sfooter{padding:10px 12px;border-top:1px solid var(--bdr);display:flex;gap:4px;flex-wrap:wrap}
+#main{margin-left:var(--nw);flex:1;min-height:100vh;display:flex;flex-direction:column}
+#topbar{display:none;align-items:center;padding:0 14px;height:var(--hh);background:var(--bgn);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:90;gap:8px}
+#pc{padding:28px 32px;max-width:960px;width:100%;margin:0 auto;flex:1}
+/* Focus mode */
+body.focus #sb,body.focus #topbar{display:none!important}
+body.focus #main{margin-left:0}
+body.focus #pc{max-width:680px;padding-top:48px}
+.fbar{display:none;position:fixed;top:0;left:0;right:0;height:38px;background:var(--p);z-index:200;align-items:center;justify-content:space-between;padding:0 18px}
+body.focus .fbar{display:flex}
+.fbar span{color:#fff;font-size:.8rem;font-family:var(--fd)}
+.fbar button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:3px 10px;border-radius:100px;font-size:.75rem;cursor:pointer}
+/* Typography */
+h1,h2,h3,h4{font-family:var(--fd);font-weight:normal;line-height:1.3;color:var(--tx)}
+h1{font-size:1.8rem;margin-bottom:4px}h2{font-size:1.35rem;margin-bottom:12px}
+h3{font-size:1.1rem;margin-bottom:8px}h4{font-size:.95rem;margin-bottom:6px}
+p{margin-bottom:.9em}p:last-child{margin-bottom:0}
+.ph{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--bdr)}
+.ph h1{color:var(--pd)}.psub{color:var(--tx2);font-size:.9rem;margin-top:3px}
+.bc{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--txm);margin-bottom:14px}
+.bc a{color:var(--txm);cursor:pointer}.bc a:hover{color:var(--p)}.bc .bcs{color:var(--bdr)}
+/* Cards */
+.card{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:20px;box-shadow:var(--sh1)}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.cc{cursor:pointer;transition:transform var(--tr),box-shadow var(--tr)}
+.cc:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.ci{font-size:1.7rem;margin-bottom:8px;display:block}
+.ct{font-family:var(--fd);font-size:1rem;color:var(--pd);margin-bottom:5px}
+.cd{font-size:.82rem;color:var(--tx2);line-height:1.5}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:var(--r1);border:none;font-family:var(--fb);font-size:.84rem;cursor:pointer;transition:all var(--tr)}
+.bp{background:var(--p);color:#fff}.bp:hover{background:var(--pd)}
+.bs{background:var(--bg2);color:var(--tx);border:1px solid var(--bdr)}.bs:hover{background:var(--bdr)}
+.ba{background:var(--acc);color:#fff}.ba:hover{opacity:.85}
+.bg{background:transparent;color:var(--tx2)}.bg:hover{background:var(--bg2)}
+.bsm{padding:4px 10px;font-size:.74rem}.blg{padding:11px 24px;font-size:.95rem}
+.bic{padding:7px;border-radius:50%}button:disabled{opacity:.35;cursor:not-allowed}
+/* Forms */
+.fg{margin-bottom:16px}
+label{display:block;font-size:.77rem;font-weight:600;color:var(--tx2);margin-bottom:4px}
+input[type=text],input[type=number],input[type=password],textarea,select{width:100%;padding:8px 12px;border:1.5px solid var(--bdr);border-radius:var(--r1);background:var(--bgs);color:var(--tx);font-family:var(--fb);font-size:.85rem;transition:border-color var(--tr);outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(107,158,151,.1)}
+textarea{resize:vertical;min-height:80px}
+input[type=range]{width:100%;accent-color:var(--p);cursor:pointer}
+input[type=checkbox]{accent-color:var(--p);width:16px;height:16px;cursor:pointer;vertical-align:middle}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:.7rem;font-weight:600}
+.bprim{background:var(--p);color:#fff}.bsoft{background:var(--bg2);color:var(--tx2);border:1px solid var(--bdr)}
+.bgold{background:rgba(200,169,110,.18);color:var(--gold)}.bgrn{background:rgba(107,174,130,.15);color:#4a8a60}
+/* Progress */
+.pb{height:6px;background:var(--bg2);border-radius:100px;overflow:hidden;margin:5px 0}
+.pf{height:100%;background:var(--p);border-radius:100px;transition:width .5s ease}
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--bdr);margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:8px 14px;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;color:var(--tx2);font-size:.84rem;white-space:nowrap;transition:all var(--tr)}
+.tab:hover{color:var(--tx)}.tab.active{color:var(--p);border-bottom-color:var(--p);font-weight:600}
+/* Callout */
+.cl{padding:12px 16px;border-radius:var(--r2);border-left:4px solid;margin:14px 0;font-size:.85rem}
+.cl p{margin-bottom:0}
+.cli{background:rgba(107,158,151,.07);border-color:var(--p)}
+.clw{background:rgba(196,168,130,.09);border-color:var(--sec)}
+.cla{background:rgba(212,132,122,.07);border-color:var(--acc)}
+.clg{background:rgba(200,169,110,.08);border-color:var(--gold)}
+.clpur{background:rgba(140,100,160,.07);border-color:#8a60a0}
+/* Stats */
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:22px}
+.sc{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px 10px;text-align:center;box-shadow:var(--sh1)}
+.sv{font-family:var(--fd);font-size:1.8rem;color:var(--p);line-height:1;margin-bottom:3px}
+.sl{font-size:.68rem;color:var(--txm);text-transform:uppercase;letter-spacing:.05em}
+/* Chart */
+.chart-wrap{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px}
+.chart-wrap svg{width:100%;overflow:visible}
+/* Quiz */
+.qq{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px;margin-bottom:12px}
+.qqn{font-size:.7rem;color:var(--txm);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.qqt{font-size:.9rem;margin-bottom:12px;line-height:1.7}
+.so{display:flex;gap:5px;flex-wrap:wrap}
+.sopt{flex:1;min-width:50px;padding:8px 4px;border:1.5px solid var(--bdr);border-radius:var(--r1);text-align:center;cursor:pointer;transition:all var(--tr);font-size:.78rem;color:var(--tx2);background:var(--bgs)}
+.sopt:hover{border-color:var(--p);color:var(--p)}.sopt.sel{background:var(--p);border-color:var(--p);color:#fff}
+.slbls{display:flex;justify-content:space-between;font-size:.68rem;color:var(--txm);margin-top:4px}
+.rc{width:100px;height:100px;border-radius:50%;border:4px solid var(--p);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px}
+.rsn{font-family:var(--fd);font-size:1.8rem;color:var(--p);line-height:1}
+.rsx{font-size:.68rem;color:var(--txm)}
+.rband{background:var(--bg2);border-radius:var(--r2);padding:16px;margin:14px 0;text-align:center}
+/* Breathing */
+.bwrap{display:flex;flex-direction:column;align-items:center;padding:24px 20px}
+.bring{width:148px;height:148px;border-radius:50%;background:radial-gradient(circle,var(--pl),var(--p));display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--fd);font-size:.88rem;text-align:center;cursor:pointer;user-select:none;transition:transform .4s ease}
+.bring.inh{animation:bin 5s ease-in-out forwards}
+.bring.hld{transform:scale(1.42)}
+.bring.exh{animation:bout 5s ease-in-out forwards}
+@keyframes bin{from{transform:scale(1)}to{transform:scale(1.42)}}
+@keyframes bout{from{transform:scale(1.42)}to{transform:scale(1)}}
+.bphase{font-family:var(--fd);font-size:1.2rem;color:var(--p);margin-top:18px;min-height:1.7rem;text-align:center}
+.btimer{font-size:1.7rem;color:var(--tx2);font-family:var(--fd);min-width:32px;text-align:center}
+/* Wheel */
+.wwrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+#ewhl{cursor:pointer;max-width:320px;width:100%}
+.winfo{background:var(--bg2);border-radius:var(--r2);padding:12px 16px;width:100%;border:1px solid var(--bdr);text-align:center;min-height:52px}
+.wfreq-wrap{width:100%;background:var(--bg2);border-radius:var(--r2);padding:14px;border:1px solid var(--bdr)}
+.wfreq-cloud{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.wfreq-item{border-radius:100px;padding:3px 10px;font-size:.76rem;font-weight:600}
+/* EFT */
+.efts{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:var(--r2);border:1.5px solid var(--bdr);margin-bottom:8px;cursor:pointer;transition:all var(--tr)}
+.efts:hover,.efts.on{border-color:var(--p);background:rgba(107,158,151,.04)}
+.efts.done{border-color:var(--sec);background:rgba(196,168,130,.05)}
+.eftn{width:28px;height:28px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.efts.done .eftn{background:var(--sec)}
+/* Grounding */
+.gs{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:var(--r2);border:1.5px solid var(--bdr);margin-bottom:12px;transition:all var(--tr)}
+.gs.cur{border-color:var(--p);background:rgba(107,158,151,.04);box-shadow:var(--sh1)}
+.gs.don{border-color:var(--sec);opacity:.65}
+.gn{font-family:var(--fd);font-size:2rem;color:var(--p);line-height:1;min-width:36px}
+.gsns{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--txm);margin-bottom:2px}
+.ginp{display:none;margin-top:8px}.gs.cur .ginp{display:block}
+/* Body scan */
+.bzone{fill:rgba(107,158,151,.12);stroke:var(--p);stroke-width:1.5;transition:fill .2s;cursor:pointer}
+.bzone:hover,.bzone.bsel{fill:rgba(107,158,151,.4)}
+/* Meditation */
+.med-step{padding:18px;background:var(--bg2);border-radius:var(--r2);border:1.5px solid var(--bdr);margin-bottom:10px;transition:all var(--tr)}
+.med-step.cur{border-color:var(--p);background:rgba(107,158,151,.05)}
+.med-step.don{opacity:.55}
+.med-step p{font-size:.9rem;font-style:italic;color:var(--tx2);line-height:1.85;margin-bottom:6px}
+/* Shadow work */
+.sw-step{padding:20px;background:var(--bg2);border-radius:var(--r2);border:1.5px solid var(--bdr);margin-bottom:14px;transition:all var(--tr)}
+.sw-step.active{border-color:var(--p);background:rgba(107,158,151,.04)}
+.sw-step.sdone{border-color:var(--sec);opacity:.7}
+.sw-q{font-family:var(--fd);font-size:1rem;color:var(--pd);margin-bottom:8px}
+.sw-hint{font-size:.82rem;color:var(--txm);font-style:italic;margin-bottom:10px}
+/* Mind map */
+#mmcanvas{width:100%;height:420px;background:var(--bg2);border-radius:var(--r2);border:1px solid var(--bdr);position:relative;overflow:hidden;touch-action:none;user-select:none}
+.mmnode{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;cursor:grab;font-family:var(--fd);font-size:.78rem;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:box-shadow .2s;padding:6px}
+.mmnode:active{cursor:grabbing}
+.mmnode.msel{box-shadow:0 0 0 3px #fff,0 4px 16px rgba(0,0,0,.3)}
+#mmsvg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+/* Gratitude */
+.grat-entry{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:14px;margin-bottom:8px}
+.grat-meta{font-size:.74rem;color:var(--txm);margin-bottom:6px}
+.grat-lbl{font-size:.7rem;color:var(--p);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+/* Journal */
+.jfilters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:var(--bg2);border-radius:var(--r2);border:1px solid var(--bdr)}
+.je{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:16px;margin-bottom:8px}
+.jmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-size:.75rem;color:var(--txm)}
+.jtxt{font-size:.87rem;color:var(--tx2);line-height:1.75}
+.jbody{font-size:.78rem;color:var(--txm);margin-top:6px;font-style:italic}
+.jsugg{margin-top:8px;padding-top:8px;border-top:1px dashed var(--bdr);font-size:.78rem;color:var(--txm)}
+.jsugg a{color:var(--p);cursor:pointer;font-weight:600}
+.jstats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:18px}
+.jstat{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:14px;box-shadow:var(--sh1)}
+.jstat-val{font-family:var(--fd);font-size:1.4rem;color:var(--p);margin-bottom:3px}
+.jstat-lbl{font-size:.72rem;color:var(--txm);text-transform:uppercase;letter-spacing:.04em}
+.etag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:100px;font-size:.72rem;font-weight:600}
+.ei{background:rgba(107,158,151,.14);color:var(--pd)}.ee{background:rgba(212,132,122,.14);color:var(--acc)}.em{background:rgba(196,168,130,.14);color:var(--gold)}.en{background:var(--bg2);color:var(--txm);border:1px solid var(--bdr)}
+.pchip{padding:5px 12px;border-radius:100px;border:1.5px dashed var(--bdr);background:transparent;color:var(--tx2);font-size:.78rem;cursor:pointer;font-family:var(--fb);transition:all var(--tr)}
+.pchip:hover{border-color:var(--p);color:var(--p)}
+.sug{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;background:rgba(107,158,151,.1);border:1px solid var(--pl);color:var(--pd);font-size:.75rem;cursor:pointer;transition:all var(--tr);margin:3px}
+.sug:hover{background:var(--p);color:#fff}
+/* Check-in */
+.ci-wrap{max-width:520px;margin:0 auto}
+.ci-hist{display:flex;align-items:flex-end;gap:4px;height:50px;margin:14px 0}
+.ci-bar{flex:1;border-radius:2px 2px 0 0;min-height:3px;cursor:pointer}
+/* KB */
+.kb-art h3{color:var(--pd);margin-top:20px;margin-bottom:8px;font-size:1.05rem}
+.kb-art h3:first-child{margin-top:0}
+.kb-art p{color:var(--tx2);line-height:1.85;font-size:.9rem}
+.kb-art blockquote{border-left:3px solid var(--sec);padding:10px 16px;margin:14px 0;background:var(--bg2);border-radius:0 var(--r1) var(--r1) 0;font-style:italic;color:var(--tx2);font-size:.88rem}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.dc{background:var(--bg2);border-radius:var(--r2);padding:12px;border-top:3px solid}
+.dcl{border-color:var(--p)}.dcr{border-color:var(--sec)}
+.dc p{font-size:.82rem;margin-bottom:.5em;color:var(--tx2)}
+.kbtag{font-size:.72rem;padding:2px 9px;border-radius:100px;background:var(--bg2);border:1px solid var(--bdr);color:var(--txm);margin-right:4px}
+.bmk{background:none;border:none;cursor:pointer;font-size:1rem;padding:3px;transition:transform .2s}
+.bmk:hover{transform:scale(1.2)}
+/* Tool history */
+.th-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:.84rem}
+.th-row:last-child{border-bottom:none}
+/* Settings */
+.ss{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:20px;margin-bottom:14px}
+.ss h3{font-size:.95rem;color:var(--pd);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
+.theme-grid{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.tswatch{width:44px;height:44px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all var(--tr);position:relative}
+.tswatch.act{border-color:var(--tx)}
+.tswatch::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem;opacity:0}
+.tswatch.act::after{opacity:1}
+/* Programs */
+.prog-card{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:20px;margin-bottom:14px}
+.prog-day{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:var(--r2);border:1.5px solid var(--bdr);margin-bottom:8px;transition:all var(--tr)}
+.prog-day.done{border-color:var(--sec);background:rgba(196,168,130,.05)}
+.prog-day.today{border-color:var(--p);background:rgba(107,158,151,.05);box-shadow:var(--sh1)}
+.prog-day-n{font-family:var(--fd);font-size:1.6rem;color:var(--p);line-height:1;min-width:30px}
+.prog-day.done .prog-day-n{color:var(--sec)}
+/* Modal */
+#mov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:300;align-items:center;justify-content:center;padding:16px}
+#mov.open{display:flex}
+.modal{background:var(--bgs);border-radius:var(--r3);padding:24px;max-width:520px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--sh3);animation:min .22s ease}
+@keyframes min{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mt{font-family:var(--fd);font-size:1.15rem;color:var(--pd);margin-bottom:12px}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+/* Onboarding */
+.ob-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;padding:32px 20px;text-align:center}
+.ob-step{max-width:520px;width:100%}
+.ob-q{font-family:var(--fd);font-size:1.35rem;color:var(--pd);margin-bottom:22px;line-height:1.5}
+.ob-choices{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ob-c{padding:10px 20px;border-radius:var(--r2);border:1.5px solid var(--bdr);background:var(--bgs);cursor:pointer;font-size:.88rem;transition:all var(--tr)}
+.ob-c:hover,.ob-c.sel{border-color:var(--p);background:var(--p);color:#fff}
+/* Letter */
+.letter-wrap{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:28px;position:relative}
+.letter-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--p),var(--sec),var(--acc));border-radius:var(--r2) var(--r2) 0 0}
+.choices{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.cbtn{padding:6px 14px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--bgs);color:var(--tx2);cursor:pointer;font-size:.8rem;font-family:var(--fb);transition:all var(--tr)}
+.cbtn:hover,.cbtn.sel{border-color:var(--p);background:var(--p);color:#fff}
+/* Insight */
+.insight-card{background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2);padding:18px;margin-bottom:14px}
+/* Utils */
+.f{display:flex}.fc{display:flex;align-items:center}.fb{display:flex;align-items:center;justify-content:space-between}
+.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}
+.mb8{margin-bottom:8px}.mb16{margin-bottom:16px}.mb24{margin-bottom:24px}
+.tc{text-align:center}.tm{color:var(--txm)}.ts{color:var(--tx2)}.tp{color:var(--p)}
+.tf{font-size:.82rem}.tx{font-size:.75rem}.hidden{display:none!important}
+.sep{height:1px;background:var(--bdr);margin:22px 0}.wf{width:100%}
+.ani{animation:pgf .28s ease}
+@keyframes pgf{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+/* Responsive */
+@media(max-width:768px){
+  #sb{transform:translateX(-100%)}#sb.open{transform:translateX(0)}
+  #main{margin-left:0}#topbar{display:flex}#pc{padding:16px 12px}
+  .dg{grid-template-columns:1fr}h1{font-size:1.5rem}.cg{grid-template-columns:1fr}}
+@media(max-width:480px){.sg{grid-template-columns:repeat(2,1fr)}.so{gap:3px}.sopt{min-width:40px;padding:6px 2px;font-size:.72rem}}
+/* Print */
+@media print{
+  #sb,#topbar,.btn,.tabs,.jfilters,#mov,.fbar,.no-print{display:none!important}
+  #main{margin-left:0}#pc{padding:0;max-width:100%}
+  body{font-size:11pt;background:#fff;color:#000}
+  .card,.qq,.je{border:1pt solid #ccc;box-shadow:none;break-inside:avoid}
+  h1,h2,h3{break-after:avoid}.cl{border-left:2pt solid #999;background:#f5f5f5}
+  @page{margin:2cm}}
+
+
+/* ── NOUVEAU THÈME : lecture nocturne ── */
+[data-theme=lecture]{
+  --bg:#0A0A0F;--bgs:#111118;--bg2:#080810;--bgn:#0C0C14;
+  --p:#8BA8C0;--pl:#A8C4DC;--pd:#6888A0;--sec:#907060;--acc:#A06870;--gold:#A08858;
+  --tx:#D8D0C4;--tx2:#A89888;--txm:#606060;--bdr:#202030;
+  --sh1:0 1px 3px rgba(0,0,0,.7);--sh2:0 4px 12px rgba(0,0,0,.8);--sh3:0 12px 40px rgba(0,0,0,.9);
+  filter:brightness(.85);
+}
+/* ── Journal brouillon indicator ── */
+.draft-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--acc);
+  margin-left:5px;animation:pulse-dot 1.5s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
+/* ── Tag pills ── */
+.tag-pill{padding:1px 8px;border-radius:100px;background:var(--bg2);border:1px solid var(--bdr);
+  font-size:.7rem;color:var(--txm);cursor:pointer;transition:all var(--tr)}
+.tag-pill:hover{background:var(--p);color:#fff;border-color:var(--p)}
+/* ── Timeline ── */
+.tl-node{cursor:pointer}
+/* ── Check-in sparkline ── */
+.ci-sparkline{width:100%;overflow:visible}
+/* ── Void Dialogue grid responsive ── */
+@media(max-width:600px){
+  #vd-grid{grid-template-columns:1fr!important}
+}
+/* ── Keyboard shortcut hint ── */
+.kbd-hint{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--txm)}
+.kbd{background:var(--bg2);border:1px solid var(--bdr);border-radius:3px;padding:1px 5px;font-size:.68rem;font-family:monospace}
+
+</style>
+
+</head>
+<body>
+<div class="fbar"><span id="fbar-name">Mode Focus</span><button id="focus-exit">✕ Quitter</button></div>
+<div id="app">
+<aside id="sb">
+  <div id="slog"><div class="lgt">Espace Intérieur</div><div class="lgsub">v0.1-alpha</div></div>
+  <ul id="nav">
+    <li><a data-page="dashboard"><span class="ni">🏠</span>Accueil</a></li>
+    <li><a data-page="checkin"><span class="ni">⚡</span>Check-in</a></li>
+    <li><a data-page="knowledge"><span class="ni">📚</span>Comprendre</a></li>
+    <li><a data-page="assessments"><span class="ni">🌡️</span>Évaluations</a></li>
+    <li><a data-page="tools"><span class="ni">🛠️</span>Outils</a></li>
+    <li><a data-page="journal"><span class="ni">📔</span>Journal</a></li>
+    <li><a data-page="programs"><span class="ni">🗓️</span>Parcours</a></li>
+    <li><a data-page="settings"><span class="ni">⚙️</span>Réglages</a></li>
+  </ul>
+  <div id="ati"></div>
+  <div id="sfooter">
+    <button class="btn bg bic bsm" id="btheme" title="Thème">🎨</button>
+    <button class="btn bg bic bsm" id="bexp" title="JSON">⬇️</button>
+    <button class="btn bg bic bsm" id="bexpmd" title="Markdown">📝</button>
+    <button class="btn bg bic bsm" id="bimp" title="Import">⬆️</button>
+    <input type="file" id="ifile" accept=".json" class="hidden">
+    <button class="btn bg bic bsm" id="bshortcuts" title="Raccourcis clavier">⌨️</button>
+  </div>
+</aside>
+<div id="main">
+  <div id="topbar">
+    <button class="btn bg bic" id="bmenu">☰</button>
+    <span style="font-family:var(--fd);color:var(--p);font-size:.92rem">Espace Intérieur</span>
+    <div style="flex:1"></div>
+    <button class="btn bg bic bsm" id="btheme2">🎨</button>
+  </div>
+  <main id="pc"></main>
+</div>
+</div>
+<div id="mov"><div class="modal" id="mbox"><div id="mc"></div></div></div>
+
+<script>
+
+/* ================================================================
+   ESPACE INTÉRIEUR v5 — MVC · Single-file · Offline
+   Chiffrement AES-GCM · 5 thèmes · Notifications · Export MD+JSON
+   12 outils · 4 évaluations · Intelligence contextuelle · Focus mode
+================================================================ */
+
+// ── CRYPTO ──────────────────────────────────────────────────────
+const Crypt={
+  async enc(data,pwd){
+    const e=new TextEncoder(),km=await crypto.subtle.importKey('raw',e.encode(pwd),'PBKDF2',false,['deriveKey']);
+    const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt']);
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,e.encode(data));
+    return JSON.stringify({s:[...salt],i:[...iv],d:[...new Uint8Array(ct)]});
+  },
+  async dec(str,pwd){
+    const {s,i,d}=JSON.parse(str),e=new TextEncoder();
+    const km=await crypto.subtle.importKey('raw',e.encode(pwd),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:new Uint8Array(s),iterations:100000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(i)},key,new Uint8Array(d));
+    return new TextDecoder().decode(pt);
+  }
+};
+
+// ── I18N ─────────────────────────────────────────────────────────
+const I18n={
+  lang:'fr',
+  data:{fr:{
+    tips:['Le vide n\'est pas un manque à combler. C\'est un espace à explorer.','Distinguer ce qui vient de vous et ce qui vient des autres est un acte de libération.','Les émotions sont des visiteurs. Les sentiments sont des résidences temporaires.','Votre sensibilité n\'est pas votre faiblesse — c\'est votre boussole.','Ce que vous ressentez n\'a pas besoin d\'être justifié pour être réel.','L\'auto-guérison commence par un regard honnête, non par un jugement.','Ce que vous portez appartient parfois aux autres. Vous avez le droit de le rendre.','La guérison n\'est pas linéaire. Chaque retour en arrière est une information.','Le corps sait avant le mental. Apprenez à l\'écouter.','Aujourd\'hui, poser une main sur son cœur est déjà un acte d\'amour envers soi.']
+  }},
+  t(k){return (this.data[this.lang]||this.data.fr)[k]||(this.data.fr)[k]||k;},
+  tip(){const a=this.t('tips');return Array.isArray(a)?a[Math.floor(Math.random()*a.length)]:'';},
+  empty(){return 'Aucune entrée pour l\'instant.'},
+  confirmDel(){return 'Supprimer cette entrée ?'}
+};
+
+// ── MODEL ────────────────────────────────────────────────────────
+const Model={
+  KEY:'ei_v5',SK:'ei_s',_pwd:null,
+  def(){return{meta:{version:'5.0',theme:'light',created:new Date().toISOString()},stats:{sessions:0,toolsUsed:0},onboarding:{done:false,answers:{}},journal:[],assessments:{},toolSessions:[],toolHistory:[],bookmarks:[],programProgress:{},intention:'',gratitude:[],checkins:[],wheelHistory:[],reminders:{enabled:false,times:['08:00','13:00','19:00'],lastCheck:null},encryption:{enabled:false,hint:''},mindmapNodes:[],mindmapLinks:[],timelineEvents:[],journalDraft:{},journalTags:{},weeklyChallenge:null};},
+  data:null,
+  migrate(d){
+    const def=this.def();for(const k in def)if(d[k]===undefined)d[k]=def[k];
+    d.meta.version='5.0';return d;
+  },
+  load(){
+    try{
+      const raw=localStorage.getItem(this.KEY);
+      if(!raw){this.data=this.def();return;}
+      let p;try{p=JSON.parse(raw);}catch(e){this.data=this.def();return;}
+      if(p._encrypted){this.data=this.def();this.data._needsDecrypt=true;this.data._enc=raw;return;}
+      this.data=this.migrate(p);
+    }catch(e){this.data=this.def();}
+  },
+  async loadEnc(pwd){
+    try{const raw=localStorage.getItem(this.KEY),w=JSON.parse(raw),dec=await Crypt.dec(w._data,pwd);this.data=this.migrate(JSON.parse(dec));this._pwd=pwd;return true;}catch(e){return false;}
+  },
+  async save(){
+    try{
+      if(this.data.encryption?.enabled&&this._pwd){
+        const enc=await Crypt.enc(JSON.stringify(this.data),this._pwd);
+        localStorage.setItem(this.KEY,JSON.stringify({_encrypted:true,_data:enc}));
+      }else{localStorage.setItem(this.KEY,JSON.stringify(this.data));}
+    }catch(e){}
+  },
+  ss(s){try{sessionStorage.setItem(this.SK,JSON.stringify(s));}catch(e){}},
+  ls(){try{return JSON.parse(sessionStorage.getItem(this.SK)||'null');}catch(e){return null;}},
+  cs(){try{sessionStorage.removeItem(this.SK);}catch(e){}},
+  exportJSON(){const b=new Blob([JSON.stringify(this.data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`ei-${new Date().toISOString().slice(0,10)}.json`;a.click();},
+  exportMD(){
+    const d=this.data;let md='# Espace Intérieur — Export\n_'+new Date().toLocaleDateString('fr-FR')+'_\n\n---\n\n';
+    md+='## Journal ('+d.journal.length+' entrées)\n\n';
+    [...d.journal].reverse().forEach(e=>{
+      const dt=new Date(e.date).toLocaleDateString('fr-FR'),hr=new Date(e.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      const ol={internal:'Interne',external:'Absorbé',mixed:'Mixte'},tl={emotion:'Émotion',sentiment:'Sentiment',both:'Les deux'};
+      md+='### '+dt+' '+hr+'\n';
+      if(e.emotion)md+='**'+e.emotion+'**';if(e.type)md+=' · _'+( tl[e.type]||'')+'_';if(e.origin)md+=' · '+(ol[e.origin]||'');if(e.intensity)md+=' · i'+e.intensity+'/4';md+='\n\n';
+      if(e.text)md+=e.text+'\n\n';if(e.bodyNote)md+='_Corps : '+e.bodyNote+'_\n\n';md+='---\n\n';
+    });
+    if(d.gratitude?.length){md+='## Gratitude ('+d.gratitude.length+')\n\n';[...d.gratitude].reverse().slice(0,20).forEach(g=>{md+='**'+new Date(g.date).toLocaleDateString('fr-FR')+'**\n';if(g.vivance)md+='- 🌱 '+g.vivance+'\n';if(g.sensation)md+='- 🫀 '+g.sensation+'\n';if(g.chose)md+='- 🔍 '+g.chose+'\n';md+='\n';});}
+    md+='## Évaluations\n\n';for(const[id,res]of Object.entries(d.assessments||{})){const a=Assessments.getById(id);if(!a||!res.length)continue;md+='### '+a.title+'\n';res.forEach(r=>{md+='- '+new Date(r.date).toLocaleDateString('fr-FR')+' : **'+r.score+(a.max?'/'+a.max:'')+'** — '+(r.bandTitle||'')+'\n';});md+='\n';}
+    md+='## Stats\n- Sessions : '+d.stats.sessions+'\n- Outils : '+d.stats.toolsUsed+'\n- Journal : '+d.journal.length+'\n';
+    const b=new Blob([md],{type:'text/markdown'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`ei-${new Date().toISOString().slice(0,10)}.md`;a.click();
+  },
+  importJSON(str){try{this.data=this.migrate({...this.def(),...JSON.parse(str)});this.save();return true;}catch(e){return false;}},
+  addJ(e){this.data.journal.unshift({id:Date.now(),date:new Date().toISOString(),...e});this.save();},
+  delJ(id){this.data.journal=this.data.journal.filter(e=>e.id!==id);this.save();},
+  saveA(id,r){if(!this.data.assessments[id])this.data.assessments[id]=[];this.data.assessments[id].unshift({date:new Date().toISOString(),...r});this.save();},
+  logT(t){this.data.toolSessions.push({tool:t,date:new Date().toISOString()});this.data.stats.toolsUsed=(this.data.stats.toolsUsed||0)+1;const th=this.data.toolHistory||[];const ex=th.find(x=>x.tool===t);if(ex){ex.count=(ex.count||0)+1;ex.lastDate=new Date().toISOString();}else th.push({tool:t,count:1,lastDate:new Date().toISOString()});this.data.toolHistory=th;this.save();},
+  logW(em){this.data.wheelHistory=this.data.wheelHistory||[];this.data.wheelHistory.unshift({emotion:em,date:new Date().toISOString()});if(this.data.wheelHistory.length>200)this.data.wheelHistory.pop();this.save();},
+  addG(g){this.data.gratitude=this.data.gratitude||[];this.data.gratitude.unshift({id:Date.now(),date:new Date().toISOString(),...g});this.save();},
+  addCI(c){this.data.checkins=this.data.checkins||[];this.data.checkins.unshift({id:Date.now(),date:new Date().toISOString(),...c});this.save();},
+  incS(){this.data.stats.sessions=(this.data.stats.sessions||0)+1;this.save();},
+  toggleBM(id){const b=this.data.bookmarks||[];const i=b.indexOf(id);if(i>-1)b.splice(i,1);else b.push(id);this.data.bookmarks=b;this.save();},
+  isBM(id){return(this.data.bookmarks||[]).includes(id);},
+  setInt(t){this.data.intention=t;this.save();},
+  saveProgDay(pid,day){this.data.programProgress=this.data.programProgress||{};if(!this.data.programProgress[pid])this.data.programProgress[pid]=[];if(!this.data.programProgress[pid].includes(day))this.data.programProgress[pid].push(day);this.save();}
+};
+
+// ── NOTIFICATIONS ────────────────────────────────────────────────
+const Notifs={
+  async req(){if(!('Notification'in window))return false;if(Notification.permission==='granted')return true;return(await Notification.requestPermission())==='granted';},
+  send(t,b){if(Notification.permission!=='granted')return;new Notification(t,{body:b});},
+  check(){
+    const r=Model.data.reminders;if(!r?.enabled)return;
+    const now=new Date(),hm=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const today=now.toDateString();if(r.lastCheck===today)return;
+    const toMin=t=>{const[h,m]=t.split(':').map(Number);return h*60+m;};
+    const nowMin=toMin(hm);
+    if(r.times.some(t=>Math.abs(nowMin-toMin(t))<6)){this.send('Espace Intérieur','C\'est le moment de votre pratique 🌿');Model.data.reminders.lastCheck=today;Model.save();}
+  }
+};
+
+// ── INTELLIGENCE CONTEXTUELLE ────────────────────────────────────
+const Intel={
+  vL(){const r=(Model.data.assessments['void-22']||[])[0];return r?r.score/88:null;},
+  eL(){const r=(Model.data.assessments['empath-profile']||[])[0];return r?r.score/48:null;},
+  dL(){const r=(Model.data.assessments['dissociation']||[])[0];return r?r.score/40:null;},
+  recentEm(){return(Model.data.journal||[]).slice(0,8).map(e=>(e.emotion||'').toLowerCase()).filter(Boolean);},
+  sugTool(){
+    const vl=this.vL(),el=this.eL(),dl=this.dL(),em=this.recentEm();
+    if(dl>0.5)return{id:'grounding',reason:'La dissociation détectée appelle un ancrage corporel en priorité.'};
+    if(el>0.6)return{id:'empathy',reason:'Votre profil empathique élevé suggère de vérifier l\'origine de vos ressentis.'};
+    if(em.some(e=>e.includes('peur')||e.includes('anxi')))return{id:'breathing',reason:'Des résonances d\'anxiété dans votre journal — la respiration peut aider.'};
+    if(em.some(e=>e.includes('col')||e.includes('frust')))return{id:'eft',reason:'L\'EFT est efficace pour libérer la colère et la frustration.'};
+    if(vl>0.5)return{id:'breathing',reason:'La régulation nerveuse est une base essentielle pour votre profil.'};
+    return{id:'wheel',reason:'Explorer et nommer vos états est un bon point de départ aujourd\'hui.'};
+  },
+  sugArt(){const vl=this.vL(),el=this.eL();if(el>0.55)return'empath-void';if(vl>0.6)return'spiritual-void';return'emotions-feelings';},
+  cross(){
+    const a=Model.data.assessments||{};const lines=[];
+    const v=a['void-22']?.[0],em=a['empath-profile']?.[0],di=a['dissociation']?.[0],at=a['attachment']?.[0];
+    if(v&&em){const vl=v.score/88,el=em.score/48;if(vl>0.4&&el>0.5)lines.push({i:'🕳️🌊',t:'Vide + hyper-empathie : votre vide est probablement lié à la mise sous silence de vos ressentis pour vous protéger du trop-plein extérieur.'});else if(vl>0.4)lines.push({i:'🕳️',t:'Votre vide semble davantage lié à l\'histoire personnelle (trauma, carence) qu\'à l\'absorption externe.'});}
+    if(di?.score/40>0.45)lines.push({i:'🌫️',t:'Dissociation significative : le travail somatique (grounding, cohérence cardiaque) devrait être prioritaire.'});
+    if(at?.bandTitle){const b=at.bandTitle.toLowerCase();if(b.includes('évitant'))lines.push({i:'🔗',t:'Attachement évitant : la distance émotionnelle alimente le vide de connexion. L\'IFS peut aider à rencontrer la partie protectrice.'});if(b.includes('anxieux'))lines.push({i:'🔗',t:'Attachement anxieux : la dépendance à la validation externe crée un vide structurel. Développer la sécurité intérieure est central.'});}
+    const sh=a['shame-profile']?.[0],snv=a['nervous-system']?.[0];
+    if(sh){const sl=sh.score/48;if(sl>0.5)lines.push({i:'🌑',t:"La honte est significativement présente : elle est souvent la racine profonde du vide. L'outil IFS (L'Exilé) et la méditation Honte-Compassion sont particulièrement indiqués."});}
+    if(snv){const nl=snv.score/48;if(nl<0.35)lines.push({i:'⚡',t:'Votre système nerveux semble en tension chronique. Les pratiques somatiques (cohérence cardiaque, grounding) sont prioritaires avant toute exploration émotionnelle intense.'});}
+    return lines.length?lines:null;
+  },
+  jStats(){
+    const j=Model.data.journal||[];if(j.length<5)return null;
+    const or={internal:0,external:0,mixed:0},em={},it=[];
+    j.forEach(e=>{if(e.origin)or[e.origin]=(or[e.origin]||0)+1;if(e.emotion)em[e.emotion]=(em[e.emotion]||0)+1;if(e.intensity)it.push(e.intensity);});
+    const top=Object.entries(em).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>({k,v}));
+    const avg=it.length?Math.round(it.reduce((a,b)=>a+b,0)/it.length*10)/10:0;
+    const tot=or.internal+or.external+or.mixed||1;
+    return{or,top,avg,total:j.length,totOr:tot};
+  },
+  weeklyChallenge(){
+    // Défi adapté au profil, change chaque semaine
+    const challenges=[
+      "Avant chaque repas aujourd'hui, posez une main sur votre ventre et demandez-lui ce qu'il ressent.",
+      "Cette semaine, nommez une émotion à voix haute — même seul(e) — chaque fois que vous en ressentez une.",
+      "Choisissez un moment de la journée pour 5 minutes de cohérence cardiaque, chaque jour.",
+      "Notez chaque soir une chose minuscule qui vous a fait vous sentir vivant(e) aujourd'hui.",
+      "Lorsque vous ressentez quelque chose, posez-vous : \"Est-ce que cela m'appartient vraiment ?\"",
+      "Cette semaine, prenez 2 minutes le matin pour scanner votre corps de la tête aux pieds.",
+      "Chaque fois que vous vous critiquez, remplacez la phrase par ce que vous diriez à un ami.",
+    ];
+    const weekNum=Math.floor(Date.now()/(7*24*3600*1000));
+    return challenges[weekNum%challenges.length];
+  },
+  toolForEm(em,orig){
+    if(!em)return null;const e=(em||'').toLowerCase();
+    if(orig==='external')return{id:'empathy',label:'Filtre Empathique'};
+    if(e.includes('col')||e.includes('frust'))return{id:'eft',label:'EFT Tapping'};
+    if(e.includes('peur')||e.includes('anxi'))return{id:'grounding',label:'Ancrage 5-4-3-2-1'};
+    if(e.includes('trist')||e.includes('vide'))return{id:'meditation',label:'Méditation guidée'};
+    if(e.includes('honte')||e.includes('culpa'))return{id:'ifs',label:'Parties Intérieures'};
+    return null;
+  },
+  weeklyInsights(){
+    const j=Model.data.journal||[],now=new Date(),wk=7*24*3600*1000;
+    const thisW=j.filter(e=>now-new Date(e.date)<wk);
+    const prevW=j.filter(e=>{const d=now-new Date(e.date);return d>=wk&&d<2*wk;});
+    const days=Array.from({length:7},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()-6+i);const ds=d.toDateString();const ej=thisW.filter(e=>new Date(e.date).toDateString()===ds);return{day:d.toLocaleDateString('fr-FR',{weekday:'short'}),count:ej.length};});
+    return{days,thisW:thisW.length,prevW:prevW.length,intW:thisW.filter(e=>e.origin==='internal').length,extW:thisW.filter(e=>e.origin==='external').length};
+  }
+};
+
+// ── DATA ──────────────────────────────────────────────────────────
+
+const KB={arts:[
+  {id:'void-intro',icon:'🕳️',tags:['fondamental'],rt:6,title:'Qu\'est-ce que le vide émotionnel ?',desc:'Comprendre la nature, les causes et les visages du vide intérieur.',
+   html:`<h3>Définition</h3><p>Le vide émotionnel est une expérience de manque ou d'engourdissement affectif — une béance intérieure, un "rien" là où il devrait y avoir quelque chose.</p><blockquote>« Le vide que tu ressens n'est pas une absence de toi. C'est l'appel de ce que tu n'as pas encore osé être. »</blockquote><h3>Ce que le vide cache</h3><p>Derrière le vide : émotions refoulées intenses (colère, honte, peur) ; besoin profond non reconnu ; partie de soi niée ; seuil d'une vie plus authentique.</p><h3>Causes psychologiques</h3><p><strong>Carences affectives :</strong> l'enfant éteint ses émotions pour survivre — ce mécanisme devient une prison invisible. <strong>Trauma :</strong> réponse dissociative adaptative. <strong>Attachement insécure :</strong> difficulté structurelle à ressentir l'amour. <strong>Suppression chronique :</strong> à force de ne pas ressentir, on finit par ne plus pouvoir.</p><h3>Causes existentielles</h3><p><strong>Perte de sens :</strong> frustration existentielle (Frankl). <strong>Héritage transgénérationnel :</strong> certains vides sont hérités sur plusieurs générations.</p>`},
+  {id:'empath-void',icon:'🌊',tags:['empathie','clé'],rt:5,title:'L\'empathique et le vide',desc:'Pourquoi les êtres ultra-empathiques étouffent leurs ressentis.',
+   html:`<h3>L'être ultra-empathique</h3><p>Son vide n'est pas un manque d'émotions — c'est la mise sous silence de sa vie intérieure pour se protéger du trop-plein extérieur. Son chemin : <strong>apprendre à discriminer</strong>.</p><div class="dg"><div class="dc dcl"><h4>🌿 Ressentir (interne)</h4><p>Émerge de votre intérieur. Cohérence narrative. S'apaise quand le besoin est reconnu. Reste avec le repos seul.</p></div><div class="dc dcr"><h4>🌊 Absorber (externe)</h4><p>Surgit "de nulle part" en présence d'autrui. Pas de cohérence interne. S'atténue quand vous vous isolez.</p></div></div><h3>La question clé</h3><p><strong>"Ce ressenti m'appartient-il vraiment ?"</strong> Était-il présent avant l'interaction ? Ressemble-t-il à l'état de la personne en face ? Disparaît-il quand vous vous isolez ?</p>`},
+  {id:'emotions-feelings',icon:'💎',tags:['fondamental','clé'],rt:5,title:'Émotions vs Sentiments',desc:'Une distinction essentielle qui change tout à la connaissance de soi.',
+   html:`<div class="dg"><div class="dc dcl"><h4>⚡ ÉMOTION (primaire)</h4><p>Automatique, corporelle, universelle. Cerveau limbique. Secondes à minutes. Les 6 d'Ekman : joie, tristesse, peur, colère, dégoût, surprise.</p><p><em>"Mon cœur s'emballe. Ma gorge se serre."</em></p></div><div class="dc dcr"><h4>💭 SENTIMENT (complexe)</h4><p>Construit, mental, culturel. Interprétation filtrée par l'histoire. Heures à années.</p><p><em>Jalousie, nostalgie, honte, gratitude, mélancolie.</em></p></div></div><h3>Dans le vide</h3><p>La personne en vide a perdu le fil des émotions primaires — le signal corporel ne remonte plus. La guérison : <em>Qu'est-ce que mon corps ressent maintenant ?</em></p><blockquote>« Un sentiment est l'expérience mentale d'un état corporel. » — Antonio Damasio</blockquote>`},
+  {id:'spiritual-void',icon:'✨',tags:['spiritualité'],rt:4,title:'Le vide comme portail spirituel',desc:'Zen, soufisme, mystique chrétienne : quand le vide devient chemin.',
+   html:`<h3>Un portail, non un problème</h3><p>La différence avec le vide pathologique : l'un est subi avec angoisse, l'autre traversé avec conscience.</p><h3>Zen — Sunyata</h3><p>"C'est le vide au centre de la roue qui lui permet de tourner." Pleinement accepté, il devient espace de liberté.</p><h3>Soufisme — Rumi</h3><p>La flûte de roseau gémit d'être séparée de son origine. Ce manque <strong>produit la musique elle-même</strong>.</p><blockquote>« Écoute le roseau, comme il se plaint de la séparation. »</blockquote><h3>Nuit obscure de l'âme</h3><p>Saint Jean de la Croix : la sécheresse intérieure n'est pas un échec — c'est une invitation à aller plus profond.</p><h3>Jung — individuation</h3><p>Le vide est de la matière première non travaillée. L'invitation à devenir pleinement soi.</p>`},
+  {id:'self-healing',icon:'🌱',tags:['pratique'],rt:6,title:'Outils d\'auto-guérison',desc:'Des pratiques concrètes pour retrouver le contact avec soi-même.',
+   html:`<h3>La voie somatique</h3><p><strong>Cohérence cardiaque :</strong> 5s/5s, 3×/jour, 5 min. <strong>Mouvement expressif :</strong> danser librement. <strong>TRE :</strong> tremblements naturels libérant les tensions.</p><h3>La voie psychique</h3><p><strong>Écriture thérapeutique :</strong> flux de conscience, lettres non envoyées. <strong>IFS :</strong> dialoguer avec les parties intérieures. <strong>EFT :</strong> tapoter des méridiens pour déverrouiller des états figés.</p><h3>La voie contemplative</h3><p><strong>Pleine conscience :</strong> être avec le vide sans le fuir. <strong>Metta :</strong> bienveillance aimante à soi d'abord. <strong>Ancrage 5-4-3-2-1 :</strong> retour sensoriel au présent.</p><h3>La voie du sens</h3><p>Qu'est-ce qui a du sens pour <em>moi</em> ? Service aux autres. Contact régulier avec la nature.</p>`},
+  {id:'body-memory',icon:'🫀',tags:['corps','trauma'],rt:5,title:'Le corps comme mémoire',desc:'Psychosomatique — comment le corps parle quand les mots manquent.',
+   html:`<blockquote>« Le corps garde le score. » — Bessel van der Kolk</blockquote><h3>Zones et significations</h3><p><strong>Gorge :</strong> parole réprimée, mots ravalés, pleurs contenus. <strong>Cœur/poitrine :</strong> chagrins non pleurés, pertes, amour retenu. <strong>Plexus solaire :</strong> identité, peur existentielle. <strong>Ventre :</strong> sécurité fondamentale, traumatismes profonds. <strong>Épaules :</strong> poids porté pour les autres, hypervigilance. <strong>Mâchoires :</strong> colère muette, résistance.</p><h3>Écouter sans réparer</h3><p>Le scan corporel quotidien — simplement poser une attention douce sur chaque zone — est l'une des pratiques les plus accessibles. Non pour "réparer" mais pour <strong>simplement être là</strong>.</p>`},
+  {id:'grief-void',icon:'🌙',tags:['deuil'],rt:5,title:'Deuils et vides',desc:'Les deuils non faits comme source principale du vide.',
+   html:`<h3>Le deuil arrêté</h3><p>Le vide est très souvent un <strong>deuil arrêté à mi-chemin</strong> : relation, identité, idéal, version de soi, vie rêvée non vécue.</p><h3>Les deuils non reconnus</h3><p>— Deuil de l'enfance souhaitée · de la relation parentale non reçue · de versions de soi abandonnées · d'un système de sens effondré</p><h3>Traverser consciemment</h3><p>Les étapes de Kübler-Ross ne sont pas linéaires. Ce qui importe : <strong>laisser chaque étape être pleinement traversée</strong>. Les rituels sont essentiels.</p><blockquote>« Le deuil n'est pas la fin de l'amour. C'est l'amour qui n'a plus d'endroit où aller. »</blockquote>`},
+  // ── NOUVEAUX ARTICLES ──────────────────────────────────────────
+  {id:'nervous-system-kb',icon:'⚡',tags:['corps','SNV'],rt:5,title:'Le système nerveux et le vide',desc:'Nerf vague, théorie polyvagale, fenêtre de tolérance : pourquoi le corps se coupe.',
+   html:`<h3>La théorie polyvagale (Stephen Porges)</h3>
+<p>Notre système nerveux autonome ne connaît pas deux états (activé / au repos) mais <strong>trois</strong>, gouvernés par le nerf vague :</p>
+<div class="dg"><div class="dc dcl"><h4>🟢 Ventral vague — Sécurité</h4><p>État de connexion, créativité, curiosité, présence. Possible seulement quand le système nerveux se sent <em>en sécurité</em>. C'est ici que la guérison a lieu.</p></div><div class="dc dcr"><h4>🔴 Sympathique — Mobilisation</h4><p>Fuite ou combat. Anxiété, agitation, hypervigilance. Le corps s'est senti menacé et s'est mobilisé pour survivre.</p></div></div>
+<p>Troisième état : <strong>Dorsal vague — Effondrement.</strong> Shut-down, engourdissement, dissociation, vide. C'est la réponse du système nerveux aux menaces inévitables — quand ni la fuite ni le combat ne sont possibles. <em>Le vide émotionnel est très souvent un état dorsal vagal chronique.</em></p>
+<h3>La fenêtre de tolérance (Daniel Siegel)</h3>
+<p>Chaque personne dispose d'une "fenêtre" à l'intérieur de laquelle les émotions peuvent être traversées sans débordement. En dehors de cette fenêtre : hyperactivation (anxiété, agitation) ou hypoactivation (vide, dissociation, engourdissement).</p>
+<p>Un trauma rétrécie cette fenêtre. Les pratiques somatiques — cohérence cardiaque, grounding, TRE, yoga — l'élargissent progressivement.</p>
+<h3>Le nerf vague comme chemin de guérison</h3>
+<p>Le nerf vague relie le cerveau à presque tous les organes. Sa branche ventrale active l'état de sécurité. On peut le stimuler directement par : la respiration lente et profonde, le chant ou le fredonnement, l'exposition à l'eau froide (douche fraîche sur le visage), le contact physique chaleureux, les sons graves.</p>
+<blockquote>« La sécurité n'est pas l'absence de danger. C'est la présence d'une connexion. » — Stephen Porges</blockquote>`},
+
+  {id:'shame-kb',icon:'🌑',tags:['honte','racines'],rt:5,title:'La honte et le vide',desc:'Brené Brown, la honte comme premier mécanisme créateur de vide.',
+   html:`<h3>Honte vs culpabilité — une distinction capitale</h3>
+<div class="dg"><div class="dc dcl"><h4>⚖️ Culpabilité</h4><p>"J'ai <em>fait</em> quelque chose de mauvais."</p><p>Oriente vers la réparation. Peut être saine.</p><p><em>Exemple : "J'aurais dû appeler."</em></p></div><div class="dc dcr"><h4>🌑 Honte</h4><p>"Je <em>suis</em> quelque chose de mauvais."</p><p>Paralyse. Isole. Nourrit le vide.</p><p><em>Exemple : "Je suis nul(le). Je ne mérite pas."</em></p></div></div>
+<h3>La honte comme créatrice de vide</h3>
+<p>La honte profonde pousse à <strong>se cacher</strong> — y compris de soi-même. Progressivement, les parties de soi associées à la honte sont éteintes, enfouies, niées. Ce retrait de pans entiers de soi crée précisément l'expérience du vide : l'impression d'être une coquille, de ne pas vraiment exister.</p>
+<p>Brené Brown, chercheuse américaine, a passé vingt ans à étudier la honte. Sa conclusion : <strong>"La honte survit grâce au secret, au silence et au jugement. Elle ne peut survivre à l'empathie."</strong></p>
+<h3>La honte dans le corps</h3>
+<p>La honte a une posture : épaules rentrées, regard fuyant, poitrine affaissée, voix étouffée. Elle se vit d'abord dans le corps avant d'être nommée. Travailler la honte passe donc aussi par le corps — redresser la posture consciemment, nommer la honte à voix haute (même seul), mettre des mots là où il n'y en avait pas.</p>
+<h3>Le chemin : de la honte à l'auto-compassion</h3>
+<p>Kristin Neff a démontré que l'auto-compassion — se traiter avec la même gentillesse qu'on accorderait à un ami — est l'antidote direct à la honte. Trois composantes : bienveillance envers soi, reconnaissance de l'humanité commune ("je ne suis pas seul(e)"), pleine conscience (ni dramatiser ni nier).</p>
+<blockquote>« La honte est la peur d'être indigne d'appartenance. » — Brené Brown</blockquote>`},
+
+  {id:'toxic-relations-kb',icon:'🌀',tags:['relations','empathie'],rt:5,title:'Relations toxiques et vide émotionnel',desc:'Dynamiques narcissiques, pattern empathique-narcissique, comment certaines relations vident.',
+   html:`<h3>Le paradoxe de la relation empathique-narcissique</h3>
+<p>Certaines relations créent un vide précisément parce qu'elles sont <strong>asymétriques par construction</strong>. L'être ultra-empathique — naturellement orienté vers le besoin de l'autre — se retrouve attiré par des personnalités dont le besoin de validation est insatiable. Ce n'est pas un hasard : l'empathique a souvent appris que son rôle est de s'occuper des émotions des autres.</p>
+<h3>Comment la relation vide</h3>
+<p><strong>Invisibilisation progressive :</strong> les besoins, émotions et perceptions de l'empathique sont minimisés, niés ou retournés. Progressivement, il doute de sa propre réalité (<em>gaslighting</em>).</p>
+<p><strong>Épuisement émotionnel constant :</strong> réguler les émotions de l'autre, gérer ses crises, anticiper ses humeurs — tout cela consomme une énergie considérable, laissant peu de place pour sa propre vie intérieure.</p>
+<p><strong>Perte de soi par strates :</strong> pour préserver la paix ou la relation, l'empathique abandonne successivement ses goûts, ses valeurs, ses amitiés, puis ses émotions. Le vide qui s'installe est celui des parties de soi abandonnées.</p>
+<h3>Reconnaître sans condamner</h3>
+<p>Cette dynamique n'implique pas nécessairement une "mauvaise personne" — elle peut naître de deux histoires de blessures qui se sont trouvées. Mais la reconnaître est indispensable pour pouvoir sortir de la répétition.</p>
+<h3>La reconstruction</h3>
+<p>Après une relation de ce type, le travail de reconstruction passe par : retrouver ses propres goûts et valeurs (souvent oubliés), réapprendre à distinguer ses émotions de celles de l'autre (outil Filtre Empathique), et reconstruire une sécurité intérieure qui ne dépend plus de la validation externe.</p>
+<blockquote>« Ce n'est pas votre sensibilité qui est le problème. C'est le système qui a appris à l'exploiter. »</blockquote>`}
+],getById(id){return this.arts.find(a=>a.id===id);}};
+
+const Assessments={list:[
+  // pol[] : 1 = question positive (score élevé = ressource → score inversé dans finishQuiz)
+  // ex: "Je ressens de la joie facilement" → 4/toujours est bon → inverser pour ne pas pénaliser
+  {id:'void-22',icon:'🕳️',title:'Évaluation du Vide Émotionnel',desc:'22 questions · polarité mixte.',max:88,
+   // Questions 20 (ressource: "avoir un sens") et 21 ("part attend libération") restent neg
+   // Toutes les questions sont formulées en direction du vide → pas de question positive ici
+   pol:[], // toutes négatives : score élevé = vide plus intense
+   qs:['Éprouvez-vous un sentiment inexplicable de manque, comme si quelque chose d\'essentiel était absent ?',
+       'Avez-vous l\'impression d\'observer votre vie de l\'extérieur, comme spectateur ?',
+       'Avez-vous du mal à ressentir pleinement joie, enthousiasme ou plaisir ?',
+       'Vous tournez-vous vers des comportements compulsifs (écrans, nourriture, travail…) pour remplir un espace intérieur ?',
+       'Avez-vous du mal à rester seul(e) dans le silence sans chercher une distraction ?',
+       'Ressentez-vous un vide ou un "rien" persistant même dans des moments supposément heureux ?',
+       'Avez-vous l\'impression que vos relations restent superficielles — que personne ne vous connaît vraiment ?',
+       'Ressentez-vous une fatigue profonde que le repos ne résout pas ?',
+       'Vous sentez-vous détaché(e) de votre corps, peu conscient(e) de vos sensations ?',
+       'Avez-vous perdu le sens ou la direction de votre vie ?',
+       'Éprouvez-vous une résistance à recevoir l\'amour ou la tendresse des autres ?',
+       'Avez-vous la sensation de jouer un rôle sans savoir qui vous êtes vraiment ?',
+       'Ressentez-vous colère, tristesse ou anxiété sans pouvoir en identifier la cause ?',
+       'Avez-vous du mal à vous souvenir d\'une joie simple et spontanée récente ?',
+       'Cherchez-vous à vous fondre dans l\'autre (fusion) ou à maintenir une distance émotionnelle ?',
+       'Ressentez-vous honte ou malaise face à votre sensibilité ou vos besoins ?',
+       'Avez-vous connu des périodes où vous avez dû cesser de ressentir pour survivre ?',
+       'Avez-vous du mal à vous projeter dans l\'avenir avec espoir ou anticipation ?',
+       'Avez-vous l\'impression que votre vie intérieure est pauvre ou désertique ?',
+       'Ressentez-vous parfois une oppression au niveau du cœur ou de la poitrine ?',
+       'Avez-vous parfois pensé que rien ne viendra jamais vous combler durablement ?',
+       'Avez-vous la sensation qu\'une part de vous attend d\'être reconnue ou libérée ?'],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{max:20,title:'Connexion émotionnelle solide',color:'#6B9E97',desc:'Votre vie émotionnelle est relativement bien ancrée.'},
+          {max:40,title:'Légère déconnexion',color:'#8FBDB6',desc:'Quelques zones d\'engourdissement méritent attention.'},
+          {max:58,title:'Vide significatif',color:'#C4A882',desc:'Le vide influence votre quotidien. Un accompagnement structuré est recommandé.'},
+          {max:74,title:'Vide profond',color:'#D4847A',desc:'Un suivi thérapeutique est fortement conseillé.'},
+          {max:88,title:'Vide intense',color:'#C4606A',desc:'Une aide professionnelle est nécessaire. Vous n\'êtes pas seul(e).'}]},
+
+  {id:'empath-profile',icon:'🌊',title:'Profil Empathique',desc:'12 questions · polarité mixte.',max:48,
+   // Q9 "savoir ce que l'autre ressent avant qu'il le dise" peut être ressource → neutre ici
+   // Toutes orientées vers surcharge, donc toutes négatives
+   pol:[],
+   qs:['Ressentez-vous des changements d\'humeur inexpliqués après certaines interactions sociales ?',
+       'Vous sentez-vous épuisé(e) après avoir été dans un lieu animé ou une foule ?',
+       'Avez-vous du mal à distinguer vos émotions de celles des personnes autour de vous ?',
+       'Ressentez-vous physiquement la douleur ou la souffrance des autres ?',
+       'Avez-vous tendance à "prendre en charge" émotionnellement ceux qui souffrent autour de vous ?',
+       'Avez-vous besoin de longues périodes de solitude pour vous ressourcer après des interactions ?',
+       'Certains lieux, musiques ou œuvres d\'art vous affectent avec une intensité disproportionnée ?',
+       'Avez-vous éteint votre sensibilité à un moment de votre vie pour vous protéger ?',
+       'Vos proches ont-ils tendance à se confier spontanément, comme attirés par votre présence ?',
+       'Avez-vous parfois du mal à dire non de peur de faire de la peine ?',
+       'Ressentez-vous un fort sentiment d\'injustice ou de souffrance face aux nouvelles du monde ?',
+       'Vous arrive-t-il de savoir ce que quelqu\'un ressent avant qu\'il ne le dise ?'],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{max:12,title:'Sensibilité classique',color:'#6B9E97',desc:'Votre empathie est dans la norme.'},
+          {max:24,title:'Sensibilité élevée (HSP)',color:'#8FBDB6',desc:'Apprendre à distinguer vos émotions de celles des autres est utile.'},
+          {max:36,title:'Profil empathique fort',color:'#C4A882',desc:'La discrimination émotions propres / absorbées est cruciale.'},
+          {max:48,title:'Hyper-empathie',color:'#D4847A',desc:'Votre hyper-sensibilité est probablement au cœur de votre vide. L\'hygiène énergétique est prioritaire.'}]},
+
+  {id:'dissociation',icon:'🌫️',title:'Niveau de Dissociation',desc:'10 questions.',max:40,
+   pol:[],
+   qs:['Avez-vous l\'impression de regarder votre vie comme un film, de l\'extérieur de vous-même ?',
+       'Vous arrive-t-il de ne pas vous souvenir de ce que vous avez fait pendant un moment de la journée ?',
+       'Vous sentez-vous "absent(e)" ou "pas là" pendant des conversations ou des activités ?',
+       'Avez-vous du mal à ressentir vos sensations corporelles (faim, froid, douleur, plaisir) ?',
+       'Votre corps vous semble-t-il parfois étranger, comme s\'il ne vous appartenait pas ?',
+       'Avez-vous l\'impression que le monde autour de vous est irréel ou comme derrière une vitre ?',
+       'Vous arrive-t-il d\'agir "en mode automatique" sans conscience claire de ce que vous faites ?',
+       'Avez-vous du mal à distinguer vos rêves de vos souvenirs réels ?',
+       'Ressentez-vous une déconnexion entre vos émotions et vos pensées (penser sans ressentir) ?',
+       'Vous arrive-t-il de vous retrouver quelque part sans vous souvenir du trajet pour y arriver ?'],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{max:8,title:'Présence corporelle solide',color:'#6B9E97',desc:'Bien ancré(e) dans votre corps et votre présent.'},
+          {max:18,title:'Dissociation légère',color:'#8FBDB6',desc:'Moments de décrochage ponctuels. L\'ancrage consolidera votre présence.'},
+          {max:29,title:'Dissociation modérée',color:'#C4A882',desc:'Le travail somatique est prioritaire.'},
+          {max:40,title:'Dissociation importante',color:'#D4847A',desc:'Un accompagnement spécialisé (EMDR, somatique) est fortement conseillé.'}]},
+
+  {id:'attachment',icon:'🔗',title:'Style d\'Attachement',desc:'16 questions · 4 dimensions.',max:null,multiDim:true,
+   dims:[
+     // Dimension sécure : questions positives → score élevé = bon → pol:1 sur toutes → on inverse pour que le score "anxieux" soit comparable
+     {id:'secure',  label:'Sécure',      color:'#6B9E97',pol:[],
+      qs:['Vous sentez-vous à l\'aise pour partager vos émotions avec vos proches ?',
+          'Pouvez-vous demander de l\'aide sans vous sentir diminué(e) ou honteux(se) ?',
+          'Croyez-vous fondamentalement que vous méritez d\'être aimé(e) tel(le) que vous êtes ?',
+          'Lorsque quelqu\'un s\'éloigne de vous, faites-vous confiance à votre lien sans paniquer ?']},
+     {id:'anxious', label:'Anxieux',     color:'#C4A882',pol:[],
+      qs:['Avez-vous souvent peur que vos proches vous abandonnent ou ne vous aiment plus ?',
+          'Avez-vous besoin de nombreuses rassurances pour vous sentir aimé(e) ?',
+          'L\'absence de réponse rapide à un message crée-t-elle de l\'anxiété ou des ruminations ?',
+          'Avez-vous tendance à vous effacer ou à "faire beaucoup" pour ne pas être quitté(e) ?']},
+     {id:'avoidant',label:'Évitant',     color:'#9B7EC8',pol:[],
+      qs:['Préférez-vous gérer vos difficultés seul(e) plutôt que de vous confier ?',
+          'L\'intimité émotionnelle vous met-elle mal à l\'aise ou vous donne-t-elle envie de vous éloigner ?',
+          'Avez-vous tendance à vous couper émotionnellement quand les relations deviennent intenses ?',
+          'Valorisez-vous votre indépendance au point d\'éviter de dépendre des autres ?']},
+     {id:'disorg',  label:'Désorganisé', color:'#D4847A',pol:[],
+      qs:['Les relations proches vous semblent-elles à la fois désirables et sources d\'anxiété ou de peur ?',
+          'Avez-vous tendance à alterner entre chercher la proximité et la fuir brusquement ?',
+          'Vos réactions émotionnelles dans les conflits vous semblent-elles parfois disproportionnées ?',
+          'Avez-vous du mal à faire confiance aux personnes proches même quand elles semblent bienveillantes ?']}
+   ],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{dim:'secure',  title:'Ancrage sécure dominant',     desc:'Base d\'attachement solide. Vous pouvez vous appuyer sur elle pour approfondir votre travail intérieur.'},
+          {dim:'anxious', title:'Attachement anxieux dominant', desc:'La peur de l\'abandon alimente souvent le vide. Développer la sécurité intérieure est central.'},
+          {dim:'avoidant',title:'Attachement évitant dominant', desc:'L\'évitement de l\'intimité crée un vide de connexion. L\'IFS peut aider à rencontrer la partie protectrice.'},
+          {dim:'disorg',  title:'Attachement désorganisé',      desc:'L\'ambivalence relationnelle est épuisante. Un accompagnement trauma-informed est fortement indiqué.'}]},
+
+  // ── NOUVELLE : Profil de Honte ──────────────────────────────────
+  {id:'shame-profile',icon:'🌑',title:'Profil de Honte',desc:'12 questions · distingue honte de culpabilité · racine fréquente du vide.',max:48,
+   // La honte ("je suis mauvais") vs culpabilité ("j'ai fait quelque chose de mauvais")
+   // Toutes négatives sauf Q11 ("capacité à m'autopardonner") et Q12 ("me sentir digne")
+   pol:[0,0,0,0,0,0,0,0,0,0,1,1],
+   qs:['Avez-vous souvent l\'impression d\'être fondamentalement défectueux(se) ou inadéquat(e) ?',
+       'Vous arrive-t-il de vous cacher ou de disparaître intérieurement quand vous faites une erreur ?',
+       'Ressentez-vous le besoin de paraître parfait(e) ou compétent(e) pour vous sentir digne d\'être aimé(e) ?',
+       'Avez-vous du mal à partager vos besoins ou vulnérabilités de peur d\'être jugé(e) ou rejeté(e) ?',
+       'Ressentez-vous parfois une honte intense sans pouvoir en identifier la cause précise ?',
+       'Vous êtes-vous souvent senti(e) différent(e) des autres d\'une façon que vous ne pouvez pas expliquer ?',
+       'Avez-vous tendance à vous critiquer sévèrement après une erreur, même minime ?',
+       'Avez-vous l\'impression que si les autres vous connaissaient vraiment, ils ne vous aimeraient plus ?',
+       'Évitez-vous certaines situations sociales par peur du regard ou du jugement des autres ?',
+       'Ressentez-vous de la honte ou de l\'inconfort lorsque vous recevez un compliment ou de la reconnaissance ?',
+       'Êtes-vous capable de vous accorder de la compassion après une erreur (comme vous le feriez pour un ami) ?',
+       'Ressentez-vous un sentiment profond d\'être digne d\'amour et d\'appartenance tel(le) que vous êtes ?'],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{max:12,title:'Honte peu présente',color:'#6B9E97',desc:'Votre relation à vous-même est relativement bienveillante. La honte ne semble pas dominer votre vie intérieure.'},
+          {max:24,title:'Honte modérée',color:'#8FBDB6',desc:'Des zones de honte existent mais restent gérables. Cultiver l\'auto-compassion (Kristin Neff) peut les transformer progressivement.'},
+          {max:36,title:'Honte significative',color:'#C4A882',desc:'La honte influence significativement votre rapport à vous-même et aux autres. Elle est probablement une source majeure de votre vide. L\'outil IFS (L\'Exilé) est particulièrement indiqué.'},
+          {max:48,title:'Honte profonde et chronique',color:'#D4847A',desc:'La honte est un vêtement intérieur que vous portez depuis longtemps. Elle précède souvent les traumatismes relationnels précoces. Un accompagnement thérapeutique centré sur la honte est nécessaire.'}]},
+
+  // ── NOUVELLE : Système Nerveux & Fenêtre de Tolérance ──────────
+  {id:'nervous-system',icon:'⚡',title:'Système Nerveux & Résilience',desc:'12 questions · évaluer votre état nerveux dominant et votre fenêtre de tolérance.',max:48,
+   // Questions 9-12 sont des ressources (régulation, ancrage, repos) → positives
+   pol:[0,0,0,0,0,0,0,0,1,1,1,1],
+   qs:['Passez-vous facilement en "mode survie" (hypervigilance, alerte, tension) face à des événements mineurs ?',
+       'Ressentez-vous souvent une agitation intérieure, une incapacité à vous poser, même au repos ?',
+       'Vous sentez-vous fréquemment dans un état de fatigue profonde, d\'apathie ou de paralysie face aux tâches ?',
+       'Vos réactions émotionnelles vous semblent-elles parfois disproportionnées par rapport à la situation réelle ?',
+       'Avez-vous du mal à revenir à un état de calme après une émotion intense (longtemps à "redescendre") ?',
+       'Ressentez-vous souvent un état de "gel" ou d\'engourdissement — ni dans l\'action ni dans le calme ?',
+       'Votre sommeil est-il souvent perturbé (difficultés d\'endormissement, réveils, agitation nocturne) ?',
+       'Avez-vous des réactions physiques intenses face au stress (cœur qui s\'emballe, tensions musculaires, nausées) ?',
+       'Vous est-il possible de revenir à un état de calme par des pratiques simples (respiration, marche, nature) ?',
+       'Ressentez-vous régulièrement des moments de présence, de calme et de sécurité intérieure ?',
+       'Avez-vous accès à des ressources qui vous aident à vous réguler (personnes, lieux, activités) ?',
+       'Pouvez-vous traverser une émotion difficile sans être complètement submergé(e) ou coupé(e) de vous-même ?'],
+   labels:['Jamais','Rarement','Parfois','Souvent','Toujours'],
+   bands:[{max:12,title:'Système nerveux en tension chronique',color:'#D4847A',desc:'Votre système nerveux est en état d\'alerte quasi-permanent. Les pratiques d\'ancrage et de régulation (cohérence cardiaque, grounding) sont prioritaires avant tout autre travail intérieur.'},
+          {max:24,title:'Fenêtre de tolérance étroite',color:'#C4A882',desc:'Vous avez des ressources mais votre fenêtre de tolérance est réduite. Des pratiques régulières de régulation peuvent l\'élargir progressivement.'},
+          {max:36,title:'Régulation en développement',color:'#8FBDB6',desc:'Votre capacité de régulation se développe. Vous avez accès à des ressources mais des pics de dérégulation persistent.'},
+          {max:48,title:'Bonne capacité de régulation',color:'#6B9E97',desc:'Votre système nerveux dispose d\'une bonne élasticité. Votre fenêtre de tolérance est relativement large.'}]}
+],getById(id){return this.list.find(a=>a.id===id);}};
+
+const TD={
+  tools:[
+    {id:'breathing',     icon:'🫁',title:'Cohérence Cardiaque',     desc:'Régulation du système nerveux.'},
+    {id:'wheel',         icon:'🎨',title:'Roue des Émotions',        desc:'Explorer vos états sur 3 niveaux.'},
+    {id:'grounding',     icon:'🌍',title:'Ancrage 5-4-3-2-1',        desc:'Retour au moment présent.'},
+    {id:'eft',           icon:'✋',title:'EFT Tapping',               desc:'Libérer des émotions figées.'},
+    {id:'empathy',       icon:'🛡️',title:'Filtre Empathique',         desc:'Vos ressentis : internes ou absorbés ?'},
+    {id:'ifs',           icon:'🪞',title:'Parties Intérieures',       desc:'Dialoguer avec vos parties (IFS).'},
+    {id:'meditation',    icon:'🌿',title:'Méditation Guidée',          desc:'6 méditations thématiques avec timer.'},
+    {id:'unsent',        icon:'✉️',title:'Lettre Non Envoyée',         desc:'Écrire au vide, à soi, à l\'autre.'},
+    {id:'bodyscan',      icon:'🫀',title:'Scan Corporel',              desc:'Explorer les zones du corps.'},
+    {id:'shadow',        icon:'🌑',title:'Travail sur l\'Ombre',       desc:'Explorer les projections (Jung).'},
+    {id:'mindmap',       icon:'🕸️',title:'Carte Mentale',              desc:'Visualiser vos émotions sur un canvas.'},
+    {id:'gratitude',     icon:'✨',title:'Gratitude Micro-Moments',    desc:'Reconnecter avec le vivant.'},
+    {id:'void-dialogue', icon:'🌒',title:'Dialogue avec le Vide',      desc:'Écriture guidée en deux voix : vous et votre vide.'},
+    {id:'timeline',      icon:'📅',title:'Ligne de Vie Émotionnelle',  desc:'Cartographier vos moments clés sur un axe chronologique.'},
+    {id:'ifs-ai',        icon:'🤖',title:'Facilitateur IFS (IA)',      desc:'Un accompagnateur IA guide votre dialogue avec vos parties.'},
+  ],
+  eft:[
+    {name:'Point de karaté',loc:'Tranche de la main',phrase:'Même si je ressens ce vide, je m\'accepte profondément.',taps:8},
+    {name:'Haut de la tête',loc:'Sommet du crâne',phrase:'Ce vide que je ressens…',taps:7},
+    {name:'Arcade sourcilière',loc:'Début du sourcil',phrase:'Ce sentiment de ne rien ressentir…',taps:7},
+    {name:'Coin de l\'œil',loc:'Tempe extérieure',phrase:'Cet engourdissement à l\'intérieur…',taps:7},
+    {name:'Sous l\'œil',loc:'Pommette',phrase:'Cette fatigue de ne pas ressentir…',taps:7},
+    {name:'Sous le nez',loc:'Philtrum',phrase:'Cette coupure de moi-même…',taps:7},
+    {name:'Menton',loc:'Pli du menton',phrase:'Je n\'ai pas à remplir ce vide maintenant…',taps:7},
+    {name:'Clavicule',loc:'Jonction clavicule/sternum',phrase:'Je peux simplement être avec ce vide…',taps:7},
+    {name:'Sous l\'aisselle',loc:'Côté du thorax',phrase:'Je m\'autorise à sentir à nouveau…',taps:7},
+    {name:'Poignet',loc:'Face intérieure du poignet',phrase:'Je suis présent(e), en sécurité, moi.',taps:7},
+  ],
+  grounding:[
+    {n:5,sense:'VUE',    prompt:'Nommez 5 choses que vous voyez autour de vous.'},
+    {n:4,sense:'OUÏE',   prompt:'Nommez 4 sons que vous entendez.'},
+    {n:3,sense:'TOUCHER',prompt:'Nommez 3 textures que vous sentez contre votre corps.'},
+    {n:2,sense:'ODORAT', prompt:'Nommez 2 odeurs présentes.'},
+    {n:1,sense:'GOÛT',   prompt:'Nommez 1 goût présent ou récent.'},
+  ],
+  wheel:[
+    {id:'joy',   fr:'Joie',     color:'#F5C842',type:'emotion',angle:0,   sub:[{fr:'Sérénité',l3:[{fr:'Calme'},{fr:'Paix'},{fr:'Légèreté'}]},{fr:'Enthousiasme',l3:[{fr:'Élan'},{fr:'Ardeur'},{fr:'Vivacité'}]},{fr:'Gratitude',l3:[{fr:'Reconnaissance'},{fr:'Émerveillement'},{fr:'Touché(e)'}]},{fr:'Espoir',l3:[{fr:'Anticipation'},{fr:'Confiance'},{fr:'Désir'}]}]},
+    {id:'trust', fr:'Confiance',color:'#7EC8A0',type:'sentiment',angle:51, sub:[{fr:'Acceptation',l3:[{fr:'Ouverture'},{fr:'Réceptivité'},{fr:'Consentement'}]},{fr:'Sécurité',l3:[{fr:'Ancrage'},{fr:'Stabilité'},{fr:'Enracinement'}]},{fr:'Appartenance',l3:[{fr:'Lien'},{fr:'Solidarité'},{fr:'Communauté'}]}]},
+    {id:'fear',  fr:'Peur',     color:'#9B7EC8',type:'emotion',angle:103, sub:[{fr:'Appréhension',l3:[{fr:'Nervosité'},{fr:'Inquiétude'},{fr:'Pressentiment'}]},{fr:'Anxiété',l3:[{fr:'Agitation'},{fr:'Rumination'},{fr:'Hypervigilance'}]},{fr:'Terreur',l3:[{fr:'Effroi'},{fr:'Panique'},{fr:'Horreur'}]}]},
+    {id:'surpr', fr:'Surprise', color:'#F0A050',type:'emotion',angle:154, sub:[{fr:'Étonnement',l3:[{fr:'Stupeur'},{fr:'Saisissement'},{fr:'Émerveillement'}]},{fr:'Confusion',l3:[{fr:'Perplexité'},{fr:'Désorientation'},{fr:'Incompréhension'}]}]},
+    {id:'sadn',  fr:'Tristesse',color:'#7BA7C4',type:'emotion',angle:206, sub:[{fr:'Mélancolie',l3:[{fr:'Spleen'},{fr:'Nostalgie'},{fr:'Langueur'}]},{fr:'Deuil',l3:[{fr:'Perte'},{fr:'Manque'},{fr:'Détresse'}]},{fr:'Solitude',l3:[{fr:'Isolement'},{fr:'Délaissement'},{fr:'Abandon'}]},{fr:'Vide',l3:[{fr:'Engourdissement'},{fr:'Absence'},{fr:'Néant'}]}]},
+    {id:'disg',  fr:'Dégoût',   color:'#8DAE72',type:'emotion',angle:257, sub:[{fr:'Honte',l3:[{fr:'Humiliation'},{fr:'Indignité'},{fr:'Gêne'}]},{fr:'Culpabilité',l3:[{fr:'Remords'},{fr:'Regret'},{fr:'Auto-critique'}]},{fr:'Ennui',l3:[{fr:'Apathie'},{fr:'Lassitude'},{fr:'Indifférence'}]}]},
+    {id:'anger', fr:'Colère',   color:'#D4706A',type:'emotion',angle:309, sub:[{fr:'Frustration',l3:[{fr:'Contrariété'},{fr:'Déception'},{fr:'Exaspération'}]},{fr:'Irritation',l3:[{fr:'Agacement'},{fr:'Impatience'},{fr:'Tension'}]},{fr:'Rage',l3:[{fr:'Fureur'},{fr:'Indignation'},{fr:'Révolte'}]},{fr:'Ressentiment',l3:[{fr:'Amertume'},{fr:'Rancœur'},{fr:'Rancoeur'}]}]},
+  ],
+  ifs:[
+    {id:'manager',   icon:'🧠',fr:'Le Manager',    desc:'Planifie et contrôle pour éviter la douleur.',q:'Qu\'essaies-tu de protéger en moi ?'},
+    {id:'firefighter',icon:'🔥',fr:'Le Pompier',   desc:'Réagit impulsément quand la douleur éclate.',q:'Que cherches-tu à éteindre ?'},
+    {id:'exile',     icon:'🌑',fr:'L\'Exilé',      desc:'La partie blessée qui porte la douleur.',q:'Qu\'as-tu besoin que je sache de toi ?'},
+    {id:'self',      icon:'☀️',fr:'Le Soi / Self', desc:'La présence consciente au centre — ne peut être blessée.',q:'Comment puis-je être présent(e) pour mes parties ?'},
+    {id:'critic',    icon:'⚖️',fr:'Le Critique',   desc:'La voix qui juge et exige la perfection.',q:'Quelle est ta peur si tu t\'arrêtes de me critiquer ?'},
+    {id:'child',     icon:'🧒',fr:'L\'Enfant',     desc:'L\'aspect spontané ou vulnérable souvent réprimé.',q:'De quoi as-tu besoin que tu n\'as pas encore eu ?'},
+  ],
+  meds:[
+    {id:'void',title:'Habiter le Vide',dur:8,intro:'Installez-vous. Fermez les yeux ou posez un regard doux.',steps:[
+      {text:'Portez votre attention sur votre respiration. Sans la modifier. Simplement observer.',t:30},
+      {text:'Portez votre attention vers votre espace intérieur. Y a-t-il une sensation de vide ? Où se loge-t-elle dans votre corps ?',t:45},
+      {text:'Sans chercher à combler ce vide, approchez-vous de lui avec curiosité. Comme si vous posiez doucement la main sur la porte de cet espace.',t:45},
+      {text:'Demandez à ce vide : "Qu\'est-ce que tu m\'apportes que je n\'ai pas encore reconnu ?" Laissez ce qui vient, venir.',t:60},
+      {text:'Peut-être rien ne vient. C\'est juste. Le vide a aussi le droit d\'être simplement vide.',t:45},
+      {text:'Trois respirations profondes. Revenez doucement au présent.',t:30}]},
+    {id:'metta',title:'Bienveillance Aimante',dur:7,intro:'Cultivez la chaleur affective — d\'abord envers vous-même.',steps:[
+      {text:'Respirez. Posez une main sur votre cœur.',t:20},
+      {text:'"Puissé-je être heureux(se). Puissé-je être en paix. Puissé-je être libre de souffrance."',t:60},
+      {text:'Pensez à quelqu\'un que vous aimez facilement. Envoyez-lui ces mêmes vœux.',t:45},
+      {text:'Quelqu\'un de neutre. Mêmes vœux, sans attente.',t:45},
+      {text:'Quelqu\'un avec qui vous avez une relation difficile. Ces vœux — pour vous libérer, non pour excuser.',t:45},
+      {text:'"Puissent tous les êtres être heureux. Puissent tous les êtres être en paix."',t:30}]},
+    {id:'presence',title:'Retour au Corps',dur:5,intro:'Retour à la présence corporelle — idéal après dissociation.',steps:[
+      {text:'Sentez le poids de votre corps. Le contact de votre siège. Vos pieds sur le sol.',t:30},
+      {text:'Respirez en portant votre attention dans votre ventre.',t:30},
+      {text:'Parcourez de bas en haut : pieds, jambes, ventre, poitrine, épaules, bras, mains, cou, visage.',t:60},
+      {text:'Une zone attire-t-elle votre attention ? Restez-y avec douceur. Dites-lui que vous êtes là.',t:45},
+      {text:'Trois respirations conscientes. Revenez à la pièce.',t:25}]},
+    // ── NOUVELLES MÉDITATIONS ──────────────────────────────────────
+    {id:'empath-cleanse',title:'Nettoyage Empathique',dur:6,intro:'Pour les êtres ultra-empathiques. Permettez-vous de rendre ce qui ne vous appartient pas.',steps:[
+      {text:'Installez-vous confortablement, pieds au sol. Prenez trois respirations profondes.',t:20},
+      {text:'Portez votre attention sur votre espace intérieur. Y a-t-il des émotions ou des états qui semblent étrangers, qui ne sont pas à leur place en vous ?',t:40},
+      {text:'Imaginez ces énergies comme une lumière colorée différente de la vôtre. Sans jugement, reconnaissez leur présence : "Je vois ce qui n\'est pas mien."',t:45},
+      {text:'Sur votre expiration, imaginez lentement rendre ces énergies à leur source — avec bienveillance, non avec rejet. Vous ne les chassez pas, vous les libérez.',t:50},
+      {text:'Maintenant, portez attention à ce qui reste — à votre propre couleur, votre propre texture intérieure. C\'est vous. Prenez le temps de la reconnaître.',t:50},
+      {text:'Imaginez une lumière douce qui vous entoure — non pour vous couper du monde, mais pour vous rappeler où vous finissez et où l\'autre commence.',t:35}]},
+    {id:'grief-med',title:'Pour le Deuil',dur:8,intro:'Honorer ce qui a été perdu. Cette méditation est un espace pour accueillir, non pour résoudre.',steps:[
+      {text:'Installez-vous. Posez une main sur votre cœur. Autorisez-vous à simplement être là, avec ce que vous portez.',t:25},
+      {text:'Pensez à ce que vous avez perdu — un être, une relation, une version de vous-même, un rêve. Ne cherchez pas à l\'analyser. Laissez-le simplement être présent.',t:50},
+      {text:'Remarquez ce que votre corps ressent à cet instant. Serrement, chaleur, vide, larmes — quelle que soit la sensation, elle a le droit d\'être là.',t:45},
+      {text:'Dites intérieurement à ce que vous avez perdu : "Tu as compté. Tu comptes encore. Je ne t\'oublie pas."',t:50},
+      {text:'Le deuil n\'est pas la fin de l\'amour. C\'est l\'amour qui cherche un nouveau chemin. Laissez-le couler là où il le peut.',t:45},
+      {text:'Prenez le temps d\'honorer votre courage. Traverser une perte et rester présent(e) à la vie — c\'est un acte de grande bravoure.',t:30},
+      {text:'Trois respirations lentes. Quand vous vous sentez prêt(e), revenez doucement à l\'espace où vous vous trouvez.',t:35}]},
+    {id:'shame-compassion',title:'Pour la Honte — Auto-compassion',dur:7,intro:'Un espace pour rencontrer la partie de vous qui se cache. Approchez avec une douceur absolue.',steps:[
+      {text:'Respirez. Posez une main sur votre cœur ou votre joue. Ce contact physique est déjà un acte de bienveillance envers vous-même.',t:25},
+      {text:'Pensez à quelque chose qui vous a récemment causé de la honte — grande ou petite. Ne cherchez pas à la justifier ni à la minimiser. Laissez-la être là.',t:45},
+      {text:'Remarquez où vous sentez la honte dans votre corps. Elle a souvent un endroit — poitrine, ventre, gorge. Portez votre attention là, avec douceur.',t:40},
+      {text:'Dites-vous intérieurement : "Ce n\'est pas juste que je me sente ainsi. Souffrir de honte est une expérience universellement humaine. Je ne suis pas seul(e)."',t:55},
+      {text:'Demandez à la partie de vous qui porte cette honte : "De quoi as-tu besoin ?" Ne forcez pas de réponse. Écoutez simplement ce qui vient.',t:50},
+      {text:'"Puissé-je m\'accorder la même compassion que j\'accorderais à un ami qui souffre. Puissé-je m\'accorder la douceur que je mérite."',t:45},
+      {text:'La honte survit dans le silence. Vous venez de lui accorder une présence consciente — c\'est déjà une guérison partielle.',t:30}]}
+  ],
+  bodyZones:[
+    {id:'head',    label:'Tête',          meaning:'Ruminations, pensées envahissantes. L\'espace mental qui déborde.',tools:['breathing','meditation'],x:95,y:28,rx:22,ry:20},
+    {id:'throat',  label:'Gorge',         meaning:'Parole réprimée, mots ravalés, pleurs contenus.',tools:['unsent','eft'],x:95,y:62,rx:12,ry:10},
+    {id:'chest',   label:'Cœur/Poitrine', meaning:'Chagrins non pleurés, pertes, amour retenu. Deuil porté dans le corps.',tools:['meditation','eft'],x:95,y:92,rx:26,ry:18},
+    {id:'solar',   label:'Plexus solaire',meaning:'Identité, peur existentielle. Les nœuds à l\'estomac sont des peurs non reconnues.',tools:['breathing','grounding'],x:95,y:118,rx:20,ry:14},
+    {id:'belly',   label:'Ventre',        meaning:'Sécurité fondamentale, intuition viscérale, traumatismes profonds.',tools:['grounding','breathing'],x:95,y:144,rx:22,ry:16},
+    {id:'shoulders',label:'Épaules',      meaning:'Poids porté pour les autres, hypervigilance traumatique.',tools:['eft','grounding'],x:95,y:76,rx:42,ry:10},
+    {id:'jaw',     label:'Mâchoires',     meaning:'Colère muette, ce qu\'on retient de crier, résistance.',tools:['eft'],x:95,y:50,rx:16,ry:8},
+    {id:'legs',    label:'Jambes',        meaning:'Ancrage, avancement. Engourdissement lié à la peur d\'avancer.',tools:['grounding'],x:95,y:195,rx:18,ry:28},
+  ],
+  shadow:[
+    {title:'Identifier la réaction',hint:'Pensez à une réaction disproportionnée récente — irritation intense, admiration excessive.',q:'La réaction, envers qui, dans quelle situation ?'},
+    {title:'Nommer la projection',hint:'Ce que vous détestez ou admirez intensément chez l\'autre est souvent le miroir d\'une part de vous.',q:'Qu\'est-ce que vous projetez sur cet(te) autre ?'},
+    {title:'Retrouver la part en soi',hint:'Cette qualité ou ce défaut — existe-t-il aussi en vous, à l\'état refoulé ? Quand s\'est-il développé ?',q:'Comment cette part existe-t-elle en vous ?'},
+    {title:'Intégrer avec compassion',hint:'L\'intégration n\'est pas l\'approbation. C\'est reconnaître que cette part fait partie de vous.',q:'Comment pourriez-vous l\'accueillir avec bienveillance ?'}
+  ],
+  checkinQs:[
+    'Comment je me sens dans mon corps en ce moment (0=absent, 4=très présent) ?',
+    'Mon niveau de vide ou d\'engourdissement aujourd\'hui (0=aucun, 4=intense) ?',
+    'Ce que je ressens vient principalement de moi (0) ou de l\'extérieur (4) ?',
+    'Mon niveau d\'anxiété ou de tension (0=calme, 4=très tendu) ?',
+    'Ma capacité à ressentir quelque chose (0=engourdissement, 4=vivant et présent) ?'
+  ],
+  letterTo:[{id:'person',fr:'Une personne'},{id:'self',fr:'Une partie de moi'},{id:'void',fr:'Mon vide lui-même'},{id:'past',fr:'Mon enfant intérieur'},{id:'emotion',fr:'Une émotion'},{id:'other',fr:'Autre…'}],
+  themeSwatches:[
+    {id:'light',label:'Clair',  c:['#F7F4EF','#6B9E97','#C4A882']},
+    {id:'dark', label:'Nuit',   c:['#1C1C28','#7BBFB8','#C4A882']},
+    {id:'terre',label:'Terre',  c:['#F2EBE0','#8B6F47','#9E8060']},
+    {id:'cosmos',label:'Cosmos',c:['#0D0D1A','#7B9EC8','#8A6E9E']},
+    {id:'foret',label:'Forêt',  c:['#EFF4EC','#5C8B5A','#7A9E6A']},
+  ]
+};
+
+const Programs={list:[
+  {id:'pe',icon:'🌊',title:'Ancrage Empathique',dur:7,desc:'Pour les êtres ultra-empathiques : distinguer, protéger, retrouver sa signature.',days:[
+    {t:'Se situer',art:'empath-void',tool:'empathy',j:'Comment est-ce que je sais si une émotion m\'appartient vraiment ?'},
+    {t:'Comprendre le corps',art:'body-memory',tool:'grounding',j:'Quelles zones de mon corps sont souvent tendues ?'},
+    {t:'Respirer',art:null,tool:'breathing',j:'Avant/après la cohérence cardiaque : qu\'est-ce qui change ?'},
+    {t:'Distinguer',art:'emotions-feelings',tool:'wheel',j:'Ai-je absorbé des émotions aujourd\'hui ? Comment je le sais ?'},
+    {t:'Libérer',art:null,tool:'eft',j:'Quelle émotion absorbée ai-je le plus de mal à "rendre" ?'},
+    {t:'Écrire',art:null,tool:'unsent',j:'Lettre à l\'émotion absorbée que je porte depuis le plus longtemps.'},
+    {t:'Intégrer',art:'void-intro',tool:'ifs',j:'Quelle partie s\'est éteinte pour se protéger ? De quoi avait-elle besoin ?'}]},
+  {id:'pb',icon:'🫀',title:'Reconnecter Corps & Émotions',dur:7,desc:'Retrouver le fil entre sensations corporelles et émotions.',days:[
+    {t:'Écouter le corps',art:'body-memory',tool:'bodyscan',j:'Qu\'est-ce que mon corps essaie de me dire ?'},
+    {t:'Respirer',art:null,tool:'breathing',j:'Où dans mon corps la respiration se bloque-t-elle ?'},
+    {t:'Ancrer',art:null,tool:'grounding',j:'Quand je suis pleinement dans mon corps, que je remarque-je ?'},
+    {t:'Nommer',art:'emotions-feelings',tool:'wheel',j:'Quelle émotion primaire ai-je ressenti sans la nommer ?'},
+    {t:'Dialoguer',art:null,tool:'ifs',j:'Quelle partie garde le silence sur mes émotions ?'},
+    {t:'Méditer',art:null,tool:'meditation',j:'Qu\'est-ce qui remonte quand je m\'autorise le silence ?'},
+    {t:'Traverser',art:'grief-void',tool:'unsent',j:'Quel deuil est encore actif en moi et attend d\'être honoré ?'}]},
+  {id:'pv',icon:'🕳️',title:'Traverser le Vide',dur:7,desc:'Exploration directe du vide — non pour le fuir, mais pour l\'habiter.',days:[
+    {t:'Faire connaissance',art:'void-intro',tool:'wheel',j:'Si mon vide avait une couleur, une forme, un son — lequel ?'},
+    {t:'Le corps du vide',art:'body-memory',tool:'bodyscan',j:'Où dans mon corps le vide "loge"-t-il ?'},
+    {t:'L\'émotion cachée',art:null,tool:'eft',j:'Quelle émotion intense se cache derrière mon vide ?'},
+    {t:'Le sens',art:'spiritual-void',tool:'meditation',j:'Mon vide m\'appelle-t-il vers quelque chose ?'},
+    {t:'Les parts',art:null,tool:'ifs',j:'Quelle partie maintient le vide ? Quelle est son intention positive ?'},
+    {t:'La lettre',art:'grief-void',tool:'unsent',j:'Lettre à ce que j\'ai perdu et que je porte en vide.'},
+    {t:'L\'avenir',art:'self-healing',tool:'breathing',j:'Quelle première chose peut combler le vide par présence (non distraction) ?'}]}
+],getById(id){return this.list.find(p=>p.id===id);}};
+
+// ── VIEW ──────────────────────────────────────────────────────────
+const V={
+  bc(parts){if(!parts?.length)return'';return`<div class="bc">${parts.map((p,i)=>i<parts.length-1?`<a data-bc="${p.page}">${p.label}</a><span class="bcs">›</span>`:`<span>${p.label}</span>`).join('')}</div>`;},
+  svgChart(results,max,color='#6B9E97'){
+    if(!results||results.length<2)return`<p class="tm tf tc mt8">2 évaluations minimum pour la progression.</p>`;
+    const rev=[...results].reverse(),W=440,H=80,pd=12;
+    const xs=rev.map((_,i)=>pd+i*(W-2*pd)/(rev.length-1));
+    const ys=rev.map(r=>H-pd-(r.score/max)*(H-2*pd));
+    const path='M '+xs.map((x,i)=>`${x},${ys[i]}`).join(' L ');
+    const area=`M ${xs[0]},${H} L ${xs.map((x,i)=>`${x},${ys[i]}`).join(' L ')} L ${xs[xs.length-1]},${H} Z`;
+    const dots=xs.map((x,i)=>`<circle cx="${x}" cy="${ys[i]}" r="4" fill="${color}" stroke="var(--bgs)" stroke-width="2"><title>${rev[i].score}/${max} — ${new Date(rev[i].date).toLocaleDateString('fr-FR')}</title></circle>`).join('');
+    const uid=color.replace('#','');
+    return`<div class="chart-wrap mt16"><svg viewBox="0 ${-pd} ${W} ${H+20}" height="${H+24}" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="cg${uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".18"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${area}" fill="url(#cg${uid})"/><path d="${path}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>${dots}</svg></div>`;
+  },
+  renderOB(step,ans){
+    const qs=[
+      {q:"Qu'est-ce qui vous amène ici ?",ch:['Je me sens vide ou engourdi(e)','Je pense être ultra-empathique','Je cherche à mieux me connaître','Je traverse une période difficile','Curiosité / exploration']},
+      {q:"Comment décririez-vous votre rapport aux émotions ?",ch:['Je ne ressens presque rien','Je ressens trop, tout le temps','Je ne sais pas si c\'est moi ou les autres','Je ressens mais ne sais pas nommer','Mes émotions sont floues, lointaines']},
+      {q:"Avez-vous déjà une pratique intérieure ?",ch:['Non, je commence ici','Méditation ou pleine conscience','Thérapie ou accompagnement','Lecture / travail personnel','Plusieurs pratiques']}
+    ];const q=qs[step];
+    return`<div class="ob-wrap ani"><div class="ob-step"><div style="font-size:2.5rem;margin-bottom:18px">${['🕳️','💭','🌱'][step]}</div><div style="font-size:.74rem;color:var(--txm);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Étape ${step+1} / 3</div><div class="ob-q">${q.q}</div><div class="ob-choices">${q.ch.map(c=>`<div class="ob-c${ans[step]===c?' sel':''}" data-ob="${step}" data-val="${c}">${c}</div>`).join('')}</div>${ans[step]?`<div class="mt24"><button class="btn bp blg" data-ob-next="${step}">${step<2?'Continuer →':'Commencer →'}</button></div>`:''}</div></div>`;
+  },
+  renderDB(){
+    const d=Model.data,tip=I18n.tip(),intel=Intel.sugTool(),art=KB.getById(Intel.sugArt()),cross=Intel.cross();
+    const lastV=(d.assessments['void-22']||[])[0],recent=d.journal.slice(0,3),ci=(d.checkins||[])[0];
+    const _now=Date.now(),_7d=7*86400000,_30d=30*86400000;
+    const _7dEntry=d.journal.find(e=>Math.abs(_now-new Date(e.date).getTime()-_7d)<86400000*1.5);
+    const _30dEntry=d.journal.find(e=>Math.abs(_now-new Date(e.date).getTime()-_30d)<86400000*1.5);
+    const today=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    return`<div class="ani">
+<div class="ph"><div class="tx tm mb8">${today}</div><h1>Bienvenue dans votre espace</h1><div class="psub">Explorez, comprenez, apprivoisez votre vide émotionnel.</div></div>
+${tip?`<div class="cl clw mb24"><p><em>✦ ${tip}</em></p></div>`:''}
+${d.intention?`<div class="cl cli mb16 fb"><div>🎯 <strong>Intention :</strong> ${d.intention}</div><button class="btn bg bsm no-print" id="bedit-int">Modifier</button></div>`:`<button class="btn bs bsm mb16 no-print" id="bedit-int">🎯 Définir une intention du jour</button>`}
+<div class="sg">
+  <div class="sc"><div class="sv">${d.stats.sessions||0}</div><div class="sl">Sessions</div></div>
+  <div class="sc"><div class="sv">${d.journal.length}</div><div class="sl">Journal</div></div>
+  <div class="sc"><div class="sv">${Object.values(d.assessments).flat().length}</div><div class="sl">Évals</div></div>
+  <div class="sc"><div class="sv">${d.stats.toolsUsed||0}</div><div class="sl">Outils</div></div>
+</div>
+${intel?`<div class="card mb24"><div class="fb mb12"><h3 style="margin-bottom:0">✦ Suggestion du jour</h3><span class="badge bsoft">Contextuelle</span></div><p class="ts tf mb12">${intel.reason}</p><button class="btn bp bsm no-print" data-tool="${intel.id}">${TD.tools.find(t=>t.id===intel.id)?.title||''} →</button></div>`:''}
+${cross?`<div class="cl cli mb24"><strong>Analyse croisée</strong>${cross.map(l=>`<p class="mt8 tf">${l.i} ${l.t}</p>`).join('')}</div>`:''}
+${ci?`<div class="cl clg mb16 fb"><span class="tf">Dernier check-in : <strong>${ci.score}/20</strong> · ${new Date(ci.date).toLocaleDateString('fr-FR')}</span><button class="btn bg bsm no-print" data-page="checkin">Nouveau →</button></div>`:`<div class="cl clw mb16 fb"><span class="tf ts">⚡ Le check-in quotidien prend 2 minutes.</span><button class="btn bp bsm no-print" data-page="checkin">Commencer →</button></div>`}
+${(()=>{const w=Intel.weeklyChallenge();return w?`<div class="cl clpur mb16"><p class="tf"><strong>🌱 Défi de la semaine :</strong> ${w}</p></div>`:'';})()}
+<h2>Accès rapide</h2>
+<div class="cg mb24">
+  <div class="card cc" data-goto="knowledge"><span class="ci">📚</span><div class="ct">Comprendre</div><div class="cd">7 articles fondamentaux.</div></div>
+  <div class="card cc" data-goto="assessments"><span class="ci">🌡️</span><div class="ct">Me situer</div><div class="cd">4 évaluations · analyse croisée.</div></div>
+  <div class="card cc" data-goto="tools"><span class="ci">🛠️</span><div class="ct">Pratiquer</div><div class="cd">12 outils interactifs.</div></div>
+  <div class="card cc" data-goto="programs"><span class="ci">🗓️</span><div class="ct">Parcours</div><div class="cd">3 programmes de 7 jours.</div></div>
+</div>
+${lastV?`<div class="sep"></div><h2>Dernière évaluation — Vide</h2><div class="card fc g12 mb16"><div class="rc" style="width:64px;height:64px;border-width:3px;margin:0;flex-shrink:0"><div class="rsn" style="font-size:1.3rem">${lastV.score}</div><div class="rsx">/88</div></div><div><div class="tf tm">${new Date(lastV.date).toLocaleDateString('fr-FR')}</div><div class="tf ts">${lastV.bandTitle||''}</div></div></div>`:''}
+${art?`<div class="sep"></div><h2>Article recommandé</h2><div class="card cc mb16" data-article="${art.id}"><span class="ci">${art.icon}</span><div class="ct">${art.title}</div><div class="cd">${art.desc}</div></div>`:''}
+<div class="sep"></div><div class="fb mb8"><h2 style="margin-bottom:0">Journal récent</h2><button class="btn bg bsm no-print" data-goto="journal">Tout voir →</button></div>
+${recent.length===0?`<p class="tm tf">${I18n.empty()}</p>`:recent.map(e=>V.jCard(e,true)).join('')}
+${_7dEntry?`<div class="cl clw mt12"><p class="tx tm">📅 <strong>Il y a 7 jours :</strong> <em>"${(_7dEntry.text||_7dEntry.emotion||'').slice(0,80)}…"</em></p></div>`:''}
+${_30dEntry?`<div class="cl cli mt8"><p class="tx tm">📅 <strong>Il y a 30 jours :</strong> <em>"${(_30dEntry.text||_30dEntry.emotion||'').slice(0,80)}…"</em></p></div>`:''}
+</div>`;
+  },
+  renderKB(artId){
+    if(artId){const art=KB.getById(artId);if(!art)return'';
+      return`<div class="ani">${V.bc([{label:'Comprendre',page:'knowledge'},{label:art.title}])}<div class="ph fb"><div><h1>${art.title}</h1><div class="psub">${art.rt} min · ${art.tags.map(t=>`<span class="kbtag">${t}</span>`).join('')}</div></div><button class="bmk no-print" data-bm="${artId}">${Model.isBM(artId)?'🔖':'🏷️'}</button></div><div class="kb-art">${art.html}</div><div class="sep"></div><div class="fc g8 no-print"><button class="btn bs" data-goto="knowledge">← Retour</button></div></div>`;}
+    const bm=Model.data.bookmarks||[];
+    return`<div class="ani"><div class="ph"><h1>📚 Comprendre</h1><div class="psub">7 articles · marque-pages.</div></div>${bm.length?`<div class="cl clg mb16"><strong>🔖 Favoris :</strong><br>${bm.map(id=>{const a=KB.getById(id);return a?`<button class="sug" data-article="${id}">${a.icon} ${a.title}</button>`:''}).join('')}</div>`:''}<div class="cg">${KB.arts.map(a=>`<div class="card cc" data-article="${a.id}"><div class="fb mb6"><span style="font-size:1.5rem">${a.icon}</span><button class="bmk no-print" data-bm="${a.id}">${Model.isBM(a.id)?'🔖':'🏷️'}</button></div><div style="margin-bottom:7px">${a.tags.map(t=>`<span class="kbtag">${t}</span>`).join('')} <span class="kbtag">⏱ ${a.rt} min</span></div><div class="ct">${a.title}</div><div class="cd">${a.desc}</div></div>`).join('')}</div></div>`;
+  },
+  renderAssessments(){
+    return`<div class="ani"><div class="ph"><h1>🌡️ Évaluations</h1><div class="psub">4 évaluations · progression graphique · analyse croisée.</div></div>
+${Assessments.list.map(a=>{const res=Model.data.assessments[a.id]||[];const last=res[0];const color=last&&!a.multiDim?(a.bands||[]).find(b=>last.score<=b.max)?.color||'var(--p)':'var(--p)';return`<div class="card mb16"><div class="fb mb12"><div><div class="ct">${a.icon} ${a.title}</div><div class="cd mt6">${a.desc}</div></div>${last&&!a.multiDim?`<div class="tc" style="min-width:60px"><div style="font-family:var(--fd);font-size:1.5rem;color:${color}">${last.score}</div><div class="tx tm">/${a.max}</div></div>`:last&&a.multiDim?`<span class="badge bsoft">${last.bandTitle||'✓'}</span>`:''}</div>${res.length>=2&&!a.multiDim?V.svgChart(res,a.max,color):''}<div class="fc g8 mt12 no-print"><button class="btn bp bsm" data-quiz="${a.id}">${res.length?'Refaire':'Commencer'}</button>${res.length?`<button class="btn bs bsm" data-hist="${a.id}">Historique</button>`:''}</div></div>`}).join('')}
+${Object.keys(Model.data.assessments).length>=2?`<div class="sep"></div><div class="card" style="border-color:var(--p)"><div class="fb mb14"><h2 style="margin-bottom:0">Analyse croisée</h2><span class="badge bprim">Profil</span></div>${V.renderCross()}</div>`:''}
+</div>`;
+  },
+  renderCross(){const c=Intel.cross();if(!c)return`<p class="tm tf">Complétez au moins 2 évaluations.</p>`;return c.map(l=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)"><span style="font-size:1.2rem;min-width:28px">${l.i}</span><span class="tf ts">${l.t}</span></div>`).join('');},
+  renderQuiz(id,step,ans){
+    const a=Assessments.getById(id);if(!a)return'';
+    if(a.multiDim)return V.renderMDQuiz(a,step,ans);
+    const total=a.qs.length,q=a.qs[step],pct=Math.round((step/total)*100);
+    // Adapter les labels selon la polarité de la question
+    const isPos=(a.pol&&a.pol[step]===1);
+    const labels=isPos
+      ? ['Jamais / Très peu','Rarement','Parfois','Souvent','Toujours / Beaucoup']
+      : a.labels;
+    const polarNote=isPos?`<div class="tx tm mt4" style="font-style:italic">✦ Question positive — une réponse élevée est un signe de ressource.</div>`:'';
+    return`<div class="ani">${V.bc([{label:'Évaluations',page:'assessments'},{label:a.title}])}<div class="ph"><h1>${a.icon} ${a.title}</h1><div class="psub">Question ${step+1} / ${total}</div></div><div class="pb mb24"><div class="pf" style="width:${pct}%"></div></div><div class="qq"><div class="qqn">Question ${step+1} / ${total}</div><div class="qqt">${q}</div>${polarNote}<div class="so">${[0,1,2,3,4].map(v=>`<div class="sopt${ans[step]===v?' sel':''}" data-val="${v}">${v}</div>`).join('')}</div><div class="slbls"><span>${labels[0]}</span><span>${labels[4]}</span></div></div><div class="fc g8 mt16">${step>0?`<button class="btn bs" data-qprev>← Précédent</button>`:''}<div style="flex:1"></div>${ans[step]!==undefined?(step<total-1?`<button class="btn bp" data-qnext>Suivant →</button>`:`<button class="btn ba blg" data-qfinish>Voir mes résultats ✓</button>`):''}  </div></div>`;
+  },
+  renderMDQuiz(a,step,ans){
+    const allQ=a.dims.flatMap((d,di)=>d.qs.map((q,qi)=>({q,dim:d,gi:di*4+qi})));
+    const total=allQ.length,q=allQ[step],pct=Math.round((step/total)*100),labels=a.labels;
+    return`<div class="ani">${V.bc([{label:'Évaluations',page:'assessments'},{label:a.title}])}<div class="ph"><h1>${a.icon} ${a.title}</h1><div class="psub">Question ${step+1} / ${total}</div></div><div class="pb mb24"><div class="pf" style="width:${pct}%"></div></div><div class="mb8"><span class="badge" style="background:${q.dim.color}22;color:${q.dim.color};border:1px solid ${q.dim.color}44">${q.dim.label}</span></div><div class="qq"><div class="qqn">Question ${step+1} / ${total}</div><div class="qqt">${q.q}</div><div class="so">${[0,1,2,3,4].map(v=>`<div class="sopt${ans[step]===v?' sel':''}" data-val="${v}">${v}</div>`).join('')}</div><div class="slbls"><span>${labels[0]}</span><span>${labels[4]}</span></div></div><div class="fc g8 mt16">${step>0?`<button class="btn bs" data-qprev>← Précédent</button>`:''}<div style="flex:1"></div>${ans[step]!==undefined?(step<total-1?`<button class="btn bp" data-qnext>Suivant →</button>`:`<button class="btn ba blg" data-qfinish>Voir les résultats ✓</button>`):''}  </div></div>`;
+  },
+  renderResult(id,score,bt,bd,bc){
+    const a=Assessments.getById(id),pct=a.max?Math.round((score/a.max)*100):50,sug=Intel.sugTool();
+    return`<div class="ani tc">${V.bc([{label:'Évaluations',page:'assessments'},{label:'Résultats'}])}<div class="ph tc"><h1>Résultats</h1></div>${a.max?`<div class="rc"><div class="rsn">${score}</div><div class="rsx">/${a.max}</div></div><div class="pb mb16"><div class="pf" style="width:${pct}%;background:${bc}"></div></div>`:''}<div class="rband" style="border-left:4px solid ${bc}"><h3>${bt}</h3><p class="ts tf">${bd}</p></div><div class="cl cli mt16 tc"><p>Ce résultat est un point de départ. Votre chemin est unique.</p></div><div class="fc g8 mt24" style="justify-content:center;flex-wrap:wrap"><button class="btn bs" data-goto="assessments">← Retour</button><button class="btn bp" data-quiz="${id}">Recommencer</button>${sug?`<button class="btn ba no-print" data-tool="${sug.id}">Outil suggéré →</button>`:''}</div></div>`;
+  },
+  renderTools(){
+    const hist=(Model.data.toolHistory||[]).sort((a,b)=>b.count-a.count).slice(0,3);
+    return`<div class="ani"><div class="ph"><h1>🛠️ Outils</h1><div class="psub">12 pratiques interactives.</div></div>${hist.length?`<div class="cl cli mb16"><strong>Pratiques favorites :</strong> ${hist.map(h=>{const t=TD.tools.find(x=>x.id===h.tool);return t?`<button class="sug" data-tool="${t.id}">${t.icon} ${t.title} (${h.count}×)</button>`:''}).join('')}</div>`:''}<div class="cg">${TD.tools.map(t=>`<div class="card cc" data-tool="${t.id}"><span class="ci">${t.icon}</span><div class="ct">${t.title}</div><div class="cd">${t.desc}</div></div>`).join('')}</div><div class="sep mt8"></div><button class="btn bs bsm no-print" data-goto="toolhistory">📊 Historique des outils</button></div>`;
+  },
+  renderTH(){
+    const hist=Model.data.toolHistory||[],sess=Model.data.toolSessions||[];
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Historique'}])}<div class="ph"><h1>📊 Historique des outils</h1></div><div class="card mb16">${hist.sort((a,b)=>b.count-a.count).map(h=>{const t=TD.tools.find(x=>x.id===h.tool);return`<div class="th-row"><span style="font-size:1.2rem;width:28px;text-align:center">${t?.icon||'🛠️'}</span><span style="flex:1;color:var(--tx2)">${t?.title||h.tool}</span><div style="flex:1;margin:0 10px"><div class="pb" style="height:4px"><div class="pf" style="width:${Math.min(100,h.count*10)}%"></div></div></div><span style="font-family:var(--fd);color:var(--p)">${h.count}×</span></div>`;}).join('')||`<p class="tm tf">${I18n.empty()}</p>`}</div><div class="mt16 no-print"><button class="btn bs" data-goto="tools">← Retour</button></div></div>`;
+  },
+  renderBreathing(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Cohérence Cardiaque'}])}<div class="ph fb"><div><h1>🫁 Cohérence Cardiaque</h1><div class="psub">Régulation du système nerveux.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="card mb16 no-print fc g16"><div><label>Mode</label><select id="bmode" class="btn bs bsm" style="padding:4px 8px;width:auto"><option value="55">5-5 (Cohérence)</option><option value="478">4-7-8 (Calmant)</option><option value="box">4-4-4-4 (Box)</option></select></div><div><label>Cycles</label><select id="bcycles" class="btn bs bsm" style="padding:4px 8px;width:auto"><option value="6">6 (~3 min)</option><option value="10" selected>10 (~5 min)</option><option value="18">18 (~9 min)</option></select></div></div><div class="bwrap"><div class="bring" id="bcirc"><span id="blbl">Toucher<br>pour commencer</span></div><div class="bphase" id="bphase"></div><div class="btimer" id="btimer"></div><div class="tx tm mt8" id="bcnt"></div></div></div>`;
+  },
+  renderWheel(){
+    const W=320,cx=160,cy=160,R=132,r=74;
+    let slices='',labels='';
+    TD.wheel.forEach(seg=>{
+      const step=360/7,s=(seg.angle-step/2)*Math.PI/180,e=(seg.angle+step/2)*Math.PI/180;
+      const x1=cx+R*Math.cos(s),y1=cy+R*Math.sin(s),x2=cx+R*Math.cos(e),y2=cy+R*Math.sin(e);
+      const xi1=cx+r*Math.cos(s),yi1=cy+r*Math.sin(s),xi2=cx+r*Math.cos(e),yi2=cy+r*Math.sin(e);
+      const mx=seg.angle*Math.PI/180,lx=cx+(R-26)*Math.cos(mx),ly=cy+(R-26)*Math.sin(mx);
+      slices+=`<path d="M ${xi1} ${yi1} A ${r} ${r} 0 0 1 ${xi2} ${yi2} L ${x2} ${y2} A ${R} ${R} 0 0 0 ${x1} ${y1} Z" fill="${seg.color}" fill-opacity=".82" stroke="white" stroke-width="2" class="wslice" data-em="${seg.id}" style="cursor:pointer"/>`;
+      labels+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="10" fill="white" font-family="Georgia" pointer-events="none" transform="rotate(${seg.angle},${lx},${ly})">${seg.fr}</text>`;
+    });
+    const wh=Model.data.wheelHistory||[],freq={};
+    wh.forEach(e=>{freq[e.emotion]=(freq[e.emotion]||0)+1;});
+    const topFreq=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12),maxF=topFreq[0]?.[1]||1;
+    const freqHtml=topFreq.map(([e,c])=>{const seg=TD.wheel.find(s=>s.fr===e||s.sub?.some(x=>x.fr===e));const col=seg?.color||'#6B9E97';const sz=Math.round(11+(c/maxF)*10);return`<span class="wfreq-item" style="background:${col}22;color:${col};font-size:${sz}px;border:1px solid ${col}44" title="${c} fois">${e} <small style="opacity:.7">${c}</small></span>`;}).join('');
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Roue des Émotions'}])}<div class="ph fb"><div><h1>🎨 Roue des Émotions</h1><div class="psub">3 niveaux · historique de fréquence.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="wwrap"><svg id="ewhl" viewBox="0 0 ${W} ${W}" xmlns="http://www.w3.org/2000/svg"><circle cx="${cx}" cy="${cy}" r="${r-2}" fill="var(--bgs)" stroke="var(--bdr)" stroke-width="1.5"/>${slices}${labels}<circle cx="${cx}" cy="${cy}" r="${r-2}" fill="var(--bgs)" stroke="var(--bdr)" stroke-width="1.5" pointer-events="none"/><text x="${cx}" y="${cy-6}" text-anchor="middle" font-size="9" fill="var(--txm)" font-family="Georgia">Cliquez</text><text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="9" fill="var(--txm)" font-family="Georgia">une zone</text></svg><div class="winfo" id="winfo"><span class="tm tf">Cliquez sur une émotion.</span></div><div id="wsub2" style="width:100%"></div><div id="wsub3" style="width:100%"></div><button class="btn bp bsm hidden" id="wlog">📔 Ajouter au journal</button></div>${topFreq.length?`<div class="wfreq-wrap mt16"><div class="tx tm mb8">Fréquences — ${wh.length} sélections</div><div class="wfreq-cloud">${freqHtml}</div></div>`:''}</div>`;
+  },
+  renderGrounding(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Ancrage 5-4-3-2-1'}])}<div class="ph fb"><div><h1>🌍 Ancrage 5-4-3-2-1</h1><div class="psub">Retour sensoriel au moment présent.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div id="gsteps">${TD.grounding.map((s,i)=>`<div class="gs${i===0?' cur':''}" data-gstep="${i}"><div class="gn">${s.n}</div><div style="flex:1"><div class="gsns">${s.sense}</div><div style="font-size:.9rem;color:var(--tx)">${s.prompt}</div><div class="ginp"><textarea placeholder="Notez ici…" rows="2" style="width:100%;margin-top:6px"></textarea><button class="btn bp bsm mt8" data-gnext="${i}">${i<4?'Suivant →':'Terminer ✓'}</button></div></div></div>`).join('')}</div><div id="gdone" class="hidden card mt24 tc"><div style="font-size:2.5rem;margin-bottom:10px">🌿</div><h3>Ancrage terminé</h3><p class="ts tf">Vous êtes revenu(e) dans le présent.</p><button class="btn bs mt16" data-goto="tools">Retour</button></div></div>`;
+  },
+  renderEFT(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'EFT Tapping'}])}<div class="ph fb"><div><h1>✋ EFT Tapping</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl cli mb16"><p><strong>Comment :</strong> Tapotez chaque point (~7 fois) en répétant la phrase. Cliquez pour marquer comme fait.</p></div><div id="efts">${TD.eft.map((p,i)=>`<div class="efts" id="eft${i}" data-eft="${i}"><div class="eftn">${i+1}</div><div><strong style="display:block;font-size:.82rem;color:var(--tx)">${p.name} <em style="font-weight:normal;color:var(--txm)">— ${p.loc}</em></strong><span style="font-size:.83rem;color:var(--tx2)">"${p.phrase}"</span><span class="tx tm"> · ${p.taps} taps</span></div></div>`).join('')}</div><div class="fc g8 mt16 no-print"><button class="btn bs" id="eftreset">Réinitialiser</button><button class="btn bp" data-logtool="eft">Session terminée ✓</button></div></div>`;
+  },
+  renderEmpathy(){
+    const qs=[
+      {q:'Ce ressenti était-il présent <em>avant</em> votre dernière interaction ?',opts:['Oui, avant','Non, après','Je ne sais pas'],k:'0'},
+      {q:'Ce ressenti ressemble-t-il à l\'état d\'une personne proche ?',opts:['Oui, clairement','Non','Peut-être'],k:'1'},
+      {q:'Lorsque vous vous isolez quelques minutes, ce ressenti :',opts:['S\'atténue / disparaît','Reste identique','S\'intensifie'],k:'2'},
+      {q:'Ce ressenti a-t-il une cohérence avec votre vie intérieure du moment ?',opts:['Oui, j\'en comprends la source','Non, surgit de nulle part','Partiellement'],k:'3'},
+      {q:'Ressentez-vous ce type d\'état avec certaines personnes ou lieux ?',opts:['Oui, pattern clair','Non, aléatoire','Je n\'ai pas fait le lien'],k:'4'}
+    ];
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Filtre Empathique'}])}<div class="ph"><h1>🛡️ Filtre Empathique</h1><div class="psub">Ce ressenti vient-il de vous ou de l'extérieur ?</div></div><div class="cl clw mb16"><p>Pensez à un ressenti que vous éprouvez <strong>en ce moment</strong>.</p></div>${qs.map(eq=>`<div class="eqw" style="background:var(--bg2);border-radius:var(--r2);padding:14px;margin-bottom:10px;border:1px solid var(--bdr)"><h4 style="color:var(--pd);margin-bottom:7px;font-size:.87rem">${eq.q}</h4><div class="choices">${eq.opts.map(o=>`<button class="cbtn" data-eq="${eq.k}" data-val="${o}">${o}</button>`).join('')}</div></div>`).join('')}<div id="eresult" class="hidden"></div><div class="mt16 no-print"><button class="btn bp" id="eanalyze">Analyser →</button></div></div>`;
+  },
+  renderIFS(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Parties Intérieures'}])}<div class="ph fb"><div><h1>🪞 Parties Intérieures (IFS)</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl cli mb16"><p>Chaque partie a une <strong>intention positive</strong>. Approchez avec curiosité.</p></div><div class="cg" id="ifscards">${TD.ifs.map(p=>`<div class="card cc" data-ifs="${p.id}"><span class="ci">${p.icon}</span><div class="ct">${p.fr}</div><div class="cd">${p.desc}</div><div class="mt8 tx tm">"${p.q}"</div></div>`).join('')}</div><div id="ifsdlg" class="hidden mt24"><div class="card" id="ifspc"></div><div class="fg mt16"><label>Votre dialogue avec cette partie</label><textarea id="ifstxt" placeholder="Que veux-tu que je sache ? De quoi as-tu besoin ?" rows="4"></textarea></div><div class="fc g8"><button class="btn bp" id="ifssave">Sauvegarder dans le journal</button><button class="btn bs" id="ifsback">← Retour</button></div></div></div>`;
+  },
+  renderMed(medId,stepIdx=0){
+    if(medId){const med=TD.meds.find(m=>m.id===medId);if(!med)return'';
+      return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Méditation'},{label:med.title}])}<div class="ph fb"><div><h1>🌿 ${med.title}</h1><div class="psub">${med.dur} min · ${med.steps.length} étapes</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl clw mb16"><p><em>${med.intro}</em></p></div><div id="medsteps">${med.steps.map((s,i)=>`<div class="med-step${i===stepIdx?' cur':i<stepIdx?' don':''}" id="ms${i}"><div class="fb mb6"><span class="badge bsoft">Étape ${i+1}/${med.steps.length}</span>${s.t?`<button class="btn bg bsm" data-mtime="${s.t}" id="mtime${i}">⏱ ${s.t}s</button>`:''}</div><p>${s.text}</p>${i===stepIdx?`<div class="mt8 fc g8"><button class="btn bs bsm" data-mstep="${i}">${i<med.steps.length-1?'Étape suivante →':'Terminer ✓'}</button></div>`:''}</div>`).join('')}</div><div id="meddone" class="hidden card mt24 tc"><div style="font-size:2.5rem;margin-bottom:10px">🌿</div><h3>Méditation terminée</h3><button class="btn bs mt16" data-goto="tools">Retour</button></div></div>`;}
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Méditation Guidée'}])}<div class="ph"><h1>🌿 Méditation Guidée</h1></div><div class="cg">${TD.meds.map(m=>`<div class="card cc" data-med="${m.id}"><span class="ci">🌿</span><div class="ct">${m.title}</div><div class="cd">${m.dur} min · ${m.steps.length} étapes</div></div>`).join('')}</div></div>`;
+  },
+  renderUnsent(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Lettre Non Envoyée'}])}<div class="ph fb"><div><h1>✉️ Lettre Non Envoyée</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="card mb16"><label>À qui écrivez-vous ?</label><div class="choices mt6">${TD.letterTo.map(lt=>`<button class="cbtn" data-lto="${lt.id}">${lt.fr}</button>`).join('')}</div><div class="hidden fg mt8" id="lother"><input type="text" id="lcustom" placeholder="À…"></div></div><div class="letter-wrap mt16"><div id="ldest" class="tx tm mb8" style="font-style:italic">Choisissez un destinataire</div><textarea id="ltxt" placeholder="Chère…" rows="12" style="font-family:var(--fd);font-size:.95rem;line-height:2;width:100%;border:none;background:transparent;padding:0;outline:none;color:var(--tx);resize:vertical"></textarea></div><div class="fc g8 mt16 no-print"><button class="btn bp" id="lsave">Sauvegarder dans le journal</button><button class="btn bs" id="lclear">Effacer</button></div></div>`;
+  },
+  renderBodyScan(){
+    const zones=TD.bodyZones,svgZ=zones.map(z=>`<ellipse class="bzone" data-zone="${z.id}" cx="${z.x}" cy="${z.y}" rx="${z.rx}" ry="${z.ry}"/>`).join('');
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Scan Corporel'}])}<div class="ph fb"><div><h1>🫀 Scan Corporel</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl cli mb16"><p>Cliquez sur une zone pour explorer sa signification et les pratiques associées.</p></div><div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start"><svg id="bsvg" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg" style="max-width:200px;width:100%;flex-shrink:0"><ellipse cx="95" cy="28" rx="20" ry="20" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="72" y="48" width="46" height="65" rx="10" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="40" y="52" width="30" height="50" rx="10" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="120" y="52" width="30" height="50" rx="10" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="74" y="113" width="20" height="70" rx="8" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="98" y="113" width="20" height="70" rx="8" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="74" y="183" width="18" height="50" rx="6" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/><rect x="100" y="183" width="18" height="50" rx="6" fill="var(--bg2)" stroke="var(--bdr)" stroke-width="1.5"/>${svgZ}</svg><div style="flex:1;min-width:220px"><div style="background:var(--bg2);border-radius:var(--r2);padding:14px;border-left:3px solid var(--p);margin-bottom:12px" id="bzinfo"><h4>Sélectionnez une zone</h4><p class="tf ts">Cliquez sur le corps pour explorer.</p></div><div id="bzact" class="hidden"><div class="fg"><label>Ce que je ressens dans cette zone maintenant</label><textarea id="bztxt" rows="3" placeholder="Tension, légèreté, chaleur, rien…"></textarea></div><div class="fc g8 mt8"><button class="btn bp bsm" id="bzsave">Ajouter au journal</button></div><div id="bztools" class="mt12"></div></div></div></div></div>`;
+  },
+  renderShadow(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Travail sur l\'Ombre'}])}<div class="ph fb"><div><h1>🌑 Travail sur l\'Ombre</h1><div class="psub">Explorer les projections · Jung.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl clpur mb16"><p>Ce que vous détestez ou admirez intensément chez les autres est souvent le <strong>miroir d\'une part de vous-même</strong> non reconnue.</p></div><div id="swsteps">${TD.shadow.map((s,i)=>`<div class="sw-step${i===0?' active':''}" id="sw${i}"><div class="sw-q">${i+1}. ${s.title}</div><div class="sw-hint">${s.hint}</div>${i===0?`<div class="fg"><textarea class="sw-txt" placeholder="${s.q}" rows="3"></textarea></div><button class="btn bp bsm" data-swnext="${i}">Étape suivante →</button>`:`<div class="hidden sw-form"><div class="fg"><textarea class="sw-txt" placeholder="${s.q}" rows="3"></textarea></div><button class="btn bp bsm" data-swnext="${i}">${i<3?'Étape suivante →':'Terminer et sauvegarder ✓'}</button></div>`}</div>`).join('')}</div><div id="swdone" class="hidden card mt24 tc"><div style="font-size:2.5rem;margin-bottom:10px">🌑</div><h3>Travail sur l\'Ombre terminé</h3><p class="ts tf">Nommer une projection est déjà une intégration partielle.</p><button class="btn bs mt16" data-goto="tools">Retour</button></div></div>`;
+  },
+  renderMindMap(){
+    const colors=['#6B9E97','#C4A882','#D4847A','#9B7EC8','#7BA7C4','#F5C842','#8DAE72','#F0A050'];
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Carte Mentale'}])}<div class="ph fb"><div><h1>🕸️ Carte Mentale Émotionnelle</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl cli mb16"><p>Ajoutez des émotions, reliez-les, ajustez l'intensité par la taille. Glissez pour déplacer.</p></div><div class="fc g8 mb12 no-print" style="flex-wrap:wrap"><input type="text" id="mm-inp" placeholder="Nom de l'émotion…" style="max-width:190px"><select id="mm-size" class="btn bs bsm" style="padding:5px 10px;width:auto"><option value="1">Légère</option><option value="2" selected>Modérée</option><option value="3">Intense</option><option value="4">Très intense</option></select><select id="mm-col" class="btn bs bsm" style="padding:5px 10px;width:auto">${colors.map((c,i)=>`<option value="${c}" style="background:${c}">Couleur ${i+1}</option>`).join('')}</select><button class="btn bp bsm" id="mm-add">+ Ajouter</button><button class="btn bs bsm" id="mm-clr">Effacer</button><button class="btn bs bsm" id="mm-sav">Sauvegarder</button></div><div id="mmcanvas"><svg id="mmsvg" xmlns="http://www.w3.org/2000/svg"></svg></div><div class="tx tm mt8" id="mm-hint">Cliquez sur deux nœuds pour les relier. Glissez pour déplacer.</div></div>`;
+  },
+  renderGratitude(){
+    const entries=Model.data.gratitude||[];
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Gratitude Micro-Moments'}])}<div class="ph fb"><div><h1>✨ Gratitude Micro-Moments</h1></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div><div class="cl clg mb16"><p>Une attention douce aux <strong>micro-moments de vivance</strong> qui contre directement l'engourdissement du vide.</p></div><div class="card mb24 no-print"><div class="fg"><label>🌱 Un moment de vivance</label><input type="text" id="gv" placeholder="Ex : la lumière sur ma tasse ce matin…"></div><div class="fg"><label>🫀 Une sensation corporelle agréable</label><input type="text" id="gs" placeholder="Ex : la chaleur du soleil…"></div><div class="fg mb0"><label>🔍 Une chose minuscule remarquée</label><input type="text" id="gc" placeholder="Ex : le chant d'un oiseau…"></div><button class="btn bp mt16" id="gadd">Sauvegarder ✓</button></div>${entries.slice(0,15).map(g=>`<div class="grat-entry"><div class="grat-meta">${new Date(g.date).toLocaleDateString('fr-FR')} ${new Date(g.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>${g.vivance?`<div><div class="grat-lbl">🌱 Vivance</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${g.vivance}</p></div>`:''} ${g.sensation?`<div class="mt8"><div class="grat-lbl">🫀 Sensation</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${g.sensation}</p></div>`:''} ${g.chose?`<div class="mt8"><div class="grat-lbl">🔍 Chose minuscule</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${g.chose}</p></div>`:''}</div>`).join('')}${entries.length===0?`<p class="tm tf">${I18n.empty()}</p>`:''}</div>`;
+  },
+
+  renderVoidDialogue(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Dialogue avec le Vide'}])}
+<div class="ph fb"><div><h1>🌒 Dialogue avec le Vide</h1><div class="psub">Écriture guidée en deux voix — vous et votre vide.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div>
+<div class="cl clpur mb16"><p>Ce vide en vous — et s'il avait une voix ? Écrivez au vide à gauche, laissez émerger sa réponse à droite. Sans censure.</p></div>
+<div class="card mb16 no-print"><label>Lanceur (optionnel)</label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+<button class="cbtn" data-vdp="Vide, qu'est-ce que tu veux ?">Que veux-tu ?</button>
+<button class="cbtn" data-vdp="Vide, qu'est-ce que tu caches ?">Que caches-tu ?</button>
+<button class="cbtn" data-vdp="Vide, de quoi as-tu peur ?">De quoi as-tu peur ?</button>
+<button class="cbtn" data-vdp="Vide, qu'est-ce qui t'a créé ?">Qui t'a créé ?</button>
+<button class="cbtn" data-vdp="Vide, qu'est-ce que tu protèges ?">Que protèges-tu ?</button>
+</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><label style="display:block;margin-bottom:6px;font-size:.78rem;font-weight:600;color:var(--tx2)">🖊 Vous écrivez au vide…</label>
+<textarea id="vd-left" placeholder="Vide, je t'écris parce que…" rows="12" style="width:100%;font-family:var(--fd);font-size:.9rem;line-height:1.8;padding:12px;border:1.5px solid var(--bdr);border-radius:var(--r2);background:var(--bgs);color:var(--tx);resize:vertical"></textarea></div>
+<div><label style="display:block;margin-bottom:6px;font-size:.78rem;font-weight:600;color:var(--p)">🌒 Le vide répond…</label>
+<textarea id="vd-right" placeholder="(Laissez émerger sans censure)" rows="12" style="width:100%;font-family:var(--fd);font-size:.9rem;line-height:1.8;padding:12px;border:1.5px solid var(--pl);border-radius:var(--r2);background:rgba(107,158,151,.04);color:var(--tx);resize:vertical"></textarea></div>
+</div>
+<div class="fc g8 mt16 no-print"><button class="btn bp" id="vd-save">Sauvegarder dans le journal</button><button class="btn bs" id="vd-clear">Effacer</button></div></div>`;
+  },
+
+  renderTimeline(){
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Ligne de Vie'}])}
+<div class="ph fb"><div><h1>📅 Ligne de Vie Émotionnelle</h1><div class="psub">Cartographiez vos moments clés sur un axe chronologique.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div>
+<div class="cl cli mb16"><p>Placez vos moments importants sur la ligne. Cliquez sur un point pour ajouter une note.</p></div>
+<div class="card mb12 no-print fc g8" style="flex-wrap:wrap">
+<input type="number" id="tl-year" placeholder="Année" style="max-width:90px;padding:6px 10px">
+<input type="text" id="tl-label" placeholder="Événement…" style="flex:1;min-width:150px;padding:6px 10px">
+<select id="tl-type" class="btn bs bsm" style="padding:5px 10px;width:auto">
+<option value="positive">✦ Positif</option><option value="negative">✦ Difficile</option>
+<option value="neutral">✦ Transition</option><option value="void">✦ Période de vide</option>
+</select>
+<button class="btn bp bsm" id="tl-add">+ Ajouter</button>
+</div>
+<div id="tl-canvas" style="background:var(--bg2);border-radius:var(--r2);border:1px solid var(--bdr);padding:24px 10px 10px;overflow-x:auto;min-height:180px">
+<svg id="tl-svg" xmlns="http://www.w3.org/2000/svg" style="min-width:600px;width:100%;height:160px;overflow:visible"></svg>
+</div>
+<div id="tl-detail" class="hidden card mt12">
+<div class="fb mb8"><h4 id="tl-detail-title" style="color:var(--pd)"></h4><button class="btn ba bsm" id="tl-del">Supprimer</button></div>
+<div class="fg mb0"><label>Note personnelle</label><textarea id="tl-note" rows="2" placeholder="Ce que vous gardez de ce moment…"></textarea></div>
+<button class="btn bp bsm mt8" id="tl-note-save">Sauvegarder</button>
+</div>
+<div class="fc g8 mt12 no-print"><button class="btn bs bsm" id="tl-save-journal">Sauvegarder dans le journal</button><button class="btn ba bsm" id="tl-clear">Effacer tout</button></div></div>`;
+  },
+
+  renderIFSai(){
+    const parts=['Le Manager 🧠','Le Pompier 🔥','L\'Exilé 🌑','Le Critique ⚖️','L\'Enfant 🧒','Laisser émerger'];
+    const partsHtml=parts.map(p=>`<button class="cbtn" data-ifs-part="${p}">${p}</button>`).join('');
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Facilitateur IFS (IA)'}])}
+<div class="ph fb"><div><h1>🤖 Facilitateur IFS (IA)</h1><div class="psub">Un accompagnateur IA guide votre dialogue avec vos parties intérieures.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div>
+<div class="cl clg mb16"><p>L'IA pose des questions pour vous aider à rencontrer vos parties avec curiosité et douceur — sans conseils thérapeutiques directs.</p></div>
+<div class="card mb16 no-print"><label>Partie à explorer</label>
+<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:6px">${partsHtml}</div>
+</div>
+<div id="ifs-ai-chat" style="min-height:280px;max-height:420px;overflow-y:auto;background:var(--bg2);border-radius:var(--r2);border:1px solid var(--bdr);padding:14px;display:flex;flex-direction:column;gap:10px" aria-live="polite">
+<div style="background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%;align-self:flex-start">
+<strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>
+Bonjour. Je suis ici pour vous accompagner dans l'exploration de votre monde intérieur. Aucune partie n'est mauvaise — chacune a une intention positive. Avec quelle partie souhaitez-vous entrer en contact, ou que ressentez-vous en ce moment ?
+</div>
+</div>
+<div class="fc g8 mt12 no-print" style="align-items:flex-end">
+<textarea id="ifs-ai-inp" placeholder="Répondez ici…" rows="2" style="flex:1;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:var(--r2);background:var(--bgs);color:var(--tx);font-family:var(--fb);font-size:.87rem;resize:none"></textarea>
+<button class="btn bp" id="ifs-ai-send">Envoyer</button>
+</div>
+<div id="ifs-ai-loading" class="hidden tx tm mt8" style="text-align:center">⟳ L'accompagnateur réfléchit…</div>
+<div class="fc g8 mt8 no-print"><button class="btn bs bsm" id="ifs-ai-save">Sauvegarder la session</button><button class="btn bg bsm" id="ifs-ai-reset">Nouvelle session</button></div></div>`;
+  },
+
+  renderCheckin(step,ans){
+    const qs=TD.checkinQs,total=qs.length;
+    if(step>=total){
+      const score=Object.values(ans).reduce((s,v)=>s+v,0);
+      const ci=Model.data.checkins||[],recent=[...ci].slice(0,30).reverse();
+      const maxB=recent.length?Math.max(...recent.map(c=>c.score)):20;
+      // Courbe SVG 30 jours
+      const W2=440,H2=70,pd2=8;
+      let sparkline='';
+      if(recent.length>1){
+        const xs2=recent.map((_,i)=>pd2+i*(W2-2*pd2)/(recent.length-1));
+        const ys2=recent.map(c=>H2-pd2-(c.score/20)*(H2-2*pd2));
+        const path2='M '+xs2.map((x,i)=>`${x},${ys2[i]}`).join(' L ');
+        const area2=`M ${xs2[0]},${H2} L ${xs2.map((x,i)=>`${x},${ys2[i]}`).join(' L ')} L ${xs2[xs2.length-1]},${H2} Z`;
+        sparkline=`<svg viewBox="0 0 ${W2} ${H2+20}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${H2+20}px;margin-top:12px"><defs><linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--p)" stop-opacity=".2"/><stop offset="100%" stop-color="var(--p)" stop-opacity="0"/></linearGradient></defs><path d="${area2}" fill="url(#spg)"/><path d="${path2}" fill="none" stroke="var(--p)" stroke-width="2" stroke-linejoin="round"/>${xs2.map((x,i,a)=>i===a.length-1?`<circle cx="${x}" cy="${ys2[i]}" r="4" fill="var(--p)"/>`:'').join('')}</svg>`;
+      }
+      return`<div class="ani ci-wrap"><div class="ph tc"><h1>⚡ Check-in du jour</h1></div><div class="card tc" style="padding:28px"><div style="font-family:var(--fd);font-size:3rem;color:var(--p);line-height:1">${score}</div><div class="tx tm mb8">/ 20</div><p class="ts tf mb0">Score du jour — plus élevé = intensité plus forte.</p>${sparkline}</div><div class="fc g8 mt24" style="justify-content:center;flex-wrap:wrap"><button class="btn bs" data-goto="dashboard">← Accueil</button><button class="btn bp" data-tool="${Intel.sugTool().id}">Outil suggéré →</button></div></div>`;
+    }
+    const q=qs[step],pct=Math.round((step/total)*100);
+    return`<div class="ani ci-wrap"><div class="ph tc"><h1>⚡ Check-in du jour</h1></div><div class="tc tf tm mb16">Question ${step+1} / ${total}</div><div class="pb mb24"><div class="pf" style="width:${pct}%"></div></div><div class="qq"><div class="qqt">${q}</div><div class="so mt12">${[0,1,2,3,4].map(v=>`<div class="sopt${ans[step]===v?' sel':''}" data-civ="${v}">${v}</div>`).join('')}</div><div class="slbls"><span>Faible</span><span>Intense</span></div></div>${ans[step]!==undefined?`<div class="fc g8 mt16" style="justify-content:center"><button class="btn bp" data-cinext="${step}">${step<total-1?'Suivant →':'Voir le résultat'}</button></div>`:''}</div>`;
+  },
+  renderJournal(filter={}){
+    let entries=Model.data.journal||[];
+    if(filter.origin)entries=entries.filter(e=>e.origin===filter.origin);
+    if(filter.type)entries=entries.filter(e=>e.type===filter.type);
+    if(filter.search)entries=entries.filter(e=>(e.text||'').toLowerCase().includes(filter.search.toLowerCase())||(e.emotion||'').toLowerCase().includes(filter.search.toLowerCase()));
+    if(filter.tag)entries=entries.filter(e=>(e.tags||[]).includes(filter.tag));
+    const st=Intel.jStats();
+    const ins=V.renderInsights();
+    const grat=V.renderGratitudeTab();
+    return`<div class="ani"><div class="tabs no-print" id="jtabs"><div class="tab active" data-jtab="jentries">Entrées</div><div class="tab" data-jtab="jinsights">Insights</div><div class="tab" data-jtab="jgratitude">Gratitude</div></div><div id="jentries"><div class="ph fb"><div><h1>📔 Journal</h1><div class="psub">Observer · distinguer · comprendre.</div></div><button class="btn bp bsm no-print" id="jnew">+ Entrée</button></div>${st?`<div class="jstats-grid"><div class="jstat"><div class="jstat-val">${st.total}</div><div class="jstat-lbl">Total</div></div><div class="jstat"><div class="jstat-val">${st.top[0]?.k||'—'}</div><div class="jstat-lbl">+ Fréquente</div></div><div class="jstat"><div class="jstat-val">${Math.round((st.or.internal/st.totOr)*100)||0}%</div><div class="jstat-lbl">Internes</div></div><div class="jstat"><div class="jstat-val">${st.avg||'—'}/4</div><div class="jstat-lbl">Int. moy.</div></div></div>`:''}<div class="jfilters no-print"><input type="text" placeholder="🔍 Rechercher…" id="jsearch" style="max-width:180px;padding:5px 10px"><select id="jforigin" class="btn bs bsm" style="padding:5px 10px"><option value="">Origine : toutes</option><option value="internal">🌿 Interne</option><option value="external">🌊 Absorbé</option><option value="mixed">⚡ Mixte</option></select><select id="jftype" class="btn bs bsm" style="padding:5px 10px"><option value="">Type : tous</option><option value="emotion">⚡ Émotion</option><option value="sentiment">💭 Sentiment</option></select><button class="btn bg bsm" id="jclear">✕</button></div>
+<div id="tag-cloud" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;padding:0 2px"></div>${entries.length===0?`<p class="tm tf mt16">${I18n.empty()}</p>`:entries.map(e=>V.jCard(e,false)).join('')}</div><div id="jinsights" class="hidden">${ins}</div><div id="jgratitude" class="hidden">${grat}</div></div>`;
+  },
+  renderInsights(){
+    const ins=Intel.weeklyInsights(),st=Intel.jStats();
+    if(!st)return`<div class="cl cli mt16"><p>Ajoutez au moins 5 entrées pour voir vos insights.</p></div>`;
+    const {days}=ins,maxC=Math.max(...days.map(d=>d.count),1);
+    const bW=Math.floor(440/(days.length+1));
+    const bars=days.map((d,i)=>{const h=Math.max(2,Math.round((d.count/maxC)*60));return`<g><rect x="${i*bW+6}" y="${64-h}" width="${bW-4}" height="${h}" fill="var(--pl)" rx="2"/><text x="${i*bW+bW/2+4}" y="76" text-anchor="middle" font-size="8" fill="var(--txm)">${d.day}</text>${d.count?`<text x="${i*bW+bW/2+4}" y="${60-h}" text-anchor="middle" font-size="7" fill="var(--pd)">${d.count}</text>`:''}</g>`;}).join('');
+    return`<div class="mt16"><div class="insight-card"><h3>📅 Entrées cette semaine (${ins.thisW})</h3><div class="chart-wrap"><svg viewBox="0 0 ${days.length*bW+20} 82" height="82" xmlns="http://www.w3.org/2000/svg">${bars}</svg></div>${ins.prevW!==undefined?`<div class="tf tm mt8">Semaine précédente : ${ins.prevW} ${ins.thisW>ins.prevW?'↑ Progression':'↓ Recul'}</div>`:''}</div><div class="insight-card"><h3>🌿 Origine cette semaine</h3><div class="fc g12"><div class="tc" style="flex:1"><div style="font-family:var(--fd);font-size:1.8rem;color:var(--p)">${ins.intW}</div><div class="tf tm">Internes</div></div><div class="tc" style="flex:1"><div style="font-family:var(--fd);font-size:1.8rem;color:var(--acc)">${ins.extW}</div><div class="tf tm">Absorbés</div></div></div></div><div class="insight-card"><h3>💎 Émotions fréquentes</h3>${st.top.map(({k,v})=>{const pct=Math.round(v/st.total*100);return`<div class="mb8"><div class="fb mb4"><span class="tf">${k}</span><span class="tf tm">${v}× (${pct}%)</span></div><div class="pb"><div class="pf" style="width:${pct*3}%"></div></div></div>`;}).join('')}</div></div>`;
+  },
+  renderGratitudeTab(){
+    const g=Model.data.gratitude||[];
+    if(!g.length)return`<div class="cl clg mt16"><p>Commencez depuis l'outil <strong>Gratitude Micro-Moments</strong>.</p><button class="btn bp bsm mt8 no-print" data-tool="gratitude">Y aller →</button></div>`;
+    return`<div class="mt16">${g.slice(0,20).map(gr=>`<div class="grat-entry"><div class="grat-meta">${new Date(gr.date).toLocaleDateString('fr-FR')}</div>${gr.vivance?`<div><div class="grat-lbl">🌱</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${gr.vivance}</p></div>`:''}${gr.sensation?`<div class="mt6"><div class="grat-lbl">🫀</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${gr.sensation}</p></div>`:''}${gr.chose?`<div class="mt6"><div class="grat-lbl">🔍</div><p style="font-size:.88rem;color:var(--tx2);margin:0">${gr.chose}</p></div>`:''}</div>`).join('')}</div>`;
+  },
+  jCard(e,compact){
+    const oc={internal:'ei',external:'ee',mixed:'em'}[e.origin]||'en';
+    const ol={internal:'🌿 Interne',external:'🌊 Absorbé',mixed:'⚡ Mixte'}[e.origin]||'';
+    const tl={emotion:'⚡',sentiment:'💭',both:'⚡💭'}[e.type]||'';
+    const ic=['#6B9E97','#C4A882','#D4847A','#9B3E3A'][Math.min(3,(e.intensity||1)-1)];
+    const sug=!compact?Intel.toolForEm(e.emotion,e.origin):null;
+    return`<div class="je"><div class="jmeta"><span>${new Date(e.date).toLocaleDateString('fr-FR')} ${new Date(e.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span>${e.origin?`<span class="etag ${oc}">${ol}</span>`:''}${e.emotion?`<span class="badge bsoft">${e.emotion}</span>`:''}${e.type?`<span class="badge bgold">${tl}</span>`:''}${e.intensity?`<span style="display:inline-flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:50%;background:${ic};display:inline-block"></span><span class="tx tm">i${e.intensity}/4</span></span>`:''} ${compact?'':`<button class="btn bg bsm" data-del="${e.id}" style="margin-left:auto;color:var(--acc);padding:2px 6px">✕</button>`}</div>${e.text?`<div class="jtxt">${e.text}</div>`:''}${e.bodyNote?`<div class="jbody">Corps : ${e.bodyNote}</div>`:''}${sug?`<div class="jsugg">Outil suggéré : <a data-tool="${sug.id}" class="no-print">${sug.label} →</a></div>`:''}
+${e.tags&&e.tags.length?`<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">${e.tags.map(t=>`<span style="padding:1px 8px;border-radius:100px;background:var(--bg2);border:1px solid var(--bdr);font-size:.7rem;color:var(--txm)">#${t}</span>`).join('')}</div>`:''}
+</div>`;
+  },
+  renderJournalModal(){
+    const emotions=TD.wheel.map(w=>`<option value="${w.fr}">${w.fr}</option>`).join('');
+    const subs=TD.wheel.flatMap(w=>w.sub.map(s=>`<option value="${s.fr}">${s.fr}</option>`)).join('');
+    const prompts=['Quel besoin non satisfait se cache derrière ce ressenti ?','Qu\'est-ce que mon corps essaie de me dire ?','Si ce ressenti avait une couleur et une forme ?','Ce ressenti m\'appartient-il vraiment ?','Que me dirait ce ressenti si je lui donnais une voix ?'];
+    const p3=prompts.sort(()=>Math.random()-.5).slice(0,3);
+    return`<div class="mt">📔 Nouvelle entrée</div><div class="fg"><label>Comment je me sens</label><textarea id="jtxt" placeholder="Décrivez votre état intérieur…" rows="3" oninput="Model.data.journalDraft.text=this.value;Model.save()"></textarea><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${p3.map(p=>`<button class="pchip" data-prompt="${p}">✦ ${p}</button>`).join('')}</div></div><div class="fg"><label>Type</label><select id="jtype"><option value="">— Choisir —</option><option value="emotion">⚡ Émotion primaire</option><option value="sentiment">💭 Sentiment complexe</option><option value="both">⚡💭 Les deux</option></select></div><div class="fg"><label>Nommer</label><select id="jemotion"><option value="">—</option><optgroup label="Primaires">${emotions}</optgroup><optgroup label="Complexes">${subs}</optgroup></select></div><div class="fg"><label>Origine</label><div class="choices mt6"><button class="cbtn" data-origin="internal">🌿 Interne</button><button class="cbtn" data-origin="external">🌊 Absorbé</button><button class="cbtn" data-origin="mixed">⚡ Mixte</button></div></div><div class="fg"><label>Intensité : <span id="jilbl">2/4</span></label><input type="range" id="jintensity" min="1" max="4" value="2"></div><div class="fg"><label>Note corporelle</label><input type="text" id="jbody" placeholder="Tension, légèreté…"></div><div class="fg"><label>Tags (séparés par virgule)</label><input type="text" id="jtags" placeholder="Ex: travail, famille, corps…"></div><div class="ma"><button class="btn bs" id="jcancel">Annuler</button><button class="btn bp" id="jsave">Sauvegarder</button></div>`;
+  },
+  renderPrograms(progId){
+    if(progId){const p=Programs.getById(progId);if(!p)return'';
+      const done=Model.data.programProgress[progId]||[],today=done.length<p.dur?done.length:p.dur-1;
+      return`<div class="ani">${V.bc([{label:'Parcours',page:'programs'},{label:p.title}])}<div class="ph"><h1>${p.icon} ${p.title}</h1><div class="psub">${done.length}/${p.dur} jours complétés</div></div><div class="pb mb16"><div class="pf" style="width:${Math.round(done.length/p.dur*100)}%"></div></div><p class="ts tf mb24">${p.desc}</p>${p.days.map((day,i)=>{const isDone=done.includes(i),isToday=i===today&&!isDone;return`<div class="prog-day${isDone?' done':isToday?' today':''}"><div class="prog-day-n">${isDone?'✓':i+1}</div><div style="flex:1"><div style="font-family:var(--fd);font-size:.95rem;color:var(--tx)">${day.t}</div><div class="tx ts mt4">${day.art?`<button class="sug no-print" data-article="${day.art}">📚 Article</button>`:''}${day.tool?`<button class="sug no-print" data-tool="${day.tool}">🛠️ ${TD.tools.find(t=>t.id===day.tool)?.title||day.tool}</button>`:''}</div>${day.j?`<div class="tx tm mt6 tf" style="font-style:italic">Journal : "${day.j}"</div>`:''} ${isToday?`<button class="btn bp bsm mt8 no-print" data-progday="${i}" data-progid="${progId}">Marquer complété ✓</button>`:''}</div></div>`;}).join('')}<div class="mt16 no-print"><button class="btn bs" data-goto="programs">← Retour</button></div></div>`;}
+    return`<div class="ani"><div class="ph"><h1>🗓️ Parcours Thématiques</h1><div class="psub">3 programmes de 7 jours guidés.</div></div>${Programs.list.map(p=>{const done=Model.data.programProgress[p.id]||[];const pct=Math.round(done.length/p.dur*100);return`<div class="prog-card"><div class="fb mb12"><div><div class="ct">${p.icon} ${p.title}</div><div class="cd mt6">${p.desc}</div></div>${pct>0?`<span class="badge bprim">${pct}%</span>`:done.length===p.dur?`<span class="badge bgrn">✓</span>`:''}</div>${pct>0?`<div class="pb mb12"><div class="pf" style="width:${pct}%"></div></div>`:''}<button class="btn bp bsm no-print" data-program="${p.id}">${pct>0?'Continuer':'Commencer'}</button></div>`;}).join('')}</div>`;
+  },
+  renderSettings(){
+    const rem=Model.data.reminders||{},enc=Model.data.encryption||{};
+    const cur=document.documentElement.getAttribute('data-theme')||'light';
+    return`<div class="ani"><div class="ph"><h1>⚙️ Réglages</h1><div class="psub">Thème · Chiffrement · Notifications · Données.</div></div>
+<div class="ss"><h3>🎨 Thème visuel</h3><div class="theme-grid">${TD.themeSwatches.map(t=>`<div style="text-align:center"><div class="tswatch${cur===t.id?' act':''}" data-theme-pick="${t.id}" style="background:linear-gradient(135deg,${t.c[0]} 50%,${t.c[1]} 50%)" title="${t.label}"></div><div class="tx tm mt4">${t.label}</div></div>`).join('')}</div></div>
+<div class="ss"><h3>🔔 Rappels de pratique</h3><div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr)"><span class="tf ts">Activer les rappels</span><div style="flex:1"></div><label style="display:flex;align-items:center;gap:8px;font-size:.84rem;cursor:pointer"><input type="checkbox" id="rem-en" ${rem.enabled?'checked':''}> Activé</label></div>${(rem.times||[]).map((t,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr)"><span class="tx tm">Rappel ${i+1}</span><div style="flex:1"></div><input type="time" class="rem-time" data-ri="${i}" value="${t}" style="background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r1);padding:4px 10px;font-size:.84rem;color:var(--tx);max-width:100px"></div>`).join('')}<button class="btn bp bsm mt8 no-print" id="req-notif">Autoriser les notifications</button><div class="tx tm mt6" id="notif-status">${'Notification' in window?(Notification.permission==='granted'?'✓ Autorisées':'En attente'):'Non supporté'}</div></div>
+<div class="ss"><h3>🔐 Chiffrement AES-GCM</h3><div class="cl cla mb12"><p>Si vous perdez votre mot de passe, vos données seront <strong>irrécupérables</strong>. Exportez d'abord en JSON.</p></div><div class="fc g8 mb12"><span style="display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:100px;font-size:.75rem;font-weight:600;${enc.enabled?'background:rgba(107,158,151,.15);color:var(--pd)':'background:var(--bg2);color:var(--txm);border:1px solid var(--bdr)'}">${enc.enabled?'🔐 Activé':'🔓 Désactivé'}</span></div>${!enc.enabled?`<div class="fg"><label>Nouveau mot de passe</label><input type="password" id="enc-p1" placeholder="Mot de passe…"></div><div class="fg"><label>Confirmer</label><input type="password" id="enc-p2" placeholder="Confirmation…"></div><div class="fg"><label>Indice (optionnel)</label><input type="text" id="enc-hint" placeholder="Indice mémo…"></div><button class="btn bp bsm no-print" id="enc-en">Activer le chiffrement</button>`:`<div class="tf tm mb8">Indice : ${enc.hint||'Aucun'}</div><button class="btn ba bsm no-print" id="enc-dis">Désactiver</button>`}</div>
+<div class="ss"><h3>💾 Données</h3><div class="fc g8" style="flex-wrap:wrap"><button class="btn bp bsm no-print" id="sej">⬇️ JSON</button><button class="btn bp bsm no-print" id="semd">📝 Markdown</button><button class="btn bs bsm no-print" id="simp">⬆️ Importer</button><button class="btn ba bsm no-print" id="sreset">🗑️ Réinitialiser</button></div><div class="tx tm mt8">Journal : ${Model.data.journal.length} · Évals : ${Object.values(Model.data.assessments).flat().length} · Sessions : ${Model.data.stats.sessions}</div></div></div>`;
+  }
+};
+
+// ── CONTROLLER ───────────────────────────────────────────────────
+const C={
+  page:'dashboard',qs:null,empAns:{},ifsSel:null,
+  _brun:false,_bint:null,_medStep:0,_medId:null,_medT:null,
+  _jf:{},_wsel:null,_bzone:null,_lto:null,_obStep:0,_obAns:{},
+  _ciStep:0,_ciAns:{},_mmnodes:[],_mmlinks:[],_mmsel:null,_swAns:{},_swStep:0,
+
+  async init(){
+    Model.load();
+    if(Model.data._needsDecrypt){this.showDecrypt();return;}
+    const ses=Model.ls();if(ses?.qs)this.qs=ses.qs;
+    Model.incS();
+    document.documentElement.setAttribute('data-theme',Model.data.meta?.theme||'light');
+    this.updateThemeBtn();
+    Notifs.check();
+    if(!Model.data.onboarding?.done)this.go('onboarding');else this.go('dashboard');
+    this.bindGlobal();
+  },
+
+  showDecrypt(){
+    document.getElementById('mc').innerHTML=`<div class="mt">🔐 Données chiffrées</div><p class="ts tf mb12">Entrez votre mot de passe pour accéder à vos données.</p><div class="fg"><label>Mot de passe</label><input type="password" id="dec-pwd" placeholder="Mot de passe…"></div><div id="dec-err" class="hidden" style="color:var(--acc);font-size:.8rem;margin-top:4px">Mot de passe incorrect.</div><div class="ma"><button class="btn bp" id="dec-go">Déchiffrer</button></div>`;
+    document.getElementById('mov').classList.add('open');
+    document.getElementById('dec-go').addEventListener('click',async()=>{
+      const pwd=document.getElementById('dec-pwd').value;
+      if(await Model.loadEnc(pwd)){this.closeModal();Model.incS();this.go('dashboard');this.bindGlobal();}
+      else{document.getElementById('dec-err').classList.remove('hidden');}
+    });
+  },
+
+  go(page,extra=null){
+    this.page=page;
+    // Reset check-in quand on y navigue (sauf progression interne via data-cinext)
+    if(page==='checkin'&&extra!=='continue'){this._ciStep=0;this._ciAns={};}
+    document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===page));
+    // Indicateur outil actif
+    const ati=document.getElementById('ati');
+    if(page.startsWith('tool-')){
+      const tid=page.replace('tool-','');
+      const t=TD.tools.find(x=>x.id===tid);
+      if(ati&&t){ati.innerHTML=`<div class="ati-l">${t.icon} ${t.title}</div><div class="ati-s">En cours</div>`;ati.classList.add('show');}
+      document.getElementById('fbar-name').textContent=t?.title||'Outil';
+    }else{if(ati)ati.classList.remove('show');if(document.body.classList.contains('focus'))this.exitFocus();}
+    this.render(page,extra);
+    document.getElementById('sb').classList.remove('open');
+    window.scrollTo(0,0);
+  },
+
+  render(page,extra){
+    const el=document.getElementById('pc');let html='';
+    if(page==='onboarding')html=V.renderOB(this._obStep,this._obAns);
+    else if(page==='dashboard')html=V.renderDB();
+    else if(page==='knowledge')html=V.renderKB(extra);
+    else if(page==='assessments')html=V.renderAssessments();
+    else if(page==='quiz')html=this.qs?V.renderQuiz(this.qs.id,this.qs.step,this.qs.ans):V.renderAssessments();
+    else if(page==='quiz-result')html=this.qs?V.renderResult(this.qs.id,this.qs.score,this.qs.bt,this.qs.bd,this.qs.bc):'';
+    else if(page==='tools')html=V.renderTools();
+    else if(page==='toolhistory')html=V.renderTH();
+    else if(page==='tool-breathing')html=V.renderBreathing();
+    else if(page==='tool-wheel')html=V.renderWheel();
+    else if(page==='tool-grounding')html=V.renderGrounding();
+    else if(page==='tool-eft')html=V.renderEFT();
+    else if(page==='tool-empathy')html=V.renderEmpathy();
+    else if(page==='tool-ifs')html=V.renderIFS();
+    else if(page==='tool-meditation')html=V.renderMed(extra,this._medStep);
+    else if(page==='tool-unsent')html=V.renderUnsent();
+    else if(page==='tool-bodyscan')html=V.renderBodyScan();
+    else if(page==='tool-shadow')html=V.renderShadow();
+    else if(page==='tool-mindmap'){html=V.renderMindMap();this._mmnodes=[];this._mmlinks=[];this._mmsel=null;}
+    else if(page==='tool-gratitude')html=V.renderGratitude();
+    else if(page==='tool-void-dialogue')html=V.renderVoidDialogue();
+    else if(page==='tool-timeline')html=V.renderTimeline();
+    else if(page==='tool-ifs-ai')html=V.renderIFSai();
+    else if(page==='checkin'){
+      // Réinitialiser si on arrive en début de parcours (step 0 = fresh start via nav)
+      if(this._ciStep===undefined||this._ciStep>=TD.checkinQs.length){this._ciStep=0;this._ciAns={};}
+      html=V.renderCheckin(this._ciStep,this._ciAns);
+    }
+    else if(page==='journal')html=V.renderJournal(this._jf);
+    else if(page==='programs')html=V.renderPrograms(extra);
+    else if(page==='settings')html=V.renderSettings();
+    el.innerHTML=html;
+    this.bindPage(page,extra);
+  },
+
+  bindPage(page,extra){
+    const el=document.getElementById('pc');
+    // Universal nav
+    el.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>this.go(b.dataset.goto)));
+    el.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>this.go(b.dataset.page)));
+    el.querySelectorAll('[data-bc]').forEach(b=>b.addEventListener('click',()=>this.go(b.dataset.bc)));
+    el.querySelectorAll('[data-article]').forEach(b=>b.addEventListener('click',()=>this.go('knowledge',b.dataset.article)));
+    el.querySelectorAll('[data-program]').forEach(b=>b.addEventListener('click',()=>this.go('programs',b.dataset.program)));
+    el.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));
+    el.querySelectorAll('[data-bm]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();Model.toggleBM(b.dataset.bm);this.render(page,extra);}));
+    el.querySelector('#fbtn')?.addEventListener('click',()=>document.body.classList.add('focus'));
+    document.getElementById('focus-exit')?.addEventListener('click',()=>this.exitFocus());
+
+    if(page==='onboarding'){
+      el.querySelectorAll('[data-ob]').forEach(b=>b.addEventListener('click',()=>{this._obAns[parseInt(b.dataset.ob)]=b.dataset.val;this.render('onboarding');}));
+      el.querySelectorAll('[data-ob-next]').forEach(b=>b.addEventListener('click',()=>{const s=parseInt(b.dataset.obNext);if(s<2){this._obStep=s+1;this.render('onboarding');}else{Model.data.onboarding={done:true,answers:this._obAns};Model.save();this.go('dashboard');}}));
+    }
+    if(page==='dashboard'){
+      el.querySelector('#bedit-int')?.addEventListener('click',()=>this.openIntModal());
+      el.querySelectorAll('[data-quiz]').forEach(b=>b.addEventListener('click',()=>{this.qs={id:b.dataset.quiz,step:0,ans:{}};this.go('quiz');}));
+    }
+    if(page==='assessments'){
+      el.querySelectorAll('[data-quiz]').forEach(b=>b.addEventListener('click',()=>{this.qs={id:b.dataset.quiz,step:0,ans:{}};Model.ss({qs:this.qs});this.go('quiz');}));
+      el.querySelectorAll('[data-hist]').forEach(b=>b.addEventListener('click',()=>this.showHist(b.dataset.hist)));
+    }
+    if(page==='quiz'){
+      el.querySelectorAll('.sopt').forEach(o=>o.addEventListener('click',()=>{this.qs.ans[this.qs.step]=parseInt(o.dataset.val);Model.ss({qs:this.qs});this.render('quiz');}));
+      el.querySelector('[data-qnext]')?.addEventListener('click',()=>{this.qs.step++;this.render('quiz');});
+      el.querySelector('[data-qprev]')?.addEventListener('click',()=>{this.qs.step--;this.render('quiz');});
+      el.querySelector('[data-qfinish]')?.addEventListener('click',()=>this.finishQuiz());
+    }
+    if(page==='quiz-result'){
+      el.querySelectorAll('[data-quiz]').forEach(b=>b.addEventListener('click',()=>{this.qs={id:b.dataset.quiz,step:0,ans:{}};this.go('quiz');}));
+      el.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));
+    }
+    if(page==='tool-breathing'){
+      el.querySelector('#bcirc')?.addEventListener('click',()=>{if(this._brun)this.stopBreath();else this.startBreath();});
+    }
+    if(page==='tool-wheel')this.bindWheel();
+    if(page==='tool-grounding'){
+      el.querySelectorAll('[data-gnext]').forEach(btn=>btn.addEventListener('click',()=>{
+        const i=parseInt(btn.dataset.gnext),steps=el.querySelectorAll('.gs');
+        steps[i].classList.remove('cur');steps[i].classList.add('don');
+        if(i<4){steps[i+1].classList.add('cur');steps[i+1].scrollIntoView({behavior:'smooth',block:'center'});}
+        else{el.querySelector('#gdone')?.classList.remove('hidden');Model.logT('grounding');}
+      }));
+    }
+    if(page==='tool-eft'){
+      el.querySelectorAll('.efts').forEach(s=>s.addEventListener('click',()=>s.classList.toggle('done')));
+      el.querySelector('#eftreset')?.addEventListener('click',()=>el.querySelectorAll('.efts').forEach(s=>s.classList.remove('done','on')));
+      el.querySelector('[data-logtool="eft"]')?.addEventListener('click',()=>{Model.logT('eft');const b=el.querySelector('[data-logtool="eft"]');if(b){b.textContent='✓ Enregistrée';b.disabled=true;}});
+    }
+    if(page==='tool-empathy'){
+      this.empAns={};
+      el.querySelectorAll('[data-eq]').forEach(b=>b.addEventListener('click',()=>{el.querySelectorAll(`[data-eq="${b.dataset.eq}"]`).forEach(x=>x.classList.remove('sel'));b.classList.add('sel');this.empAns[b.dataset.eq]=b.dataset.val;}));
+      el.querySelector('#eanalyze')?.addEventListener('click',()=>{
+        const a=this.empAns;let sc=0;
+        if(a[0]==='Non, après'||a[0]==='Je ne sais pas')sc+=2;
+        if(a[1]==='Oui, clairement')sc+=2;if(a[1]==='Peut-être')sc+=1;
+        if(a[2]==="S'atténue / disparaît")sc+=2;
+        if(a[3]==='Non, surgit de nulle part')sc+=2;
+        if(a[4]==='Oui, pattern clair')sc+=2;
+        const res=el.querySelector('#eresult');if(!res)return;
+        let cls,html;
+        if(sc>=7){cls='cla';html=`<h3>🌊 Ressenti probablement absorbé</h3><p>Ce ressenti vient de l'extérieur. Il ne vous appartient pas.</p><p class="tf ts mt8"><strong>Action :</strong> Imaginez rendre consciemment ce ressenti à sa source. Ancrez-vous physiquement.</p>`;}
+        else if(sc>=4){cls='clw';html=`<h3>⚡ Ressenti mixte</h3><p>Part interne et absorbée. Explorez la part interne d'abord.</p>`;}
+        else{cls='cli';html=`<h3>🌿 Ressenti interne</h3><p>Ce ressenti vous appartient. Cherchez le besoin qu'il exprime.</p>`;}
+        res.innerHTML=`<div class="cl ${cls}">${html}</div>`;res.classList.remove('hidden');
+        Model.logT('empathy');
+      });
+    }
+    if(page==='tool-ifs'){
+      el.querySelectorAll('[data-ifs]').forEach(c=>c.addEventListener('click',()=>{
+        const part=TD.ifs.find(p=>p.id===c.dataset.ifs);if(!part)return;
+        this.ifsSel=part;el.querySelector('#ifscards')?.classList.add('hidden');
+        const pc=el.querySelector('#ifspc');
+        if(pc)pc.innerHTML=`<div style="font-size:1.8rem;margin-bottom:8px">${part.icon} <strong>${part.fr}</strong></div><div class="cd mb8">${part.desc}</div><div class="cl clw"><p><em>"${part.q}"</em></p></div>`;
+        el.querySelector('#ifsdlg')?.classList.remove('hidden');
+      }));
+      el.querySelector('#ifsback')?.addEventListener('click',()=>{el.querySelector('#ifscards')?.classList.remove('hidden');el.querySelector('#ifsdlg')?.classList.add('hidden');});
+      el.querySelector('#ifssave')?.addEventListener('click',()=>{
+        const txt=el.querySelector('#ifstxt')?.value.trim();if(!txt)return;
+        const p=this.ifsSel;
+        Model.addJ({emotion:'IFS — '+p.fr,type:'sentiment',origin:'internal',intensity:2,text:`${p.icon} [IFS — ${p.fr}]\n${txt}`});
+        Model.logT('ifs');const b=el.querySelector('#ifssave');if(b){b.textContent='✓ Sauvegardé';b.disabled=true;}
+      });
+    }
+    if(page==='tool-meditation'){
+      if(!extra){el.querySelectorAll('[data-med]').forEach(b=>b.addEventListener('click',()=>{this._medId=b.dataset.med;this._medStep=0;Model.logT('meditation');this.go('tool-meditation',b.dataset.med);}));}
+      else{
+        el.querySelectorAll('[data-mstep]').forEach(b=>b.addEventListener('click',()=>{
+          const med=TD.meds.find(m=>m.id===extra),i=parseInt(b.dataset.mstep);
+          if(i<med.steps.length-1){this._medStep=i+1;this.render('tool-meditation',extra);}
+          else{el.querySelector('#medsteps')?.classList.add('hidden');el.querySelector('#meddone')?.classList.remove('hidden');}
+        }));
+        el.querySelectorAll('[data-mtime]').forEach(b=>{
+          b.addEventListener('click',()=>{
+            const sec=parseInt(b.dataset.mtime);clearInterval(this._medT);let rem=sec;b.textContent=`⏱ ${rem}s`;
+            this._medT=setInterval(()=>{rem--;b.textContent=rem>0?`⏱ ${rem}s`:'✓';if(rem<=0)clearInterval(this._medT);},1000);
+          });
+        });
+      }
+    }
+    if(page==='tool-unsent'){
+      el.querySelectorAll('[data-lto]').forEach(b=>b.addEventListener('click',()=>{
+        el.querySelectorAll('[data-lto]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');this._lto=b.dataset.lto;
+        const to=TD.letterTo.find(l=>l.id===b.dataset.lto);
+        const ld=el.querySelector('#ldest');if(ld)ld.textContent='À : '+(to?.fr||'…');
+        const lo=el.querySelector('#lother');if(lo)lo.classList.toggle('hidden',b.dataset.lto!=='other');
+      }));
+      el.querySelector('#lsave')?.addEventListener('click',()=>{
+        const txt=el.querySelector('#ltxt')?.value.trim();if(!txt){alert('Veuillez écrire un texte avant de sauvegarder.');return;}
+        const to=el.querySelector('#lcustom')?.value||TD.letterTo.find(l=>l.id===this._lto)?.fr||'?';
+        Model.addJ({emotion:`Lettre à : ${to}`,type:'sentiment',origin:'internal',intensity:2,text:txt,_tool:'unsent'});
+        Model.logT('unsent');const b=el.querySelector('#lsave');if(b){b.textContent='✓ Sauvegardée';b.disabled=true;setTimeout(()=>{b.textContent='Sauvegarder dans le journal';b.disabled=false;},3000);}
+      });
+      el.querySelector('#lclear')?.addEventListener('click',()=>{if(confirm('Effacer ce texte ?'))el.querySelector('#ltxt').value='';});
+    }
+    if(page==='tool-bodyscan'){
+      el.querySelectorAll('.bzone').forEach(z=>z.addEventListener('click',()=>{
+        el.querySelectorAll('.bzone').forEach(b=>b.classList.remove('bsel'));z.classList.add('bsel');this._bzone=z.dataset.zone;
+        const zone=TD.bodyZones.find(b=>b.id===this._bzone);if(!zone)return;
+        const info=el.querySelector('#bzinfo');if(info)info.innerHTML=`<h4>🫀 ${zone.label}</h4><p class="tf ts">${zone.meaning}</p>`;
+        const tools=el.querySelector('#bztools');
+        if(tools){tools.innerHTML=`<div class="tx tm mb6">Outils suggérés :</div>`+zone.tools.map(tid=>{const t=TD.tools.find(x=>x.id===tid);return t?`<button class="sug no-print" data-tool="${tid}">${t.icon} ${t.title}</button>`:''}).join('');tools.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));}
+        el.querySelector('#bzact')?.classList.remove('hidden');
+      }));
+      el.querySelector('#bzsave')?.addEventListener('click',()=>{
+        const txt=el.querySelector('#bztxt')?.value.trim();if(!txt)return;
+        const zone=TD.bodyZones.find(b=>b.id===this._bzone);
+        Model.addJ({emotion:`Scan — ${zone?.label||'corps'}`,type:'emotion',origin:'internal',intensity:2,bodyNote:txt,text:`Scan corporel — ${zone?.label||''} : ${txt}`});
+        Model.logT('bodyscan');const b=el.querySelector('#bzsave');if(b){b.textContent='✓ Ajouté';b.disabled=true;setTimeout(()=>{b.textContent='Ajouter au journal';b.disabled=false;},2000);}
+      });
+    }
+    if(page==='tool-shadow'){
+      this._swAns={};this._swStep=0;
+      const advance=(i)=>{
+        const txt=el.querySelector(`#sw${i} .sw-txt`)?.value.trim();
+        this._swAns[i]=txt||'';
+        const cur=el.querySelector(`#sw${i}`);if(cur){cur.classList.remove('active');cur.classList.add('sdone');}
+        if(i<3){const next=el.querySelector(`#sw${i+1}`);if(next){next.classList.remove('sdone');next.classList.add('active');const form=next.querySelector('.sw-form');if(form)form.classList.remove('hidden');next.scrollIntoView({behavior:'smooth',block:'center'});}}
+        else{
+          const combined=TD.shadow.map((s,idx)=>`**${s.title}**\n${this._swAns[idx]||''}`).join('\n\n');
+          Model.addJ({emotion:'Travail sur l\'Ombre',type:'sentiment',origin:'internal',intensity:2,text:`🌑 [Travail sur l'Ombre]\n\n${combined}`});
+          Model.logT('shadow');
+          el.querySelector('#swsteps')?.classList.add('hidden');
+          el.querySelector('#swdone')?.classList.remove('hidden');
+        }
+      };
+      el.querySelectorAll('[data-swnext]').forEach(b=>b.addEventListener('click',()=>advance(parseInt(b.dataset.swnext))));
+    }
+    if(page==='tool-mindmap')this.bindMindMap();
+    if(page==='tool-void-dialogue')this.bindVoidDialogue();
+    if(page==='tool-timeline')this.bindTimeline();
+    if(page==='tool-ifs-ai')this.bindIFSai();
+    if(page==='tool-gratitude'){
+      el.querySelector('#gadd')?.addEventListener('click',()=>{
+        const v=el.querySelector('#gv')?.value.trim(),s=el.querySelector('#gs')?.value.trim(),c=el.querySelector('#gc')?.value.trim();
+        if(!v&&!s&&!c){alert('Veuillez remplir au moins un champ.');return;}
+        Model.addG({vivance:v,sensation:s,chose:c});Model.logT('gratitude');
+        el.querySelector('#gv').value='';el.querySelector('#gs').value='';el.querySelector('#gc').value='';
+        const b=el.querySelector('#gadd');if(b){b.textContent='✓ Sauvegardé!';setTimeout(()=>{b.textContent='Sauvegarder ✓';},2000);}
+        this.render('tool-gratitude');
+      });
+    }
+    if(page==='checkin'){
+      el.querySelectorAll('[data-civ]').forEach(o=>o.addEventListener('click',()=>{this._ciAns[this._ciStep]=parseInt(o.dataset.civ);this.render('checkin');}));
+      el.querySelectorAll('[data-cinext]').forEach(b=>b.addEventListener('click',()=>{
+        const s=parseInt(b.dataset.cinext);
+        if(s<TD.checkinQs.length-1){this._ciStep=s+1;this.render('checkin','continue');}
+        else{
+          const score=Object.values(this._ciAns).reduce((s,v)=>s+v,0);
+          Model.addCI({score,answers:{...this._ciAns}});
+          this._ciStep=TD.checkinQs.length;this._ciAns={};this.render('checkin','continue');
+        }
+      }));
+      el.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{this._ciStep=0;Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));
+    }
+    if(page==='journal'){
+      el.querySelector('#jnew')?.addEventListener('click',()=>this.openJModal());
+      el.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{if(confirm(I18n.confirmDel())){Model.delJ(parseInt(b.dataset.del));this.render('journal');}}));
+      el.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));
+      let deb;
+      // Tag cloud
+    const allTags={};
+    (Model.data.journal||[]).forEach(e=>(e.tags||[]).forEach(t=>{allTags[t]=(allTags[t]||0)+1;}));
+    const tc=el.querySelector('#tag-cloud');
+    if(tc){tc.innerHTML=Object.entries(allTags).sort((a,b)=>b[1]-a[1]).slice(0,12).map(([t,c])=>`<button style="padding:2px 9px;border-radius:100px;background:var(--bg2);border:1px solid var(--bdr);font-size:.72rem;color:var(--txm);cursor:pointer" data-tagfilter="${t}">#${t} <small>${c}</small></button>`).join('');
+      tc.querySelectorAll('[data-tagfilter]').forEach(b=>b.addEventListener('click',()=>{this._jf.tag=b.dataset.tagfilter;this.render('journal');}));}
+    el.querySelector('#jsearch')?.addEventListener('input',e=>{clearTimeout(deb);deb=setTimeout(()=>{this._jf.search=e.target.value;this.render('journal');},300);});
+      el.querySelector('#jforigin')?.addEventListener('change',e=>{this._jf.origin=e.target.value||undefined;this.render('journal');});
+      el.querySelector('#jftype')?.addEventListener('change',e=>{this._jf.type=e.target.value||undefined;this.render('journal');});
+      el.querySelector('#jclear')?.addEventListener('click',()=>{this._jf={};this.render('journal');});
+    el.querySelector('#jclearfilter')?.addEventListener('click',()=>{this._jf={};this.render('journal');});
+      // Tabs
+      el.querySelectorAll('[data-jtab]').forEach(tab=>tab.addEventListener('click',()=>{
+        el.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');
+        el.querySelectorAll('#jentries,#jinsights,#jgratitude').forEach(p=>p.classList.add('hidden'));
+        const target=el.querySelector('#'+tab.dataset.jtab);if(target)target.classList.remove('hidden');
+      }));
+    }
+    if(page==='programs'){
+      el.querySelectorAll('[data-progday]').forEach(b=>b.addEventListener('click',()=>{Model.saveProgDay(b.dataset.progid,parseInt(b.dataset.progday));this.go('programs',b.dataset.progid);}));
+      el.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{Model.logT(b.dataset.tool);this.go('tool-'+b.dataset.tool);}));
+    }
+    if(page==='settings')this.bindSettings();
+  },
+
+  // ── Breathing ──
+  startBreath(){
+    this._brun=true;
+    const mode=document.getElementById('bmode')?.value||'55';
+    const cycles=parseInt(document.getElementById('bcycles')?.value||'10');
+    const phases={
+      '55':[{n:'Inspirez',cls:'inh',d:5},{n:'Expirez',cls:'exh',d:5}],
+      '478':[{n:'Inspirez',cls:'inh',d:4},{n:'Retenez',cls:'hld',d:7},{n:'Expirez',cls:'exh',d:8}],
+      'box':[{n:'Inspirez',cls:'inh',d:4},{n:'Retenez',cls:'hld',d:4},{n:'Expirez',cls:'exh',d:4},{n:'Retenez',cls:'hld',d:4}]
+    };
+    const ph=phases[mode]||phases['55'];
+    let cy=0,pi=0;
+    const upd=()=>{
+      if(!this._brun)return;
+      const p=ph[pi%ph.length];
+      if(pi>0&&pi%ph.length===0)cy++;
+      if(cy>=cycles){this.stopBreath(true);return;}
+      const c=document.getElementById('bcirc');if(c){c.className='bring '+p.cls;const l=document.getElementById('blbl');if(l)l.textContent=p.n;}
+      const pe=document.getElementById('bphase');if(pe)pe.textContent=p.n;
+      const cn=document.getElementById('bcnt');if(cn)cn.textContent=`Cycle ${cy+1} / ${cycles}`;
+      let rem=p.d;const te=document.getElementById('btimer');if(te)te.textContent=rem;
+      this._bint=setInterval(()=>{rem--;if(te)te.textContent=rem;if(rem<=0){clearInterval(this._bint);pi++;upd();}},1000);
+    };
+    upd();
+  },
+  stopBreath(complete=false){
+    this._brun=false;clearInterval(this._bint);
+    const c=document.getElementById('bcirc');if(c){c.className='bring';const l=document.getElementById('blbl');if(l)l.textContent='Toucher\npour commencer';}
+    const pe=document.getElementById('bphase');if(pe)pe.textContent=complete?'Session terminée ✓':'';
+    const te=document.getElementById('btimer');if(te)te.textContent='';
+    if(complete)Model.logT('breathing');
+  },
+
+  // ── Wheel ──
+  bindWheel(){
+    const el=document.getElementById('pc');
+    const svg=el.querySelector('#ewhl');if(!svg)return;
+    svg.querySelectorAll('.wslice').forEach(sl=>sl.addEventListener('click',()=>{
+      const em=TD.wheel.find(e=>e.id===sl.dataset.em);if(!em)return;
+      this._wsel=em;
+      const info=el.querySelector('#winfo');
+      if(info)info.innerHTML=`<span style="display:inline-block;padding:2px 9px;border-radius:100px;font-size:.72rem;font-weight:700;background:${em.color}22;color:${em.color}">${em.type==='emotion'?'⚡ Émotion':'💭 Sentiment'}</span><br><span style="font-weight:600;color:${em.color}">${em.fr}</span>`;
+      // Niveau 2
+      const s2=el.querySelector('#wsub2');
+      if(s2){s2.innerHTML=`<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:10px">${em.sub.map(s=>`<button class="cbtn" data-sub2="${s.fr}" style="font-size:.78rem">${s.fr}</button>`).join('')}</div>`;
+        s2.querySelectorAll('[data-sub2]').forEach(b=>b.addEventListener('click',()=>{
+          s2.querySelectorAll('[data-sub2]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');this._wsel._s2=b.dataset.sub2;
+          // Niveau 3
+          const sub=em.sub.find(x=>x.fr===b.dataset.sub2),s3=el.querySelector('#wsub3');
+          if(s3&&sub?.l3){s3.innerHTML=`<div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-top:6px">${sub.l3.map(l=>`<button class="cbtn" data-sub3="${l.fr}" style="font-size:.74rem;padding:4px 10px">${l.fr}</button>`).join('')}</div>`;s3.querySelectorAll('[data-sub3]').forEach(b3=>b3.addEventListener('click',()=>{s3.querySelectorAll('[data-sub3]').forEach(x=>x.classList.remove('sel'));b3.classList.add('sel');this._wsel._s3=b3.dataset.sub3;}));}
+          else if(s3)s3.innerHTML='';
+        }));
+      }
+      const log=el.querySelector('#wlog');if(log)log.classList.remove('hidden');
+    }));
+    el.querySelector('#wlog')?.addEventListener('click',()=>{
+      if(!this._wsel)return;
+      const lbl=this._wsel._s3||this._wsel._s2||this._wsel.fr;
+      Model.addJ({emotion:lbl,type:this._wsel.type,intensity:2,text:`(Roue) ${lbl}`});
+      Model.logW(lbl);
+      const b=el.querySelector('#wlog');if(b){b.textContent='✓ Ajouté !';setTimeout(()=>{b.textContent='📔 Ajouter au journal';},2000);}
+    });
+  },
+
+  // ── Mind Map ──
+  bindMindMap(){
+    const el=document.getElementById('pc');
+    const canvas=el.querySelector('#mmcanvas'),svg=el.querySelector('#mmsvg');
+    if(!canvas)return;
+    // Restaurer depuis localStorage
+    if(Model.data.mindmapNodes) this._mmnodes=JSON.parse(JSON.stringify(Model.data.mindmapNodes));
+    if(Model.data.mindmapLinks) this._mmlinks=JSON.parse(JSON.stringify(Model.data.mindmapLinks));
+    const saveMM=()=>{Model.data.mindmapNodes=this._mmnodes;Model.data.mindmapLinks=this._mmlinks;Model.save();};
+    const render=()=>{
+      // SVG links
+      const links=this._mmlinks.map(l=>{
+        const a=this._mmnodes[l[0]],b=this._mmnodes[l[1]];if(!a||!b)return'';
+        return`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--bdr)" stroke-width="2"/>`;
+      }).join('');
+      svg.innerHTML=links;
+      // Remove old nodes
+      canvas.querySelectorAll('.mmnode').forEach(n=>n.remove());
+      // Draw nodes
+      this._mmnodes.forEach((n,i)=>{
+        const size=[50,65,80,95][n.size-1]||65;
+        const div=document.createElement('div');
+        div.className='mmnode'+(this._mmsel===i?' msel':'');
+        div.style.cssText=`width:${size}px;height:${size}px;background:${n.color};left:${n.x-size/2}px;top:${n.y-size/2}px;font-size:${Math.round(7+n.size*2)}px`;
+        div.textContent=n.label;
+        // Drag
+        let dx=0,dy=0,dragging=false;
+        div.addEventListener('mousedown',e=>{e.stopPropagation();dragging=true;dx=e.clientX-n.x;dy=e.clientY-n.y;});
+        div.addEventListener('click',e=>{e.stopPropagation();
+          if(this._mmsel===null){this._mmsel=i;}
+          else if(this._mmsel===i){this._mmsel=null;}
+          else{this._mmlinks.push([this._mmsel,i]);this._mmsel=null;}
+          render();
+        });
+        div.addEventListener('touchstart',e=>{e.stopPropagation();const t=e.touches[0];dragging=true;dx=t.clientX-n.x;dy=t.clientY-n.y;},{passive:true});
+        document.addEventListener('mousemove',e=>{if(!dragging)return;n.x=e.clientX-dx;n.y=e.clientY-dy;render();});
+        document.addEventListener('mouseup',()=>{dragging=false;});
+        document.addEventListener('touchmove',e=>{if(!dragging)return;const t=e.touches[0];n.x=t.clientX-dx;n.y=t.clientY-dy;render();},{passive:true});
+        document.addEventListener('touchend',()=>{dragging=false;});
+        canvas.appendChild(div);
+      });
+    };
+    el.querySelector('#mm-add')?.addEventListener('click',()=>{
+      const inp=el.querySelector('#mm-inp'),val=inp?.value.trim();if(!val)return;
+      const rect=canvas.getBoundingClientRect();
+      this._mmnodes.push({label:val,color:el.querySelector('#mm-col')?.value||'#6B9E97',size:parseInt(el.querySelector('#mm-size')?.value)||2,x:rect.width/2+(Math.random()-0.5)*100,y:rect.height/2+(Math.random()-0.5)*100});
+      if(inp)inp.value='';saveMM();render();
+    });
+    el.querySelector('#mm-clr')?.addEventListener('click',()=>{this._mmnodes=[];this._mmlinks=[];this._mmsel=null;saveMM();render();});
+    el.querySelector('#mm-sav')?.addEventListener('click',()=>{
+      if(!this._mmnodes.length){alert('Ajoutez des émotions d\'abord.');return;}
+      const labels=this._mmnodes.map(n=>n.label).join(', ');
+      Model.addJ({emotion:'Carte mentale',type:'both',intensity:2,text:`🕸️ [Carte mentale]\nÉmotions : ${labels}\nLiens : ${this._mmlinks.length}`});
+      Model.logT('mindmap');const b=el.querySelector('#mm-sav');if(b){b.textContent='✓ Sauvegardée';setTimeout(()=>{b.textContent='Sauvegarder';},2000);}
+    });
+    render();
+  },
+
+  // ── Void Dialogue ──
+  bindVoidDialogue(){
+    const el=document.getElementById('pc');
+    el.querySelectorAll('[data-vdp]').forEach(b=>b.addEventListener('click',()=>{
+      const left=el.querySelector('#vd-left');
+      if(left){left.value=(left.value?left.value+'\n\n':'')+b.dataset.vdp+'\n';left.focus();}
+    }));
+    el.querySelector('#vd-save')?.addEventListener('click',()=>{
+      const l=el.querySelector('#vd-left')?.value.trim();
+      const r=el.querySelector('#vd-right')?.value.trim();
+      if(!l&&!r){alert('Veuillez écrire quelque chose avant de sauvegarder.');return;}
+      Model.addJ({emotion:'Dialogue avec le Vide',type:'sentiment',origin:'internal',intensity:3,
+        text:'🌒 [Dialogue avec le Vide]\n\n**Vous :** '+(l||'…')+'\n\n**Le Vide :** '+(r||'…')});
+      Model.logT('void-dialogue');
+      const b=el.querySelector('#vd-save');
+      if(b){b.textContent='✓ Sauvegardé';b.disabled=true;
+        setTimeout(()=>{b.textContent='Sauvegarder dans le journal';b.disabled=false;},2500);}
+    });
+    el.querySelector('#vd-clear')?.addEventListener('click',()=>{
+      if(confirm('Effacer les deux colonnes ?')){
+        const l=el.querySelector('#vd-left'),r=el.querySelector('#vd-right');
+        if(l)l.value='';if(r)r.value='';}
+    });
+    el.querySelector('#vd-save')?.addEventListener('click',()=>{
+      const l=el.querySelector('#vd-left')?.value.trim();
+      const r=el.querySelector('#vd-right')?.value.trim();
+      if(!l&&!r){alert('Veuillez écrire quelque chose avant de sauvegarder.');return;}
+      Model.addJ({emotion:'Dialogue avec le Vide',type:'sentiment',origin:'internal',intensity:3,
+        text:`🌒 [Dialogue avec le Vide]\n\n**Vous :** ${l||'…'}\n\n**Le Vide :** ${r||'…'}`});
+      Model.logT('void-dialogue');
+      const b=el.querySelector('#vd-save');if(b){b.textContent='✓ Sauvegardé';b.disabled=true;
+        setTimeout(()=>{b.textContent='Sauvegarder dans le journal';b.disabled=false;},2500);}
+    });
+    el.querySelector('#vd-clear')?.addEventListener('click',()=>{
+      if(confirm('Effacer les deux colonnes ?')){
+        el.querySelector('#vd-left').value='';el.querySelector('#vd-right').value='';}
+    });
+  },
+
+  // ── Timeline ──
+  _tlEvents: [], _tlSelected: null,
+
+  bindTimeline(){
+    const el=document.getElementById('pc');
+    // Charger depuis localStorage
+    const saved=Model.data.timelineEvents||[];
+    this._tlEvents=[...saved];
+    this._tlSelected=null;
+    this.renderTL();
+
+    el.querySelector('#tl-add')?.addEventListener('click',()=>{
+      const yr=parseInt(el.querySelector('#tl-year')?.value);
+      const lbl=el.querySelector('#tl-label')?.value.trim();
+      const typ=el.querySelector('#tl-type')?.value||'neutral';
+      if(!yr||!lbl){alert('Veuillez saisir une année et un événement.');return;}
+      this._tlEvents.push({id:Date.now(),year:yr,label:lbl,type:typ,note:''});
+      this._tlEvents.sort((a,b)=>a.year-b.year);
+      Model.data.timelineEvents=this._tlEvents;Model.save();
+      el.querySelector('#tl-year').value='';el.querySelector('#tl-label').value='';
+      this.renderTL();
+    });
+    el.querySelector('#tl-clear')?.addEventListener('click',()=>{
+      if(confirm('Effacer toute la ligne de vie ?')){
+        this._tlEvents=[];this._tlSelected=null;Model.data.timelineEvents=[];Model.save();
+        this.renderTL();el.querySelector('#tl-detail')?.classList.add('hidden');}
+    });
+    el.querySelector('#tl-save-journal')?.addEventListener('click',()=>{
+      if(!this._tlEvents.length){alert('Ajoutez des événements d\'abord.');return;}
+      const txt=this._tlEvents.map(e=>`${e.year} — ${e.label} [${e.type}]${e.note?' : '+e.note:''}`).join('\n');
+      Model.addJ({emotion:'Ligne de vie',type:'both',intensity:2,text:`📅 [Ligne de Vie Émotionnelle]\n\n${txt}`});
+      Model.logT('timeline');alert('Sauvegardé dans le journal.');
+    });
+    el.querySelector('#tl-note-save')?.addEventListener('click',()=>{
+      if(this._tlSelected===null)return;
+      const note=el.querySelector('#tl-note')?.value||'';
+      this._tlEvents[this._tlSelected].note=note;
+      Model.data.timelineEvents=this._tlEvents;Model.save();
+      const b=el.querySelector('#tl-note-save');if(b){b.textContent='✓ Sauvegardé';setTimeout(()=>{b.textContent='Sauvegarder';},2000);}
+    });
+    el.querySelector('#tl-del')?.addEventListener('click',()=>{
+      if(this._tlSelected===null)return;
+      this._tlEvents.splice(this._tlSelected,1);this._tlSelected=null;
+      Model.data.timelineEvents=this._tlEvents;Model.save();
+      el.querySelector('#tl-detail')?.classList.add('hidden');this.renderTL();
+    });
+  },
+
+  renderTL(){
+    const svg=document.getElementById('tl-svg');if(!svg)return;
+    const events=this._tlEvents;const W=Math.max(600,events.length*80+100);
+    svg.setAttribute('viewBox',`0 0 ${W} 160`);svg.style.minWidth=W+'px';
+    if(!events.length){svg.innerHTML=`<text x="${W/2}" y="80" text-anchor="middle" font-size="13" fill="var(--txm)" font-family="Georgia">Aucun événement — ajoutez votre premier moment de vie</text>`;return;}
+    const years=events.map(e=>e.year);
+    const minY=Math.min(...years),maxY=Math.max(...years);
+    const span=Math.max(maxY-minY,1);
+    const pad=60,axisY=90;
+    const colors={positive:'#6B9E97',negative:'#D4847A',neutral:'#C4A882',void:'#9B7EC8'};
+    let html=`<line x1="${pad}" y1="${axisY}" x2="${W-pad}" y2="${axisY}" stroke="var(--bdr)" stroke-width="2"/>`;
+    // Année min et max
+    html+=`<text x="${pad}" y="${axisY+18}" text-anchor="middle" font-size="10" fill="var(--txm)">${minY}</text>`;
+    if(maxY!==minY) html+=`<text x="${W-pad}" y="${axisY+18}" text-anchor="middle" font-size="10" fill="var(--txm)">${maxY}</text>`;
+    events.forEach((ev,i)=>{
+      const x=pad+(ev.year-minY)/span*(W-2*pad);
+      const col=colors[ev.type]||'#6B9E97';
+      const above=i%2===0;const textY=above?axisY-18:axisY+32;
+      html+=`<circle cx="${x}" cy="${axisY}" r="9" fill="${col}" stroke="var(--bgs)" stroke-width="2" style="cursor:pointer" data-tl="${i}"/>`;
+      html+=`<line x1="${x}" y1="${axisY}" x2="${x}" y2="${above?axisY-14:axisY+14}" stroke="${col}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+      // Texte avec ellipsis
+      const label=ev.label.length>14?ev.label.slice(0,13)+'…':ev.label;
+      html+=`<text x="${x}" y="${textY}" text-anchor="middle" font-size="9.5" fill="var(--tx2)" font-family="Georgia" style="cursor:pointer" data-tl="${i}">${ev.year}</text>`;
+      html+=`<text x="${x}" y="${above?textY-13:textY+13}" text-anchor="middle" font-size="9" fill="${col}" font-family="Georgia" style="cursor:pointer" data-tl="${i}">${label}</text>`;
+    });
+    svg.innerHTML=html;
+    svg.querySelectorAll('[data-tl]').forEach(el2=>el2.addEventListener('click',()=>{
+      const i=parseInt(el2.dataset.tl);this._tlSelected=i;
+      const ev=this._tlEvents[i];
+      const detail=document.getElementById('tl-detail');
+      const title=document.getElementById('tl-detail-title');
+      const note=document.getElementById('tl-note');
+      if(detail)detail.classList.remove('hidden');
+      if(title)title.textContent=`${ev.year} — ${ev.label}`;
+      if(note)note.value=ev.note||'';
+    }));
+  },
+
+  // ── IFS IA (API Anthropic) ──
+  _ifsAiHistory: [], _ifsAiPart: '',
+
+  bindIFSai(){
+    const el=document.getElementById('pc');
+    this._ifsAiHistory=[];this._ifsAiPart='';
+
+    el.querySelectorAll('[data-ifs-part]').forEach(b=>b.addEventListener('click',()=>{
+      el.querySelectorAll('[data-ifs-part]').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');this._ifsAiPart=b.dataset.ifsPart;
+    }));
+
+    const sendMsg=async()=>{
+      const inp=el.querySelector('#ifs-ai-inp');const msg=inp?.value.trim();
+      if(!msg)return;inp.value='';
+      // Afficher message utilisateur
+      this.addIFSaiMsg(el,'user',msg);
+      this._ifsAiHistory.push({role:'user',content:msg});
+      // Loading
+      el.querySelector('#ifs-ai-loading')?.classList.remove('hidden');
+      el.querySelector('#ifs-ai-send').disabled=true;
+      try{
+        const sysPrompt=`Tu es un facilitateur IFS (Internal Family Systems) bienveillant et expérimenté. Tu guides l'utilisateur dans l'exploration de ses parties intérieures avec curiosité, douceur et sans jugement. ${this._ifsAiPart?'La partie explorée est : '+this._ifsAiPart+'.':''} Tu poses des questions ouvertes, douces, une à la fois. Tu ne donnes pas de conseils thérapeutiques directs. Tu valides les émotions et expériences. Tu rappelles régulièrement que chaque partie a une intention positive. Tes réponses sont courtes (3-5 phrases maximum). Tu parles en français, avec chaleur et respect.`;
+        const res=await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,
+            system:sysPrompt,messages:this._ifsAiHistory})
+        });
+        const data=await res.json();
+        const reply=data.content?.[0]?.text||'Je suis là. Pouvez-vous me dire un peu plus ?';
+        this._ifsAiHistory.push({role:'assistant',content:reply});
+        this.addIFSaiMsg(el,'ai',reply);
+      }catch(e){
+        this.addIFSaiMsg(el,'ai','(Connexion indisponible. Assurez-vous d\'être en ligne pour utiliser cet outil.)');
+      }
+      el.querySelector('#ifs-ai-loading')?.classList.add('hidden');
+      el.querySelector('#ifs-ai-send').disabled=false;
+    };
+
+    el.querySelector('#ifs-ai-send')?.addEventListener('click',sendMsg);
+    el.querySelector('#ifs-ai-inp')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+
+    el.querySelector('#ifs-ai-save')?.addEventListener('click',()=>{
+      if(!this._ifsAiHistory.length){alert('Aucune conversation à sauvegarder.');return;}
+      const txt=this._ifsAiHistory.map(m=>`**${m.role==='user'?'Vous':'Facilitateur IFS'}:** ${m.content}`).join('\n\n');
+      Model.addJ({emotion:'Session IFS (IA)'+(this._ifsAiPart?' — '+this._ifsAiPart:''),type:'sentiment',origin:'internal',intensity:3,text:`🤖 [Facilitateur IFS (IA)]\n\n${txt}`});
+      Model.logT('ifs-ai');const b=el.querySelector('#ifs-ai-save');if(b){b.textContent='✓ Sauvegardée';setTimeout(()=>{b.textContent='Sauvegarder la session';},2500);}
+    });
+
+    el.querySelector('#ifs-ai-reset')?.addEventListener('click',()=>{
+      if(confirm('Démarrer une nouvelle session ? La conversation actuelle sera effacée (pensez à la sauvegarder d\'abord).')){
+        this._ifsAiHistory=[];this._ifsAiPart='';
+        el.querySelectorAll('[data-ifs-part]').forEach(x=>x.classList.remove('sel'));
+        const chat=el.querySelector('#ifs-ai-chat');
+        if(chat)chat.innerHTML=`<div style="background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%;align-self:flex-start"><strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>Nouvelle session. Avec quelle partie souhaitez-vous entrer en contact aujourd'hui ?</div>`;}
+    });
+  },
+
+  addIFSaiMsg(el,role,text){
+    const chat=el.querySelector('#ifs-ai-chat');if(!chat)return;
+    const isAI=role==='ai';
+    const div=document.createElement('div');
+    div.style.cssText=`${isAI?'background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);align-self:flex-start':'background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2) 0 var(--r2) var(--r2);align-self:flex-end'};padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%`;
+    div.innerHTML=`${isAI?'<strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>':'<strong style="display:block;font-size:.72rem;color:var(--tx2);margin-bottom:4px">Vous</strong>'}${text}`;
+    chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  },
+
+  // ── Quiz finish ──
+  finishQuiz(){
+    const a=Assessments.getById(this.qs.id);
+    let score,bt,bd,bc='#C4A882';
+    if(a.multiDim){
+      const ds={};
+      a.dims.forEach((d,di)=>{
+        // Polarité par dimension : certaines questions sont positives (score élevé = bon)
+        ds[d.id]=d.qs.reduce((_,q,qi)=>{
+          return _+(this.qs.ans[di*4+qi]||0);
+        },0);
+      });
+      const top=Object.entries(ds).sort((a,b)=>b[1]-a[1])[0][0];
+      const band=a.bands.find(b=>b.dim===top)||a.bands[0];
+      bt=band.title;bd=band.desc;score=ds[top];
+      Model.saveA(this.qs.id,{score,maxScore:16,bandTitle:bt,dimScores:ds});
+    }else{
+      // Scoring avec polarité : pol[] contient 1 pour les questions positives (inverser la valeur)
+      score=Object.values(this.qs.ans).reduce((s,v,i)=>{
+        const pol=(a.pol&&a.pol[i]===1)?4-(v||0):(v||0);
+        return s+pol;
+      },0);
+      const band=a.bands.find(b=>score<=b.max)||a.bands[a.bands.length-1];
+      bt=band.title;bd=band.desc;bc=band.color;
+      Model.saveA(this.qs.id,{score,maxScore:a.max,bandTitle:bt});
+    }
+    Object.assign(this.qs,{score,bt,bd,bc});Model.cs();this.go('quiz-result');
+  },
+
+  // ── History modal ──
+  showHist(id){
+    const a=Assessments.getById(id),res=Model.data.assessments[id]||[];
+    document.getElementById('mc').innerHTML=`<div class="mt">${a.icon} Historique</div>${res.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:.84rem"><span>${new Date(r.date).toLocaleDateString('fr-FR')}</span><span class="ts tf">${r.bandTitle||''}</span><span style="font-family:var(--fd);font-size:1.1rem;color:var(--p)">${r.score}${a.max?'/'+a.max:''}</span></div>`).join('')||`<p class="tm tf">Aucun historique.</p>`}${!a.multiDim&&res.length>=2?V.svgChart(res,a.max):''}  <div class="ma"><button class="btn bs" id="hc">Fermer</button></div>`;
+    document.getElementById('hc').addEventListener('click',()=>this.closeModal());
+    document.getElementById('mov').classList.add('open');
+  },
+
+  // ── Journal modal ──
+  openJModal(prefill={}){
+    const mc=document.getElementById('mc');mc.innerHTML=V.renderJournalModal();
+    let selOrig=prefill.origin||null;
+    // Restaurer brouillon si existe
+    const draft=Model.data.journalDraft||{};
+    if(draft.text){setTimeout(()=>{const t=document.getElementById('jtxt');if(t)t.value=draft.text;},50);}
+    mc.querySelectorAll('.pchip').forEach(b=>b.addEventListener('click',()=>{const t=document.getElementById('jtxt');if(t){t.value=(t.value?t.value+'\n\n':'')+b.dataset.prompt+'\n';t.focus();}}));
+    mc.querySelectorAll('[data-origin]').forEach(b=>b.addEventListener('click',()=>{mc.querySelectorAll('[data-origin]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');selOrig=b.dataset.origin;}));
+    const sl=mc.querySelector('#jintensity'),ll=mc.querySelector('#jilbl');
+    sl?.addEventListener('input',()=>{if(ll)ll.textContent=sl.value+'/4';});
+    mc.querySelector('#jcancel')?.addEventListener('click',()=>{
+      Model.data.journalDraft={};Model.save();this.closeModal();});
+    mc.querySelector('#jsave')?.addEventListener('click',()=>{
+      const txt=document.getElementById('jtxt')?.value.trim();
+      const emotion=document.getElementById('jemotion')?.value||'';
+      const type=document.getElementById('jtype')?.value||'';
+      const bodyNote=document.getElementById('jbody')?.value.trim()||'';
+      const intensity=parseInt(document.getElementById('jintensity')?.value)||2;
+      if(!txt&&!emotion){alert('Veuillez saisir un texte ou sélectionner une émotion.');return;}
+      const tagsRaw=document.getElementById('jtags')?.value||'';
+      const tags=tagsRaw.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);
+      Model.addJ({text:txt,emotion,type,origin:selOrig,intensity,bodyNote,tags});
+      Model.data.journalDraft={};Model.save();
+      this.closeModal();this.go('journal');
+    });
+    document.getElementById('mov').classList.add('open');
+  },
+
+  // ── Intention modal ──
+  openIntModal(){
+    document.getElementById('mc').innerHTML=`<div class="mt">🎯 Intention du jour</div><div class="fg"><label>Votre intention</label><input type="text" id="inttxt" value="${Model.data.intention||''}" placeholder="Ex : rester présent(e) à mes ressentis…"></div><div class="ma"><button class="btn bs" id="intc">Annuler</button><button class="btn bp" id="ints">Sauvegarder</button></div>`;
+    document.getElementById('intc').addEventListener('click',()=>this.closeModal());
+    document.getElementById('ints').addEventListener('click',()=>{Model.setInt(document.getElementById('inttxt').value.trim());this.closeModal();this.render('dashboard');});
+    document.getElementById('mov').classList.add('open');
+    document.getElementById('inttxt').focus();
+  },
+
+  // ── Settings ──
+  bindSettings(){
+    const el=document.getElementById('pc');
+    el.querySelectorAll('[data-theme-pick]').forEach(b=>b.addEventListener('click',()=>{
+      const t=b.dataset.themePick;
+      document.documentElement.setAttribute('data-theme',t);
+      Model.data.meta=Model.data.meta||{};Model.data.meta.theme=t;Model.save();
+      this.updateThemeBtn();this.render('settings');
+    }));
+    el.querySelector('#req-notif')?.addEventListener('click',async()=>{
+      const ok=await Notifs.req();
+      const s=el.querySelector('#notif-status');if(s)s.textContent=ok?'✓ Autorisées':'Refusées';
+    });
+    el.querySelector('#rem-en')?.addEventListener('change',e=>{Model.data.reminders=Model.data.reminders||{};Model.data.reminders.enabled=e.target.checked;Model.save();});
+    el.querySelectorAll('.rem-time').forEach(inp=>inp.addEventListener('change',e=>{const i=parseInt(e.target.dataset.ri);Model.data.reminders.times=Model.data.reminders.times||[];Model.data.reminders.times[i]=e.target.value;Model.save();}));
+    el.querySelector('#enc-en')?.addEventListener('click',async()=>{
+      const p1=el.querySelector('#enc-p1')?.value,p2=el.querySelector('#enc-p2')?.value,hint=el.querySelector('#enc-hint')?.value||'';
+      if(!p1||p1!==p2){alert('Les mots de passe ne correspondent pas.');return;}
+      Model._pwd=p1;Model.data.encryption={enabled:true,hint};await Model.save();alert('Chiffrement activé. Exportez vos données en JSON comme sauvegarde.');this.render('settings');
+    });
+    el.querySelector('#enc-dis')?.addEventListener('click',async()=>{
+      if(!confirm('Désactiver le chiffrement ?'))return;
+      Model.data.encryption={enabled:false,hint:''};Model._pwd=null;await Model.save();this.render('settings');
+    });
+    el.querySelector('#sej')?.addEventListener('click',()=>Model.exportJSON());
+    el.querySelector('#semd')?.addEventListener('click',()=>Model.exportMD());
+    el.querySelector('#simp')?.addEventListener('click',()=>document.getElementById('ifile')?.click());
+    el.querySelector('#sreset')?.addEventListener('click',()=>{if(confirm('Réinitialiser toutes les données ? Cette action est irréversible.')){Model.data=Model.def();Model.save();this.go('onboarding');}});
+  },
+
+  exitFocus(){document.body.classList.remove('focus');},
+
+  updateThemeBtn(){
+    const t=document.documentElement.getAttribute('data-theme')||'light';
+    document.getElementById('btheme').textContent='🎨';
+    const b2=document.getElementById('btheme2');if(b2)b2.textContent='🎨';
+  },
+
+  closeModal(){document.getElementById('mov').classList.remove('open');},
+
+  bindGlobal(){
+    // Theme picker (sidebar button → ouvre modal thèmes)
+    document.getElementById('btheme')?.addEventListener('click',()=>this.go('settings'));
+    document.getElementById('btheme2')?.addEventListener('click',()=>this.go('settings'));
+    document.getElementById('bexp')?.addEventListener('click',()=>Model.exportJSON());
+    document.getElementById('bexpmd')?.addEventListener('click',()=>Model.exportMD());
+    document.getElementById('bimp')?.addEventListener('click',()=>document.getElementById('ifile')?.click());
+    document.getElementById('ifile')?.addEventListener('change',e=>{
+      const f=e.target.files[0];if(!f)return;
+      const r=new FileReader();
+      r.onload=ev=>{if(Model.importJSON(ev.target.result)){document.documentElement.setAttribute('data-theme',Model.data.meta?.theme||'light');this.go('dashboard');}else alert('Fichier JSON invalide.');};
+      r.readAsText(f);
+    });
+    document.getElementById('bmenu')?.addEventListener('click',()=>document.getElementById('sb').classList.toggle('open'));
+    document.querySelectorAll('#nav a').forEach(a=>a.addEventListener('click',()=>{if(a.dataset.page)this.go(a.dataset.page);}));
+    document.getElementById('mov')?.addEventListener('click',e=>{if(e.target.id==='mov')this.closeModal();});
+    // Keyboard escape pour fermer modal et sortir du focus
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){this.closeModal();this.exitFocus();return;}
+      const tag=(e.target.tagName||'').toLowerCase();
+      if(tag==='input'||tag==='textarea'||tag==='select')return;
+      if(e.key==='j'||e.key==='J'){this.go('journal');}
+      else if(e.key==='t'||e.key==='T'){this.go('tools');}
+      else if(e.key==='n'||e.key==='N'){if(this.page==='journal')this.openJModal();}
+      else if(e.key==='h'||e.key==='H'){this.go('dashboard');}
+      else if(e.key==='f'||e.key==='F'){document.body.classList.toggle('focus');}
+      else if(e.key===' '&&this.page==='tool-breathing'){
+        e.preventDefault();
+        if(this._brun)this.stopBreath();else this.startBreath();
+      }
+    });
+  }
+};
+
+// ── LANCEMENT ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>C.init());
+
+document.addEventListener('DOMContentLoaded',()=>C.init());
+</script>
+</body>
+</html>
