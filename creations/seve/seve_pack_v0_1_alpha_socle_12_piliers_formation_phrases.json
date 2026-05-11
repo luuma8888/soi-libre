@@ -1,0 +1,3104 @@
+{
+  "schema": "seve.contentPack.v0.1.alpha",
+  "name": "Sève v0.1.alpha — Socle complet : 12 piliers, formation et phrases adultes",
+  "version": "0.1.alpha",
+  "created": "2026-05-07",
+  "description": "Référentiel complet détaillé des 12 piliers, formation enseignant et grande bibliothèque de phrases adultes. Pack consolidé v0.1.alpha : identifiants namespacés, compatible validation et désinstallation sûre. Version v0.1.alpha consolidée.",
+  "compatibility": {
+    "app": "Sève",
+    "minVersion": "5.0.0",
+    "modules": [
+      "lists",
+      "pillarsInfo",
+      "pillarReferentials",
+      "activities",
+      "sequences",
+      "situations",
+      "phrases",
+      "avoidPhrases",
+      "teacherTraining"
+    ]
+  },
+  "notes": [
+    "Pack compatible Sève v0.1.alpha : correctif UX mobile et clarté humaine.",
+    "Pack compatible Sève v0.1.alpha : clarté humaine, textes d’aide et accompagnement enseignant renforcés."
+  ],
+  "modules": {
+    "lists": {
+      "needs": [
+        "sécurité",
+        "calme",
+        "mouvement",
+        "reconnaissance",
+        "appartenance",
+        "solitude",
+        "expression",
+        "limite claire",
+        "choix",
+        "autonomie",
+        "réparation",
+        "ancrage",
+        "joie",
+        "créativité",
+        "responsabilité",
+        "nature",
+        "lenteur",
+        "défi",
+        "confiance",
+        "vérité",
+        "protection",
+        "prévisibilité",
+        "discernement",
+        "dignité",
+        "reliance"
+      ],
+      "interests": [
+        "animaux",
+        "nature",
+        "dessin",
+        "construction",
+        "musique",
+        "danse",
+        "histoires",
+        "jeux",
+        "énigmes",
+        "inventions",
+        "justice",
+        "humour",
+        "silence",
+        "rôles",
+        "jardin",
+        "eau",
+        "ciel",
+        "technologie consciente"
+      ],
+      "strengths": [
+        "créatif",
+        "observateur",
+        "protecteur",
+        "médiateur",
+        "bâtisseur",
+        "conteur",
+        "chercheur",
+        "sensible au vivant",
+        "porteur de joie",
+        "gardien du calme",
+        "esprit de justice",
+        "explorateur",
+        "rêveur",
+        "précis",
+        "intuitif"
+      ],
+      "keywords": [
+        "hypersensible",
+        "très moteur",
+        "discret",
+        "besoin de cadre",
+        "besoin de nature",
+        "parole difficile",
+        "réparation",
+        "conflit",
+        "gratitude",
+        "dire non",
+        "retour au calme"
+      ],
+      "contexts": [
+        "cercle",
+        "jeu libre",
+        "transition",
+        "récréation",
+        "activité créative",
+        "repas",
+        "conseil",
+        "conflit",
+        "retour au calme",
+        "travail en duo",
+        "groupe entier"
+      ],
+      "triggers": [
+        "bruit",
+        "frustration",
+        "changement",
+        "attente",
+        "injustice ressentie",
+        "fatigue",
+        "comparaison",
+        "contact physique",
+        "pression du groupe",
+        "consigne floue"
+      ],
+      "supports": [
+        "respiration",
+        "pause calme",
+        "dessin",
+        "marche",
+        "objet médiateur",
+        "duo choisi",
+        "rôle de classe",
+        "phrase outil",
+        "coin nature",
+        "réparation concrète"
+      ],
+      "formats": [
+        "cercle",
+        "conte",
+        "jeu de rôle",
+        "activité nature",
+        "création",
+        "mouvement",
+        "débat doux",
+        "mission de groupe",
+        "journal",
+        "conseil de sages"
+      ],
+      "lessonDurations": [
+        "10 min",
+        "15 min",
+        "20 min",
+        "30 min",
+        "45 min",
+        "60 min"
+      ],
+      "councilRoles": [
+        "gardien de la parole",
+        "gardien du silence",
+        "gardien du temps",
+        "gardien du cœur",
+        "gardien de la douceur",
+        "gardien de la vérité",
+        "gardien de la réparation",
+        "gardien de la joie",
+        "gardien du vivant",
+        "gardien du discernement"
+      ]
+    },
+    "pillarsInfo": [
+      {
+        "id": "presence",
+        "icon": "🧘",
+        "title": "Présence à soi",
+        "short": "Revenir au corps, sentir son état intérieur, s’ancrer."
+      },
+      {
+        "id": "emotions",
+        "icon": "🌊",
+        "title": "Émotions et transmutation",
+        "short": "Nommer, traverser et transformer l’émotion sans blesser."
+      },
+      {
+        "id": "dignite",
+        "icon": "🌞",
+        "title": "Amour de soi et dignité",
+        "short": "Reconnaître sa valeur sans se comparer ni s’effacer."
+      },
+      {
+        "id": "authenticite",
+        "icon": "🕊️",
+        "title": "Vérité intérieure et authenticité",
+        "short": "Dire ce qui est vrai pour soi avec courage et douceur."
+      },
+      {
+        "id": "limites",
+        "icon": "🛡️",
+        "title": "Limites, consentement et souveraineté corporelle",
+        "short": "Dire oui, non, stop, encore, et respecter l’espace de chacun."
+      },
+      {
+        "id": "relation",
+        "icon": "🤝",
+        "title": "Relation juste, empathie et réparation",
+        "short": "Écouter, coopérer, réparer, préserver le lien sans se perdre."
+      },
+      {
+        "id": "discernement",
+        "icon": "🔎",
+        "title": "Discernement, lucidité et liberté intérieure",
+        "short": "Questionner, vérifier, distinguer influence, intuition et réaction."
+      },
+      {
+        "id": "joie",
+        "icon": "✨",
+        "title": "Joie, émerveillement et gratitude",
+        "short": "Reconnaître ce qui nourrit profondément la joie vivante."
+      },
+      {
+        "id": "creativite",
+        "icon": "🎨",
+        "title": "Créativité, imagination et expression de l’âme",
+        "short": "Donner forme à son monde intérieur et créer avec sens."
+      },
+      {
+        "id": "responsabilite",
+        "icon": "🌿",
+        "title": "Responsabilité, service et contribution",
+        "short": "Offrir au monde sans se sacrifier ni dominer."
+      },
+      {
+        "id": "courage",
+        "icon": "🔥",
+        "title": "Courage, résilience et traversée des difficultés",
+        "short": "Oser une petite marche sans violence contre soi."
+      },
+      {
+        "id": "reliance",
+        "icon": "🌌",
+        "title": "Reliance au vivant, au sacré et au mystère",
+        "short": "Honorer la nature, la beauté, le silence et les grandes questions."
+      }
+    ],
+    "pillarReferentials": [
+      {
+        "id": "presence",
+        "icon": "🧘",
+        "title": "Présence à soi",
+        "short": "Revenir au corps, sentir son état intérieur, s’ancrer.",
+        "essence": "Apprendre à revenir dans son corps, à sentir son état intérieur et à retrouver un point d’appui avant d’agir, parler ou choisir.",
+        "pedagogicalIntention": "Installer une sécurité intérieure simple : l’enfant découvre qu’il peut observer ce qui se passe en lui sans être emporté par chaque mouvement.",
+        "centralQuestion": "Qu’est-ce que je ressens en moi, ici et maintenant ?",
+        "protects": [
+          "la paix intérieure",
+          "la capacité de pause",
+          "la sécurité corporelle",
+          "le droit au rythme propre"
+        ],
+        "develops": [
+          "ancrage",
+          "attention douce",
+          "auto-observation",
+          "retour au calme"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir présence à soi dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de calme.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "calme",
+          "ancrage",
+          "lenteur",
+          "prévisibilité",
+          "sécurité"
+        ],
+        "frequentSituations": [
+          "agitation au retour de récréation",
+          "difficulté à rester dans un cercle",
+          "fatigue cachée derrière l’excitation",
+          "surcharge sensorielle"
+        ],
+        "adultPhrases": [
+          "Je t’aide à revenir dans ton corps, un souffle à la fois.",
+          "Tu peux prendre une pause avant de répondre.",
+          "Ton corps nous donne une information précieuse.",
+          "On ne force pas le calme : on lui prépare une place."
+        ],
+        "avoid": [
+          "Reste tranquille immédiatement.",
+          "Tu n’écoutes jamais.",
+          "Arrête de bouger, ce n’est pas compliqué."
+        ],
+        "questionsForChild": [
+          "Où sens-tu quelque chose dans ton corps ?",
+          "De quoi ton intérieur a-t-il besoin maintenant ?",
+          "Quel petit geste t’aide à revenir ici ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter présence à soi.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "choisir un geste d’ancrage personnel",
+          "demander une pause avant saturation",
+          "nommer son niveau d’énergie avec une couleur",
+          "revenir au groupe après un temps calme"
+        ],
+        "practices": [
+          "météo intérieure en un mot",
+          "respiration main sur cœur",
+          "marche lente de retour au corps",
+          "coin calme non punitif"
+        ],
+        "links": [
+          {
+            "pillarId": "emotions",
+            "reason": "Ce pilier soutient présence à soi dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "limites",
+            "reason": "Ce pilier soutient présence à soi dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "discernement",
+            "reason": "Ce pilier soutient présence à soi dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "emotions",
+        "icon": "🌊",
+        "title": "Émotions et transmutation",
+        "short": "Nommer, traverser et transformer l’émotion sans blesser.",
+        "essence": "Reconnaître l’émotion comme une vague porteuse d’information, puis apprendre à l’exprimer, la traverser et la transformer sans se blesser ni blesser autrui.",
+        "pedagogicalIntention": "Donner aux enfants des chemins concrets pour nommer, décharger, représenter, réparer et intégrer leurs émotions.",
+        "centralQuestion": "Quelle vague me traverse et que vient-elle me montrer ?",
+        "protects": [
+          "le droit de ressentir",
+          "la non-répression",
+          "le lien après débordement",
+          "la transformation plutôt que la honte"
+        ],
+        "develops": [
+          "vocabulaire émotionnel",
+          "canalisation",
+          "réparation",
+          "créativité émotionnelle"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir émotions et transmutation dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de expression.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "expression",
+          "sécurité",
+          "réparation",
+          "reconnaissance",
+          "mouvement"
+        ],
+        "frequentSituations": [
+          "colère forte",
+          "peur de se tromper",
+          "tristesse silencieuse",
+          "frustration lors d’une règle",
+          "jalousie ou comparaison"
+        ],
+        "adultPhrases": [
+          "Ton émotion a le droit d’exister, et je garde le cadre.",
+          "On va chercher une façon de laisser sortir la vague sans qu’elle casse tout.",
+          "Tu n’es pas ton émotion : elle te traverse.",
+          "Après la vague, nous regarderons ce qui peut être réparé."
+        ],
+        "avoid": [
+          "Ce n’est rien.",
+          "Arrête de pleurer.",
+          "Tu fais une crise.",
+          "Tu es trop émotif."
+        ],
+        "questionsForChild": [
+          "Quelle émotion ressemble le plus à ce qui se passe ?",
+          "Qu’est-ce que cette émotion voulait protéger ?",
+          "Comment peux-tu l’exprimer sans blesser ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter émotions et transmutation.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "choisir une carte émotion",
+          "dessiner la colère avant de parler",
+          "dire “j’ai besoin de…” après l’émotion",
+          "réparer un lien après débordement"
+        ],
+        "practices": [
+          "roue des émotions",
+          "dessin de la vague",
+          "théâtre des émotions",
+          "respiration du volcan doux"
+        ],
+        "links": [
+          {
+            "pillarId": "presence",
+            "reason": "Ce pilier soutient émotions et transmutation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "relation",
+            "reason": "Ce pilier soutient émotions et transmutation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "creativite",
+            "reason": "Ce pilier soutient émotions et transmutation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "dignite",
+        "icon": "🌞",
+        "title": "Amour de soi et dignité",
+        "short": "Reconnaître sa valeur sans se comparer ni s’effacer.",
+        "essence": "Aider l’enfant à sentir qu’il a une valeur stable, indépendante de la performance, de l’approbation, de l’erreur ou du regard du groupe.",
+        "pedagogicalIntention": "Nourrir une estime intérieure saine : ni gonflement, ni effacement, mais une dignité simple et incarnée.",
+        "centralQuestion": "Puis-je rester en lien avec ma valeur même quand je me trompe ?",
+        "protects": [
+          "la valeur intérieure",
+          "la confiance de base",
+          "le droit à l’erreur",
+          "l’intégrité face au regard"
+        ],
+        "develops": [
+          "auto-encouragement",
+          "humilité vivante",
+          "capacité à recevoir",
+          "confiance calme"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir amour de soi et dignité dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de reconnaissance.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "reconnaissance",
+          "confiance",
+          "joie",
+          "sécurité",
+          "appartenance"
+        ],
+        "frequentSituations": [
+          "enfant qui se dévalorise",
+          "peur de montrer une création",
+          "comparaison entre enfants",
+          "recherche excessive d’approbation"
+        ],
+        "adultPhrases": [
+          "Ton erreur ne retire rien à ta valeur.",
+          "Je vois ton effort et ta présence, pas seulement le résultat.",
+          "Tu peux être fier sans écraser personne.",
+          "Ta place n’a pas besoin d’être gagnée par performance."
+        ],
+        "avoid": [
+          "Tu es le meilleur.",
+          "Regarde, les autres y arrivent.",
+          "Tu devrais avoir honte.",
+          "Ce n’est pas assez bien."
+        ],
+        "questionsForChild": [
+          "De quoi es-tu fier aujourd’hui ?",
+          "Quelle qualité as-tu utilisée sans t’en rendre compte ?",
+          "Comment peux-tu t’encourager toi-même ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter amour de soi et dignité.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "nommer une petite victoire",
+          "recevoir un compliment sans le repousser",
+          "oser montrer un brouillon",
+          "s’encourager après une erreur"
+        ],
+        "practices": [
+          "carnet des petites victoires",
+          "cercle des qualités observées",
+          "rituel du brouillon précieux",
+          "portrait de mes forces"
+        ],
+        "links": [
+          {
+            "pillarId": "joie",
+            "reason": "Ce pilier soutient amour de soi et dignité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "courage",
+            "reason": "Ce pilier soutient amour de soi et dignité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "authenticite",
+            "reason": "Ce pilier soutient amour de soi et dignité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "authenticite",
+        "icon": "🕊️",
+        "title": "Vérité intérieure et authenticité",
+        "short": "Dire ce qui est vrai pour soi avec courage et douceur.",
+        "essence": "Permettre à l’enfant d’écouter ce qui est vrai en lui, de l’exprimer sans brutalité et de ne pas se conformer uniquement par peur du rejet.",
+        "pedagogicalIntention": "Développer une parole vraie, ajustée et respectueuse, capable de dire préférence, désaccord, incertitude ou besoin.",
+        "centralQuestion": "Est-ce que je parle depuis ma vérité ou depuis la peur de déplaire ?",
+        "protects": [
+          "la voix intérieure",
+          "la liberté de préférence",
+          "la cohérence pensée-parole-acte",
+          "le droit de ne pas savoir"
+        ],
+        "develops": [
+          "parole juste",
+          "courage doux",
+          "discernement intérieur",
+          "respect de soi et d’autrui"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir vérité intérieure et authenticité dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de vérité.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "vérité",
+          "choix",
+          "sécurité",
+          "expression",
+          "reconnaissance"
+        ],
+        "frequentSituations": [
+          "enfant qui dit toujours oui",
+          "peur de donner son avis",
+          "mensonge par peur",
+          "opposition brutale présentée comme vérité"
+        ],
+        "adultPhrases": [
+          "Ta vérité peut être dite avec douceur.",
+          "Tu as le droit de ne pas ressentir comme le groupe.",
+          "Dire “je ne sais pas” est déjà une parole vraie.",
+          "Nous cherchons une phrase qui respecte ton intérieur et l’autre."
+        ],
+        "avoid": [
+          "Dis ce que je veux entendre.",
+          "Tu dois être d’accord.",
+          "Arrête de faire ton intéressant.",
+          "Tu mens, point."
+        ],
+        "questionsForChild": [
+          "Qu’est-ce qui est vrai pour toi maintenant ?",
+          "As-tu dit oui avec ton cœur ou seulement avec ta peur ?",
+          "Quelle phrase serait vraie et respectueuse ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter vérité intérieure et authenticité.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "dire une préférence simple",
+          "oser dire “je ne sais pas”",
+          "exprimer un désaccord en petit groupe",
+          "reformuler une vérité trop dure"
+        ],
+        "practices": [
+          "jeu des préférences différentes",
+          "masque et voix vraie",
+          "phrase vraie en trois temps",
+          "cercle du “je ressens / je choisis”"
+        ],
+        "links": [
+          {
+            "pillarId": "limites",
+            "reason": "Ce pilier soutient vérité intérieure et authenticité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "discernement",
+            "reason": "Ce pilier soutient vérité intérieure et authenticité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "courage",
+            "reason": "Ce pilier soutient vérité intérieure et authenticité dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "limites",
+        "icon": "🛡️",
+        "title": "Limites, consentement et souveraineté corporelle",
+        "short": "Dire oui, non, stop, encore, et respecter l’espace de chacun.",
+        "essence": "Apprendre à reconnaître son oui, son non, son stop, son espace corporel, son rythme, et à respecter ceux des autres.",
+        "pedagogicalIntention": "Installer une culture du consentement concret, du respect du corps et des limites, dès les situations simples de jeu et de relation.",
+        "centralQuestion": "Mon corps, mon espace et mon rythme sont-ils respectés ?",
+        "protects": [
+          "le corps",
+          "la pudeur",
+          "le non",
+          "le droit à la distance",
+          "la sécurité relationnelle"
+        ],
+        "develops": [
+          "assertivité",
+          "respect du consentement",
+          "écoute corporelle",
+          "protection sans fermeture"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir limites, consentement et souveraineté corporelle dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de protection.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "protection",
+          "limite claire",
+          "sécurité",
+          "choix",
+          "prévisibilité"
+        ],
+        "frequentSituations": [
+          "jeu physique envahissant",
+          "enfant qui subit",
+          "enfant qui touche sans demander",
+          "pression du groupe",
+          "difficulté à dire stop"
+        ],
+        "adultPhrases": [
+          "Ton non est une information précieuse. Je t’écoute.",
+          "Respecter le stop d’un autre protège la confiance.",
+          "Tu peux changer d’avis.",
+          "Je garde ton espace et celui des autres."
+        ],
+        "avoid": [
+          "Allez, fais un effort, ce n’est rien.",
+          "Laisse-le te faire un câlin.",
+          "Tu dois partager ton corps / ton espace.",
+          "Ce n’est qu’un jeu."
+        ],
+        "questionsForChild": [
+          "Ton corps dit-il oui, non ou pas maintenant ?",
+          "De quelle distance as-tu besoin ?",
+          "As-tu demandé avant d’entrer dans l’espace de l’autre ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter limites, consentement et souveraineté corporelle.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "dire stop dans un jeu symbolique",
+          "demander avant de toucher",
+          "respecter le non d’un autre sans discuter",
+          "identifier un adulte ressource"
+        ],
+        "practices": [
+          "stop ou encore",
+          "territoire du hérisson",
+          "charte des espaces personnels",
+          "jeu oui / non / pas maintenant"
+        ],
+        "links": [
+          {
+            "pillarId": "presence",
+            "reason": "Ce pilier soutient limites, consentement et souveraineté corporelle dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "authenticite",
+            "reason": "Ce pilier soutient limites, consentement et souveraineté corporelle dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "relation",
+            "reason": "Ce pilier soutient limites, consentement et souveraineté corporelle dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "relation",
+        "icon": "🤝",
+        "title": "Relation juste, empathie et réparation",
+        "short": "Écouter, coopérer, réparer, préserver le lien sans se perdre.",
+        "essence": "Apprendre que le lien vivant demande écoute, place, limite, coopération, responsabilité et réparation après les blessures relationnelles.",
+        "pedagogicalIntention": "Aider le groupe à sortir de la domination, de l’effacement et de la punition, pour entrer dans une culture de réparation.",
+        "centralQuestion": "Comment puis-je prendre ma place sans retirer celle de l’autre ?",
+        "protects": [
+          "le lien",
+          "l’écoute",
+          "la dignité après conflit",
+          "la coopération",
+          "la place de chacun"
+        ],
+        "develops": [
+          "empathie",
+          "médiation",
+          "réparation",
+          "coopération",
+          "responsabilité relationnelle"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir relation juste, empathie et réparation dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de appartenance.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "appartenance",
+          "réparation",
+          "écoute",
+          "reconnaissance",
+          "cadre clair"
+        ],
+        "frequentSituations": [
+          "conflits répétés",
+          "moqueries",
+          "exclusion",
+          "enfant qui domine",
+          "enfant qui s’efface",
+          "difficulté à s’excuser"
+        ],
+        "adultPhrases": [
+          "Réparer, ce n’est pas se punir : c’est aider le lien à respirer à nouveau.",
+          "Ton intention compte, et l’effet sur l’autre compte aussi.",
+          "Nous cherchons une solution qui respecte chacun.",
+          "L’écoute ne t’efface pas, elle donne de l’espace au lien."
+        ],
+        "avoid": [
+          "Va t’excuser tout de suite.",
+          "Tu es méchant.",
+          "Vous vous débrouillez.",
+          "Ce n’est pas grave, oubliez."
+        ],
+        "questionsForChild": [
+          "Qu’est-ce qui s’est passé pour toi ?",
+          "Quel effet cela a-t-il eu sur l’autre ?",
+          "Quelle petite réparation serait juste ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter relation juste, empathie et réparation.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "reformuler la parole de l’autre",
+          "faire une réparation concrète",
+          "demander ce dont le lien a besoin",
+          "tenir un rôle d’écoute en cercle"
+        ],
+        "practices": [
+          "bâton de parole",
+          "objet médiateur",
+          "cercle de réparation",
+          "duo d’écoute active"
+        ],
+        "links": [
+          {
+            "pillarId": "emotions",
+            "reason": "Ce pilier soutient relation juste, empathie et réparation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "responsabilite",
+            "reason": "Ce pilier soutient relation juste, empathie et réparation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "dignite",
+            "reason": "Ce pilier soutient relation juste, empathie et réparation dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "discernement",
+        "icon": "🔎",
+        "title": "Discernement, lucidité et liberté intérieure",
+        "short": "Questionner, vérifier, distinguer influence, intuition et réaction.",
+        "essence": "Développer la capacité à questionner, vérifier, comparer, ressentir et penser sans suivre aveuglément une peur, une mode, une autorité ou un groupe.",
+        "pedagogicalIntention": "Former une liberté intérieure lucide, capable de distinguer intuition, émotion, information, opinion, rumeur et manipulation.",
+        "centralQuestion": "Qu’est-ce que je sais, qu’est-ce que je crois, qu’est-ce qui reste à vérifier ?",
+        "protects": [
+          "la liberté intérieure",
+          "l’attention",
+          "la pensée propre",
+          "la prudence saine",
+          "la non-manipulation"
+        ],
+        "develops": [
+          "esprit critique",
+          "questionnement",
+          "vérification",
+          "clarté intérieure",
+          "humilité intellectuelle"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir discernement, lucidité et liberté intérieure dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de vérité.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "vérité",
+          "choix",
+          "sécurité",
+          "clarté",
+          "autonomie"
+        ],
+        "frequentSituations": [
+          "rumeur dans le groupe",
+          "peur collective",
+          "publicité ou influence",
+          "pression sociale",
+          "confusion entre ressenti et preuve"
+        ],
+        "adultPhrases": [
+          "On peut accueillir une impression sans la transformer trop vite en certitude.",
+          "Cherchons ce qui est vrai, possible, inventé ou à vérifier.",
+          "Une question honnête est une lumière.",
+          "Tu peux penser par toi-même sans attaquer les autres."
+        ],
+        "avoid": [
+          "Crois-moi parce que je suis l’adulte.",
+          "Tu racontes n’importe quoi.",
+          "Il faut choisir ton camp.",
+          "Si tout le monde le dit, c’est vrai."
+        ],
+        "questionsForChild": [
+          "Quelle est la source ?",
+          "Qu’est-ce que tu as vu toi-même ?",
+          "Qu’est-ce qui vient de la peur, de l’intuition ou du groupe ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter discernement, lucidité et liberté intérieure.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "classer une information : vrai / possible / à vérifier",
+          "chercher deux points de vue",
+          "dire “je ne sais pas encore”",
+          "repérer une pression de groupe"
+        ],
+        "practices": [
+          "vrai possible à vérifier",
+          "enquête à trois sources",
+          "jeu de la rumeur transformée",
+          "pause avant partage"
+        ],
+        "links": [
+          {
+            "pillarId": "authenticite",
+            "reason": "Ce pilier soutient discernement, lucidité et liberté intérieure dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "presence",
+            "reason": "Ce pilier soutient discernement, lucidité et liberté intérieure dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "responsabilite",
+            "reason": "Ce pilier soutient discernement, lucidité et liberté intérieure dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "joie",
+        "icon": "✨",
+        "title": "Joie, émerveillement et gratitude",
+        "short": "Reconnaître ce qui nourrit profondément la joie vivante.",
+        "essence": "Retrouver la joie comme boussole de vitalité, l’émerveillement comme ouverture au monde et la gratitude comme reconnaissance du vivant.",
+        "pedagogicalIntention": "Aider l’enfant à distinguer plaisir fugace, excitation, joie profonde, gratitude et célébration simple.",
+        "centralQuestion": "Qu’est-ce qui nourrit ma joie sans abîmer celle des autres ?",
+        "protects": [
+          "la vitalité",
+          "l’émerveillement",
+          "le lien au beau",
+          "la capacité de célébrer",
+          "la légèreté saine"
+        ],
+        "develops": [
+          "gratitude",
+          "savourer",
+          "jeu vivant",
+          "présence au beau",
+          "partage de joie"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir joie, émerveillement et gratitude dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de joie.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "joie",
+          "nature",
+          "créativité",
+          "appartenance",
+          "reconnaissance"
+        ],
+        "frequentSituations": [
+          "groupe sérieux ou tendu",
+          "enfant qui ne voit que l’échec",
+          "excitation qui déborde",
+          "besoin de célébrer une réussite"
+        ],
+        "adultPhrases": [
+          "La joie peut être douce ou pétillante ; cherchons celle qui respecte le groupe.",
+          "Merci d’avoir vu cette beauté.",
+          "On peut célébrer sans comparer.",
+          "Ta joie a le droit d’exister, et elle peut apprendre à prendre soin de l’espace autour."
+        ],
+        "avoid": [
+          "Arrête d’être content pour rien.",
+          "Ce n’est pas si important.",
+          "Calme ta joie.",
+          "Sois heureux, tu n’as pas de raison d’être triste."
+        ],
+        "questionsForChild": [
+          "Qu’est-ce qui t’a donné une vraie joie aujourd’hui ?",
+          "Quelle petite beauté as-tu remarquée ?",
+          "Comment partager ta joie sans envahir ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter joie, émerveillement et gratitude.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "nommer une micro-joie",
+          "remercier un geste précis",
+          "créer un rituel de célébration",
+          "différencier excitation et joie calme"
+        ],
+        "practices": [
+          "carnet de gratitude",
+          "chasse aux beautés",
+          "cercle des petites victoires",
+          "offrande créative au groupe"
+        ],
+        "links": [
+          {
+            "pillarId": "dignite",
+            "reason": "Ce pilier soutient joie, émerveillement et gratitude dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "creativite",
+            "reason": "Ce pilier soutient joie, émerveillement et gratitude dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "relation",
+            "reason": "Ce pilier soutient joie, émerveillement et gratitude dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "creativite",
+        "icon": "🎨",
+        "title": "Créativité, imagination et expression de l’âme",
+        "short": "Donner forme à son monde intérieur et créer avec sens.",
+        "essence": "Permettre à l’enfant de transformer ses images, émotions, questions et élans en formes visibles, jouables, racontables ou partageables.",
+        "pedagogicalIntention": "Honorer l’imagination comme un langage d’âme tout en l’aidant à s’incarner dans une création concrète.",
+        "centralQuestion": "Quelle forme veut naître à travers moi ?",
+        "protects": [
+          "l’imaginaire",
+          "la voix symbolique",
+          "le droit au brouillon",
+          "la transformation intérieure",
+          "la joie de créer"
+        ],
+        "develops": [
+          "expression",
+          "persévérance créative",
+          "symbolisation",
+          "confiance dans l’élan",
+          "capacité à terminer"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir créativité, imagination et expression de l’âme dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de créativité.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "créativité",
+          "expression",
+          "joie",
+          "choix",
+          "reconnaissance"
+        ],
+        "frequentSituations": [
+          "enfant très imaginatif mais dispersé",
+          "blocage créatif",
+          "perfectionnisme",
+          "émotion à transformer",
+          "besoin de montrer son monde"
+        ],
+        "adultPhrases": [
+          "Ton brouillon est déjà un passage.",
+          "On va donner une forme à ce qui vit en toi.",
+          "Créer n’est pas seulement faire joli : c’est rendre visible une vibration.",
+          "Choisissons une petite création finissable aujourd’hui."
+        ],
+        "avoid": [
+          "Ce n’est pas réaliste.",
+          "Dessine correctement.",
+          "Ce n’est pas assez beau.",
+          "Tu ne termines jamais rien."
+        ],
+        "questionsForChild": [
+          "Quelle image intérieure vient en premier ?",
+          "Quelle matière aiderait cette idée à apparaître ?",
+          "Quelle petite partie peux-tu terminer aujourd’hui ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter créativité, imagination et expression de l’âme.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "oser montrer un brouillon",
+          "finir une mini-création",
+          "transformer une émotion en dessin",
+          "expliquer le sens d’une création"
+        ],
+        "practices": [
+          "mandala d’émotion",
+          "conte en trois images",
+          "objet symbole",
+          "atelier brouillon précieux"
+        ],
+        "links": [
+          {
+            "pillarId": "emotions",
+            "reason": "Ce pilier soutient créativité, imagination et expression de l’âme dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "joie",
+            "reason": "Ce pilier soutient créativité, imagination et expression de l’âme dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "authenticite",
+            "reason": "Ce pilier soutient créativité, imagination et expression de l’âme dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "responsabilite",
+        "icon": "🌿",
+        "title": "Responsabilité, service et contribution",
+        "short": "Offrir au monde sans se sacrifier ni dominer.",
+        "essence": "Découvrir que ses gestes ont un impact et que contribuer au vivant peut se faire depuis la joie, la compétence et la mesure, sans sacrifice ni contrôle.",
+        "pedagogicalIntention": "Relier liberté et responsabilité : prendre soin d’un lieu, d’un lien, d’un projet ou d’un être sans perdre son propre centre.",
+        "centralQuestion": "Quel geste juste puis-je offrir sans me trahir ?",
+        "protects": [
+          "le sens du geste",
+          "la contribution libre",
+          "la fiabilité",
+          "la non-soumission",
+          "la non-domination"
+        ],
+        "develops": [
+          "engagement",
+          "soin du commun",
+          "autonomie",
+          "service juste",
+          "persévérance"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir responsabilité, service et contribution dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de responsabilité.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "responsabilité",
+          "autonomie",
+          "reconnaissance",
+          "défi",
+          "appartenance"
+        ],
+        "frequentSituations": [
+          "enfant passif",
+          "enfant sauveur",
+          "enfant qui veut tout contrôler",
+          "tâches communes négligées",
+          "projet collectif"
+        ],
+        "adultPhrases": [
+          "Ta contribution compte, même si elle est petite.",
+          "Servir ne veut pas dire te sacrifier.",
+          "Prendre soin du commun, c’est aussi prendre soin de ta place.",
+          "Choisissons une responsabilité claire et possible."
+        ],
+        "avoid": [
+          "Tu dois aider, sinon tu es égoïste.",
+          "Tu es responsable de tout le monde.",
+          "On ne peut pas compter sur toi.",
+          "Fais-le parce que je l’ai dit."
+        ],
+        "questionsForChild": [
+          "Quel geste utile peux-tu offrir aujourd’hui ?",
+          "Cette responsabilité te nourrit-elle ou t’épuise-t-elle ?",
+          "Qu’est-ce qui dépend vraiment de toi ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter responsabilité, service et contribution.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "tenir une petite responsabilité",
+          "réparer un objet ou un lien",
+          "demander de l’aide avant surcharge",
+          "offrir un talent au groupe"
+        ],
+        "practices": [
+          "mission de soin du lieu",
+          "rôle tournant de classe",
+          "projet utile miniature",
+          "bilan impact de mes gestes"
+        ],
+        "links": [
+          {
+            "pillarId": "relation",
+            "reason": "Ce pilier soutient responsabilité, service et contribution dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "discernement",
+            "reason": "Ce pilier soutient responsabilité, service et contribution dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "courage",
+            "reason": "Ce pilier soutient responsabilité, service et contribution dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "courage",
+        "icon": "🔥",
+        "title": "Courage, résilience et traversée des difficultés",
+        "short": "Oser une petite marche sans violence contre soi.",
+        "essence": "Apprendre à traverser une difficulté, une erreur, une peur ou une frustration sans se durcir, se juger ou abandonner son cœur.",
+        "pedagogicalIntention": "Construire une résilience douce : l’enfant apprend à essayer, demander du soutien, recommencer et ajuster.",
+        "centralQuestion": "Quelle petite marche puis-je oser maintenant ?",
+        "protects": [
+          "le droit à l’erreur",
+          "la confiance après échec",
+          "la mesure de l’effort",
+          "le cœur dans la difficulté"
+        ],
+        "develops": [
+          "persévérance",
+          "demande d’aide",
+          "tolérance à la frustration",
+          "adaptation",
+          "force douce"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir courage, résilience et traversée des difficultés dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de défi.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "défi",
+          "confiance",
+          "sécurité",
+          "encouragement",
+          "lenteur"
+        ],
+        "frequentSituations": [
+          "peur de se tromper",
+          "abandon rapide",
+          "frustration forte",
+          "perfectionnisme",
+          "évitement d’un défi"
+        ],
+        "adultPhrases": [
+          "On ne cherche pas le grand saut, seulement la prochaine marche.",
+          "Tu peux être courageux et avoir peur en même temps.",
+          "L’erreur nous donne une information pour ajuster.",
+          "Je ne vais pas te pousser trop fort ; je vais t’aider à ne pas fuir trop vite."
+        ],
+        "avoid": [
+          "Tu dois être courageux.",
+          "Ce n’est pas difficile.",
+          "Encore raté.",
+          "Les autres y arrivent."
+        ],
+        "questionsForChild": [
+          "Quelle partie est vraiment difficile ?",
+          "Quelle aide rendrait la marche possible ?",
+          "Qu’as-tu appris de cet essai ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter courage, résilience et traversée des difficultés.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "essayer trente secondes",
+          "demander une aide précise",
+          "recommencer avec une variante",
+          "nommer une peur sans lui obéir totalement"
+        ],
+        "practices": [
+          "échelle des petites marches",
+          "rituel du premier essai",
+          "carnet des erreurs utiles",
+          "défi doux choisi"
+        ],
+        "links": [
+          {
+            "pillarId": "dignite",
+            "reason": "Ce pilier soutient courage, résilience et traversée des difficultés dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "presence",
+            "reason": "Ce pilier soutient courage, résilience et traversée des difficultés dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "responsabilite",
+            "reason": "Ce pilier soutient courage, résilience et traversée des difficultés dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      },
+      {
+        "id": "reliance",
+        "icon": "🌌",
+        "title": "Reliance au vivant, au sacré et au mystère",
+        "short": "Honorer la nature, la beauté, le silence et les grandes questions.",
+        "essence": "Ouvrir un espace libre de contemplation, de gratitude et de respect du vivant, sans imposer de croyance ni transformer le mystère en dogme.",
+        "pedagogicalIntention": "Nourrir le lien à la nature, au silence, aux symboles, aux saisons, à la beauté et aux grandes questions de sens.",
+        "centralQuestion": "À quoi suis-je relié quand je me sens vivant, calme et respectueux du mystère ?",
+        "protects": [
+          "l’émerveillement profond",
+          "le respect du vivant",
+          "la liberté spirituelle",
+          "la contemplation",
+          "le silence intérieur"
+        ],
+        "develops": [
+          "gratitude au vivant",
+          "humilité",
+          "écoute symbolique",
+          "sens du sacré non dogmatique",
+          "responsabilité écologique"
+        ],
+        "signs": {
+          "germination": [
+            "L’enfant commence à percevoir reliance au vivant, au sacré et au mystère dans une situation simple.",
+            "Il accepte une aide adulte ou un support symbolique.",
+            "Il peut nommer un indice, même très bref."
+          ],
+          "fragilite": [
+            "La qualité se ferme sous pression, fatigue ou comparaison.",
+            "Le comportement visible peut masquer un besoin de nature.",
+            "L’enfant a besoin d’un cadre plus doux avant d’intégrer la qualité."
+          ],
+          "expansion": [
+            "L’enfant utilise la qualité dans plusieurs contextes avec moins d’aide.",
+            "Il commence à ajuster son comportement sans perdre sa dignité.",
+            "Il peut expliquer ce qui l’aide ou ce qui le ferme."
+          ],
+          "rayonnement": [
+            "L’enfant peut offrir cette qualité au groupe sans se sacrifier.",
+            "Il devient ressource ponctuelle, tout en restant libre de ne pas porter les autres.",
+            "La qualité reste présente même dans une situation plus chargée."
+          ]
+        },
+        "needs": [
+          "nature",
+          "calme",
+          "beauté",
+          "sens",
+          "protection"
+        ],
+        "frequentSituations": [
+          "besoin de silence",
+          "perte de lien à la nature",
+          "questions existentielles",
+          "enfant très connecté mais peu ancré",
+          "groupe coupé du vivant"
+        ],
+        "adultPhrases": [
+          "Tu n’as pas besoin de croire comme quelqu’un d’autre pour respecter le mystère.",
+          "La nature peut être une enseignante silencieuse.",
+          "Nous contemplons sans forcer une réponse.",
+          "Ce qui est sacré demande douceur et liberté."
+        ],
+        "avoid": [
+          "Tu dois croire ceci.",
+          "Ce ressenti prouve tout.",
+          "La science ne sert à rien.",
+          "Ne pose pas ces questions."
+        ],
+        "questionsForChild": [
+          "Qu’est-ce que la nature t’apprend aujourd’hui ?",
+          "Quel symbole te parle sans que tu aies besoin de l’expliquer ?",
+          "Quelle gratitude veux-tu offrir au vivant ?"
+        ],
+        "ageAdaptations": {
+          "3-6 ans": [
+            "Passer par le corps, l’image, le jeu et une phrase très courte.",
+            "Utiliser un objet, un animal symbolique ou une couleur pour représenter reliance au vivant, au sacré et au mystère.",
+            "Observer surtout les gestes, le tonus, le retrait ou l’élan."
+          ],
+          "6-9 ans": [
+            "Relier la qualité à un conte, un jeu coopératif ou une situation de classe.",
+            "Proposer une phrase outil simple et répétable.",
+            "Clôturer par un dessin, un geste ou un mot."
+          ],
+          "9-12 ans": [
+            "Confier un rôle, un mini-défi ou une mission concrète.",
+            "Faire verbaliser besoin, effet et prochaine marche.",
+            "Relier la qualité au groupe sans transformer l’enfant en responsable du groupe."
+          ],
+          "12-15 ans": [
+            "Traiter la qualité avec respect, sans infantiliser.",
+            "Utiliser débat, journal, théâtre, cercle de vérité ou projet.",
+            "Laisser une part de choix et de retrait possible."
+          ],
+          "15-18 ans": [
+            "Relier la qualité à l’intégrité, à la contribution et aux choix de vie.",
+            "Proposer mentorat, projet personnel, service concret ou transmission aux plus jeunes.",
+            "Éviter la morale ; privilégier responsabilité, discernement et cohérence."
+          ]
+        },
+        "adaptations": {
+          "enfant hypersensible": [
+            "Réduire l’exposition publique.",
+            "Prévoir une sortie douce ou une alternative non verbale.",
+            "Valoriser les micro-signes de progression."
+          ],
+          "enfant très moteur": [
+            "Intégrer mouvement, manipulation ou rôle actif.",
+            "Faire court, concret, observable.",
+            "Offrir une décharge corporelle avant la parole."
+          ],
+          "enfant discret": [
+            "Permettre de répondre par écrit, dessin ou duo.",
+            "Ne pas confondre silence et absence d’évolution.",
+            "Créer de petites prises de place sécurisées."
+          ],
+          "groupe agité": [
+            "Commencer par le corps et le rythme avant la parole.",
+            "Réduire la durée du cercle.",
+            "Nommer le cadre sans moraliser."
+          ]
+        },
+        "nextSteps": [
+          "observer un élément naturel en silence",
+          "écrire une question de mystère",
+          "créer un rituel de gratitude libre",
+          "relier un symbole à un geste concret"
+        ],
+        "practices": [
+          "minute d’arbre",
+          "cercle des saisons",
+          "gratitude à l’eau",
+          "carnet des signes et questions"
+        ],
+        "links": [
+          {
+            "pillarId": "joie",
+            "reason": "Ce pilier soutient reliance au vivant, au sacré et au mystère dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "discernement",
+            "reason": "Ce pilier soutient reliance au vivant, au sacré et au mystère dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          },
+          {
+            "pillarId": "responsabilite",
+            "reason": "Ce pilier soutient reliance au vivant, au sacré et au mystère dans les situations où l’enfant a besoin d’intégrer plusieurs dimensions à la fois."
+          }
+        ]
+      }
+    ],
+    "activities": [],
+    "sequences": [],
+    "situations": [],
+    "phrases": [
+      {
+        "id": "socle_phrase_1_1",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Je vois que quelque chose te traverse fortement. Nous allons lui faire une place sans le laisser tout envahir.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_2",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Ton émotion est entendue, et je garde le cadre pour que chacun reste en sécurité.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_3",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Tu peux d’abord montrer avec un geste ou une couleur, les mots viendront après.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_4",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "On ne va pas discuter avec la vague pendant qu’elle est au plus haut ; on va d’abord respirer.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_5",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Ce que tu ressens compte, même si nous devons ajuster ce que tu fais.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_6",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Je reste avec toi pendant que tu retrouves ton centre.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_7",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "L’émotion donne une information ; elle ne décide pas toute seule.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_1_8",
+        "category": "accueillir une émotion",
+        "context": "accueillir une émotion",
+        "pillarId": "emotions",
+        "text": "Après la vague, nous chercherons la réparation juste.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_1",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Je ne laisse pas ce geste continuer, parce que je protège ton espace et celui des autres.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_2",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Stop. La limite est là. Nous parlerons après le retour au calme.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_3",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Ton besoin est entendu ; cette manière de l’exprimer n’est pas possible ici.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_4",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Je peux être doux et ferme en même temps.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_5",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Le cadre n’est pas contre toi, il protège le lien.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_6",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Tu peux choisir entre deux chemins qui respectent la limite.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_7",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "Je t’aide à transformer ce non en geste juste.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_2_8",
+        "category": "poser une limite",
+        "context": "poser une limite",
+        "pillarId": "limites",
+        "text": "La liberté grandit mieux avec des limites claires.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_1",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Réparer ne veut pas dire te punir ; cela veut dire aider le lien à respirer à nouveau.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_2",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Nous allons chercher un geste qui reconnaît l’effet de ce qui s’est passé.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_3",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Tu peux commencer par “je reconnais que…” si “pardon” est trop difficile.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_4",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "L’intention compte, et l’effet compte aussi.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_5",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "La réparation peut être petite, mais elle doit être vraie.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_6",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Je ne force pas une excuse vide ; j’accompagne une réparation sincère.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_7",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Qu’est-ce qui aiderait l’autre à se sentir de nouveau respecté ?",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_3_8",
+        "category": "réparer après conflit",
+        "context": "réparer après conflit",
+        "pillarId": "relation",
+        "text": "Après la réparation, chacun retrouve sa dignité.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_1",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Je vois ton effort, pas seulement le résultat.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_2",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Ton erreur ne retire rien à ta valeur.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_3",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Tu avances à ton rythme, et je vois la marche d’aujourd’hui.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_4",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Tu peux être fier sans devoir être parfait.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_5",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Un brouillon courageux vaut mieux qu’un silence par peur.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_6",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Je ne te compare pas : je regarde ton propre chemin.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_7",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Ce que tu as tenté compte déjà.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_4_8",
+        "category": "encourager sans pression",
+        "context": "encourager sans pression",
+        "pillarId": "dignite",
+        "text": "Ta valeur reste entière pendant l’apprentissage.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_1",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Tu peux participer avec un mot, un signe, un dessin ou simplement une présence attentive.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_2",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Je ne confonds pas ton silence avec une absence d’idée.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_3",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Ta parole peut venir en petit format.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_4",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Je peux te proposer un duo avant le grand groupe.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_5",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Tu as le droit de prendre le temps de sentir ce qui est vrai.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_6",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Je garderai une place pour ta voix sans la forcer.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_7",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Même une petite phrase peut être très précieuse.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_5_8",
+        "category": "soutenir un enfant discret",
+        "context": "soutenir un enfant discret",
+        "pillarId": "authenticite",
+        "text": "Tu peux me dire plus tard si maintenant c’est trop.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_1",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Ton corps a beaucoup d’énergie ; nous allons lui donner un chemin utile.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_2",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Avant le cercle, ton corps peut faire une mission de mouvement.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_3",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Je vois l’élan ; maintenant on lui donne une direction qui respecte le groupe.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_4",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Bouger peut aider, mais pas au détriment de l’espace des autres.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_5",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Ton énergie est une force quand elle apprend à écouter le cadre.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_6",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Prends le rôle actif, puis reviens au point calme.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_7",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "On va alterner mouvement et pause.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_6_8",
+        "category": "accompagner un enfant très moteur",
+        "context": "accompagner un enfant très moteur",
+        "pillarId": "presence",
+        "text": "Ton corps peut participer sans prendre toute la place.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_1",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Ton non est une information précieuse.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_2",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Tu peux dire “pas maintenant” si “non” est trop grand.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_3",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Ton corps a le droit d’être écouté.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_4",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Un vrai oui ne naît pas de la pression.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_5",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Je t’accompagne pendant que tu poses ta limite.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_6",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Tu peux changer d’avis.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_7",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Respecter ton non aide aussi les autres à apprendre le respect.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_7_8",
+        "category": "aider à dire non",
+        "context": "aider à dire non",
+        "pillarId": "limites",
+        "text": "Nous allons chercher une phrase courte pour protéger ton espace.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_1",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Avant de parler, nous allons remettre les corps dans la pièce.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_2",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Le groupe a besoin de ralentir pour que chacun retrouve sa place.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_3",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Nous ne cherchons pas le silence parfait, mais un espace respirable.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_4",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Je vais réduire la consigne et clarifier la prochaine marche.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_5",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "On revient ensemble : pieds, souffle, regard, écoute.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_6",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Le mouvement a eu sa place ; maintenant la parole peut revenir.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_7",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Un groupe agité n’est pas un groupe mauvais, c’est un groupe qui demande un autre rythme.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_8_8",
+        "category": "apaiser un groupe agité",
+        "context": "apaiser un groupe agité",
+        "pillarId": "presence",
+        "text": "Nous allons faire court, clair et doux.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_1",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Je ne vais pas forcer ta parole, mais je reste disponible.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_2",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Tu as le droit de ne pas tout livrer ici.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_3",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Je préfère une phrase vraie à une réponse attendue.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_4",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "On peut commencer par ce que tu refuses, si c’est plus clair que ce que tu veux.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_5",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Je respecte ton espace, et je garde le lien ouvert.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_6",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Tu peux écrire au lieu de parler.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_7",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Je ne cherche pas à gagner contre toi ; je cherche le passage juste.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_9_8",
+        "category": "parler à un ado fermé",
+        "context": "parler à un ado fermé",
+        "pillarId": "authenticite",
+        "text": "Ton silence peut être une protection ; regardons s’il peut devenir un choix libre.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_1",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Accueillons cette idée sans la transformer trop vite en certitude.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_2",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Qu’est-ce qui est vu, supposé, ressenti ou à vérifier ?",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_3",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Une question honnête n’est pas une attaque.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_4",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Tu peux changer d’avis quand de nouvelles informations arrivent.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_5",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "La peur parle fort ; vérifions si elle dit vrai.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_6",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Cherchons plusieurs angles avant de conclure.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_7",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Penser par soi-même demande aussi d’écouter avec humilité.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_10_8",
+        "category": "développer le discernement",
+        "context": "développer le discernement",
+        "pillarId": "discernement",
+        "text": "Ce n’est pas parce que le groupe le répète que c’est vrai.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_1",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "Ta joie est belle ; aidons-la à rester respectueuse du groupe.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_2",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "Qu’est-ce qui a allumé cette lumière en toi ?",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_3",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "On peut célébrer sans comparer.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_4",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "La gratitude rend visible ce qui nourrit.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_5",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "La joie peut être calme, profonde ou pétillante.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_6",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "Merci d’avoir remarqué cette beauté.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_7",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "Partage ta joie comme une invitation, pas comme une obligation pour les autres.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_11_8",
+        "category": "nourrir la joie",
+        "context": "nourrir la joie",
+        "pillarId": "joie",
+        "text": "Une petite joie quotidienne peut devenir une grande force intérieure.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_1",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Quel petit geste utile peux-tu offrir aujourd’hui ?",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_2",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Ta contribution compte, même si elle est discrète.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_3",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Servir ne signifie pas te sacrifier.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_4",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Nous cherchons une responsabilité claire, pas un poids trop grand.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_5",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Ce qui dépend de toi peut devenir ton lieu de puissance douce.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_6",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Tu peux aider sans porter tout le groupe.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_7",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "La fiabilité se construit par de petites promesses tenues.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      },
+      {
+        "id": "socle_phrase_12_8",
+        "category": "inviter à contribuer",
+        "context": "inviter à contribuer",
+        "pillarId": "responsabilite",
+        "text": "Offrir depuis la joie est plus durable qu’aider depuis la culpabilité.",
+        "intention": "Guider sans étiqueter, soutenir la prochaine marche et protéger la dignité de l’enfant."
+      }
+    ],
+    "avoidPhrases": [
+      {
+        "id": "socle_avoid_1",
+        "avoid": "Tu es agressif.",
+        "instead": "Je vois une grande force qui sort très vite ; nous allons l’aider à trouver un chemin qui ne blesse personne.",
+        "why": "L’identité enferme ; la formulation ouvre un apprentissage."
+      },
+      {
+        "id": "socle_avoid_2",
+        "avoid": "Tu es trop sensible.",
+        "instead": "Tu ressens beaucoup ; nous allons apprendre à protéger ton espace sans fermer ton cœur.",
+        "why": "La sensibilité devient ressource quand elle est reconnue et accompagnée."
+      },
+      {
+        "id": "socle_avoid_3",
+        "avoid": "Tu n’écoutes jamais.",
+        "instead": "Ton attention semble partir loin ; cherchons ce qui peut t’aider à revenir ici.",
+        "why": "On vise le retour d’attention, pas l’étiquette."
+      },
+      {
+        "id": "socle_avoid_4",
+        "avoid": "Arrête de faire ton chef.",
+        "instead": "Je vois une force d’organisation en toi ; aidons-la à devenir coopération plutôt que contrôle.",
+        "why": "On transforme la force au lieu de la condamner."
+      },
+      {
+        "id": "socle_avoid_5",
+        "avoid": "Ce n’est rien.",
+        "instead": "Pour toi, cela semble compter ; regardons ce que ton intérieur essaie de dire.",
+        "why": "Minimiser coupe la confiance."
+      },
+      {
+        "id": "socle_avoid_6",
+        "avoid": "Les autres y arrivent bien.",
+        "instead": "Je regarde ta marche à toi, maintenant.",
+        "why": "La comparaison fragilise la dignité."
+      },
+      {
+        "id": "socle_avoid_7",
+        "avoid": "Fais un effort.",
+        "instead": "Quelle petite marche serait possible sans te faire violence ?",
+        "why": "L’effort doit devenir concret et ajusté."
+      },
+      {
+        "id": "socle_avoid_8",
+        "avoid": "Tu dois partager.",
+        "instead": "Partager a du sens quand ton espace et ton oui sont respectés.",
+        "why": "Le don forcé apprend la soumission, pas la générosité."
+      },
+      {
+        "id": "socle_avoid_9",
+        "avoid": "Va t’excuser.",
+        "instead": "Cherchons une réparation vraie, même petite.",
+        "why": "Une excuse mécanique peut masquer la responsabilité réelle."
+      },
+      {
+        "id": "socle_avoid_10",
+        "avoid": "Tu mens.",
+        "instead": "Je veux comprendre ce qui t’a empêché de dire la vérité simplement.",
+        "why": "On cherche la sécurité qui permet la vérité."
+      },
+      {
+        "id": "socle_avoid_11",
+        "avoid": "Calme-toi.",
+        "instead": "Je vais t’aider à retrouver un point d’appui.",
+        "why": "Donner un chemin vaut mieux qu’un ordre impossible."
+      },
+      {
+        "id": "socle_avoid_12",
+        "avoid": "Tu fais exprès.",
+        "instead": "Je ne sais pas encore ce qui se passe ; observons le besoin derrière le geste.",
+        "why": "La certitude adulte peut fermer l’enquête."
+      }
+    ],
+    "teacherTraining": [
+      {
+        "id": "socle_train_observer",
+        "title": "Observer sans conclure trop vite",
+        "body": "Apprendre à séparer le fait observé, l’interprétation et la prochaine question utile.",
+        "example": "Un enfant quitte le cercle : fait. “Il rejette le groupe” : interprétation. “De quoi avait-il besoin à ce moment-là ?” : question utile.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_besoin",
+        "title": "Différencier comportement, besoin et identité",
+        "body": "Ne jamais transformer un comportement en définition de l’enfant.",
+        "example": "“Il coupe la parole” décrit un fait ; “il est impoli” enferme ; “son élan a besoin d’un cadre d’attente” ouvre une piste.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_formulation",
+        "title": "Formuler sans étiqueter",
+        "body": "Choisir des mots qui guident l’action sans coller une identité.",
+        "example": "Dire “ta force sort très vite” plutôt que “tu es agressif”.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_marche",
+        "title": "Transformer une difficulté en prochaine marche",
+        "body": "Passer de la correction globale à une étape concrète, petite et observable.",
+        "example": "Au lieu de “sois plus respectueux”, proposer “attendre un tour avec un objet repère pendant trois minutes”.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_piliers",
+        "title": "Utiliser les 12 piliers sans moraliser",
+        "body": "Employer les piliers comme repères de croissance, pas comme notes de vertu.",
+        "example": "Un pilier à nourrir n’est pas une faute : c’est une graine qui cherche une meilleure terre.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_emotion",
+        "title": "Accompagner une émotion",
+        "body": "Accueillir l’émotion tout en gardant le cadre protecteur.",
+        "example": "“Ta colère est entendue, et je ne laisse pas les objets voler.”",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_limite",
+        "title": "Poser une limite sans domination",
+        "body": "Protéger l’espace commun sans humiliation ni rapport de force inutile.",
+        "example": "“Je bloque ce geste parce que je protège chacun, puis nous chercherons ce qui s’est passé.”",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_reparation",
+        "title": "Aider à réparer sans humilier",
+        "body": "Faire de la réparation un acte de soin du lien, non une punition déguisée.",
+        "example": "La réparation peut être une phrase, un geste utile, un dessin, une aide ou un temps de remise en lien.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_conseil",
+        "title": "Faire vivre un Conseil de Sages",
+        "body": "Structurer un cercle où la parole, le silence, la décision et la réparation ont chacun une place.",
+        "example": "Les rôles évitent que l’adulte porte tout : gardien de la parole, du temps, du cœur, de la solution.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_symbolique",
+        "title": "Utiliser les profils symboliques avec prudence",
+        "body": "Employer Design Humain, numérologie ou astrologie comme questions d’observation, jamais comme verdict.",
+        "example": "Le profil dit : “observe cette piste”. L’enfant vivant confirme, nuance ou contredit.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_confidentialite",
+        "title": "Protéger les données sensibles",
+        "body": "Garder en tête que notes, profils et observations d’enfants demandent une grande sobriété de partage.",
+        "example": "Un export famille n’a pas besoin des notes libres, citations sensibles ou profils symboliques.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      },
+      {
+        "id": "socle_train_packs",
+        "title": "Créer ses propres packs pédagogiques",
+        "body": "Transformer l’expérience de terrain en contenus réutilisables, partageables et ajustables.",
+        "example": "Une activité qui fonctionne peut devenir une fiche, puis une séquence, puis un pack.",
+        "steps": [
+          "Décrire le fait observable.",
+          "Nommer l’hypothèse comme hypothèse.",
+          "Chercher le besoin possible.",
+          "Choisir une petite marche concrète.",
+          "Observer l’effet avant de conclure."
+        ],
+        "exercise": "Choisir une situation réelle de la semaine et écrire trois formulations : fait, hypothèse, prochaine marche.",
+        "remember": "Voir sans enfermer, guider sans imposer, ajuster selon le vivant.",
+        "avoid": "Les phrases définitives comme “il est…”, “elle est toujours…”, “ce profil prouve que…”."
+      }
+    ]
+  },
+  "compatibleWith": "Sève v0.1.alpha+",
+  "usageNote": "Pack pédagogique importable. Les contenus guident l’observation et ne remplacent jamais l’écoute vivante de l’enfant.",
+  "modulesSummary": {
+    "lists": 126,
+    "pillarsInfo": 12,
+    "pillarReferentials": 12,
+    "activities": 0,
+    "sequences": 0,
+    "situations": 0,
+    "phrases": 96,
+    "avoidPhrases": 12,
+    "teacherTraining": 12
+  }
+}

@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sève Essentiel v0.1.alpha — classe, sagesses & observations</title>
+<style>
+/* =========================================================
+   SÈVE ESSENTIEL v0.1.alpha
+   Application HTML autonome — sans CDN — hors ligne
+   Objectif : version d'entrée simple avant Sève complète.
+   ========================================================= */
+
+:root{
+  --bg:#f4f1e8;
+  --surface:#fffdf7;
+  --surface2:#e9efe5;
+  --surface3:#f7faf3;
+  --text:#253126;
+  --muted:#647063;
+  --soft:#8a9387;
+  --border:#cfd9c9;
+  --primary:#2f6f4e;
+  --primary2:#e0efe6;
+  --accent:#a5782d;
+  --accent2:#f3ead5;
+  --danger:#9d4d45;
+  --danger2:#f6e3df;
+  --blue:#3b6d7a;
+  --blue2:#e0eef1;
+  --radius:15px;
+  --shadow:0 3px 18px rgba(40,60,35,.08);
+  --font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-read:Georgia,"Times New Roman",serif;
+}
+[data-theme="dark"]{
+  --bg:#132017;
+  --surface:#1b2c20;
+  --surface2:#263b2b;
+  --surface3:#203525;
+  --text:#edf6ec;
+  --muted:#b7c7b4;
+  --soft:#91a08f;
+  --border:#3b5640;
+  --primary:#8ed0a6;
+  --primary2:#244532;
+  --accent:#d9b25e;
+  --accent2:#3c321e;
+  --danger:#e89a8d;
+  --danger2:#4a2825;
+  --blue:#91c9d4;
+  --blue2:#203f46;
+  --shadow:0 3px 18px rgba(0,0,0,.22);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:15px;line-height:1.45}
+body{overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0}
+.app{max-width:980px;margin:0 auto;padding:0 12px 82px}
+header{
+  position:sticky;top:0;z-index:20;background:linear-gradient(180deg,var(--bg),rgba(244,241,232,.92));
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:9px 0 8px;margin-bottom:8px
+}
+[data-theme="dark"] header{background:linear-gradient(180deg,var(--bg),rgba(19,32,23,.92))}
+.header-row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.logo{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--primary2);border:1px solid var(--border);font-size:1.25rem;box-shadow:var(--shadow)}
+h1{font-family:var(--font-read);font-size:1.25rem;line-height:1.1;margin:0;color:var(--primary)}
+.subtitle{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.nav{
+  display:flex;gap:5px;overflow-x:auto;overflow-y:hidden;padding:7px 0 2px;scroll-snap-type:x proximity;
+  scrollbar-width:none
+}
+.nav::-webkit-scrollbar{display:none}
+.nav button{
+  flex:0 0 auto;white-space:nowrap;border-radius:50px;padding:7px 12px;background:var(--surface);border:1px solid var(--border);
+  color:var(--muted);font-size:.78rem;font-weight:700;letter-spacing:.02em;box-shadow:0 1px 8px rgba(0,0,0,.03)
+}
+.nav button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:50px;padding:8px 14px;
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);font-weight:650;font-size:.86rem;transition:.18s ease
+}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.03)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.gold{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{background:var(--danger2);border-color:#e0aaa2;color:var(--danger)}
+.btn.ghost{background:transparent}
+.btn.small{padding:5px 10px;font-size:.78rem}
+.grid{display:grid;gap:12px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;
+  min-width:0;overflow-wrap:anywhere
+}
+.card.green{border-left:4px solid var(--primary)}
+.card.gold{border-left:4px solid var(--accent)}
+.card.blue{border-left:4px solid var(--blue)}
+.card.red{border-left:4px solid var(--danger)}
+.card h2,.card h3{font-family:var(--font-read);margin:.1rem 0 .5rem;color:var(--primary);line-height:1.15}
+.card h2{font-size:1.24rem}.card h3{font-size:1.05rem}
+.muted{color:var(--muted)}
+.smalltxt{font-size:.84rem;color:var(--muted)}
+.read{font-family:var(--font-read);font-size:1rem;line-height:1.68}
+.quote{
+  background:var(--accent2);border-left:4px solid var(--accent);border-radius:0 12px 12px 0;padding:12px 13px;
+  font-family:var(--font-read);font-style:italic;line-height:1.65
+}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.space{justify-content:space-between}
+label{display:block;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.075em;color:var(--muted);margin:7px 0 4px}
+input,select,textarea{
+  width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:9px 10px;outline:none
+}
+textarea{min-height:74px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary2)}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;border-radius:50px;padding:4px 9px;background:var(--primary2);
+  color:var(--primary);font-size:.76rem;font-weight:700;border:1px solid rgba(47,111,78,.16)
+}
+.chip.gold{background:var(--accent2);color:var(--accent)}
+.chip.blue{background:var(--blue2);color:var(--blue)}
+.chip.red{background:var(--danger2);color:var(--danger)}
+.list{display:grid;gap:8px}
+.item{padding:10px;border-radius:12px;background:var(--surface3);border:1px solid var(--border)}
+.stat{display:grid;gap:2px}
+.stat strong{font-size:1.35rem;color:var(--primary);font-family:var(--font-read)}
+.progress{
+  height:9px;background:var(--surface2);border:1px solid var(--border);border-radius:50px;overflow:hidden;margin-top:5px
+}
+.progress span{display:block;height:100%;background:var(--primary);border-radius:50px}
+.hide{display:none!important}
+.hr{height:1px;background:var(--border);margin:11px 0}
+.notice{
+  border:1px solid var(--border);background:var(--surface3);border-radius:13px;padding:10px 12px;color:var(--muted);font-size:.88rem
+}
+details{border:1px solid var(--border);border-radius:13px;background:var(--surface);padding:0;overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:10px 12px;font-weight:800;color:var(--primary);background:var(--surface2)}
+summary::-webkit-details-marker{display:none}
+details .inner{padding:10px 12px}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{text-align:left;vertical-align:top;padding:7px;border-bottom:1px solid var(--border)}
+th{font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.fab{
+  position:fixed;right:16px;bottom:18px;width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;
+  box-shadow:0 7px 20px rgba(47,111,78,.35);font-size:1.35rem;z-index:30
+}
+.modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(3px);display:grid;place-items:center;padding:16px;z-index:50}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.22);max-width:760px;width:100%;max-height:88vh;overflow:auto;padding:16px}
+@media(max-width:720px){
+  .app{padding:0 8px 82px}
+  .subtitle{display:none}
+  .logo{width:32px;height:32px}
+  h1{font-size:1.08rem}
+  .header-row{align-items:flex-start}
+  .header-actions .btn{padding:5px 9px;font-size:.73rem}
+  .nav button{font-size:.72rem;padding:6px 10px}
+  .grid.two,.grid.three{grid-template-columns:1fr}
+  .card{padding:11px;border-radius:14px}
+  .card h2{font-size:1.08rem}.card h3{font-size:1rem}
+  label{font-size:.63rem}
+  table{font-size:.8rem}
+}
+@media print{
+  header,.nav,.fab,.noPrint,.btn{display:none!important}
+  body{background:#fff;color:#000}
+  .app{max-width:none;padding:0}
+  .card,.item,details{box-shadow:none;border:1px solid #ccc;break-inside:avoid;background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="header-row">
+      <div class="brand">
+        <div class="logo">🌱</div>
+        <div>
+          <h1>Sève Essentiel v0.1.alpha</h1>
+          <div class="subtitle">version simple — classe, sagesses, observations & guidance douce</div>
+        </div>
+      </div>
+      <div class="header-actions noPrint">
+        <button class="btn small ghost" onclick="App.toggleTheme()">☾/☼</button>
+        <button class="btn small" onclick="App.openHelp()">Aide</button>
+        <button class="btn small" onclick="App.exportData()">Sauvegarder</button>
+      </div>
+    </div>
+    <nav class="nav noPrint" id="nav"></nav>
+  </header>
+  <main id="view"></main>
+</div>
+<button class="fab noPrint" title="Observation rapide" onclick="App.quickObservation()">＋</button>
+<div id="modalRoot"></div>
+
+<script>
+/* =========================================================
+   SÈVE ESSENTIEL — JS autonome
+   Structure simple : état, stockage, vues, conseils.
+   ========================================================= */
+const PILLARS = [
+  {id:"presence", n:"Présence à soi", short:"Revenir à soi", q:"Qu’est-ce que je ressens maintenant ?", color:"green"},
+  {id:"emotions", n:"Émotions & transmutation", short:"Traverser sans blesser", q:"Quelle émotion me traverse et de quoi a-t-elle besoin ?", color:"blue"},
+  {id:"dignite", n:"Dignité & amour de soi", short:"Ma valeur existe", q:"Puis-je reconnaître ma valeur sans devoir prouver ?", color:"gold"},
+  {id:"authenticite", n:"Vérité intérieure", short:"Dire vrai avec douceur", q:"Qu’est-ce qui est vrai pour moi maintenant ?", color:"green"},
+  {id:"limites", n:"Limites & consentement", short:"Mon oui, mon non", q:"Mon espace, mon corps et mon rythme sont-ils respectés ?", color:"red"},
+  {id:"relation", n:"Relation juste", short:"Écouter, réparer, coopérer", q:"Comment le lien peut-il redevenir respirable ?", color:"blue"},
+  {id:"discernement", n:"Discernement", short:"Vrai, possible, à vérifier", q:"Qu’est-ce que je sais, crois ou dois vérifier ?", color:"gold"},
+  {id:"joie", n:"Joie & gratitude", short:"Nourrir l’élan vivant", q:"Qu’est-ce qui remet de la vie ici ?", color:"green"},
+  {id:"creativite", n:"Créativité d’âme", short:"Donner forme", q:"Qu’est-ce qui veut s’exprimer à travers moi ?", color:"blue"},
+  {id:"responsabilite", n:"Responsabilité & service", short:"Contribuer sans se sacrifier", q:"Quelle petite contribution juste puis-je offrir ?", color:"gold"},
+  {id:"courage", n:"Courage & résilience", short:"Une petite marche", q:"Quelle marche puis-je tenter sans me trahir ?", color:"red"},
+  {id:"reliance", n:"Reliance au vivant", short:"Respecter le mystère", q:"Comment rester relié au vivant et au sacré simple ?", color:"green"}
+];
+
+const NEEDS = ["sécurité","calme","mouvement","reconnaissance","écoute","expression","limite claire","réparation","solitude","lien","choix","ancrage","joie","confiance","nature","prévisibilité","autonomie","douceur"];
+const PASSIONS = ["animaux","nature","dessin","histoires","musique","danse","construction","jeux","énigmes","humour","aider les autres","justice","silence","technologie","cuisine","sport","imaginaire"];
+const OBS_TYPES = [
+  {id:"conflit", n:"Conflit", pillar:"relation", need:"réparation"},
+  {id:"peur", n:"Peur / insécurité", pillar:"presence", need:"sécurité"},
+  {id:"colere", n:"Colère / débordement", pillar:"emotions", need:"limite claire"},
+  {id:"retrait", n:"Retrait / fermeture", pillar:"dignite", need:"sécurité"},
+  {id:"moquerie", n:"Moquerie / blessure du lien", pillar:"relation", need:"réparation"},
+  {id:"surcharge", n:"Surcharge / agitation", pillar:"presence", need:"calme"},
+  {id:"difficulte", n:"Difficulté récurrente", pillar:"courage", need:"confiance"},
+  {id:"progression", n:"Progression / victoire", pillar:"joie", need:"reconnaissance"}
+];
+
+const HD_TYPES = {
+  "": "",
+  "Générateur": "Observer si l’enfant s’ouvre mieux en répondant à une proposition concrète qu’en étant poussé. Lui offrir des choix simples et sentir son élan.",
+  "Générateur Manifesteur": "Observer si l’enfant a besoin de répondre puis d’agir vite. Lui permettre d’informer le groupe et de bouger sans le disperser.",
+  "Projecteur": "Observer si l’enfant s’ouvre mieux quand il se sent reconnu et invité. Éviter de le pousser à tenir le rythme des autres.",
+  "Manifesteur": "Observer si l’enfant a besoin d’initier et d’informer. Lui donner un cadre clair sans écraser son impulsion créatrice.",
+  "Réflecteur": "Observer la forte sensibilité aux ambiances. Lui offrir du temps, des environnements calmes et des retours non pressants."
+};
+const HD_AUTHORITIES = {
+  "": "",
+  "Émotionnelle": "Lui laisser du temps : la clarté peut venir après une vague émotionnelle, pas dans l’instant.",
+  "Sacrale": "Proposer des questions concrètes auxquelles le corps peut répondre par oui/non, élan/retrait.",
+  "Splénique": "Observer les signaux subtils et rapides de confort/inconfort, sans forcer l’explication mentale.",
+  "Ego / Cœur": "Observer le rapport à l’engagement et à la volonté. Ne pas confondre promesse saine et pression.",
+  "G / Identité": "Observer les environnements et les êtres auprès desquels l’enfant retrouve naturellement sa direction.",
+  "Mentale / environnementale": "Offrir un espace de parole calme ; la clarté peut venir en entendant sa propre voix.",
+  "Lunaire": "Respecter le temps long, les cycles et l’observation de plusieurs contextes."
+};
+const LIFE_PATHS = {
+  1:"Observer l’autonomie, l’initiative et le besoin de se sentir capable. Proposer de petites responsabilités sans isolement.",
+  2:"Observer le besoin de lien, de douceur et de coopération. Protéger l’enfant de l’effacement ou de l’hyper-adaptation.",
+  3:"Observer l’expression, la joie, la parole, l’art et le jeu. Aider à terminer sans casser la créativité.",
+  4:"Observer le besoin de structure, de sécurité et de concret. Valoriser la régularité sans rigidifier.",
+  5:"Observer le besoin de mouvement, d’expérience et de liberté. Donner des cadres souples et des choix.",
+  6:"Observer le soin, l’harmonie, le sens de la responsabilité. Éviter que l’enfant porte trop les autres.",
+  7:"Observer l’intériorité, la recherche de sens, le besoin de solitude. Respecter le silence sans l’abandonner.",
+  8:"Observer le rapport à la puissance, à l’organisation et à la justice. Guider vers une force protectrice et non dominante.",
+  9:"Observer la sensibilité globale, la compassion, l’imaginaire et le besoin de sens. Aider à poser des limites.",
+  11:"Observer l’inspiration, la sensibilité nerveuse et la vision. Ancrer par le corps, le rythme et le calme.",
+  22:"Observer la capacité à bâtir grand, mais protéger de la pression. Fractionner en petites étapes.",
+  33:"Observer le soin, la transmission et la chaleur du cœur. Veiller à ce que l’enfant ne se sacrifie pas."
+};
+
+const DEFAULT_STATE = {
+  version:"seve-essentiel-v0.1.alpha",
+  theme:"light",
+  activeView:"accueil",
+  classes:[{id:"class_1", name:"Ma classe"}],
+  activeClassId:"class_1",
+  children:[],
+  observations:[],
+  lessons:[],
+  createdAt:new Date().toISOString()
+};
+const STORAGE_KEY = "seve_essentiel_v0_1_alpha";
+const LEGACY_STORAGE_KEYS = ["seve_essentiel_v1"];
+
+const App = {
+  state:null,
+  views:[
+    ["accueil","Accueil"],
+    ["classe","Classe"],
+    ["sagesses","Sagesses"],
+    ["observations","Observations"],
+    ["guidance","Guidance"],
+    ["lecons","Leçons"],
+    ["donnees","Données"]
+  ],
+  init(){
+    this.state = this.load();
+    document.documentElement.dataset.theme = this.state.theme || "light";
+    this.renderNav();
+    this.render();
+  },
+  load(){
+    try{
+      let raw=localStorage.getItem(STORAGE_KEY);
+      if(!raw){
+        for(const key of LEGACY_STORAGE_KEYS){
+          raw=localStorage.getItem(key);
+          if(raw) break;
+        }
+      }
+      if(raw) return this.migrateState(JSON.parse(raw));
+    }catch(e){ console.warn(e); }
+    return this.clone(DEFAULT_STATE);
+  },
+  clone(value){
+    if(typeof structuredClone==="function") return structuredClone(value);
+    return JSON.parse(JSON.stringify(value));
+  },
+  migrateState(data){
+    const base=this.clone(DEFAULT_STATE);
+    if(!data || typeof data!=="object") return base;
+    const out={...base,...data};
+    out.version="seve-essentiel-v0.1.alpha";
+    out.theme=out.theme==="dark"?"dark":"light";
+    out.activeView=this.views.some(([id])=>id===out.activeView)?out.activeView:"accueil";
+    out.classes=Array.isArray(out.classes)&&out.classes.length?out.classes:base.classes;
+    out.children=Array.isArray(out.children)?out.children:[];
+    out.observations=Array.isArray(out.observations)?out.observations:[];
+    out.lessons=Array.isArray(out.lessons)?out.lessons:[];
+    if(!out.activeClassId || !out.classes.some(c=>c.id===out.activeClassId)) out.activeClassId=out.classes[0]?.id||"class_1";
+    out.children=out.children.map(c=>({
+      id:c.id||this.uid("child"),
+      classId:c.classId||out.activeClassId,
+      firstName:c.firstName||"",
+      age:c.age||"",
+      group:c.group||"",
+      needs:Array.isArray(c.needs)?c.needs:[],
+      interests:Array.isArray(c.interests)?c.interests:[],
+      pillars:c.pillars&&typeof c.pillars==="object"?c.pillars:{},
+      birthDate:c.birthDate||"",
+      birthReliability:c.birthReliability||"",
+      refYear:c.refYear||"",
+      hdType:c.hdType||"",
+      hdAuthority:c.hdAuthority||"",
+      hdProfile:c.hdProfile||"",
+      notes:c.notes||"",
+      archived:!!c.archived
+    }));
+    out.observations=out.observations.map(o=>({
+      id:o.id||this.uid("obs"),
+      date:o.date||new Date().toISOString().slice(0,10),
+      childId:o.childId||"",
+      type:o.type||"difficulte",
+      typeName:o.typeName||"",
+      pillarId:o.pillarId||"presence",
+      need:o.need||"",
+      fact:o.fact||o.note||"",
+      support:o.support||"",
+      nextStep:o.nextStep||"",
+      advice:o.advice||""
+    }));
+    out.lessons=out.lessons.map(l=>({
+      id:l.id||this.uid("lesson"),
+      date:l.date||new Date().toISOString().slice(0,10),
+      childId:l.childId||"",
+      title:l.title||"Leçon simple",
+      intention:l.intention||"",
+      steps:l.steps||"",
+      phrase:l.phrase||"",
+      trace:l.trace||""
+    }));
+    return out;
+  },
+  save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); }
+    catch(e){ alert("Le stockage du navigateur semble plein ou indisponible. Télécharge une sauvegarde complète dans l’onglet Données."); }
+  },
+  setView(v){ this.state.activeView=v; this.save(); this.renderNav(); this.render(); window.scrollTo({top:0,behavior:"smooth"}); },
+  renderNav(){
+    const nav=document.getElementById("nav");
+    nav.innerHTML=this.views.map(([id,n])=>`<button class="${this.state.activeView===id?'active':''}" onclick="App.setView('${id}')">${n}</button>`).join("");
+  },
+  render(){
+    const v=this.state.activeView||"accueil";
+    const fn=this["view_"+v] || this.view_accueil;
+    document.getElementById("view").innerHTML = fn.call(this);
+  },
+  childrenActive(){ return this.state.children.filter(c=>!c.archived && c.classId===this.state.activeClassId); },
+  child(id){ return this.state.children.find(c=>c.id===id); },
+  pillar(id){ return PILLARS.find(p=>p.id===id)||PILLARS[0]; },
+  obsForChild(id){ return this.state.observations.filter(o=>o.childId===id).sort((a,b)=>b.date.localeCompare(a.date)); },
+  esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m])); },
+  uid(p){ return p+"_"+Math.random().toString(36).slice(2,9); },
+  toggleTheme(){ this.state.theme=this.state.theme==="dark"?"light":"dark"; document.documentElement.dataset.theme=this.state.theme; this.save(); },
+  levelLabel(n){ return ["Non observé","Graine","Bourgeon","Fleur","Fruit"][Number(n)||0]||"Non observé"; },
+  reduceNum(n, keepMasters=true){
+    n=String(n).replace(/\D/g,"").split("").reduce((a,b)=>a+Number(b),0);
+    while(n>9 && !(keepMasters && [11,22,33].includes(n))) n=String(n).split("").reduce((a,b)=>a+Number(b),0);
+    return n;
+  },
+  lifePath(date){
+    if(!date) return null;
+    const digits=date.replace(/\D/g,"");
+    if(digits.length<8) return null;
+    return this.reduceNum(digits,true);
+  },
+  dayNumber(date){
+    if(!date) return null;
+    const d=new Date(date+"T00:00:00");
+    if(isNaN(d)) return null;
+    return this.reduceNum(String(d.getDate()),true);
+  },
+  personalYear(date, year=(new Date()).getFullYear()){
+    if(!date) return null;
+    const d=new Date(date+"T00:00:00");
+    if(isNaN(d)) return null;
+    return this.reduceNum(String(d.getDate())+String(d.getMonth()+1)+String(year),false);
+  },
+  simpleOrientation(c){
+    const lp=this.lifePath(c.birthDate);
+    const lines=[];
+    let short="Commencer par une observation simple : ce qui nourrit, ferme ou apaise l’enfant.";
+    if(lp){
+      const text=LIFE_PATHS[lp]||"dynamique à observer avec prudence.";
+      lines.push(`Date de naissance — chemin ${lp} : ${text}`);
+      short=`Chemin ${lp} : ${text}`;
+    }
+    if(c.hdType){
+      const text=HD_TYPES[c.hdType]||"rythme à observer sans conclure.";
+      lines.push(`Design Humain — ${c.hdType} : ${text}`);
+      short=lp ? `Chemin ${lp} + ${c.hdType} : chercher le bon rythme d’accompagnement.` : `${c.hdType} : ${text}`;
+    }
+    const nextByType={
+      "Générateur":"Proposer deux choix concrets et observer ce qui allume l’élan.",
+      "Générateur Manifesteur":"Laisser tester brièvement, puis aider à terminer ou ajuster sans culpabiliser.",
+      "Projecteur":"Donner une reconnaissance précise avant de demander un effort.",
+      "Manifesteur":"Prévenir clairement le cadre, puis laisser une part d’initiative.",
+      "Réflecteur":"Observer l’influence du groupe, du lieu et du rythme avant de conclure."
+    };
+    const next=nextByType[c.hdType] || (lp ? "Choisir une petite marche liée à cette dynamique, puis vérifier dans les faits." : "Noter un fait précis avant de proposer une marche.");
+    return {short, lines, next};
+  },
+
+  view_accueil(){
+    const kids=this.childrenActive();
+    const obs=this.state.observations.filter(o=>kids.some(k=>k.id===o.childId));
+    const recent=obs.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4);
+    return `
+      <section class="grid two">
+        <div class="card green">
+          <h2>Commencer simplement</h2>
+          <p class="read">Sève Essentiel est une porte d’entrée : gérer une classe, suivre 12 sagesses, noter les conflits/peurs/difficultés, puis recevoir des conseils doux. Date de naissance et type Design Humain peuvent aussi proposer une orientation simple, toujours à vérifier par l’observation.</p>
+          <div class="row">
+            <button class="btn primary" onclick="App.setView('classe')">Ajouter des élèves</button>
+            <button class="btn" onclick="App.quickObservation()">Observation rapide</button>
+            <button class="btn" onclick="App.setView('sagesses')">Voir les sagesses</button>
+          </div>
+        </div>
+        <div class="card gold">
+          <h2>Le principe</h2>
+          <div class="quote">Observer sans enfermer. Comprendre sans conclure trop vite. Proposer une petite marche juste.</div>
+          <p class="smalltxt">Les miroirs optionnels peuvent rester entièrement vides : ils posent des questions au vivant, ils ne définissent jamais l’enfant.</p>
+        </div>
+      </section>
+      <section class="grid three" style="margin-top:12px">
+        <div class="card"><div class="stat"><strong>${kids.length}</strong><span>élève(s)</span></div></div>
+        <div class="card"><div class="stat"><strong>${obs.length}</strong><span>observation(s)</span></div></div>
+        <div class="card"><div class="stat"><strong>${PILLARS.length}</strong><span>sagesses suivies</span></div></div>
+      </section>
+      <section class="card blue" style="margin-top:12px">
+        <h2>Utilisation en 3 gestes</h2>
+        <div class="grid three">
+          <div class="item"><strong>1. Créer la classe</strong><br><span class="smalltxt">Ajoute prénom, âge et groupe. Si tu le souhaites, renseigne aussi date et type Design Humain.</span></div>
+          <div class="item"><strong>2. Noter un fait</strong><br><span class="smalltxt">Conflit, peur, colère, retrait, surcharge ou progression.</span></div>
+          <div class="item"><strong>3. Choisir une marche</strong><br><span class="smalltxt">L’application propose un pilier, un besoin, une phrase adulte et une action simple.</span></div>
+        </div>
+      </section>
+      <section class="card" style="margin-top:12px">
+        <h2>Dernières observations</h2>
+        ${recent.length? recent.map(o=>this.obsCard(o)).join("") : `<p class="muted">Aucune observation pour le moment.</p>`}
+      </section>
+    `;
+  },
+
+  view_classe(){
+    const kids=this.childrenActive();
+    return `
+      <section class="card green">
+        <h2>Classe & élèves</h2>
+        <p class="notice">Ajout rapide : ne remplis que l’essentiel au début. Date de naissance et type Design Humain sont optionnels ; ils servent seulement à proposer une orientation possible, jamais une étiquette.</p>
+        <div class="grid two">
+          <div>
+            <label>Classe active</label>
+            <div class="row">
+              <select onchange="App.state.activeClassId=this.value;App.save();App.render()">
+                ${this.state.classes.map(c=>`<option value="${c.id}" ${c.id===this.state.activeClassId?'selected':''}>${this.esc(c.name)}</option>`).join("")}
+              </select>
+              <button class="btn small" onclick="App.addClass()">+ Classe</button>
+            </div>
+          </div>
+          <form onsubmit="App.addChild(event)">
+            <label>Ajouter rapidement un élève</label>
+            <div class="grid three">
+              <input name="firstName" placeholder="Prénom ou initiales" required>
+              <input name="age" type="number" min="2" max="20" placeholder="Âge">
+              <input name="group" placeholder="Groupe">
+            </div>
+            <details>
+              <summary>Orientation optionnelle — naissance & Design Humain</summary>
+              <div class="inner">
+                <p class="notice">Ces repères restent des hypothèses d’accompagnement. Ils n’ont de valeur que s’ils aident à observer plus finement l’enfant.</p>
+                <div class="grid two">
+                  <div><label>Date de naissance</label><input name="birthDate" type="date"></div>
+                  <div><label>Type Design Humain</label><select name="hdType">
+                    <option value="">Non renseigné</option>
+                    ${Object.keys(HD_TYPES).filter(Boolean).map(x=>`<option>${x}</option>`).join("")}
+                  </select></div>
+                </div>
+              </div>
+            </details>
+            <button class="btn primary small" style="margin-top:8px">Ajouter</button>
+          </form>
+        </div>
+      </section>
+      <section class="grid two" style="margin-top:12px">
+        ${kids.length? kids.map(c=>this.childCard(c)).join("") : `<div class="card"><p class="muted">Aucun élève ajouté.</p></div>`}
+      </section>
+    `;
+  },
+  childCard(c){
+    const lp=this.lifePath(c.birthDate);
+    const obs=this.obsForChild(c.id);
+    const needs=(c.needs||[]).map(x=>`<span class="chip">${this.esc(x)}</span>`).join("");
+    const interests=(c.interests||[]).map(x=>`<span class="chip gold">${this.esc(x)}</span>`).join("");
+    const orientation=this.simpleOrientation(c);
+    return `
+      <div class="card">
+        <div class="row space">
+          <h3>${this.esc(c.firstName||"Élève")}</h3>
+          <div class="row">
+            <button class="btn small" onclick="App.editChild('${c.id}')">Fiche & orientation</button>
+            <button class="btn small" onclick="App.addObsFor('${c.id}')">Observer</button>
+          </div>
+        </div>
+        <div class="smalltxt">${c.age?this.esc(c.age)+" ans · ":""}${this.esc(c.group||"")}</div>
+        <div class="chips">${needs || `<span class="chip">besoins à observer</span>`}</div>
+        <div class="chips">${interests || ""}</div>
+        <div class="hr"></div>
+        <div class="row">
+          <span class="chip blue">${obs.length} observation(s)</span>
+          ${lp?`<span class="chip gold">chemin ${lp}</span>`:""}
+          ${c.hdType?`<span class="chip">HD : ${this.esc(c.hdType)}</span>`:""}
+        </div>
+        ${(c.birthDate||c.hdType)?`<div class="notice" style="margin-top:8px"><strong>Orientation possible :</strong> ${this.esc(orientation.short)}</div>`:""}
+        ${(!c.birthDate&&!c.hdType)?`<div class="notice" style="margin-top:8px"><strong>Orientation non renseignée.</strong> Ouvre “Fiche & orientation” pour ajouter une date de naissance ou un type Design Humain si cela est utile.</div>`:""}
+      </div>
+    `;
+  },
+  addClass(){
+    const name=prompt("Nom de la classe :");
+    if(!name) return;
+    const id=this.uid("class");
+    this.state.classes.push({id,name});
+    this.state.activeClassId=id;
+    this.save(); this.render();
+  },
+  addChild(ev){
+    ev.preventDefault();
+    const f=new FormData(ev.target);
+    this.state.children.push({
+      id:this.uid("child"), classId:this.state.activeClassId,
+      firstName:f.get("firstName"), age:f.get("age"), group:f.get("group"),
+      needs:[], interests:[], pillars:{}, birthDate:f.get("birthDate")||"", hdType:f.get("hdType")||"", hdAuthority:"", hdProfile:"", notes:""
+    });
+    this.save(); this.render();
+  },
+  editChild(id){
+    const c=this.child(id); if(!c) return;
+    const lp=this.lifePath(c.birthDate), dn=this.dayNumber(c.birthDate), py=this.personalYear(c.birthDate, Number(c.refYear||new Date().getFullYear()));
+    this.modal(`
+      <h2>Fiche simple — ${this.esc(c.firstName)}</h2>
+      <form onsubmit="App.saveChild(event,'${id}')">
+        <div class="grid three">
+          <div><label>Prénom / initiales</label><input name="firstName" value="${this.esc(c.firstName)}"></div>
+          <div><label>Âge</label><input name="age" type="number" value="${this.esc(c.age||"")}"></div>
+          <div><label>Groupe</label><input name="group" value="${this.esc(c.group||"")}"></div>
+        </div>
+        <div class="grid two">
+          <div><label>Besoins observés</label><input name="needs" value="${this.esc((c.needs||[]).join(', '))}" placeholder="${NEEDS.slice(0,5).join(', ')}"></div>
+          <div><label>Passions / portes d’entrée</label><input name="interests" value="${this.esc((c.interests||[]).join(', '))}" placeholder="${PASSIONS.slice(0,5).join(', ')}"></div>
+        </div>
+        <div class="item" style="margin-top:10px">
+          <h3>Orientation optionnelle — naissance & Design Humain</h3>
+          <p class="notice">Tu peux compléter ici une fiche déjà existante. Ces repères ne définissent pas l’enfant : ils aident seulement à formuler des questions d’observation.</p>
+            <div class="grid three">
+              <div><label>Date de naissance</label><input name="birthDate" type="date" value="${this.esc(c.birthDate||"")}"></div>
+              <div><label>Année de référence</label><input name="refYear" type="number" value="${this.esc(c.refYear||new Date().getFullYear())}"></div>
+              <div><label>Fiabilité</label><select name="birthReliability">
+                ${["non renseignée","exacte","approximative","à vérifier"].map(x=>`<option ${c.birthReliability===x?'selected':''}>${x}</option>`).join("")}
+              </select></div>
+            </div>
+            <div class="item">
+              <strong>Numérologie date actuelle :</strong>
+              ${lp?`chemin de vie ${lp}, jour ${dn}, année personnelle ${py}.`:"renseigne une date pour calculer."}
+              ${lp?`<br><span class="smalltxt">${this.esc(LIFE_PATHS[lp]||"Dynamique à observer avec prudence.")}</span>`:""}
+            </div>
+            <div class="grid three">
+              <div><label>Type Design Humain</label><select name="hdType">
+                <option value="">Non renseigné</option>
+                ${Object.keys(HD_TYPES).filter(Boolean).map(x=>`<option ${c.hdType===x?'selected':''}>${x}</option>`).join("")}
+              </select></div>
+              <div><label>Autorité</label><select name="hdAuthority">
+                ${Object.keys(HD_AUTHORITIES).map(x=>`<option ${c.hdAuthority===x?'selected':''}>${x}</option>`).join("")}
+              </select></div>
+              <div><label>Profil</label><input name="hdProfile" value="${this.esc(c.hdProfile||"")}" placeholder="ex : 4/6"></div>
+            </div>
+        </div>
+        <label>Notes libres</label>
+        <textarea name="notes">${this.esc(c.notes||"")}</textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary">Enregistrer</button>
+          <button type="button" class="btn" onclick="App.closeModal()">Fermer</button>
+          <button type="button" class="btn danger" onclick="App.archiveChild('${id}')">Archiver</button>
+        </div>
+      </form>
+    `);
+  },
+  saveChild(ev,id){
+    ev.preventDefault();
+    const c=this.child(id), f=new FormData(ev.target);
+    Object.assign(c,{
+      firstName:f.get("firstName"), age:f.get("age"), group:f.get("group"),
+      needs:this.splitList(f.get("needs")), interests:this.splitList(f.get("interests")),
+      birthDate:f.get("birthDate"), refYear:f.get("refYear"), birthReliability:f.get("birthReliability"),
+      hdType:f.get("hdType"), hdAuthority:f.get("hdAuthority"), hdProfile:f.get("hdProfile"), notes:f.get("notes")
+    });
+    this.save(); this.closeModal(); this.render();
+  },
+  archiveChild(id){
+    if(!confirm("Archiver cet élève ? Il ne sera plus visible dans la classe active.")) return;
+    const c=this.child(id); if(c) c.archived=true;
+    this.save(); this.closeModal(); this.render();
+  },
+  splitList(s){ return String(s||"").split(",").map(x=>x.trim()).filter(Boolean); },
+
+  view_sagesses(){
+    const kids=this.childrenActive();
+    return `
+      <section class="card green">
+        <h2>12 sagesses à transmettre</h2>
+        <p class="notice">Ici, on suit des qualités humaines, pas des notes. Le niveau indique où accompagner : non observé, graine, bourgeon, fleur ou fruit.</p>
+      </section>
+      <section class="grid two" style="margin-top:12px">
+        ${PILLARS.map(p=>`
+          <div class="card ${p.color}">
+            <h3>${p.n}</h3>
+            <p class="read">${p.short}</p>
+            <p class="smalltxt"><strong>Question :</strong> ${p.q}</p>
+            <button class="btn small" onclick="App.openPillar('${p.id}')">Voir / suivre</button>
+          </div>
+        `).join("")}
+      </section>
+    `;
+  },
+  openPillar(pid){
+    const p=this.pillar(pid), kids=this.childrenActive();
+    this.modal(`
+      <h2>${p.n}</h2>
+      <div class="quote">${p.q}</div>
+      <p class="smalltxt">Choisis un niveau uniquement si tu as observé quelque chose. Sinon, laisse “Non observé”.</p>
+      <div class="list">
+        ${kids.map(c=>{
+          const lv=(c.pillars&&c.pillars[pid])||0;
+          return `<div class="item">
+            <div class="row space"><strong>${this.esc(c.firstName)}</strong><span class="chip">${this.levelLabel(lv)}</span></div>
+            <select onchange="App.setPillarLevel('${c.id}','${pid}',this.value)">
+              ${[0,1,2,3,4].map(n=>`<option value="${n}" ${Number(lv)===n?'selected':''}>${this.levelLabel(n)}</option>`).join("")}
+            </select>
+          </div>`;
+        }).join("") || `<p class="muted">Ajoute d’abord des élèves.</p>`}
+      </div>
+    `);
+  },
+  setPillarLevel(cid,pid,val){
+    const c=this.child(cid); if(!c) return;
+    c.pillars=c.pillars||{}; c.pillars[pid]=Number(val);
+    this.save(); this.render();
+  },
+
+  view_observations(){
+    const obs=this.state.observations.slice().sort((a,b)=>b.date.localeCompare(a.date));
+    return `
+      <section class="card blue">
+        <h2>Observations rapides</h2>
+        <p class="notice">Une observation décrit un fait, un besoin possible et une petite marche. Elle ne définit jamais l’enfant.</p>
+        <button class="btn primary" onclick="App.quickObservation()">+ Nouvelle observation</button>
+      </section>
+      <section class="card" style="margin-top:12px">
+        <h2>Journal</h2>
+        ${obs.length? obs.map(o=>this.obsCard(o,true)).join("") : `<p class="muted">Aucune observation.</p>`}
+      </section>
+    `;
+  },
+  obsCard(o,actions=false){
+    const c=this.child(o.childId), p=this.pillar(o.pillarId);
+    return `<div class="item">
+      <div class="row space">
+        <strong>${this.esc(c?.firstName||"Élève archivé")}</strong>
+        <span class="chip ${p.color==='red'?'red':p.color==='blue'?'blue':p.color==='gold'?'gold':''}">${this.esc(p.n)}</span>
+      </div>
+      <div class="smalltxt">${this.esc(o.date)} · ${this.esc(o.typeName||o.type||"observation")} · besoin possible : ${this.esc(o.need||"à observer")}</div>
+      <p>${this.esc(o.fact||o.note||"")}</p>
+      ${o.advice?`<div class="quote">${this.esc(o.advice)}</div>`:""}
+      ${o.nextStep?`<p><strong>Petite marche :</strong> ${this.esc(o.nextStep)}</p>`:""}
+      ${actions?`<div class="row"><button class="btn small" onclick="App.editObs('${o.id}')">Modifier</button><button class="btn small danger" onclick="App.deleteObs('${o.id}')">Supprimer</button></div>`:""}
+    </div>`;
+  },
+  quickObservation(){ this.addObsFor(""); },
+  addObsFor(childId=""){
+    const kids=this.childrenActive();
+    this.modal(`
+      <h2>Observation rapide</h2>
+      <form onsubmit="App.saveObs(event)">
+        <div class="grid two">
+          <div><label>Élève</label><select name="childId" required>
+            <option value="">Choisir…</option>
+            ${kids.map(c=>`<option value="${c.id}" ${childId===c.id?'selected':''}>${this.esc(c.firstName)}</option>`).join("")}
+          </select></div>
+          <div><label>Type</label><select name="type" onchange="App.fillObsSuggestion(this.value)">
+            ${OBS_TYPES.map(t=>`<option value="${t.id}">${t.n}</option>`).join("")}
+          </select></div>
+        </div>
+        <div class="grid two">
+          <div><label>Pilier conseillé</label><select name="pillarId" id="obsPillar">
+            ${PILLARS.map(p=>`<option value="${p.id}">${p.n}</option>`).join("")}
+          </select></div>
+          <div><label>Besoin possible</label><select name="need" id="obsNeed">
+            ${NEEDS.map(n=>`<option>${n}</option>`).join("")}
+          </select></div>
+        </div>
+        <label>Fait observé</label>
+        <textarea name="fact" placeholder="Ex : Pendant le cercle, l’enfant quitte le groupe après une moquerie."></textarea>
+        <label>Soutien essayé</label>
+        <input name="support" placeholder="Ex : échange en duo, pause calme, dessin, respiration...">
+        <label>Petite marche proposée</label>
+        <input name="nextStep" id="obsNext" placeholder="Ex : proposer une réparation avec objet médiateur.">
+        <label>Conseil / phrase adulte</label>
+        <textarea name="advice" id="obsAdvice"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary">Enregistrer</button><button type="button" class="btn" onclick="App.closeModal()">Fermer</button>
+        </div>
+      </form>
+      <script>App.fillObsSuggestion('conflit')<\/script>
+    `);
+  },
+  fillObsSuggestion(typeId){
+    const t=OBS_TYPES.find(x=>x.id===typeId)||OBS_TYPES[0];
+    const p=document.getElementById("obsPillar"), n=document.getElementById("obsNeed"), a=document.getElementById("obsAdvice"), m=document.getElementById("obsNext");
+    if(p) p.value=t.pillar; if(n) n.value=t.need;
+    const suggestions=this.obsSuggestion(typeId);
+    if(a) a.value=suggestions.advice;
+    if(m) m.value=suggestions.next;
+  },
+  obsSuggestion(type){
+    const map={
+      conflit:{advice:"Je vois que le lien a été touché. Nous allons chercher une réparation simple, sans humilier personne.", next:"Proposer une réparation courte : parole, dessin, geste utile ou médiation en duo."},
+      peur:{advice:"La peur a besoin de sécurité avant d’entendre un raisonnement. Ralentir, nommer, offrir un repère stable.", next:"Créer un petit rituel de retour au calme avant la situation difficile."},
+      colere:{advice:"Je vois une grande force qui sort vite. Nous allons lui trouver un chemin qui ne blesse personne.", next:"Mettre en place une décharge saine puis une phrase de besoin."},
+      retrait:{advice:"Le retrait peut protéger quelque chose de précieux. Ne pas forcer l’exposition ; proposer une petite porte de retour.", next:"Proposer une expression non verbale : dessin, carte, geste, choix en duo."},
+      moquerie:{advice:"Je protège la dignité de chacun. Une parole qui blesse demande une réparation du lien.", next:"Faire nommer l’impact et choisir une réparation concrète."},
+      surcharge:{advice:"Le système semble trop plein. On commence par réduire les stimulations, puis on revient doucement.", next:"Prévoir une pause courte, un espace calme ou une mission corporelle simple."},
+      difficulte:{advice:"La difficulté n’est pas une identité. Cherchons la plus petite marche possible.", next:"Réduire l’objectif et célébrer une micro-progression observable."},
+      progression:{advice:"Je vois une petite victoire. La reconnaître nourrit la confiance sans mettre de pression.", next:"Noter ce qui a aidé et proposer de le réutiliser une prochaine fois."}
+    };
+    return map[type]||map.conflit;
+  },
+  saveObs(ev){
+    ev.preventDefault();
+    const f=new FormData(ev.target), t=OBS_TYPES.find(x=>x.id===f.get("type"));
+    this.state.observations.push({
+      id:this.uid("obs"), date:new Date().toISOString().slice(0,10),
+      childId:f.get("childId"), type:f.get("type"), typeName:t?.n, pillarId:f.get("pillarId"), need:f.get("need"),
+      fact:f.get("fact"), support:f.get("support"), nextStep:f.get("nextStep"), advice:f.get("advice")
+    });
+    this.save(); this.closeModal(); this.render();
+  },
+  editObs(id){
+    const o=this.state.observations.find(x=>x.id===id); if(!o) return;
+    this.modal(`
+      <h2>Modifier l’observation</h2>
+      <form onsubmit="App.updateObs(event,'${id}')">
+        <label>Fait observé</label><textarea name="fact">${this.esc(o.fact||"")}</textarea>
+        <label>Besoin possible</label><input name="need" value="${this.esc(o.need||"")}">
+        <label>Petite marche</label><input name="nextStep" value="${this.esc(o.nextStep||"")}">
+        <label>Conseil</label><textarea name="advice">${this.esc(o.advice||"")}</textarea>
+        <div class="row" style="margin-top:10px"><button class="btn primary">Enregistrer</button><button type="button" class="btn" onclick="App.closeModal()">Fermer</button></div>
+      </form>`);
+  },
+  updateObs(ev,id){
+    ev.preventDefault();
+    const o=this.state.observations.find(x=>x.id===id), f=new FormData(ev.target);
+    Object.assign(o,{fact:f.get("fact"),need:f.get("need"),nextStep:f.get("nextStep"),advice:f.get("advice")});
+    this.save(); this.closeModal(); this.render();
+  },
+  deleteObs(id){
+    if(confirm("Supprimer cette observation ?")){
+      this.state.observations=this.state.observations.filter(o=>o.id!==id);
+      this.save(); this.render();
+    }
+  },
+
+  view_guidance(){
+    const kids=this.childrenActive();
+    return `
+      <section class="card green">
+        <h2>Guidance douce</h2>
+        <p class="notice">Cette page croise les dernières observations et les sagesses à nourrir. Les miroirs optionnels ne sont utilisés que s’ils ont été renseignés. Elle propose des pistes, jamais des vérités définitives.</p>
+      </section>
+      <section class="grid two" style="margin-top:12px">
+        ${kids.length? kids.map(c=>this.guidanceCard(c)).join("") : `<div class="card"><p class="muted">Ajoute d’abord des élèves.</p></div>`}
+      </section>
+    `;
+  },
+  guidanceCard(c){
+    const obs=this.obsForChild(c.id);
+    const last=obs[0];
+    const orientation=this.simpleOrientation(c);
+    const lp=this.lifePath(c.birthDate);
+    const low=Object.entries(c.pillars||{}).filter(([k,v])=>Number(v)>0 && Number(v)<3).map(([k])=>this.pillar(k).n).slice(0,2);
+    const ideas=[];
+    if(last) ideas.push(`Dernière observation : ${last.typeName||last.type}. Besoin possible : ${last.need||"à observer"}.`);
+    if(lp) ideas.push(`Numérologie date — chemin ${lp} : ${LIFE_PATHS[lp]||"dynamique à observer avec prudence."}`);
+    if(c.hdType) ideas.push(`Design Humain — ${c.hdType} : ${HD_TYPES[c.hdType]||"à observer sans conclure."}`);
+    if(c.hdAuthority) ideas.push(`Autorité — ${c.hdAuthority} : ${HD_AUTHORITIES[c.hdAuthority]||"observer la manière dont l’enfant gagne en clarté."}`);
+    if(low.length) ideas.push(`Sagesses à nourrir : ${low.join(", ")}.`);
+    if(!ideas.length) ideas.push("Commencer par une observation simple : qu’est-ce qui nourrit, ferme ou apaise cet enfant ?");
+    const suggested=last?.nextStep || (c.hdAuthority==="Émotionnelle" ? "Laisser un temps différé avant une réponse importante." : "Choisir une petite marche observable cette semaine.");
+    return `<div class="card">
+      <h3>${this.esc(c.firstName)}</h3>
+      ${(c.birthDate||c.hdType)?`<div class="quote"><strong>Orientation simplifiée :</strong><br>${this.esc(orientation.short)}<br><span class="smalltxt">${this.esc(orientation.next)}</span></div>`:""}
+      <div class="list">${ideas.map(i=>`<div class="item">${this.esc(i)}</div>`).join("")}</div>
+      <div class="quote"><strong>Petite marche possible :</strong><br>${this.esc(suggested)}</div>
+      <button class="btn small primary" onclick="App.createLessonFor('${c.id}')">Créer une leçon simple</button>
+    </div>`;
+  },
+
+  view_lecons(){
+    const lessons=this.state.lessons.slice().sort((a,b)=>b.date.localeCompare(a.date));
+    return `
+      <section class="card gold">
+        <h2>Leçons simples</h2>
+        <p class="notice">Une leçon simple transforme une observation en moment pédagogique : intention, activité courte, phrase adulte et trace à observer.</p>
+        <button class="btn primary" onclick="App.createLessonFor('')">+ Créer une leçon</button>
+      </section>
+      <section class="card" style="margin-top:12px">
+        <h2>Leçons enregistrées</h2>
+        ${lessons.length?lessons.map(l=>`
+          <div class="item">
+            <div class="row space"><strong>${this.esc(l.title)}</strong><span class="chip">${this.esc(l.date)}</span></div>
+            <p>${this.esc(l.intention||"")}</p>
+            <div class="quote">${this.esc(l.steps||"")}</div>
+            <p><strong>À observer :</strong> ${this.esc(l.trace||"")}</p>
+          </div>
+        `).join(""):`<p class="muted">Aucune leçon enregistrée.</p>`}
+      </section>
+    `;
+  },
+  createLessonFor(childId=""){
+    const c=childId?this.child(childId):null;
+    const last=c?this.obsForChild(c.id)[0]:null;
+    const p=this.pillar(last?.pillarId||"presence");
+    this.modal(`
+      <h2>Créer une leçon simple</h2>
+      <form onsubmit="App.saveLesson(event)">
+        <input type="hidden" name="childId" value="${this.esc(childId)}">
+        <label>Titre</label><input name="title" value="${this.esc(last?`Petite marche — ${p.n}`:"Leçon simple de sagesse")}">
+        <label>Intention</label><textarea name="intention">${this.esc(last?`Accompagner ${c.firstName} autour de : ${last.need||p.short}.`:"Nourrir une qualité humaine à travers une expérience courte.")}</textarea>
+        <label>Déroulé très simple</label><textarea name="steps">${this.esc(`1. Ouvrir par une phrase douce.
+2. Proposer une activité courte liée au vécu.
+3. Laisser une trace : parole, dessin, geste ou choix.
+4. Clore par une petite marche.`)}</textarea>
+        <label>Phrase adulte</label><textarea name="phrase">${this.esc(last?.advice||"Nous n’avons pas besoin de réussir parfaitement. Nous cherchons la petite marche juste.")}</textarea>
+        <label>À observer après</label><input name="trace" value="${this.esc(last?`Voir si la petite marche aide : ${last.nextStep||""}`:"Un signe d’apaisement, d’expression, de réparation ou de joie.")}">
+        <div class="row" style="margin-top:10px"><button class="btn primary">Enregistrer</button><button type="button" class="btn" onclick="App.closeModal()">Fermer</button></div>
+      </form>
+    `);
+  },
+  saveLesson(ev){
+    ev.preventDefault();
+    const f=new FormData(ev.target);
+    this.state.lessons.push({id:this.uid("lesson"),date:new Date().toISOString().slice(0,10),childId:f.get("childId"),title:f.get("title"),intention:f.get("intention"),steps:f.get("steps"),phrase:f.get("phrase"),trace:f.get("trace")});
+    this.save(); this.closeModal(); this.render();
+  },
+
+  view_donnees(){
+    const size=new Blob([JSON.stringify(this.state)]).size;
+    return `
+      <section class="card green">
+        <h2>Données & sauvegardes</h2>
+        <p class="notice">Sève Essentiel garde les données dans le stockage du navigateur. Télécharge régulièrement une sauvegarde complète.</p>
+        <div class="grid three">
+          <div class="item"><strong>${(size/1024).toFixed(1)} Ko</strong><br><span class="smalltxt">taille locale estimée</span></div>
+          <div class="item"><strong>${this.state.children.length}</strong><br><span class="smalltxt">élèves</span></div>
+          <div class="item"><strong>${this.state.observations.length}</strong><br><span class="smalltxt">observations</span></div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" onclick="App.exportData()">Télécharger sauvegarde complète</button>
+          <label class="btn">Restaurer<input class="hide" type="file" accept="application/json" onchange="App.importData(event)"></label>
+          <button class="btn" onclick="window.print()">Imprimer</button>
+          <button class="btn danger" onclick="App.reset()">Réinitialiser</button>
+        </div>
+      </section>
+      <section class="card gold" style="margin-top:12px">
+        <h2>Passer ensuite à Sève complet</h2>
+        <p class="read">Cette version sert de porte d’entrée. Quand l’enseignant se sent à l’aise, la version complète permet d’aller plus loin : packs, référentiel détaillé, formation, rapports avancés, miroirs symboliques approfondis.</p>
+      </section>
+    `;
+  },
+  exportData(){
+    const blob=new Blob([JSON.stringify(this.state,null,2)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="seve_essentiel_v0_1_alpha_sauvegarde_"+new Date().toISOString().slice(0,10)+".json";
+    a.click(); URL.revokeObjectURL(a.href);
+  },
+  importData(ev){
+    const file=ev.target.files?.[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(reader.result);
+        const validation=this.validateImportData(data);
+        if(!validation.ok){ alert(validation.message); return; }
+        if(!confirm(`${validation.message}\n\nRestaurer cette sauvegarde ? Les données locales actuelles seront remplacées.`)) return;
+        this.state=this.migrateState(data);
+        this.save(); this.renderNav(); this.render();
+      }catch(e){ alert("Fichier invalide."); }
+    };
+    reader.readAsText(file);
+  },
+  validateImportData(data){
+    if(!data || typeof data!=="object" || Array.isArray(data)){
+      return {ok:false, message:"Import impossible : le fichier JSON ne contient pas une sauvegarde Sève Essentiel reconnue."};
+    }
+    const hasKnownVersion=String(data.version||"").includes("seve-essentiel");
+    const hasCoreArrays=Array.isArray(data.classes) || Array.isArray(data.children) || Array.isArray(data.observations) || Array.isArray(data.lessons);
+    if(!hasKnownVersion && !hasCoreArrays){
+      return {ok:false, message:"Import impossible : le fichier ne ressemble pas à une sauvegarde Sève Essentiel."};
+    }
+    const classes=Array.isArray(data.classes)?data.classes.length:0;
+    const children=Array.isArray(data.children)?data.children.length:0;
+    const observations=Array.isArray(data.observations)?data.observations.length:0;
+    const lessons=Array.isArray(data.lessons)?data.lessons.length:0;
+    return {ok:true, message:`Sauvegarde détectée : ${classes} classe(s), ${children} élève(s), ${observations} observation(s), ${lessons} leçon(s).`};
+  },
+  reset(){
+    if(confirm("Tout effacer et revenir à une application vierge ?")){
+      localStorage.removeItem(STORAGE_KEY);
+      LEGACY_STORAGE_KEYS.forEach(key=>localStorage.removeItem(key));
+      this.state=this.clone(DEFAULT_STATE); this.renderNav(); this.render();
+    }
+  },
+
+  openHelp(){
+    this.modal(`
+      <h2>Comment utiliser Sève Essentiel ?</h2>
+      <div class="grid">
+        <div class="item"><strong>Classe</strong><br>Ajoute les élèves rapidement. Complète seulement les détails utiles plus tard.</div>
+        <div class="item"><strong>Sagesses</strong><br>Suis les 12 qualités humaines en niveaux doux : non observé, graine, bourgeon, fleur, fruit.</div>
+        <div class="item"><strong>Observations</strong><br>Note un fait : conflit, peur, colère, retrait, surcharge, progression. L’application propose une petite marche.</div>
+        <div class="item"><strong>Guidance</strong><br>Croise les observations, besoins et miroirs optionnels renseignés, sans jamais enfermer l’enfant.</div>
+        <div class="item"><strong>Leçons</strong><br>Transforme une observation en activité simple et concrète.</div>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn primary" onclick="App.closeModal()">J’ai compris</button></div>
+    `);
+  },
+  modal(html){
+    document.getElementById("modalRoot").innerHTML=`<div class="modalOverlay" onclick="if(event.target.className==='modalOverlay')App.closeModal()"><div class="modal">${html}</div></div>`;
+  },
+  closeModal(){ document.getElementById("modalRoot").innerHTML=""; }
+};
+
+window.App=App;
+document.addEventListener("DOMContentLoaded",()=>App.init());
+</script>
+</body>
+</html>

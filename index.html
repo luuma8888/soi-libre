@@ -177,6 +177,14 @@
             gap: 15px;
         }
 
+        .card-actions.wrap {
+            flex-wrap: wrap;
+        }
+
+        .card-actions.wrap .btn {
+            flex: 1 1 180px;
+        }
+
         .btn {
             flex: 1;
             text-align: center;
@@ -205,6 +213,89 @@
 
         .btn-download:hover {
             background-color: var(--primary-light);
+        }
+
+        .dual-captures {
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+            cursor: default;
+        }
+
+        .dual-captures::after {
+            display: none;
+        }
+
+        .capture-thumb {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            min-height: 112px;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center top;
+            overflow: hidden;
+            cursor: zoom-in;
+            border: 1px solid rgba(142, 125, 196, 0.16);
+        }
+
+        .capture-thumb span {
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            color: white;
+            background: rgba(44, 62, 80, 0.78);
+            opacity: 1;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: 0.68rem;
+            letter-spacing: 0.5px;
+        }
+
+        .capture-thumb::after {
+            content: "🔍";
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .capture-thumb:hover::after {
+            opacity: 1;
+        }
+
+        .resource-links {
+            margin-top: 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .resource-links summary {
+            cursor: pointer;
+            padding: 10px 12px;
+            color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .resource-list {
+            display: grid;
+            gap: 8px;
+            padding: 12px;
+        }
+
+        .resource-list a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.86rem;
+        }
+
+        .resource-list a:hover {
+            text-decoration: underline;
         }
 
         /* Footer */
@@ -270,6 +361,8 @@
             .grid { grid-template-columns: 1fr; }
             .card { flex-direction: column; }
             .card-image-side { width: 100%; height: 150px; }
+            .dual-captures { height: auto; }
+            .capture-thumb { min-height: 150px; }
             .container { padding: 30px 15px; }
         }
     </style>
@@ -384,6 +477,52 @@
             </div>
         </article>
 
+        <article class="card">
+            <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/seve-essentiel-full.png');"
+                    data-full="assets/seve-essentiel-full.png">
+                    <span>Essentiel</span>
+                </div>
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/seve-full.png');"
+                    data-full="assets/seve-full.png">
+                    <span>Complet</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Sève</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Deux outils offline pour les enseignants, au service des valeurs des enfants.
+                    </p>
+                </div>
+                <div class="card-actions wrap">
+                    <a href="creations/seve/seve_essentiel.html" class="btn btn-visit">Ouvrir Essentiel</a>
+                    <a href="creations/seve/seve_essentiel.html" download="seve_essentiel_v0_1_alpha.html" class="btn btn-download">Télécharger Essentiel</a>
+                    <a href="creations/seve/seve.html" class="btn btn-visit">Ouvrir Sève complet</a>
+                    <a href="creations/seve/seve.html" download="seve_v0_1_alpha.html" class="btn btn-download">Télécharger Sève complet</a>
+                </div>
+                <details class="resource-links">
+                    <summary>Archives et packs JSON</summary>
+                    <div class="resource-list">
+                        <a href="creations/seve/seve_v0_1_alpha_complet.zip" download="seve_v0_1_alpha_complet.zip">Télécharger le ZIP complet</a>
+                        <a href="creations/seve/seve_pack_tout_en_un.json" download="seve_pack_tout_en_un.json">Télécharger le JSON complet tout-en-un</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_socle_12_piliers_formation_phrases.json" download>Télécharger JSON séparé — socle 12 piliers</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_emotions_transmutation.json" download>Télécharger JSON séparé — émotions & transmutation</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_limites_consentement.json" download>Télécharger JSON séparé — limites & consentement</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_relation_reparation.json" download>Télécharger JSON séparé — relation & réparation</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_discernement_ados.json" download>Télécharger JSON séparé — discernement ados</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_phrases_adultes_approfondies.json" download>Télécharger JSON séparé — phrases adultes</a>
+                        <a href="creations/seve/seve_pack_v0_1_alpha_miroirs_symboliques_approfondis.json" download>Télécharger JSON séparé — miroirs symboliques</a>
+                    </div>
+                </details>
+            </div>
+        </article>
+
     </main>
 
     <footer>
@@ -397,12 +536,13 @@
 
 <script>
     // Sélectionne toutes les zones d'image
-    const imageSides = document.querySelectorAll('.card-image-side');
+    const imageSides = document.querySelectorAll('.card-image-side, .zoomable-image');
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modal-img');
 
     imageSides.forEach(side => {
-        side.addEventListener('click', function() {
+        side.addEventListener('click', function(event) {
+            event.stopPropagation();
             // On récupère l'URL de la grande image stockée dans "data-full"
             const fullImageUrl = this.getAttribute('data-full');
             
