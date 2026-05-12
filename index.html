@@ -61,6 +61,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Cartes plus larges */
             gap: 40px;
+            align-items: start;
         }
 
         /* Cartes horizontales */
@@ -263,6 +264,24 @@
 
         .capture-thumb:hover::after {
             opacity: 1;
+        }
+
+        .card.compact-card .card-content {
+            padding: 26px 28px;
+        }
+
+        .card.compact-card .card-title {
+            font-size: 1.26rem;
+        }
+
+        .card.compact-card .card-description {
+            font-size: 0.9rem;
+            line-height: 1.55;
+            -webkit-line-clamp: 4;
+        }
+
+        .card.compact-card .version-tag {
+            font-size: 0.66rem;
         }
 
         .resource-links {
@@ -477,6 +496,29 @@
             </div>
         </article>
 
+        <article class="card compact-card">
+            <div class="card-image-side"
+                style="background-image: url('assets/cardforge-preview.png'); background-position: left top;"
+                data-full="assets/cardforge-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Atelier de cartes</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Créez des supports visuels et planches imprimables : cartes de lecture, cartes pour enfants autistes, etc.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/cardforge.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/cardforge.html" download="cardforge_v0_1_alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
         <article class="card">
             <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
                 <div class="capture-thumb zoomable-image"
@@ -535,15 +577,16 @@
 </div>
 
 <script>
-    // Sélectionne toutes les zones d'image
-    const imageSides = document.querySelectorAll('.card-image-side, .zoomable-image');
+    // Sélectionne uniquement les images simples et les captures internes.
+    const imageSides = document.querySelectorAll('.card-image-side:not(.dual-captures), .zoomable-image');
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modal-img');
 
     imageSides.forEach(side => {
         side.addEventListener('click', function(event) {
             event.stopPropagation();
-            // On récupère l'URL de la grande image stockée dans "data-full"
+            event.preventDefault();
+            // On récupère l'URL de la grande image stockée sur la capture cliquée.
             const fullImageUrl = this.getAttribute('data-full');
             
             if(fullImageUrl) {
