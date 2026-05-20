@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joyeuse Autonomie Collective — Préparation matérielle, provisions & paix</title>
+  <style>
+    /*
+      Joyeuse Autonomie Collective — application web autonome.
+      Architecture simple et maintenable :
+      - CSS : thème, responsive, impression
+      - JS : état applicatif, modèle de données, calculs, rendu, stockage local
+      - Aucun CDN, aucune ressource externe, utilisable hors-ligne.
+    */
+    :root {
+      --bg: #f8f5ec;
+      --surface: #ffffff;
+      --surface-2: #fffaf0;
+      --text: #26332f;
+      --muted: #66746f;
+      --line: #ded8c6;
+      --primary: #6fae9a;
+      --primary-2: #d9f0e7;
+      --accent: #f3c987;
+      --accent-2: #fff1d6;
+      --danger: #c8665a;
+      --ok: #659c68;
+      --shadow: 0 14px 36px rgba(55, 70, 58, 0.11);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg: #121a19;
+      --surface: #1b2826;
+      --surface-2: #22322f;
+      --text: #eef7f2;
+      --muted: #b8c8c2;
+      --line: #344743;
+      --primary: #91d8c5;
+      --primary-2: #1f443d;
+      --accent: #f2cf92;
+      --accent-2: #42351f;
+      --danger: #ef9b8d;
+      --ok: #a7d9a1;
+      --shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(111,174,154,0.24), transparent 32rem),
+        radial-gradient(circle at 88% 10%, rgba(243,201,135,0.22), transparent 27rem),
+        var(--bg);
+      line-height: 1.5;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.72rem 1rem;
+      cursor: pointer;
+      background: var(--primary-2);
+      color: var(--text);
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); opacity: .94; }
+    button.primary { background: var(--primary); color: #0f211c; font-weight: 800; }
+    button.accent { background: var(--accent); color: #24180c; font-weight: 800; }
+    button.ghost { background: transparent; border: 1px solid var(--line); }
+    button.danger { background: rgba(200,102,90,.16); color: var(--danger); border: 1px solid rgba(200,102,90,.32); }
+
+    .button-like {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .45rem;
+      border-radius: 999px;
+      padding: .72rem 1rem;
+      cursor: pointer;
+      background: var(--primary-2);
+      color: var(--text);
+      font-weight: 800;
+      border: 1px solid var(--line);
+    }
+    .button-like input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--text);
+      padding: .76rem .82rem;
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(111,174,154,.18); }
+    textarea { min-height: 100px; resize: vertical; }
+
+    .app-shell { max-width: 1240px; margin: 0 auto; padding: 1rem; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 1rem;
+      align-items: stretch;
+      margin: .8rem 0 1rem;
+    }
+
+    .hero-card, .panel, .metric, .item-card, .action-card {
+      background: rgba(255,255,255,.76);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    [data-theme="dark"] .hero-card,
+    [data-theme="dark"] .panel,
+    [data-theme="dark"] .metric,
+    [data-theme="dark"] .item-card,
+    [data-theme="dark"] .action-card {
+      background: rgba(27,40,38,.86);
+    }
+
+    .hero-card { padding: 1.4rem; position: relative; overflow: hidden; }
+    .hero-card:after {
+      content: "";
+      position: absolute;
+      inset: auto -5rem -6rem auto;
+      width: 18rem;
+      height: 18rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(243,201,135,.35), transparent 70%);
+      pointer-events: none;
+    }
+
+    .kicker {
+      display: inline-flex;
+      gap: .45rem;
+      align-items: center;
+      font-size: .86rem;
+      color: var(--muted);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      padding: .38rem .68rem;
+      border-radius: 999px;
+    }
+
+    h1 { margin: .8rem 0 .6rem; font-size: clamp(2rem, 5vw, 4.2rem); line-height: .96; letter-spacing: -.05em; }
+    h2 { margin: 0 0 .9rem; font-size: 1.35rem; letter-spacing: -.02em; }
+    h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+    p { margin: .45rem 0; }
+    small, .muted { color: var(--muted); }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+
+    .quick-form {
+      display: grid;
+      gap: .8rem;
+      padding: 1rem;
+    }
+
+    .field { display: grid; gap: .35rem; }
+    .field label { color: var(--muted); font-size: .9rem; font-weight: 700; }
+    .field .hint { font-size: .78rem; color: var(--muted); }
+    .range-field {
+      display: grid;
+      gap: .45rem;
+      padding: .78rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+    }
+    .range-head { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
+    .range-head label { color: var(--muted); font-size: .9rem; font-weight: 800; }
+    .range-value { font-weight: 900; white-space: nowrap; }
+    input[type="range"] {
+      padding: 0;
+      border: 0;
+      background: transparent;
+      accent-color: var(--primary);
+    }
+
+    .grid { display: grid; gap: 1rem; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid.auto { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+
+    .panel { padding: 1rem; margin-bottom: 1rem; }
+    .metric { padding: 1rem; }
+    .metric strong { display: block; font-size: 1.7rem; letter-spacing: -.04em; }
+    .metric span { display: block; color: var(--muted); font-size: .9rem; }
+
+    .tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      gap: .45rem;
+      overflow-x: auto;
+      padding: .7rem 0;
+      background: linear-gradient(to bottom, var(--bg), rgba(248,245,236,.86));
+      backdrop-filter: blur(12px);
+      scrollbar-width: thin;
+    }
+
+    [data-theme="dark"] .tabs { background: linear-gradient(to bottom, var(--bg), rgba(18,26,25,.86)); }
+
+    .tab-btn { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
+    .tab-btn.active { background: var(--primary); color: #0d211b; border-color: transparent; font-weight: 900; }
+
+    .tab { display: none; animation: rise .22s ease-out; }
+    .tab.active { display: block; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .progress-wrap { display: grid; gap: .5rem; }
+    .progress-bar { height: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: inherit; transition: width .25s ease; }
+
+    .priority-pill, .category-pill, .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      border-radius: 999px;
+      padding: .18rem .52rem;
+      font-size: .78rem;
+      font-weight: 800;
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .priority-1 { background: rgba(200,102,90,.15); color: var(--danger); }
+    .priority-2 { background: var(--accent-2); color: #835b18; }
+    .priority-3 { background: var(--primary-2); color: var(--text); }
+    .priority-4 { background: rgba(140,140,180,.14); color: var(--muted); }
+
+    .controls { display: grid; grid-template-columns: 1.5fr .85fr .85fr .85fr; gap: .7rem; margin: .7rem 0 1rem; }
+
+    .item-list, .action-list { display: grid; gap: .72rem; }
+    .item-card { padding: .85rem; display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: start; }
+    .item-card input[type="checkbox"], .action-card input[type="checkbox"] { width: 1.2rem; height: 1.2rem; margin-top: .2rem; accent-color: var(--primary); }
+    .check-label { display: inline-flex; align-items: flex-start; }
+    .item-title { font-weight: 900; margin-bottom: .22rem; }
+    .item-meta { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0; }
+    .qty { font-weight: 900; font-size: 1.05rem; text-align: right; }
+
+    .action-card { padding: .9rem; display: grid; grid-template-columns: auto 1fr; gap: .75rem; }
+    .action-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem; }
+    .notes { margin-top: .45rem; font-size: .9rem; color: var(--muted); }
+
+    .stepper { display: grid; gap: .9rem; }
+    .step {
+      display: grid;
+      grid-template-columns: 3.1rem 1fr;
+      gap: .75rem;
+      align-items: start;
+      padding: .95rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .step-num { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 50%; background: var(--primary-2); font-weight: 1000; }
+    .step.done .step-num { background: var(--primary); color: #10251f; }
+    .step ul { margin: .4rem 0 0; padding-left: 1.2rem; }
+
+    .table-wrap { overflow: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 760px; }
+    th, td { padding: .72rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--surface-2); font-size: .84rem; color: var(--muted); }
+    tr:last-child td { border-bottom: 0; }
+
+    .peace-card {
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(111,174,154,.22), rgba(243,201,135,.24)),
+        var(--surface);
+      border: 1px solid var(--line);
+      padding: 1rem;
+      min-height: 100%;
+    }
+
+    .quote {
+      font-size: 1.18rem;
+      line-height: 1.35;
+      font-weight: 850;
+      letter-spacing: -.02em;
+    }
+
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
+    .tag { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .65rem; font-size: .86rem; }
+
+    .footer-note { color: var(--muted); font-size: .86rem; padding: 1.2rem 0 2rem; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%) translateY(1rem);
+      background: var(--text);
+      color: var(--bg);
+      padding: .75rem 1rem;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .2s ease;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 860px) {
+      .hero, .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+      .item-card { grid-template-columns: auto 1fr; }
+      .qty { grid-column: 2; text-align: left; }
+      .app-shell { padding: .75rem; }
+    }
+
+    @media print {
+      :root { --bg: #ffffff; --surface: #ffffff; --text: #111111; --muted: #444444; --line: #cccccc; --shadow: none; }
+      @page { margin: 10mm; }
+      body { background: #ffffff !important; color: #111111; font-size: 8.8pt; line-height: 1.22; }
+      .tabs, .hero-actions, .controls, button, .no-print, input[type="file"] { display: none !important; }
+      .hero { display: block; margin: 0 0 4mm; }
+      .hero-card, .panel, .metric, .item-card, .action-card, .step, .peace-card {
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border-color: #cccccc;
+        border-radius: 4px;
+      }
+      body.print-all .tab {
+        display: block !important;
+        visibility: visible !important;
+        animation: none !important;
+        break-before: auto;
+        page-break-before: auto;
+      }
+      body.print-all .tab:first-of-type {
+        break-before: auto;
+        page-break-before: auto;
+      }
+      body.print-current .tab { display: none !important; }
+      body.print-current .tab.active {
+        display: block !important;
+        visibility: visible !important;
+        animation: none !important;
+      }
+      .app-shell { max-width: none; padding: 0; }
+      h1 { font-size: 20pt; margin: 0 0 2mm; line-height: 1; letter-spacing: 0; }
+      h2 { font-size: 11pt; margin: 0 0 2mm; }
+      h3 { font-size: 9.5pt; margin: 0 0 1mm; }
+      p { margin: 1mm 0; }
+      .hero-card, .panel, .metric, .item-card, .action-card, .step, .peace-card { padding: 2.2mm; margin-bottom: 2.2mm; }
+      .hero-card:after, .kicker, .toast, .footer-note { display: none !important; }
+      .grid.two, .grid.three, .grid.four, .grid.auto, #metrics, #foodNotes, #peaceSpaces {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 2mm !important;
+      }
+      #metrics { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+      .metric strong { font-size: 12pt; letter-spacing: 0; }
+      .metric span { font-size: 7.8pt; }
+      .progress-bar { height: 7px; }
+      .priority-pill, .category-pill, .status-pill, .tag { padding: .5mm 1.4mm; font-size: 7.2pt; border-radius: 3px; }
+      .tag-cloud { gap: 1mm; margin-top: 1mm; }
+      .item-list, .action-list, .stepper { gap: 1.6mm; }
+      .item-card { grid-template-columns: 4mm 1fr 34mm; gap: 2mm; }
+      .action-card, .step { grid-template-columns: 4mm 1fr; gap: 2mm; }
+      .item-card input[type="checkbox"], .action-card input[type="checkbox"] { width: 3mm; height: 3mm; margin-top: .4mm; }
+      .item-title { margin-bottom: .5mm; }
+      .item-meta { gap: 1mm; margin: 1mm 0; }
+      .qty { font-size: 8.5pt; text-align: right; }
+      .notes, .muted { font-size: 8pt; }
+      .step-num { width: 5mm; height: 5mm; font-size: 8pt; }
+      .step ul { margin: 1mm 0 0; padding-left: 4mm; }
+      .quote { font-size: 10pt; line-height: 1.2; letter-spacing: 0; }
+      table { min-width: 0; font-size: 8pt; }
+      th, td { padding: 1.4mm; }
+      a { color: #111111; text-decoration: none; }
+    }
+  </style>
+</head>
+<body data-theme="light" class="print-current">
+  <div class="app-shell">
+    <header class="hero no-print-hero">
+      <section class="hero-card">
+        <div class="kicker">✦ Préparation collective, sobre, joyeuse et concrète</div>
+        <h1>Joyeuse Autonomie Collective</h1>
+        <p>Une application hors-ligne pour préparer le matériel, les provisions, les actions et l’harmonie d’un groupe vivant en autonomie temporaire.</p>
+        <p class="muted">Elle calcule des ordres de grandeur selon le nombre d’êtres, la durée d’autonomie et le niveau de préparation. Les quantités restent indicatives : elles servent à planifier, comparer, prioriser et ne pas oublier les fondations vitales.</p>
+        <div class="hero-actions">
+          <button class="primary" id="saveBtn">Sauvegarder</button>
+          <button class="accent" id="exportBtn">Exporter JSON</button>
+          <button class="ghost" id="printCurrentBtn">Imprimer l’onglet</button>
+          <button class="ghost" id="printAllBtn">Imprimer tout</button>
+        </div>
+      </section>
+
+      <aside class="panel quick-form">
+        <h2>Paramètres rapides</h2>
+        <div class="grid two">
+          <div class="field">
+            <label for="humans">Nombre d’êtres</label>
+            <input id="humans" type="number" min="1" max="2000" step="1" />
+          </div>
+          <div class="field">
+            <label for="days">Durée d’autonomie</label>
+            <input id="days" type="number" min="1" max="1095" step="1" />
+            <div class="hint">En jours. 6 mois ≈ 183 jours, 1 an ≈ 365 jours.</div>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="field">
+            <label for="mode">Niveau de préparation</label>
+            <select id="mode">
+              <option value="low">Petit budget</option>
+              <option value="balanced">Compromis réaliste</option>
+              <option value="ideal">Idéal robuste</option>
+              <option value="custom">Personnalisé</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="climate">Saison dominante</label>
+            <select id="climate">
+              <option value="mixed">Mixte / inconnue</option>
+              <option value="cold">Froide / humide</option>
+              <option value="hot">Chaude / sèche</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="field">
+            <label for="children">Enfants</label>
+            <input id="children" type="number" min="0" max="1000" step="1" />
+          </div>
+          <div class="field">
+            <label for="fragile">Anciens / fragilités</label>
+            <input id="fragile" type="number" min="0" max="1000" step="1" />
+          </div>
+        </div>
+      </aside>
+    </header>
+
+    <nav class="tabs" aria-label="Navigation principale">
+      <button class="tab-btn active" data-tab="dashboard">Tableau de bord</button>
+      <button class="tab-btn" data-tab="steps">Étapes guidées</button>
+      <button class="tab-btn" data-tab="materials">Matériel</button>
+      <button class="tab-btn" data-tab="food">Provisions</button>
+      <button class="tab-btn" data-tab="actions">Actions</button>
+      <button class="tab-btn" data-tab="peace">Joie & paix</button>
+      <button class="tab-btn" data-tab="settings">Paramètres</button>
+    </nav>
+
+    <main>
+      <section id="dashboard" class="tab active">
+        <div class="grid four" id="metrics"></div>
+        <div class="panel">
+          <h2>Avancement global</h2>
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="globalProgress"></div></div>
+            <p id="progressText" class="muted"></p>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="panel">
+            <h2>Priorités vitales</h2>
+            <div id="prioritySummary"></div>
+          </div>
+          <div class="panel">
+            <h2>Lecture rapide</h2>
+            <p id="quickReading"></p>
+            <div class="tag-cloud" id="warningTags"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="steps" class="tab">
+        <div class="panel">
+          <h2>Chemin d’installation prioritaire</h2>
+          <p class="muted">Cette séquence évite l’erreur classique : vouloir tout acheter avant d’avoir sécurisé l’eau, les toilettes, la cuisine et la paix collective.</p>
+          <div class="stepper" id="stepper"></div>
+        </div>
+      </section>
+
+      <section id="materials" class="tab">
+        <div class="panel">
+          <h2>Liste matérielle calculée</h2>
+          <p class="muted">Coche ce qui est déjà acquis. Filtre par priorité ou catégorie pour avancer sans te perdre dans la forêt des “il faudrait aussi…”</p>
+          <div class="controls">
+            <input id="materialSearch" type="search" placeholder="Rechercher : eau, bâche, filtres…" />
+            <select id="materialPriority"><option value="all">Toutes priorités</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select>
+            <select id="materialCategory"><option value="all">Toutes catégories</option></select>
+            <select id="materialStatus"><option value="all">Tous statuts</option><option value="missing">À acquérir</option><option value="done">Acquis</option></select>
+          </div>
+          <div class="item-list" id="materialList"></div>
+        </div>
+      </section>
+
+      <section id="food" class="tab">
+        <div class="panel">
+          <h2>Provisions indicatives</h2>
+          <p class="muted">Les volumes ci-dessous sont des bases de planification. Adapte selon l’âge, le climat, l’activité physique, les choix alimentaires et les productions du lieu.</p>
+          <div class="table-wrap"><table id="foodTable"></table></div>
+        </div>
+        <div class="panel">
+          <h2>Répartition pratique</h2>
+          <div id="foodNotes" class="grid three"></div>
+        </div>
+      </section>
+
+      <section id="actions" class="tab">
+        <div class="panel">
+          <h2>Actions étape par étape</h2>
+          <p class="muted">Coche les actions accomplies. Le but : transformer l’angoisse vague en petits pas visibles.</p>
+          <div class="controls">
+            <input id="actionSearch" type="search" placeholder="Rechercher une action…" />
+            <select id="actionPriority"><option value="all">Toutes priorités</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select>
+            <select id="actionStatus"><option value="all">Tous statuts</option><option value="todo">À faire</option><option value="done">Fait</option></select>
+            <button id="resetChecksBtn" class="danger">Réinitialiser coches</button>
+          </div>
+          <div class="action-list" id="actionList"></div>
+        </div>
+      </section>
+
+      <section id="peace" class="tab">
+        <div class="grid two">
+          <div class="peace-card">
+            <h2>Rituel quotidien de paix</h2>
+            <p class="quote" id="peacePrompt">Chaque matin : “Qu’est-ce qui protège la vie aujourd’hui, et qu’est-ce qui nourrit la joie ?”</p>
+            <p class="muted">Un groupe tient mieux quand la clarté matérielle et la paix relationnelle avancent ensemble.</p>
+            <button class="accent" id="newPeacePromptBtn">Nouvelle phrase d’alignement</button>
+          </div>
+          <div class="peace-card">
+            <h2>Gardiens du lieu</h2>
+            <p>Répartis les rôles comme des responsabilités vivantes, pas comme des titres rigides.</p>
+            <div class="tag-cloud" id="rolesCloud"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Charte simple de vie commune</h2>
+          <textarea id="charter"></textarea>
+          <div class="hero-actions"><button class="primary" id="saveCharterBtn">Sauvegarder la charte</button></div>
+        </div>
+        <div class="panel">
+          <h2>Espaces à ne pas oublier</h2>
+          <div class="grid three" id="peaceSpaces"></div>
+        </div>
+      </section>
+
+      <section id="settings" class="tab">
+        <div class="grid two">
+          <div class="panel">
+            <h2>Sauvegarde locale</h2>
+            <p class="muted">Les données sont conservées dans le navigateur de cet appareil via localStorage.</p>
+            <div class="hero-actions">
+              <button class="primary" id="saveBtn2">Sauvegarder maintenant</button>
+              <button class="accent" id="exportBtn2">Exporter JSON</button>
+              <label class="button-like" for="importFile"><input id="importFile" type="file" accept="application/json" />Importer JSON</label>
+              <button class="danger" id="resetAllBtn">Tout réinitialiser</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Thème</h2>
+            <div class="field">
+              <label for="themeSelect">Ambiance visuelle</label>
+              <select id="themeSelect"><option value="light">Jour clair</option><option value="dark">Nuit douce</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Paramètres de calcul</h2>
+          <p class="muted">Les niveaux de préparation remplissent ces valeurs automatiquement. Si tu ajustes un curseur, le niveau passe en “Personnalisé”.</p>
+          <div class="grid two" id="calculationControls"></div>
+          <div class="hero-actions">
+            <button class="ghost" id="resetCalcBtn">Remettre selon le niveau choisi</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Ajouter une ligne personnalisée</h2>
+          <div class="grid four">
+            <div class="field"><label for="customName">Nom</label><input id="customName" /></div>
+            <div class="field"><label for="customCategory">Catégorie</label><input id="customCategory" placeholder="Ex : Spiritualité pratique" /></div>
+            <div class="field"><label for="customQty">Quantité</label><input id="customQty" placeholder="Ex : 3 coffres" /></div>
+            <div class="field"><label for="customPriority">Priorité</label><select id="customPriority"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
+          </div>
+          <div class="field" style="margin-top:.7rem;"><label for="customNotes">Notes</label><textarea id="customNotes" placeholder="Pourquoi cet élément est utile, où l’acheter, variante petit budget…"></textarea></div>
+          <div class="hero-actions"><button class="primary" id="addCustomBtn">Ajouter au matériel</button></div>
+        </div>
+        <div class="panel">
+          <h2>Notes libres de préparation</h2>
+          <textarea id="freeNotes"></textarea>
+        </div>
+      </section>
+    </main>
+
+    <p class="footer-note">Application de planification · v0.1.alpha. Elle ne remplace pas les conseils de professionnels de l’eau, de l’assainissement, de la santé, du bâtiment ou de l’agriculture. Elle sert à organiser la préparation, prioriser et protéger la vie avec discernement.</p>
+  </div>
+  <div class="toast" id="toast">Sauvegardé</div>
+
+  <script>
+    /*
+      MODÈLE — données durables.
+      Les formules sont volontairement lisibles : un développeur humain peut les adapter facilement.
+    */
+    const APP_ID = "joyeuse-autonomie-collective";
+    const APP_VERSION = "0.1.alpha";
+    const STORAGE_KEY = "joyeuseAutonomieCollective.v1";
+
+    const DEFAULT_STATE = {
+      humans: 100,
+      days: 183,
+      mode: "balanced",
+      climate: "mixed",
+      children: 20,
+      fragile: 10,
+      customFactors: null,
+      theme: "light",
+      printMode: "current",
+      checkedMaterials: {},
+      checkedActions: {},
+      customMaterials: [],
+      charter: "1. Nous protégeons l’eau, le feu, la nourriture, les enfants, les anciens et la paix du lieu.\n2. Nous parlons avec clarté, sans humilier, sans manipuler, sans laisser pourrir les tensions.\n3. Chaque décision importante cherche d’abord à préserver la vie, la dignité, la joie et le consentement.\n4. Les enfants ont droit à un espace de jeu, de repos, de beauté, d’écoute et de sécurité.\n5. Nous réparons ce qui peut l’être : objets, liens, erreurs, paroles.",
+      freeNotes: ""
+    };
+
+    const MODE_FACTORS = {
+      low: {
+        label: "Petit budget",
+        waterL: 10,
+        waterBufferDays: 7,
+        kcal: 2100,
+        toiletRatio: 25,
+        shelterSleep: 3.5,
+        shelterTotal: 5,
+        food: { cerealsG: 300, legumesG: 90, oilMl: 30, saltG: 7, sugarG: 20, cannedG: 100, extrasG: 20 }
+      },
+      balanced: {
+        label: "Compromis réaliste",
+        waterL: 15,
+        waterBufferDays: 14,
+        kcal: 2300,
+        toiletRatio: 20,
+        shelterSleep: 4.5,
+        shelterTotal: 7,
+        food: { cerealsG: 380, legumesG: 120, oilMl: 40, saltG: 9, sugarG: 30, cannedG: 220, extrasG: 40 }
+      },
+      ideal: {
+        label: "Idéal robuste",
+        waterL: 25,
+        waterBufferDays: 21,
+        kcal: 2500,
+        toiletRatio: 12,
+        shelterSleep: 5.5,
+        shelterTotal: 9,
+        food: { cerealsG: 460, legumesG: 150, oilMl: 55, saltG: 11, sugarG: 45, cannedG: 350, extrasG: 70 }
+      }
+    };
+
+    const FACTOR_CONTROLS = [
+      { key:"waterL", label:"Eau par être et par jour", unit:"L", min:5, max:40, step:1 },
+      { key:"waterBufferDays", label:"Réserve tampon d’eau", unit:"jours", min:3, max:45, step:1 },
+      { key:"kcal", label:"Calories visées par être et par jour", unit:"kcal", min:1600, max:3500, step:50 },
+      { key:"toiletRatio", label:"Êtres par toilette sèche", unit:"êtres", min:5, max:50, step:1, inverse:true },
+      { key:"shelterSleep", label:"Surface couchage par être", unit:"m²", min:2, max:8, step:.5 },
+      { key:"shelterTotal", label:"Surface couverte utile par être", unit:"m²", min:3, max:15, step:.5 },
+      { key:"cerealsG", label:"Céréales & féculents", unit:"g/j", min:100, max:700, step:10, food:true },
+      { key:"legumesG", label:"Légumineuses", unit:"g/j", min:0, max:250, step:10, food:true },
+      { key:"oilMl", label:"Huiles & graisses", unit:"ml/j", min:0, max:100, step:5, food:true },
+      { key:"saltG", label:"Sel", unit:"g/j", min:0, max:20, step:1, food:true },
+      { key:"sugarG", label:"Sucres & douceur", unit:"g/j", min:0, max:100, step:5, food:true },
+      { key:"cannedG", label:"Conserves / bocaux", unit:"g/j", min:0, max:600, step:10, food:true },
+      { key:"extrasG", label:"Extras nutritifs", unit:"g/j", min:0, max:150, step:5, food:true }
+    ];
+
+    const CATEGORIES = ["Eau", "Assainissement", "Nourriture", "Cuisine", "Abris & chaleur", "Santé", "Énergie", "Outils", "Vêtements", "Production vivante", "Communication", "Déchets", "Joie & paix"];
+
+    const MATERIAL_TEMPLATES = [
+      { id:"water-storage", category:"Eau", priority:1, name:"Stockage tampon d’eau alimentaire", qty:s => `${round(calc(s).waterStorageL/1000,1)} m³ minimum`, note:"Cuves IBC, citernes, jerricans. Répartir les réserves pour éviter un point de rupture unique." },
+      { id:"water-jerrycans", category:"Eau", priority:1, name:"Jerricans alimentaires 10 à 20 L", qty:s => `${Math.ceil(s.humans/2)} à ${s.humans} pièces`, note:"Pour transporter l’eau entre source, cuisine, infirmerie, toilettes et dortoirs." },
+      { id:"water-filters", category:"Eau", priority:1, name:"Filtres collectifs gravitaires / céramique", qty:s => `${Math.max(2, Math.ceil(s.humans/25))} unités`, note:"Prévoir préfiltres sédiments, pièces de rechange et procédure de nettoyage." },
+      { id:"water-disinfection", category:"Eau", priority:1, name:"Désinfection eau : ébullition, chlore, tests", qty:s => `${s.days} jours de sécurité`, note:"Pastilles, bandelettes, protocole écrit. L’eau chimiquement polluée demande un traitement spécifique." },
+      { id:"water-pump", category:"Eau", priority:1, name:"Pompe manuelle + pompe solaire", qty:s => modeFor(s).label === "Petit budget" ? "1 pompe manuelle" : "1 manuelle + 1 solaire", note:"La redondance compte plus que la puissance." },
+
+      { id:"toilets", category:"Assainissement", priority:1, name:"Toilettes sèches collectives", qty:s => `${calc(s).toilets} cabines`, note:"Idéalement séparation urine/fèces, lavage des mains à proximité et zone compostage fermée." },
+      { id:"sawdust", category:"Assainissement", priority:1, name:"Sciure / copeaux secs", qty:s => `${Math.ceil(s.humans*s.days*0.4/1000)} m³ environ`, note:"Prévoir gros volume sec et abrité. Ajuster selon usage réel." },
+      { id:"handwash", category:"Assainissement", priority:1, name:"Points de lavage des mains", qty:s => `${Math.max(5, Math.ceil(s.humans/15))} points`, note:"Bidon à robinet, savon, serviette lavable ou séchage à l’air." },
+      { id:"hygiene-soap", category:"Assainissement", priority:1, name:"Savon corps / mains / linge", qty:s => `${Math.ceil(s.humans*s.days*12/1000)} kg indicatifs`, note:"Le savon est une médecine humble. Et il ne fait pas de discours." },
+      { id:"menstrual", category:"Assainissement", priority:1, name:"Protections menstruelles, couches, besoins spécifiques", qty:s => "Selon composition du groupe", note:"Prévoir confort, intimité, lavage, séchage et réserve." },
+
+      { id:"food-dry", category:"Nourriture", priority:1, name:"Base alimentaire sèche", qty:s => `${round(calc(s).foodTotalKg,1)} kg environ`, note:"Céréales, légumineuses, huiles, sel, sucres, conserves. Voir onglet Provisions." },
+      { id:"food-buckets", category:"Nourriture", priority:1, name:"Seaux/fûts hermétiques alimentaires", qty:s => `${Math.ceil(calc(s).foodTotalKg/20)} contenants 20 kg`, note:"Protection humidité, rongeurs, rotation des stocks." },
+      { id:"food-oil", category:"Nourriture", priority:1, name:"Huiles et graisses alimentaires", qty:s => `${round(calc(s).food.oilL,1)} L`, note:"Calorie dense, cuisson, moral. Stocker frais, sombre, rotation." },
+      { id:"food-salt", category:"Nourriture", priority:1, name:"Sel alimentaire et conservation", qty:s => `${round(calc(s).food.saltKg,1)} kg`, note:"Cuisine, conservation, électrolytes. Ne pas sous-estimer." },
+      { id:"food-vitamins", category:"Nourriture", priority:2, name:"Compléments prudents : D, C, B12 si besoin", qty:s => `${s.humans} êtres × ${s.days} jours`, note:"À adapter avec avis médical, surtout enfants, grossesse, pathologies." },
+
+      { id:"kitchen-pots", category:"Cuisine", priority:1, name:"Marmites collectives", qty:s => `${Math.max(3, Math.ceil(s.humans/25))} grandes marmites`, note:"30 à 100 L selon groupe. Prévoir louches, passoires, gants chaleur." },
+      { id:"kitchen-stoves", category:"Cuisine", priority:1, name:"Systèmes de cuisson redondants", qty:s => `${Math.max(2, Math.ceil(s.humans/35))} postes`, note:"Bois, rocket stove, gaz, solaire selon contexte. Jamais une seule énergie." },
+      { id:"kitchen-gaswood", category:"Cuisine", priority:2, name:"Combustible cuisson / chauffage", qty:s => "Selon saison et équipement", note:"Bois sec, gaz, allume-feu naturels, stockage sec, ventilation, sécurité CO." },
+      { id:"kitchen-clean", category:"Cuisine", priority:1, name:"Zone vaisselle et désinfection", qty:s => `${Math.max(3, Math.ceil(s.humans/30))} bacs + consommables`, note:"Séparer lavage, rinçage, séchage. Protéger l’eau propre." },
+
+      { id:"shelter-sqm", category:"Abris & chaleur", priority:1, name:"Surface couverte utile", qty:s => `${Math.ceil(calc(s).shelterTotal)} m² visés`, note:"Inclut dormir, cuisine, stockage, soins, enfants, espace calme." },
+      { id:"sleeping", category:"Abris & chaleur", priority:1, name:"Couchage chaud et sec", qty:s => `${s.humans} kits + marge`, note:"Sacs de couchage, couvertures laine, matelas isolants, protections pluie." },
+      { id:"tarps", category:"Abris & chaleur", priority:1, name:"Bâches lourdes, cordages, piquets", qty:s => `${Math.max(10, Math.ceil(s.humans/5))} bâches`, note:"Protection abris, bois, stocks, ateliers. Choisir solide plutôt que joli." },
+      { id:"heating", category:"Abris & chaleur", priority:2, name:"Poêles, conduits, détecteurs fumée/CO", qty:s => calc(s).coldRisk ? "Priorité renforcée" : "Selon saison", note:"Le monoxyde de carbone ne négocie pas. Ventilation obligatoire." },
+
+      { id:"medical-kit", category:"Santé", priority:1, name:"Infirmerie collective", qty:s => `${Math.max(3, Math.ceil(s.humans/25))} trousses + stock central`, note:"Pansements, antiseptiques, gants, thermomètres, ORS, médicaments personnels." },
+      { id:"medical-isolation", category:"Santé", priority:2, name:"Espace repos / isolement sanitaire", qty:s => `${Math.max(1, Math.ceil(s.humans/80))} espace`, note:"Pour fièvre, gastro, épuisement, fragilité émotionnelle." },
+      { id:"medical-training", category:"Santé", priority:2, name:"Formation premiers secours", qty:s => `${Math.max(5, Math.ceil(s.humans/10))} êtres formés`, note:"Répartir les compétences. Ne pas créer un seul soignant-sacrifice." },
+
+      { id:"solar", category:"Énergie", priority:2, name:"Électricité minimale solaire", qty:s => modeFor(s).label === "Idéal robuste" ? "10–20 kW + batteries" : modeFor(s).label === "Compromis réaliste" ? "3–6 kW + batteries" : "panneaux portables + batteries 12 V", note:"Priorité : lumière, pompage, communication, froid médical/alimentaire." },
+      { id:"lights", category:"Énergie", priority:1, name:"Lampes frontales et lanternes LED", qty:s => `${s.humans} frontales + ${Math.ceil(s.humans/10)} lanternes`, note:"Privilégier piles rechargeables, USB, solaire." },
+      { id:"powerbanks", category:"Énergie", priority:2, name:"Batteries, powerbanks, piles rechargeables", qty:s => `${Math.ceil(s.humans/3)} powerbanks + lots AA/AAA`, note:"Étiqueter, organiser les recharges, éviter la dispersion." },
+
+      { id:"tools-basic", category:"Outils", priority:1, name:"Outillage manuel robuste", qty:s => `${Math.max(4, Math.ceil(s.humans/15))} lots`, note:"Pelles, haches, scies, marteaux, pinces, tournevis, clés, visserie." },
+      { id:"tools-repair", category:"Outils", priority:2, name:"Atelier réparation", qty:s => "1 espace équipé", note:"Bois, plomberie, couture, vélos, cordes, colles, rubans, pièces détachées." },
+      { id:"transport", category:"Outils", priority:2, name:"Transport interne", qty:s => `${Math.max(4, Math.ceil(s.humans/20))} brouettes/chariots`, note:"Déplacer eau, bois, nourriture et matériel sans épuiser les corps." },
+
+      { id:"clothes", category:"Vêtements", priority:2, name:"Vestiaire collectif de protection", qty:s => `${s.humans} kits + tailles de réserve`, note:"Pluie, froid, travail, bottes, gants, chaussettes, réparation couture." },
+      { id:"laundry", category:"Vêtements", priority:3, name:"Lavage et séchage du linge", qty:s => `${Math.max(2, Math.ceil(s.humans/30))} postes`, note:"Bassines, lessive, cordes, pinces, zone sèche, gestion humidité." },
+
+      { id:"seeds", category:"Production vivante", priority:2, name:"Semences reproductibles et plants", qty:s => `${Math.max(1, Math.ceil(s.humans/25))} coffres`, note:"Pommes de terre, courges, haricots, choux, aromatiques, graines germées." },
+      { id:"garden-tools", category:"Production vivante", priority:2, name:"Outils de maraîchage", qty:s => `${Math.max(4, Math.ceil(s.humans/12))} lots`, note:"Bêches, houes, râteaux, arrosoirs, tuyaux, goutte-à-goutte, filets." },
+      { id:"greenhouse", category:"Production vivante", priority:3, name:"Serre froide / pépinière", qty:s => modeFor(s).label === "Petit budget" ? "optionnelle" : "1 à 3 structures", note:"Accélère les récoltes, protège les jeunes plants, sécurise les semis." },
+      { id:"preservation", category:"Production vivante", priority:2, name:"Conservation : bocaux, séchoirs, fermentation", qty:s => `${Math.ceil(s.humans*2)} bocaux + matériel`, note:"Transformer l’abondance saisonnière en nourriture future." },
+
+      { id:"radios", category:"Communication", priority:2, name:"Radios, cartes, panneaux d’affichage", qty:s => `${Math.max(4, Math.ceil(s.humans/20))} radios + cartes`, note:"Radio à manivelle, PMR, cartes IGN, boussole, cahier de bord." },
+      { id:"library", category:"Communication", priority:3, name:"Bibliothèque papier utile", qty:s => "1 caisse thématique", note:"Eau, premiers soins, plantes, cuisine collective, potager, médiation, enfants." },
+
+      { id:"waste", category:"Déchets", priority:2, name:"Gestion déchets et nuisibles", qty:s => `${Math.max(6, Math.ceil(s.humans/10))} bacs fermés`, note:"Tri, compost, stockage verre/métal, protection rongeurs, gants." },
+      { id:"fire", category:"Déchets", priority:1, name:"Sécurité incendie", qty:s => `${Math.max(4, Math.ceil(s.humans/25))} extincteurs + seaux`, note:"Zones feu, sable, eau, débroussaillement, consignes affichées." },
+
+      { id:"children", category:"Joie & paix", priority:1, name:"Espace enfants sécurisé et beau", qty:s => s.children > 0 ? `${s.children} enfants à considérer` : "Même sans enfant : espace calme utile", note:"Jeux coopératifs, tapis, livres, matériel créatif, présence référente." },
+      { id:"circle", category:"Joie & paix", priority:1, name:"Espace de parole et médiation", qty:s => "1 cercle quotidien + 1 lieu calme", note:"Prévenir les tensions avant qu’elles deviennent tempêtes dans la soupe collective." },
+      { id:"beauty", category:"Joie & paix", priority:3, name:"Matériel de beauté, musique, création", qty:s => "1 coffre joie", note:"Instruments doux, peinture, carnets, décorations simples, rituels de gratitude." }
+    ];
+
+    const ACTIONS = [
+      { id:"a-water-map", priority:1, title:"Cartographier les points d’eau", detail:"Identifier source, rivière, pluie, stockage, risques de pollution, trajets et zones protégées." },
+      { id:"a-water-protocol", priority:1, title:"Écrire le protocole eau potable", detail:"Qui capte, qui filtre, qui teste, qui stocke, comment on signale une eau douteuse." },
+      { id:"a-sanitation-zone", priority:1, title:"Placer les toilettes loin de l’eau", detail:"Choisir zones hautes, sèches, éloignées des sources et des lieux de cuisine." },
+      { id:"a-handwash", priority:1, title:"Installer le lavage des mains avant même le confort", detail:"Chaque toilette et la cuisine doivent avoir savon et eau disponibles." },
+      { id:"a-sleep-dry", priority:1, title:"Garantir que chaque être dort au sec", detail:"Matelas isolé du sol, couverture, protection pluie, espace calme." },
+      { id:"a-kitchen-heart", priority:1, title:"Créer la cuisine centrale", detail:"Zone feu, eau propre, vaisselle, stockage du jour, planning repas, sécurité." },
+      { id:"a-food-inventory", priority:1, title:"Faire l’inventaire alimentaire réel", detail:"Peser, dater, répartir, protéger, calculer journées-personnes disponibles." },
+      { id:"a-first-aid", priority:1, title:"Ouvrir l’infirmerie", detail:"Trousse centrale, registres, médicaments personnels, référents, zone repos." },
+      { id:"a-fire-safety", priority:1, title:"Sécuriser les feux", detail:"Zones autorisées, extincteurs/seaux, détecteurs CO si intérieur, stockage bois." },
+      { id:"a-roles", priority:1, title:"Nommer les gardiens essentiels", detail:"Eau, feu, nourriture, hygiène, enfants, soins, médiation, joie." },
+      { id:"a-children", priority:1, title:"Protéger l’espace enfants", detail:"Lieu visible, doux, non chaotique, avec adultes référents et temps de jeu." },
+      { id:"a-collective-charter", priority:1, title:"Lire et ajuster la charte commune", detail:"Règles simples, consentement, calme, non-violence, décisions vitales." },
+      { id:"a-tool-zone", priority:2, title:"Créer l’atelier réparation", detail:"Un lieu pour outils, pièces, affichage des emprunts, réparations prioritaires." },
+      { id:"a-energy-plan", priority:2, title:"Prioriser l’électricité", detail:"Lumière, pompe, soins, communications, froid. Le reste attendra sagement son tour." },
+      { id:"a-garden", priority:2, title:"Lancer la production vivante", detail:"Compost, pépinière, planches, pommes de terre, courges, légumineuses, graines germées." },
+      { id:"a-preservation", priority:2, title:"Préparer la conservation", detail:"Bocaux, lactofermentation, séchage, cave, rotation." },
+      { id:"a-waste", priority:2, title:"Mettre en place la gestion déchets", detail:"Compost, tri, déchets dangereux, stockage fermé, anti-rongeurs." },
+      { id:"a-training", priority:2, title:"Former les équipes", detail:"Premiers secours, feu, hygiène, eau, cuisine collective, écoute/médiation." },
+      { id:"a-weather", priority:2, title:"Préparer pluie, froid, chaleur", detail:"Drainage, ombre, isolation, vêtements, réserve bois, protection solaire." },
+      { id:"a-communications", priority:3, title:"Créer le système d’information", detail:"Panneau central, cahier de bord, cartes, radios, messages courts et clairs." },
+      { id:"a-peace-ritual", priority:3, title:"Installer un rituel quotidien de paix", detail:"15 minutes : besoins vitaux, tensions, gratitude, tâches du jour, enfants." },
+      { id:"a-beauty", priority:4, title:"Embellir le lieu sans gaspiller", detail:"Signalétique douce, espace musique, fleurs, lumière chaude, coins de silence." }
+    ];
+
+    const STEPS = [
+      { title:"Sécuriser l’eau", priority:1, items:["Identifier sources fiables", "Filtrer + désinfecter", "Créer un stockage tampon", "Nommer un gardien de l’eau"] },
+      { title:"Installer toilettes et lavage des mains", priority:1, items:["Toilettes sèches", "Sciure au sec", "Compostage fermé", "Savon à chaque point critique"] },
+      { title:"Dormir au sec et au chaud", priority:1, items:["Surface couverte", "Isolation du sol", "Couchage individuel", "Plan froid/pluie"] },
+      { title:"Nourrir le groupe", priority:1, items:["Inventaire réel", "Rations sobres", "Cuisine collective", "Protection rongeurs/humidité"] },
+      { title:"Créer l’infirmerie et la veille santé", priority:1, items:["Stock central", "Référents", "Médicaments personnels", "Zone repos/isolement"] },
+      { title:"Organiser les rôles", priority:1, items:["Eau", "Feu", "Enfants", "Nourriture", "Hygiène", "Médiation", "Joie"] },
+      { title:"Énergie et communication", priority:2, items:["Éclairage", "Recharge", "Radio", "Pompage", "Panneau d’information"] },
+      { title:"Cultiver et conserver", priority:2, items:["Potager", "Serre", "Graines germées", "Bocaux", "Séchage", "Fermentation"] },
+      { title:"Paix, joie, beauté", priority:3, items:["Cercle quotidien", "Espace enfants", "Créativité", "Silence", "Médiation précoce"] }
+    ];
+
+    const PEACE_PROMPTS = [
+      "Chaque matin : qu’est-ce qui protège la vie aujourd’hui, et qu’est-ce qui nourrit la joie ?",
+      "Avant toute décision : est-ce que cela rend le groupe plus vivant, plus clair ou plus libre ?",
+      "Quand la tension monte, on ralentit. Même le feu sacré préfère une marmite surveillée.",
+      "La paix n’est pas l’absence de désaccord : c’est l’art de ne pas abîmer le lien pendant qu’on cherche la vérité.",
+      "Un enfant qui rit, un ancien qui se repose, une source protégée : trois indicateurs de bon gouvernement du vivant.",
+      "On ne sacrifie pas la beauté au nom de l’efficacité ; on l’intègre sobrement, comme une vitamine de l’âme.",
+      "Le groupe tient par la clarté, la nourriture, l’eau, le sommeil… et quelques chants qui remettent les cœurs à l’endroit."
+    ];
+
+    const ROLES = ["Gardien de l’eau", "Gardien du feu", "Gardien des enfants", "Gardien des anciens", "Gardien nourriture", "Gardien hygiène", "Gardien santé", "Médiateur", "Gardien joie", "Gardien outils", "Gardien silence", "Gardien beauté"];
+
+    const PEACE_SPACES = [
+      { title:"Espace enfants", text:"Jeux, histoires, création, repos. Un lieu protégé du stress des adultes." },
+      { title:"Espace silence", text:"Pour se régénérer, pleurer, prier, respirer, revenir à soi sans justification." },
+      { title:"Cercle de parole", text:"Court, régulier, tenu. La parole circule mieux quand elle a un lieu." },
+      { title:"Espace création", text:"Dessiner, réparer, chanter, écrire, fabriquer. La joie devient matière." },
+      { title:"Espace médiation", text:"Pour traiter les tensions tôt, avant qu’elles ne contaminent le collectif." },
+      { title:"Espace gratitude", text:"Un panneau ou carnet où l’on note les gestes lumineux du jour." }
+    ];
+
+    let state = loadState();
+
+    /* CONTRÔLEUR — événements utilisateur. */
+    document.addEventListener("DOMContentLoaded", init);
+
+    function init() {
+      bindInputs();
+      bindTabs();
+      bindButtons();
+      syncInputsFromState();
+      renderAll();
+    }
+
+    function bindInputs() {
+      ["humans", "days", "mode", "climate", "children", "fragile", "themeSelect", "printMode", "charter", "freeNotes"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", () => {
+          updateStateFromInputs();
+          saveState(false);
+          renderAll();
+        });
+      });
+
+      ["materialSearch", "materialPriority", "materialCategory", "materialStatus", "actionSearch", "actionPriority", "actionStatus"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", renderAll);
+      });
+
+      document.getElementById("calculationControls").addEventListener("input", e => {
+        const input = e.target.closest("[data-factor]");
+        if (!input) return;
+        updateCustomFactor(input.dataset.factor, Number(input.value));
+        saveState(false);
+        renderAll();
+      });
+    }
+
+    function bindTabs() {
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(btn.dataset.tab).classList.add("active");
+        });
+      });
+    }
+
+    function bindButtons() {
+      ["saveBtn", "saveBtn2", "saveCharterBtn"].forEach(id => document.getElementById(id).addEventListener("click", () => saveState(true)));
+      ["exportBtn", "exportBtn2"].forEach(id => document.getElementById(id).addEventListener("click", exportState));
+      document.getElementById("importFile").addEventListener("change", importState);
+      document.getElementById("resetAllBtn").addEventListener("click", resetAll);
+      document.getElementById("resetChecksBtn").addEventListener("click", resetChecks);
+      document.getElementById("resetCalcBtn").addEventListener("click", resetCalculationFactors);
+      document.getElementById("addCustomBtn").addEventListener("click", addCustomMaterial);
+      document.getElementById("newPeacePromptBtn").addEventListener("click", () => {
+        const pick = PEACE_PROMPTS[Math.floor(Math.random() * PEACE_PROMPTS.length)];
+        document.getElementById("peacePrompt").textContent = pick;
+      });
+      document.getElementById("printCurrentBtn").addEventListener("click", () => printWithMode("current"));
+      document.getElementById("printAllBtn").addEventListener("click", () => printWithMode("all"));
+    }
+
+    /* CALCULS — ordres de grandeur. */
+    function calc(s) {
+      const m = modeFor(s);
+      const food = {
+        cerealsKg: s.humans * s.days * m.food.cerealsG / 1000,
+        legumesKg: s.humans * s.days * m.food.legumesG / 1000,
+        oilL: s.humans * s.days * m.food.oilMl / 1000,
+        saltKg: s.humans * s.days * m.food.saltG / 1000,
+        sugarKg: s.humans * s.days * m.food.sugarG / 1000,
+        cannedKg: s.humans * s.days * m.food.cannedG / 1000,
+        extrasKg: s.humans * s.days * m.food.extrasG / 1000
+      };
+      const foodTotalKg = food.cerealsKg + food.legumesKg + food.oilL * 0.92 + food.saltKg + food.sugarKg + food.cannedKg + food.extrasKg;
+      return {
+        m,
+        personDays: s.humans * s.days,
+        dailyWaterL: s.humans * m.waterL,
+        totalWaterL: s.humans * s.days * m.waterL,
+        waterStorageL: s.humans * m.waterL * m.waterBufferDays,
+        totalKcal: s.humans * s.days * m.kcal,
+        toilets: Math.max(2, Math.ceil(s.humans / m.toiletRatio)),
+        shelterSleep: s.humans * m.shelterSleep,
+        shelterTotal: s.humans * m.shelterTotal,
+        food,
+        foodTotalKg,
+        coldRisk: s.climate === "cold" || s.climate === "mixed"
+      };
+    }
+
+    function foodRows(s) {
+      const c = calc(s);
+      return [
+        ["Céréales & féculents", `${round(c.food.cerealsKg,1)} kg`, "Riz, blé, pâtes, avoine, semoule, farine, pommes de terre déshydratées.", "Base calorique stable."],
+        ["Légumineuses", `${round(c.food.legumesKg,1)} kg`, "Lentilles, pois chiches, haricots, pois cassés.", "Protéines, fibres, satiété."],
+        ["Huiles & graisses", `${round(c.food.oilL,1)} L`, "Olive, colza, tournesol, ghee selon choix.", "Calories denses, cuisson, moral."],
+        ["Sel", `${round(c.food.saltKg,1)} kg`, "Sel alimentaire, conservation, électrolytes.", "Petit volume, grand oubli possible."],
+        ["Sucres & douceur", `${round(c.food.sugarKg,1)} kg`, "Sucre, miel, confitures, chocolat sobre.", "Énergie rapide et soutien psychologique."],
+        ["Conserves / bocaux", `${round(c.food.cannedKg,1)} kg`, "Légumes, tomates, fruits, poissons/viandes ou alternatives.", "Diversité et micronutriments."],
+        ["Extras nutritifs", `${round(c.food.extrasKg,1)} kg`, "Fruits secs, oléagineux, algues, graines à germer, épices.", "Nutriments, joie, variété."],
+        ["Calories totales visées", `${formatLarge(c.totalKcal)} kcal`, "Calcul : êtres × jours × niveau calorique.", "Ordre de grandeur, à adapter."],
+      ];
+    }
+
+    /* VUE — rendu HTML. */
+    function renderAll() {
+      document.body.dataset.theme = state.theme;
+      applyPrintClass();
+      renderMetrics();
+      renderPrioritySummary();
+      renderMaterialFilters();
+      renderMaterials();
+      renderFood();
+      renderActions();
+      renderSteps();
+      renderPeace();
+      renderCalculationControls();
+    }
+
+    function renderMetrics() {
+      const c = calc(state);
+      const metrics = [
+        ["Journées-personnes", formatLarge(c.personDays), "Base de tous les calculs"],
+        ["Eau/jour", `${formatLarge(c.dailyWaterL)} L`, `${c.m.waterL} L / être / jour`],
+        ["Stockage eau tampon", `${round(c.waterStorageL/1000,1)} m³`, `${c.m.waterBufferDays} jours de marge`],
+        ["Nourriture de base", `${round(c.foodTotalKg/1000,2)} t`, "Stock indicatif total"],
+        ["Toilettes sèches", `${c.toilets}`, `Ratio niveau ${c.m.label}`],
+        ["Surface couverte", `${Math.ceil(c.shelterTotal)} m²`, "Dormir + vivre + stocker"],
+        ["Calories totales", formatLarge(c.totalKcal), `${c.m.kcal} kcal / être / jour`],
+        ["Mode", c.m.label, "Niveau de robustesse choisi"]
+      ];
+      document.getElementById("metrics").innerHTML = metrics.map(m => `<div class="metric"><span>${m[0]}</span><strong>${m[1]}</strong><span>${m[2]}</span></div>`).join("");
+
+      const totalChecks = allMaterials().length + ACTIONS.length;
+      const doneChecks = allMaterials().filter(x => state.checkedMaterials[x.id]).length + ACTIONS.filter(x => state.checkedActions[x.id]).length;
+      const pct = totalChecks ? Math.round(doneChecks / totalChecks * 100) : 0;
+      document.getElementById("globalProgress").style.width = pct + "%";
+      document.getElementById("progressText").textContent = `${doneChecks} éléments cochés sur ${totalChecks} — ${pct}% d’avancement visible.`;
+
+      const quick = `Pour ${state.humans} êtres pendant ${state.days} jours, la base actuelle demande environ ${round(c.foodTotalKg/1000,2)} tonnes de provisions indicatives, ${formatLarge(c.dailyWaterL)} L d’eau par jour, ${c.toilets} toilettes sèches et environ ${Math.ceil(c.shelterTotal)} m² de surface couverte utile.`;
+      document.getElementById("quickReading").textContent = quick;
+
+      const tags = [];
+      if (c.dailyWaterL > 1000) tags.push("Eau collective lourde");
+      if (state.days >= 180) tags.push("Autonomie longue");
+      if (state.children > 0) tags.push("Protection enfants");
+      if (state.climate !== "hot") tags.push("Froid / humidité à anticiper");
+      if (state.mode === "low") tags.push("Redondance limitée");
+      document.getElementById("warningTags").innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join("");
+    }
+
+    function renderPrioritySummary() {
+      const grouped = [1,2,3,4].map(p => {
+        const items = allMaterials().filter(x => x.priority === p);
+        const done = items.filter(x => state.checkedMaterials[x.id]).length;
+        return { p, total: items.length, done };
+      });
+      document.getElementById("prioritySummary").innerHTML = grouped.map(g => {
+        const pct = g.total ? Math.round(g.done/g.total*100) : 0;
+        return `<div style="margin:.75rem 0"><div class="action-top"><span class="priority-pill priority-${g.p}">Priorité ${g.p}</span><strong>${g.done}/${g.total}</strong></div><div class="progress-bar" style="margin-top:.35rem"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+      }).join("");
+    }
+
+    function renderMaterialFilters() {
+      const select = document.getElementById("materialCategory");
+      const current = select.value || "all";
+      const cats = [...new Set(allMaterials().map(x => x.category))].sort((a,b) => CATEGORIES.indexOf(a) - CATEGORIES.indexOf(b));
+      select.innerHTML = `<option value="all">Toutes catégories</option>` + cats.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join("");
+      select.value = cats.includes(current) ? current : "all";
+    }
+
+    function renderMaterials() {
+      const q = normalize(document.getElementById("materialSearch").value);
+      const p = document.getElementById("materialPriority").value;
+      const cat = document.getElementById("materialCategory").value;
+      const st = document.getElementById("materialStatus").value;
+      let items = allMaterials().filter(item => {
+        const checked = !!state.checkedMaterials[item.id];
+        return (p === "all" || String(item.priority) === p)
+          && (cat === "all" || item.category === cat)
+          && (st === "all" || (st === "done" ? checked : !checked))
+          && (!q || normalize(item.name + " " + item.category + " " + item.note).includes(q));
+      });
+      items.sort((a,b) => a.priority - b.priority || CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || a.name.localeCompare(b.name));
+      document.getElementById("materialList").innerHTML = items.map(item => itemCard(item)).join("") || `<p class="muted">Aucun élément ne correspond au filtre.</p>`;
+      document.querySelectorAll("[data-material-check]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          state.checkedMaterials[cb.dataset.materialCheck] = cb.checked;
+          saveState(false); renderAll();
+        });
+      });
+    }
+
+    function itemCard(item) {
+      const checked = !!state.checkedMaterials[item.id];
+      const qty = typeof item.qty === "function" ? item.qty(state) : item.qty;
+      return `<article class="item-card">
+        <label class="check-label"><input type="checkbox" data-material-check="${escapeAttr(item.id)}" aria-label="Marquer comme acquis : ${escapeAttr(item.name)}" ${checked ? "checked" : ""} /></label>
+        <div>
+          <div class="item-title">${escapeHtml(item.name)}</div>
+          <div class="item-meta"><span class="priority-pill priority-${item.priority}">Priorité ${item.priority}</span><span class="category-pill">${escapeHtml(item.category)}</span></div>
+          <div class="muted">${escapeHtml(item.note || "")}</div>
+        </div>
+        <div class="qty">${escapeHtml(qty)}</div>
+      </article>`;
+    }
+
+    function renderFood() {
+      const rows = foodRows(state);
+      document.getElementById("foodTable").innerHTML = `<thead><tr><th>Famille</th><th>Quantité indicative</th><th>Exemples</th><th>Rôle</th></tr></thead><tbody>${rows.map(r => `<tr><td><strong>${escapeHtml(r[0])}</strong></td><td>${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td></tr>`).join("")}</tbody>`;
+      const c = calc(state);
+      const notes = [
+        ["Rotation", "Date les sacs, utilise d’abord ce qui vieillit, garde le sec au sec et loin des rongeurs."],
+        ["Moral", "Prévois quelques aliments de joie. Le chocolat n’est pas un système politique, mais il peut sauver une réunion."],
+        ["Production", "Lance graines germées, potager et conserves dès le début : le stock achète du temps, il ne remplace pas la vie."],
+        ["Eau de cuisson", `${formatLarge(c.dailyWaterL)} L/jour est une base globale ; les légumineuses demandent trempage et cuisson.`],
+        ["Enfants", "Prévoir aliments familiers, goûters simples, lait infantile si nécessaire, moments calmes."],
+        ["Fragilités", "Adapter textures, médicaments, régimes, allergies, dents, digestion et suivi médical."],
+      ];
+      document.getElementById("foodNotes").innerHTML = notes.map(n => `<div class="metric"><span>${escapeHtml(n[0])}</span><p>${escapeHtml(n[1])}</p></div>`).join("");
+    }
+
+    function renderActions() {
+      const q = normalize(document.getElementById("actionSearch").value);
+      const p = document.getElementById("actionPriority").value;
+      const st = document.getElementById("actionStatus").value;
+      const actions = ACTIONS.filter(a => {
+        const checked = !!state.checkedActions[a.id];
+        return (p === "all" || String(a.priority) === p)
+          && (st === "all" || (st === "done" ? checked : !checked))
+          && (!q || normalize(a.title + " " + a.detail).includes(q));
+      }).sort((a,b) => a.priority - b.priority || a.title.localeCompare(b.title));
+      document.getElementById("actionList").innerHTML = actions.map(a => `<article class="action-card">
+        <label class="check-label"><input type="checkbox" data-action-check="${escapeAttr(a.id)}" aria-label="Marquer comme fait : ${escapeAttr(a.title)}" ${state.checkedActions[a.id] ? "checked" : ""} /></label>
+        <div>
+          <div class="action-top"><h3>${escapeHtml(a.title)}</h3><span class="priority-pill priority-${a.priority}">Priorité ${a.priority}</span></div>
+          <p class="notes">${escapeHtml(a.detail)}</p>
+        </div>
+      </article>`).join("") || `<p class="muted">Aucune action ne correspond au filtre.</p>`;
+      document.querySelectorAll("[data-action-check]").forEach(cb => {
+        cb.addEventListener("change", () => {
+          state.checkedActions[cb.dataset.actionCheck] = cb.checked;
+          saveState(false); renderAll();
+        });
+      });
+    }
+
+    function renderSteps() {
+      document.getElementById("stepper").innerHTML = STEPS.map((s, idx) => {
+        const stepDone = idx < completedStepCount();
+        return `<section class="step ${stepDone ? "done" : ""}"><div class="step-num">${idx+1}</div><div><div class="action-top"><h3>${escapeHtml(s.title)}</h3><span class="priority-pill priority-${s.priority}">Priorité ${s.priority}</span></div><ul>${s.items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul></div></section>`;
+      }).join("");
+    }
+
+    function completedStepCount() {
+      const priority1Materials = allMaterials().filter(x => x.priority === 1);
+      const doneP1 = priority1Materials.filter(x => state.checkedMaterials[x.id]).length;
+      const ratio = priority1Materials.length ? doneP1 / priority1Materials.length : 0;
+      if (ratio > .85) return 6;
+      if (ratio > .65) return 5;
+      if (ratio > .45) return 4;
+      if (ratio > .28) return 3;
+      if (ratio > .12) return 2;
+      if (ratio > 0) return 1;
+      return 0;
+    }
+
+    function renderPeace() {
+      document.getElementById("rolesCloud").innerHTML = ROLES.map(r => `<span class="tag">${escapeHtml(r)}</span>`).join("");
+      document.getElementById("peaceSpaces").innerHTML = PEACE_SPACES.map(s => `<div class="metric"><span>${escapeHtml(s.title)}</span><p>${escapeHtml(s.text)}</p></div>`).join("");
+    }
+
+    function renderCalculationControls() {
+      const factors = modeFor(state);
+      document.getElementById("calculationControls").innerHTML = FACTOR_CONTROLS.map(control => {
+        const value = getFactorValue(factors, control);
+        const note = control.inverse ? "Plus la valeur est basse, plus le niveau est robuste." : "";
+        return `<div class="range-field">
+          <div class="range-head">
+            <label for="factor-${escapeAttr(control.key)}">${escapeHtml(control.label)}</label>
+            <span class="range-value">${formatFactor(value, control)}</span>
+          </div>
+          <input id="factor-${escapeAttr(control.key)}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${escapeAttr(value)}" data-factor="${escapeAttr(control.key)}" />
+          ${note ? `<div class="hint">${escapeHtml(note)}</div>` : ""}
+        </div>`;
+      }).join("");
+    }
+
+    /* PERSISTENCE — localStorage + import/export JSON. */
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return clone(DEFAULT_STATE);
+        return normalizeState(JSON.parse(raw));
+      } catch (e) {
+        console.warn("Impossible de charger la sauvegarde", e);
+        return clone(DEFAULT_STATE);
+      }
+    }
+
+    function saveState(show=true) {
+      updateStateFromInputs();
+      state = normalizeState(state);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (show) toast("Sauvegardé localement");
+        return true;
+      } catch (e) {
+        console.warn("Impossible d’enregistrer localement", e);
+        toast("Sauvegarde locale indisponible");
+        return false;
+      }
+    }
+
+    function exportState() {
+      saveState(false);
+      const payload = {
+        app: APP_ID,
+        version: APP_VERSION,
+        updatedAt: new Date().toISOString(),
+        settings: {
+          theme: state.theme,
+          printMode: state.printMode
+        },
+        data: state
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `joyeuse-autonomie-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      toast("Export JSON créé");
+    }
+
+    function importState(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!isImportableState(data)) throw new Error("Format d’export non reconnu");
+          state = normalizeState(extractImportedState(data));
+          syncInputsFromState();
+          saveState(false);
+          renderAll();
+          toast("Import réussi");
+        } catch (err) {
+          alert("Fichier JSON invalide.");
+        }
+        e.target.value = "";
+      };
+      reader.onerror = () => {
+        alert("Impossible de lire ce fichier JSON.");
+        e.target.value = "";
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAll() {
+      if (!confirm("Réinitialiser toute l’application ?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state = clone(DEFAULT_STATE);
+      syncInputsFromState();
+      renderAll();
+      toast("Réinitialisé");
+    }
+
+    function resetChecks() {
+      if (!confirm("Réinitialiser uniquement les coches matériel/actions ?")) return;
+      state.checkedMaterials = {};
+      state.checkedActions = {};
+      saveState(false);
+      renderAll();
+      toast("Coches réinitialisées");
+    }
+
+    function resetCalculationFactors() {
+      const baseMode = state.mode === "custom" ? DEFAULT_STATE.mode : state.mode;
+      state.mode = baseMode;
+      state.customFactors = cloneFactors(MODE_FACTORS[baseMode]);
+      syncInputsFromState();
+      saveState(false);
+      renderAll();
+      toast("Paramètres remis selon le niveau choisi");
+    }
+
+    function addCustomMaterial() {
+      const name = document.getElementById("customName").value.trim();
+      const category = document.getElementById("customCategory").value.trim() || "Personnalisé";
+      const qty = document.getElementById("customQty").value.trim() || "À définir";
+      const priority = Number(document.getElementById("customPriority").value || 3);
+      const note = document.getElementById("customNotes").value.trim();
+      if (!name) { alert("Indique au moins un nom."); return; }
+      state.customMaterials.push({ id:"custom-" + Date.now(), name, category, qty, priority, note });
+      ["customName", "customCategory", "customQty", "customNotes"].forEach(id => document.getElementById(id).value = "");
+      saveState(false);
+      renderAll();
+      toast("Élément ajouté");
+    }
+
+    /* UTILITAIRES */
+    function allMaterials() { return [...MATERIAL_TEMPLATES, ...state.customMaterials]; }
+    function modeFor(s) {
+      if (s.mode === "custom") return { ...cloneFactors(s.customFactors || MODE_FACTORS.balanced), label:"Personnalisé" };
+      return MODE_FACTORS[s.mode] || MODE_FACTORS.balanced;
+    }
+    function presetForMode(mode) {
+      return MODE_FACTORS[mode] || MODE_FACTORS.balanced;
+    }
+    function cloneFactors(factors) {
+      const base = factors && typeof factors === "object" ? factors : MODE_FACTORS.balanced;
+      return {
+        label: base.label || "Personnalisé",
+        waterL: Number(base.waterL),
+        waterBufferDays: Number(base.waterBufferDays),
+        kcal: Number(base.kcal),
+        toiletRatio: Number(base.toiletRatio),
+        shelterSleep: Number(base.shelterSleep),
+        shelterTotal: Number(base.shelterTotal),
+        food: { ...base.food }
+      };
+    }
+    function updateCustomFactor(key, value) {
+      const next = state.mode === "custom" ? cloneFactors(state.customFactors) : cloneFactors(presetForMode(state.mode));
+      const control = FACTOR_CONTROLS.find(item => item.key === key);
+      if (!control) return;
+      const cleanValue = clampRawNumber(value, control.min, control.max, getFactorValue(next, control));
+      if (control.food) next.food[key] = cleanValue;
+      else next[key] = cleanValue;
+      next.label = "Personnalisé";
+      state.customFactors = next;
+      state.mode = "custom";
+      document.getElementById("mode").value = "custom";
+    }
+    function getFactorValue(factors, control) {
+      return control.food ? factors.food[control.key] : factors[control.key];
+    }
+    function formatFactor(value, control) {
+      const rounded = Number.isInteger(control.step) ? Math.round(value) : round(value, 1);
+      return `${rounded} ${control.unit}`;
+    }
+    function clone(value) {
+      if (typeof structuredClone === "function") return structuredClone(value);
+      return JSON.parse(JSON.stringify(value));
+    }
+    function normalizeState(input) {
+      const source = input && typeof input === "object" ? input : {};
+      const next = { ...clone(DEFAULT_STATE), ...source };
+      next.humans = clampRawNumber(next.humans, 1, 2000, DEFAULT_STATE.humans);
+      next.days = clampRawNumber(next.days, 1, 1095, DEFAULT_STATE.days);
+      next.children = clampRawNumber(next.children, 0, 1000, DEFAULT_STATE.children);
+      next.fragile = clampRawNumber(next.fragile, 0, 1000, DEFAULT_STATE.fragile);
+      next.mode = MODE_FACTORS[next.mode] || next.mode === "custom" ? next.mode : DEFAULT_STATE.mode;
+      next.customFactors = next.mode === "custom" ? normalizeFactors(next.customFactors) : null;
+      next.climate = ["mixed", "cold", "hot"].includes(next.climate) ? next.climate : DEFAULT_STATE.climate;
+      next.theme = ["light", "dark"].includes(next.theme) ? next.theme : DEFAULT_STATE.theme;
+      next.printMode = ["current", "all"].includes(next.printMode) ? next.printMode : DEFAULT_STATE.printMode;
+      next.checkedMaterials = plainObject(next.checkedMaterials);
+      next.checkedActions = plainObject(next.checkedActions);
+      next.customMaterials = normalizeCustomMaterials(next.customMaterials);
+      next.charter = typeof next.charter === "string" ? next.charter : DEFAULT_STATE.charter;
+      next.freeNotes = typeof next.freeNotes === "string" ? next.freeNotes : "";
+      return next;
+    }
+    function normalizeFactors(input) {
+      const source = input && typeof input === "object" ? input : MODE_FACTORS.balanced;
+      const next = cloneFactors({ ...MODE_FACTORS.balanced, ...source, food: { ...MODE_FACTORS.balanced.food, ...(source.food || {}) } });
+      FACTOR_CONTROLS.forEach(control => {
+        const fallback = getFactorValue(MODE_FACTORS.balanced, control);
+        const value = clampRawNumber(getFactorValue(next, control), control.min, control.max, fallback);
+        if (control.food) next.food[control.key] = value;
+        else next[control.key] = value;
+      });
+      next.label = "Personnalisé";
+      return next;
+    }
+    function normalizeCustomMaterials(items) {
+      if (!Array.isArray(items)) return [];
+      return items.map((item, index) => {
+        const src = item && typeof item === "object" ? item : {};
+        const name = String(src.name || "").trim();
+        if (!name) return null;
+        return {
+          id: String(src.id || `custom-import-${Date.now()}-${index}`),
+          name,
+          category: String(src.category || "Personnalisé").trim() || "Personnalisé",
+          qty: String(src.qty || "À définir").trim() || "À définir",
+          priority: clampRawNumber(src.priority, 1, 4, 3),
+          note: String(src.note || "")
+        };
+      }).filter(Boolean);
+    }
+    function plainObject(value) {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+      return Object.keys(value).reduce((acc, key) => {
+        acc[key] = Boolean(value[key]);
+        return acc;
+      }, {});
+    }
+    function isImportableState(data) {
+      if (!data || typeof data !== "object") return false;
+      if (data.app === APP_ID && data.data && typeof data.data === "object") return true;
+      return ["humans", "days", "mode", "checkedMaterials", "customMaterials", "charter"].some(key => Object.prototype.hasOwnProperty.call(data, key));
+    }
+    function extractImportedState(data) {
+      return data && data.app === APP_ID && data.data ? data.data : data;
+    }
+    function round(n, d=0) { const f = Math.pow(10,d); return Math.round(n*f)/f; }
+    function formatLarge(n) { return new Intl.NumberFormat("fr-FR").format(Math.round(n)); }
+    function normalize(str) { return String(str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+    function escapeHtml(str) { return String(str).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m])); }
+    function escapeAttr(str) { return escapeHtml(str).replace(/'/g, "&#039;"); }
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => t.classList.remove("show"), 1800);
+    }
+    function syncInputsFromState() {
+      document.getElementById("humans").value = state.humans;
+      document.getElementById("days").value = state.days;
+      document.getElementById("mode").value = state.mode;
+      document.getElementById("climate").value = state.climate;
+      document.getElementById("children").value = state.children;
+      document.getElementById("fragile").value = state.fragile;
+      document.getElementById("themeSelect").value = state.theme;
+      const printMode = document.getElementById("printMode");
+      if (printMode) printMode.value = state.printMode;
+      document.getElementById("charter").value = state.charter;
+      document.getElementById("freeNotes").value = state.freeNotes;
+    }
+    function updateStateFromInputs() {
+      state.humans = clampNumber(document.getElementById("humans").value, 1, 2000, DEFAULT_STATE.humans);
+      state.days = clampNumber(document.getElementById("days").value, 1, 1095, DEFAULT_STATE.days);
+      state.mode = document.getElementById("mode").value || DEFAULT_STATE.mode;
+      state.climate = document.getElementById("climate").value || DEFAULT_STATE.climate;
+      state.children = clampNumber(document.getElementById("children").value, 0, 1000, DEFAULT_STATE.children);
+      state.fragile = clampNumber(document.getElementById("fragile").value, 0, 1000, DEFAULT_STATE.fragile);
+      state.theme = document.getElementById("themeSelect").value || DEFAULT_STATE.theme;
+      const printMode = document.getElementById("printMode");
+      state.printMode = printMode ? printMode.value || DEFAULT_STATE.printMode : state.printMode || DEFAULT_STATE.printMode;
+      state.charter = document.getElementById("charter").value;
+      state.freeNotes = document.getElementById("freeNotes").value;
+    }
+    function clampNumber(v, min, max, fallback) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, Math.round(n)));
+    }
+    function clampRawNumber(v, min, max, fallback) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, Math.round(n)));
+    }
+    function applyPrintClass() {
+      document.body.classList.toggle("print-all", state.printMode === "all");
+      document.body.classList.toggle("print-current", state.printMode !== "all");
+    }
+    function printWithMode(mode) {
+      state.printMode = mode;
+      saveState(false);
+      renderAll();
+      applyPrintClass();
+      requestAnimationFrame(() => {
+        setTimeout(() => window.print(), 60);
+      });
+    }
+  </script>
+</body>
+</html>
