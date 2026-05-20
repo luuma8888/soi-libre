@@ -284,6 +284,11 @@
             font-size: 0.66rem;
         }
 
+        .card.tall-card {
+            grid-row: span 2;
+            align-self: stretch;
+        }
+
         .resource-links {
             margin-top: 16px;
             border: 1px solid #f0f0f0;
@@ -379,6 +384,7 @@
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr; }
             .card { flex-direction: column; }
+            .card.tall-card { grid-row: auto; }
             .card-image-side { width: 100%; height: 150px; }
             .dual-captures { height: auto; }
             .capture-thumb { min-height: 150px; }
@@ -519,7 +525,7 @@
             </div>
         </article>
 
-        <article class="card">
+        <article class="card tall-card">
             <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
                 <div class="capture-thumb zoomable-image"
                     style="background-image: url('assets/seve-essentiel-full.png');"
@@ -562,6 +568,29 @@
                         <a href="creations/seve/seve_pack_v0_1_alpha_miroirs_symboliques_approfondis.json" download>Télécharger JSON séparé — miroirs symboliques</a>
                     </div>
                 </details>
+            </div>
+        </article>
+
+        <article class="card compact-card">
+            <div class="card-image-side"
+                style="background-image: url('assets/atelier-comedie-musicale-preview.png'); background-position: center top;"
+                data-full="assets/atelier-comedie-musicale-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Atelier Comédie Musicale</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Concevez une comédie musicale jouable : vision, dramaturgie, scènes, numéros chantés-dansés, atelier-test, audit et dossier.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/atelier_comedie_musicale.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/atelier_comedie_musicale.html" download="atelier-comedie-musicale-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
             </div>
         </article>
 

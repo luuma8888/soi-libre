@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="fr" data-theme="light" data-print-mode="current">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="application-name" content="Atelier Comédie Musicale - Soi-Libre" />
+  <meta name="version" content="v0.1.alpha" />
+  <meta name="description" content="Application autonome hors-ligne pour concevoir une comédie musicale : vision, dramaturgie, scènes, numéros, atelier, audit et dossier." />
+  <title>Atelier Comédie Musicale v0.1.alpha — moteur dramaturgique</title>
+  <style>
+    /*
+      Atelier Comédie Musicale v0.1.alpha — application autonome hors-ligne, sans CDN.
+      Structure pensée pour être lisible et enrichissable par un développeur humain.
+      Architecture : mini-MVC en JavaScript pur.
+      - Model : objet state + constantes de bibliothèques créatives.
+      - View : rendu HTML par sections et templates.
+      - Controller : actions utilisateur, autosave, export/import, impression, audit.
+      Design : pastel, sobre, responsive, jour/nuit, compatible impression.
+    */
+    :root{
+      --bg:#fbfaf7;
+      --bg2:#f7efe6;
+      --panel:#ffffff;
+      --panel2:#fff8ef;
+      --ink:#263034;
+      --muted:#6a777b;
+      --line:#e7dccf;
+      --brand:#9b6b42;
+      --brand2:#d19a70;
+      --gold:#d9b66f;
+      --rose:#f2c9c6;
+      --mint:#cbead7;
+      --sky:#cfe7f7;
+      --violet:#dfd5f4;
+      --ok:#3f8d67;
+      --warn:#b67a2f;
+      --danger:#b65b5b;
+      --shadow:0 16px 48px rgba(79,53,32,.11);
+      --radius:22px;
+      --radius2:14px;
+      --focus:0 0 0 4px rgba(209,154,112,.25);
+      --font:ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif;
+      --serif:ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+    }
+    html[data-theme="dark"]{
+      --bg:#171a1d;
+      --bg2:#1f2326;
+      --panel:#22272b;
+      --panel2:#2a2520;
+      --ink:#f5efe7;
+      --muted:#b8c0c3;
+      --line:#3d4448;
+      --brand:#f0c293;
+      --brand2:#d8a476;
+      --gold:#e2c475;
+      --rose:#5e4347;
+      --mint:#243e32;
+      --sky:#253a48;
+      --violet:#363047;
+      --shadow:0 16px 48px rgba(0,0,0,.32);
+      --focus:0 0 0 4px rgba(240,194,147,.22);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;min-height:100vh;color:var(--ink);font-family:var(--font);line-height:1.5;
+      background:
+        radial-gradient(circle at 5% 0%, rgba(242,201,198,.55), transparent 34%),
+        radial-gradient(circle at 96% 10%, rgba(207,231,247,.62), transparent 34%),
+        radial-gradient(circle at 50% 102%, rgba(203,234,215,.52), transparent 40%),
+        linear-gradient(135deg,var(--bg),var(--bg2));
+    }
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+    a{color:var(--brand)}
+    .app{display:grid;grid-template-columns:318px minmax(0,1fr);min-height:100vh}
+    .sidebar{position:sticky;top:0;height:100vh;overflow:auto;padding:20px 16px;background:rgba(255,255,255,.62);backdrop-filter:blur(18px);border-right:1px solid var(--line)}
+    html[data-theme="dark"] .sidebar{background:rgba(28,31,34,.72)}
+    .brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+    .logo{width:50px;height:50px;border-radius:18px;background:conic-gradient(from 210deg,var(--rose),var(--gold),var(--mint),var(--sky),var(--violet),var(--rose));box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),var(--shadow);position:relative;flex:0 0 auto}
+    .logo:after{content:"♪";position:absolute;inset:0;display:grid;place-items:center;font-size:26px;font-weight:900;color:rgba(34,34,34,.68)}
+    html[data-theme="dark"] .logo:after{color:#171a1d}
+    .brand h1{font-size:18px;line-height:1.08;margin:0;letter-spacing:.1px}
+    .brand p{margin:4px 0 0;color:var(--muted);font-size:12px}
+    .top-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+    .btn{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--panel);color:var(--ink);box-shadow:0 6px 18px rgba(40,30,20,.04);display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;transition:.18s ease}
+    .btn:hover{transform:translateY(-1px);border-color:rgba(209,154,112,.6);box-shadow:0 10px 22px rgba(40,30,20,.08)}
+    .btn.primary{background:linear-gradient(135deg,var(--brand2),var(--gold));color:#2b2116;border-color:transparent;font-weight:750}
+    .btn.ghost{background:transparent;box-shadow:none}
+    .btn.danger{border-color:rgba(182,91,91,.45);color:var(--danger)}
+    .btn.small{padding:7px 9px;font-size:12px;border-radius:11px}
+    .btn.rowbtn{width:100%;justify-content:flex-start}
+    .btn:focus-visible,.nav button:focus-visible,.subtab:focus-visible{outline:none;box-shadow:var(--focus)}
+    .nav{display:grid;gap:7px;margin:14px 0 20px}
+    .nav button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;text-align:left;border:1px solid transparent;padding:9px 10px;border-radius:15px;background:transparent;color:var(--ink)}
+    .nav button:hover{background:rgba(209,154,112,.12);border-color:rgba(209,154,112,.24)}
+    .nav button.active{background:linear-gradient(135deg,rgba(209,154,112,.24),rgba(217,182,111,.18));border-color:rgba(209,154,112,.46);box-shadow:0 8px 24px rgba(64,42,26,.07)}
+    .nav-label{display:flex;align-items:center;gap:9px;min-width:0}
+    .stepnum{width:25px;height:25px;border-radius:9px;background:var(--panel);display:grid;place-items:center;font-size:12px;color:var(--brand);border:1px solid var(--line);flex:0 0 auto}
+    .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+    .pill{font-size:11px;padding:3px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--panel);white-space:nowrap}
+    .pill.done{border-color:rgba(63,141,103,.38);color:var(--ok);background:rgba(63,141,103,.1)}
+    .pill.warn{border-color:rgba(182,122,47,.38);color:var(--warn);background:rgba(182,122,47,.1)}
+    .sidebar-note{font-size:12px;color:var(--muted);padding:12px;border-radius:15px;background:rgba(255,255,255,.42);border:1px solid var(--line)}
+    html[data-theme="dark"] .sidebar-note{background:rgba(255,255,255,.04)}
+    .mobile-tab-select{display:none;width:100%;margin:0 0 16px;border-radius:14px}
+    .main{padding:30px clamp(18px,4vw,56px) 70px;max-width:1440px;width:100%}
+    .hero{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;margin-bottom:22px}
+    .hero h2{font-family:var(--serif);font-size:clamp(30px,4.2vw,58px);line-height:.98;letter-spacing:-1.4px;margin:0 0 12px;font-weight:780}
+    .hero p{margin:0;color:var(--muted);font-size:16px;max-width:850px}
+    .hero-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .progress-wrap{height:12px;border-radius:99px;background:rgba(127,127,127,.12);overflow:hidden;border:1px solid var(--line)}
+    .progress-bar{height:100%;background:linear-gradient(90deg,var(--brand2),var(--gold),var(--mint));width:0%;transition:.35s ease}
+    .progress-line{display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:12px}
+    .section{display:none;animation:fade .22s ease}
+    .section.active{display:block}
+    @keyframes fade{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .grid{display:grid;gap:16px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+    .card.soft{background:linear-gradient(145deg,var(--panel),var(--panel2))}
+    .card.mini{padding:14px;border-radius:17px;box-shadow:none}
+    .card h3{margin:0 0 8px;font-size:20px;line-height:1.2}
+    .card h4{margin:12px 0 8px;font-size:15px;color:var(--brand)}
+    .help{font-size:13px;color:var(--muted);margin:4px 0 12px}
+    .field{display:grid;gap:6px;margin:12px 0}
+    label{font-weight:700;font-size:13px;color:var(--ink)}
+    .hint{font-size:12px;color:var(--muted);font-weight:400}
+    input,textarea,select{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:11px 12px;outline:none;transition:.14s ease}
+    textarea{min-height:96px;resize:vertical}
+    textarea.tall{min-height:190px}
+    input:focus,textarea:focus,select:focus{box-shadow:var(--focus);border-color:var(--brand2)}
+    .inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .muted{color:var(--muted)}
+    .smalltext{font-size:12px;color:var(--muted)}
+    .quote{font-family:var(--serif);font-size:19px;line-height:1.35;border-left:4px solid var(--gold);padding:10px 0 10px 16px;margin:12px 0;color:var(--ink)}
+    .callout{border:1px solid rgba(217,182,111,.48);background:linear-gradient(135deg,rgba(217,182,111,.15),rgba(203,234,215,.13));border-radius:18px;padding:14px;margin:12px 0}
+    .callout strong{color:var(--brand)}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .list{display:grid;gap:12px;margin-top:12px}
+    .item{border:1px solid var(--line);background:linear-gradient(145deg,var(--panel),rgba(255,255,255,.72));border-radius:18px;padding:14px;box-shadow:0 6px 20px rgba(40,30,20,.04)}
+    html[data-theme="dark"] .item{background:linear-gradient(145deg,var(--panel),rgba(255,255,255,.03))}
+    .item-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+    .item-title{font-weight:800;font-size:16px}
+    .item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+    .tag{display:inline-flex;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.45);border-radius:999px;padding:3px 8px;font-size:11px;color:var(--muted)}
+    html[data-theme="dark"] .tag{background:rgba(255,255,255,.04)}
+    .tabs-line{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .subtab{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px;color:var(--muted)}
+    .subtab.active{background:rgba(209,154,112,.18);border-color:rgba(209,154,112,.46);color:var(--ink);font-weight:750}
+    .library-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    .library-card{border:1px solid var(--line);border-radius:17px;padding:13px;background:rgba(255,255,255,.46)}
+    html[data-theme="dark"] .library-card{background:rgba(255,255,255,.04)}
+    .library-card b{display:block;margin-bottom:5px}
+    .timeline{position:relative;display:grid;gap:12px;margin-top:12px}
+    .timeline:before{content:"";position:absolute;left:14px;top:10px;bottom:10px;width:2px;background:var(--line)}
+    .tl-step{position:relative;padding-left:40px}
+    .tl-dot{position:absolute;left:4px;top:2px;width:22px;height:22px;border-radius:50%;background:var(--panel);border:2px solid var(--gold);display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--brand)}
+    .tl-card{border:1px solid var(--line);border-radius:17px;background:var(--panel);padding:13px}
+    .metric{display:grid;gap:5px;padding:12px;border-radius:16px;background:rgba(255,255,255,.45);border:1px solid var(--line)}
+    .story-map{display:flex;gap:12px;overflow-x:auto;padding:8px 2px 14px;scroll-snap-type:x proximity}
+    .story-card{min-width:260px;max-width:320px;scroll-snap-align:start;border:1px solid var(--line);background:linear-gradient(145deg,var(--panel),rgba(255,255,255,.62));border-radius:19px;padding:14px;box-shadow:0 8px 24px rgba(40,30,20,.06);position:relative}
+    html[data-theme="dark"] .story-card{background:linear-gradient(145deg,var(--panel),rgba(255,255,255,.04))}
+    .story-card:before{content:"";position:absolute;left:18px;right:18px;top:-1px;height:4px;border-radius:0 0 99px 99px;background:linear-gradient(90deg,var(--brand2),var(--gold),var(--mint))}
+    .story-card h4{margin:6px 0 4px;color:var(--ink);font-size:15px}
+    .story-card .num{font-size:11px;color:var(--brand);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .matrix{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+    .matrix th,.matrix td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px 9px;font-size:12px;vertical-align:top;text-align:left}
+    .matrix th:last-child,.matrix td:last-child{border-right:0}.matrix tr:last-child td{border-bottom:0}
+    .matrix th{background:rgba(209,154,112,.12);color:var(--brand);font-weight:800}
+    .check{font-weight:900;color:var(--ok)}.weak{color:var(--warn);font-weight:800}.missing{color:var(--muted)}
+    .beat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.beat-grid .field{margin:0}.beat-grid .wide{grid-column:1/-1}
+    .engine-rule{display:grid;grid-template-columns:82px minmax(0,1fr);gap:12px;align-items:start;border:1px solid var(--line);border-radius:17px;padding:13px;background:rgba(255,255,255,.42)}
+    html[data-theme="dark"] .engine-rule{background:rgba(255,255,255,.04)}
+    .score-ring{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--gold) calc(var(--score)*1%), rgba(127,127,127,.15) 0);font-weight:900;color:var(--brand);position:relative}.score-ring:after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--panel);z-index:0}.score-ring span{position:relative;z-index:1}
+    .mini-flow{display:flex;gap:8px;flex-wrap:wrap}.flow-chip{border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:var(--panel);font-size:12px;color:var(--muted)}
+    @media(max-width:760px){.beat-grid{grid-template-columns:1fr}.story-card{min-width:230px}.matrix{display:block;overflow-x:auto}}
+
+    html[data-theme="dark"] .metric{background:rgba(255,255,255,.04)}
+    .metric b{font-size:22px;line-height:1;color:var(--brand)}
+    .audit-ok{border-left:4px solid var(--ok)}
+    .audit-warn{border-left:4px solid var(--warn)}
+    .audit-danger{border-left:4px solid var(--danger)}
+    .dossier{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+    .dossier h1,.dossier h2,.dossier h3{font-family:var(--serif)}
+    .dossier h1{font-size:36px;line-height:1;margin:0 0 8px}
+    .dossier h2{font-size:24px;margin:24px 0 8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+    .dossier h3{font-size:19px;margin:18px 0 6px}
+    .dossier p{margin:7px 0}
+    .dossier ul{margin:8px 0 12px 22px}
+    .empty{padding:18px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:rgba(255,255,255,.32)}
+    .kbd{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 5px;background:var(--panel);color:var(--muted)}
+    .divider{height:1px;background:var(--line);margin:16px 0}
+    .hidden{display:none!important}
+    .toast{position:fixed;right:20px;bottom:20px;z-index:1000;max-width:min(420px,calc(100vw - 40px));padding:12px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);color:var(--ink);font-size:13px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s ease}
+    .toast.show{opacity:1;transform:none}
+    .toast.ok{border-color:rgba(63,141,103,.4)}
+    .toast.warn{border-color:rgba(182,122,47,.45)}
+    .toast.danger{border-color:rgba(182,91,91,.45)}
+    @media(max-width:1020px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:relative;height:auto;border-right:none;border-bottom:1px solid var(--line)}
+      .nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .main{padding:22px 16px 60px}
+      .hero{grid-template-columns:1fr}
+      .grid.two,.grid.three,.grid.four,.split{grid-template-columns:1fr}
+      .mobile-tab-select{display:block}
+    }
+    @media(max-width:620px){
+      .nav{grid-template-columns:1fr}
+      .top-actions{grid-template-columns:1fr}
+      .hero h2{font-size:32px}
+      .card{padding:15px;border-radius:18px}
+      .toolbar,.inline{align-items:stretch}
+      .btn{width:100%}
+    }
+    @media print{
+      body{background:#fff!important;color:#111!important}
+      .sidebar,.no-print,.hero-card,.toolbar,.top-actions,.nav,.tabs-line{display:none!important}
+      .app{display:block}
+      .main{padding:0;max-width:none}
+      .hero{display:block;margin-bottom:8px}
+      .hero h2{font-size:24pt;color:#111!important}
+      .hero p{font-size:10pt;color:#333!important}
+      .card,.item,.dossier,.library-card,.metric,.tl-card{box-shadow:none!important;border-color:#bbb!important;background:#fff!important;color:#111!important;break-inside:avoid}
+      input,textarea,select{border:0!important;padding:0!important;background:#fff!important;color:#111!important;white-space:pre-wrap}
+      label{color:#111!important}
+      .section{display:none!important}
+      html[data-print-mode="current"] .section.active{display:block!important}
+      html[data-print-mode="all"] .section{display:block!important;page-break-after:always}
+      html[data-print-mode="all"] .section:last-child{page-break-after:auto}
+      .main:before{content:"Atelier Comédie Musicale v0.1.alpha";display:block;font-size:9pt;color:#666;border-bottom:1px solid #bbb;margin-bottom:8px;padding-bottom:4px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar no-print">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Atelier Comédie Musicale</h1>
+          <p>v0.1.alpha — moteur dramaturgique</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn small" id="themeBtn" aria-pressed="false">Mode nuit</button>
+        <button class="btn small" id="saveBtn">Sauvegarder</button>
+        <button class="btn small" id="exportBtn">Exporter JSON</button>
+        <label class="btn small" for="importFile">Importer JSON</label>
+        <input id="importFile" type="file" accept="application/json,.json" class="hidden" />
+        <button class="btn small" id="printCurrentBtn">Imprimer étape</button>
+        <button class="btn small" id="printAllBtn">Imprimer tout</button>
+        <button class="btn small danger" id="resetBtn">Réinitialiser</button>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-note">
+        <b>Intention de la v0.1.alpha</b><br>
+        Relier personnages, scènes, chansons, gestes, gags et motifs pour obtenir une histoire vraiment jouable, lisible et vivante.
+      </div>
+    </aside>
+
+    <main class="main">
+      <select id="mobileTabSelect" class="mobile-tab-select no-print" aria-label="Changer d’étape"></select>
+      <header class="hero">
+        <div>
+          <h2 id="heroTitle">Atelier de création</h2>
+          <p id="heroSubtitle">Un compagnon pas à pas pour concevoir un projet mêlant chant, danse, théâtre, humour, personnages et joie de troupe.</p>
+        </div>
+        <div class="hero-card no-print">
+          <b>Avancement global</b>
+          <div class="progress-wrap" style="margin-top:12px"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="progress-line"><span id="progressText">0%</span><span id="autosaveText">Prêt</span></div>
+          <div class="divider"></div>
+          <div class="smalltext" id="quickStats"></div>
+        </div>
+      </header>
+
+      <section id="dashboard" class="section active"></section>
+      <section id="guide" class="section"></section>
+      <section id="vision" class="section"></section>
+      <section id="dramaturgie" class="section"></section>
+      <section id="univers" class="section"></section>
+      <section id="personnages" class="section"></section>
+      <section id="scenes" class="section"></section>
+      <section id="numeros" class="section"></section>
+      <section id="moteur" class="section"></section>
+      <section id="carte" class="section"></section>
+      <section id="danse" class="section"></section>
+      <section id="humour" class="section"></section>
+      <section id="motifs" class="section"></section>
+      <section id="script" class="section"></section>
+      <section id="timeline" class="section"></section>
+      <section id="atelier" class="section"></section>
+      <section id="bibliotheque" class="section"></section>
+      <section id="audit" class="section"></section>
+      <section id="dossier" class="section"></section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // =========================
+    // MODEL — données, valeurs par défaut, bibliothèques créatives
+    // =========================
+    const STORAGE_KEY = 'atelier_comedie_musicale_v0_1_alpha_state';
+    const APP_VERSION = 'v0.1.alpha';
+    const LEGACY_STORAGE_KEYS = ['atelier_comedie_musicale_v1_3_state', 'atelier_comedie_musicale_v1_2_state', 'atelier_comedie_musicale_v1'];
+
+    const TABS = [
+      ['dashboard','Accueil','Vue globale'],
+      ['guide','Guide','Pas à pas'],
+      ['vision','Vision','Âme'],
+      ['dramaturgie','Dramaturgie','Conflit'],
+      ['univers','Univers','Monde'],
+      ['personnages','Personnages','Rôles'],
+      ['scenes','Scènes','Tableaux'],
+      ['numeros','Numéros','Chant-danse'],
+      ['moteur','Moteur','Relations'],
+      ['carte','Carte','Spectacle'],
+      ['danse','Danse & jeu','Corps'],
+      ['humour','Humour','Ressorts'],
+      ['motifs','Motifs','Récurrences'],
+      ['script','Script','Écriture'],
+      ['timeline','Timeline','Production'],
+      ['atelier','Co-création','Tests'],
+      ['bibliotheque','Bibliothèque','Idées'],
+      ['audit','Audit','Cohérence'],
+      ['dossier','Dossier','Présentation']
+    ];
+
+    const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+
+    const defaultState = () => ({
+      meta:{ version:APP_VERSION, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString(), activeTab:'dashboard', theme:'light', wizardIndex:0, printMode:'current' },
+      project:{ title:'', subtitle:'', oneLine:'', pitchShort:'', format:'Prototype scénique 10–20 minutes', target:'Familles / enfants / adultes qui ont gardé une porte vers l’enfance', duration:'15 à 25 minutes', tone:'Lumineux, drôle, tendre, théâtral', teamGoal:'Trouver 2 à 6 collaborateurs pour tester une graine jouable', constraints:'' },
+      vision:{ heart:'', finalFeeling:'', message:'', values:'', taboo:'', whyMusical:'', signature:'', audienceGift:'' },
+      dramaturgy:{ centralConflict:'', whoWantsWhat:'', obstacle:'', stakes:'', comicEngine:'', emotionalArc:'', turningPoint:'', endingChange:'', ordinaryMagic:'', whyNow:'' },
+      world:{ place:'', time:'', visualMood:'', soundMood:'', rules:'', objects:'', colors:'', magicLogic:'', scenography:'' },
+      characters:[],
+      scenes:[],
+      numbers:[],
+      motifs:[],
+      engine:{ selectedSceneId:'', relationNotes:'', versionNotes:'', focus:'scenes' },
+      choreo:{ vocabulary:'', banalGesture:'', transformation:'', groupEvolution:'', characterBodies:'', spaceUse:'', accessibility:'', finalImage:'', rehearsalNotes:'' },
+      humour:{ engines:'', runningGag:'', timing:'', objectGag:'', publicRelation:'', ruleAbsurdity:'', contrast:'', escalation:'', safety:'' },
+      script:{ opening:'', transitions:'', dialogueStyle:'', sampleScene:'', lyricsDraft:'', stageDirections:'', finalMoment:'' },
+      production:{ formatChoice:'', needs:'', techNeeds:'', castingNeeds:'', collaborators:'', testPlace:'', rehearsalPlan:'', materials:'', budgetNotes:'', nextMicroStep:'', risks:'', testChecklist:'' },
+      atelier:{ sessionGoal:'', participants:'', warmups:'', testProtocol:'', feedbackQuestions:'', versionRules:'', invitationText:'', afterTest:'' },
+      notes:{ free:'' }
+    });
+
+    const LIB = {
+      songTypes:[
+        ['Ouverture', 'Présente le monde, les règles, le ton et le rythme collectif.'],
+        ['Chanson du désir', 'Un être exprime ce qu’il veut profondément.'],
+        ['Règle absurde', 'Un cadre trop rigide devient comique, chanté et mécanique.'],
+        ['Duo de conflit', 'Deux visions s’opposent en musique.'],
+        ['Chanson de transformation', 'Le monde intérieur ou le groupe change pendant le numéro.'],
+        ['Reprise comique', 'Un thème revient avec un sens inversé ou plus drôle.'],
+        ['Final célébratif', 'Le groupe trouve une forme commune de joie, de paix ou de liberté.']
+      ],
+      humour:[
+        ['Sérieux excessif', 'Un être traite une chose minuscule comme une affaire capitale.'],
+        ['Règle absurde', 'Une consigne apparemment logique révèle son ridicule par la répétition.'],
+        ['Répétition qui déraille', 'Le même geste revient, mais chaque retour le transforme.'],
+        ['Objet détourné', 'Une chaise devient bateau, montagne, juge, dragon ou instrument.'],
+        ['Refus de chanter', 'Le personnage affirme ne jamais chanter… tout en chantant déjà.'],
+        ['Regard public', 'Un silence ou un regard partage le gag avec la salle.'],
+        ['Faux final', 'Tout semble fini, puis une dernière surprise relance la scène.'],
+        ['Contraste noble/ridicule', 'Une phrase très solennelle accompagnée d’un geste très bête.']
+      ],
+      sceneModels:[
+        ['Ouverture comique', 'Monde ordinaire + règle du jeu + première fissure joyeuse.'],
+        ['Rencontre', 'Un être vivant entre avec un rythme différent et dérange l’ordre.'],
+        ['Conflit chanté', 'Deux logiques s’opposent jusqu’à déclencher la musique.'],
+        ['Numéro de groupe', 'Le collectif passe d’une mécanique à une énergie organique.'],
+        ['Bascule magique', 'Un geste banal devient poétique, drôle, musical ou sacré.'],
+        ['Crise joyeuse', 'Le désordre semble trop grand, mais il révèle la vérité.'],
+        ['Révélation douce', 'Un personnage comprend ce qu’il empêchait en lui-même.'],
+        ['Final lumineux', 'Le groupe trouve une image commune, simple et mémorable.']
+      ],
+      archetypes:[
+        ['Le gardien du cadre', 'Protège les règles, souvent trop fort. Corps carré, voix nette, peur du chaos.'],
+        ['L’enfant voyant', 'Voit la solution simple que les adultes compliquent. Corps libre, regard clair.'],
+        ['Le clown sage', 'Fait rire pour révéler une vérité. Ruptures, silences, détours.'],
+        ['Le rêveur constructeur', 'Transforme les objets et l’espace. Imagination pratique.'],
+        ['Le chœur du monde gris', 'Groupe mécanique qui apprend à redevenir vivant.'],
+        ['Le messager lumineux', 'Déclenche le changement sans imposer. Présence douce et claire.']
+      ],
+      choreo:[
+        ['Mécanique → organique', 'Début anguleux et répétitif, puis spirales, rebonds, respirations.'],
+        ['Geste banal amplifié', 'Signer, ranger, marcher, porter, cuisiner : le quotidien devient danse.'],
+        ['Canon comique', 'Chaque être répète le même geste avec un léger retard ou une erreur.'],
+        ['Ronde/spirale', 'Idéal pour figurer le collectif qui s’ouvre.'],
+        ['Objet partenaire', 'Une chaise, un balai, une valise ou un carnet devient partenaire de jeu.'],
+        ['Arrêts nets', 'Stop, regard, silence : l’humour respire avant de repartir.']
+      ],
+      emotions:['Curiosité','Rire','Résistance','Surprise','Tendresse','Chaos joyeux','Révélation','Libération','Célébration'],
+      formats:[
+        {name:'Graine 10 minutes', scenes:3, numbers:2, desc:'Idéal pour présenter vite, tester une idée et ne pas s’épuiser.'},
+        {name:'Prototype 20 minutes', scenes:5, numbers:3, desc:'Format parfait pour lecture-test, mini-atelier ou première présentation.'},
+        {name:'Spectacle court 35 minutes', scenes:7, numbers:5, desc:'Déjà un vrai petit spectacle familial, avec progression plus complète.'}
+      ]
+    };
+
+    let toastTimer = null;
+    let state = loadState();
+
+    // =========================
+    // UTILITAIRES MODEL
+    // =========================
+    function loadState(){
+      try{
+        const saved = [STORAGE_KEY, ...LEGACY_STORAGE_KEYS].map(key => localStorage.getItem(key)).find(Boolean);
+        if(!saved) return defaultState();
+        const migrated = mergeDeep(defaultState(), JSON.parse(saved));
+        migrated.meta.version = APP_VERSION;
+        return migrated;
+      }catch(e){
+        console.warn('Impossible de charger la sauvegarde', e);
+        notify('La sauvegarde locale n’a pas pu être chargée. Une session vide est ouverte.', 'warn');
+        return defaultState();
+      }
+    }
+    function mergeDeep(base, incoming){
+      if(Array.isArray(base)) return Array.isArray(incoming) ? incoming : base;
+      if(base && typeof base === 'object'){
+        const out = {...base};
+        Object.keys(incoming || {}).forEach(k => out[k] = mergeDeep(base[k], incoming[k]));
+        return out;
+      }
+      return incoming ?? base;
+    }
+    let saveTimer = null;
+    function scheduleSave(){
+      clearTimeout(saveTimer);
+      setAutosave('Écriture…');
+      saveTimer = setTimeout(()=>saveState(false), 600);
+    }
+    function saveState(show=true){
+      state.meta.updatedAt = new Date().toISOString();
+      try{
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if(show) setAutosave('Sauvegardé');
+      }catch(e){
+        console.warn('Impossible de sauvegarder localement', e);
+        setAutosave('Sauvegarde impossible');
+        notify('La sauvegarde locale est indisponible ou pleine. Pense à exporter un JSON.', 'danger');
+      }
+      updateChrome();
+    }
+    function setAutosave(text){
+      const el = document.getElementById('autosaveText');
+      if(el){ el.textContent = text; setTimeout(()=>{ if(el.textContent === text) el.textContent = 'Autosave actif'; }, 1400); }
+    }
+    function getPath(path){ return path.split('.').reduce((obj,k)=> obj ? obj[k] : undefined, state); }
+    function setPath(path, value){
+      const keys = path.split('.'); let obj = state;
+      keys.slice(0,-1).forEach(k => obj = obj[k]);
+      obj[keys.at(-1)] = value;
+    }
+    function esc(s=''){
+      return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+    function nl2br(s=''){ return esc(s).replace(/\n/g,'<br>'); }
+    function download(filename, text, type='text/plain'){
+      const blob = new Blob([text], {type});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    }
+    function slug(s){ return (s || 'comedie-musicale').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+    function findById(arr,id){ return arr.find(x => x.id === id); }
+    function notify(message, level='ok'){
+      const el = document.getElementById('toast');
+      if(!el) return;
+      clearTimeout(toastTimer);
+      el.textContent = message;
+      el.className = `toast ${level} show`;
+      toastTimer = setTimeout(()=>el.className = `toast ${level}`, 3200);
+    }
+    function isPlainObject(value){ return !!value && typeof value === 'object' && !Array.isArray(value); }
+    function validateImportData(data){
+      if(!isPlainObject(data)) return 'Le fichier doit contenir un objet JSON.';
+      const allowed = ['meta','project','vision','dramaturgy','world','characters','scenes','numbers','motifs','engine','choreo','humour','script','production','atelier','notes'];
+      const hasKnownSection = allowed.some(key => key in data);
+      if(!hasKnownSection) return 'Le fichier ne ressemble pas à une sauvegarde de cet atelier.';
+      for(const key of ['characters','scenes','numbers','motifs']){
+        if(data[key] && !Array.isArray(data[key])) return `La section ${key} doit être une liste.`;
+      }
+      return '';
+    }
+
+    // =========================
+    // VIEW HELPERS
+    // =========================
+    function field(label, path, opts={}){
+      const value = getPath(path) || '';
+      const type = opts.type || 'textarea';
+      const hint = opts.hint ? `<span class="hint">${opts.hint}</span>` : '';
+      const placeholder = opts.placeholder ? `placeholder="${esc(opts.placeholder)}"` : '';
+      const cls = opts.tall ? 'tall' : '';
+      if(type === 'input') return `<div class="field"><label>${label} ${hint}</label><input data-bind="${path}" value="${esc(value)}" ${placeholder}></div>`;
+      if(type === 'select') return `<div class="field"><label>${label} ${hint}</label><select data-bind="${path}">${opts.options.map(o=>`<option ${value===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+      return `<div class="field"><label>${label} ${hint}</label><textarea class="${cls}" data-bind="${path}" ${placeholder}>${esc(value)}</textarea></div>`;
+    }
+    function arrayField(arrName, id, key, label, opts={}){
+      const item = findById(state[arrName], id) || {};
+      const val = item[key] || '';
+      const hint = opts.hint ? `<span class="hint">${opts.hint}</span>` : '';
+      const rows = opts.tall ? 'tall' : '';
+      if(opts.type === 'select'){
+        return `<div class="field"><label>${label} ${hint}</label><select data-arr="${arrName}" data-id="${id}" data-key="${key}">${opts.options.map(o=>`<option ${val===o?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+      }
+      if(opts.type === 'input'){
+        return `<div class="field"><label>${label} ${hint}</label><input data-arr="${arrName}" data-id="${id}" data-key="${key}" value="${esc(val)}"></div>`;
+      }
+      return `<div class="field"><label>${label} ${hint}</label><textarea class="${rows}" data-arr="${arrName}" data-id="${id}" data-key="${key}">${esc(val)}</textarea></div>`;
+    }
+    function card(title, body, extra=''){
+      return `<div class="card ${extra}"><h3>${title}</h3>${body}</div>`;
+    }
+    function empty(text){ return `<div class="empty">${text}</div>`; }
+    function optionList(items){ return items.map(x => Array.isArray(x) ? `<div class="library-card"><b>${esc(x[0])}</b><span class="smalltext">${esc(x[1])}</span></div>` : `<span class="tag">${esc(x)}</span>`).join(''); }
+
+    // =========================
+    // RENDERS PAR SECTION
+    // =========================
+    function renderAll(){
+      renderNav();
+      renderDashboard(); renderGuide(); renderVision(); renderDramaturgie(); renderUnivers(); renderCharacters(); renderScenes(); renderNumbers(); renderMoteur(); renderCarte(); renderDanse(); renderHumour(); renderMotifs(); renderScript(); renderTimeline(); renderAtelier(); renderBibliotheque(); renderAudit(); renderDossier();
+      switchTab(state.meta.activeTab || 'dashboard', false);
+      updateChrome();
+    }
+    function renderNav(){
+      const nav = document.getElementById('nav');
+      nav.innerHTML = TABS.map((t,i)=>{
+        const done = tabCompletion(t[0]);
+        const active = state.meta.activeTab===t[0];
+        return `<button data-tab="${t[0]}" class="${active?'active':''}" ${active?'aria-current="page"':''}><span class="nav-label"><span class="stepnum">${i+1}</span><span class="name">${t[1]}</span></span><span class="pill ${done>70?'done':done>25?'warn':''}">${done}%</span></button>`;
+      }).join('');
+      const mobileSelect = document.getElementById('mobileTabSelect');
+      if(mobileSelect){
+        mobileSelect.innerHTML = TABS.map((t,i)=>`<option value="${t[0]}" ${state.meta.activeTab===t[0]?'selected':''}>${i+1}. ${esc(t[1])} — ${esc(t[2])}</option>`).join('');
+      }
+    }
+    function renderDashboard(){
+      const sec = document.getElementById('dashboard');
+      const metrics = getMetrics();
+      sec.innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Commencer par une graine jouable</h3>
+            <p class="help">Cette alpha pose un moteur dramaturgique : scènes en beats, carte relationnelle, matrice personnages × scènes, motifs récurrents et audit qualitatif.</p>
+            ${field('Titre du projet','project.title',{type:'input',placeholder:'Ex. La Brigade des Cœurs Joyeux'})}
+            ${field('Phrase en une ligne','project.oneLine',{placeholder:'Ex. Dans un monde trop sérieux, un groupe apprend à transformer les règles en joie dansée.'})}
+            ${field('Pitch très court pour présenter à voix haute','project.pitchShort',{placeholder:'30 secondes pour donner envie à une équipe, un lieu ou une troupe.'})}
+            <div class="toolbar">
+              <button class="btn primary" data-tab="guide">Me guider pas à pas</button>
+              <button class="btn" data-tab="dossier">Voir le dossier</button>
+              <button class="btn" data-tab="moteur">Ouvrir le moteur</button>
+              <button class="btn" data-action="applyFormat" data-format="Graine 10 minutes">Créer structure 10 min</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Tableau de bord</h3>
+            <div class="grid two">
+              <div class="metric"><b>${metrics.characters}</b><span>personnages</span></div>
+              <div class="metric"><b>${metrics.scenes}</b><span>scènes</span></div>
+              <div class="metric"><b>${metrics.numbers}</b><span>numéros</span></div>
+              <div class="metric"><b>${metrics.auditScore}%</b><span>cohérence</span></div>
+            </div>
+            <div class="callout"><strong>Prochaine micro-étape suggérée :</strong><br>${esc(suggestNextStep())}</div>
+          </div>
+        </div>
+        <div class="grid three" style="margin-top:16px">
+          ${card('1. Clarifier', '<p>Vision, public, message, conflit central, promesse émotionnelle.</p><button class="btn rowbtn" data-tab="vision">Ouvrir la vision</button>')}
+          ${card('2. Structurer', '<p>Personnages, tableaux, numéros musicaux, progression du rire et du cœur.</p><button class="btn rowbtn" data-tab="scenes">Ouvrir les scènes</button>')}
+          ${card('3. Présenter', '<p>Dossier, lecture-test, atelier de co-création, version courte jouable.</p><button class="btn rowbtn" data-tab="atelier">Préparer un atelier</button>')}
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Formats rapides</h3>
+          <p class="help">Ces modèles peuvent remplacer tes scènes et numéros actuels. Fais-le au début, ou exporte une sauvegarde avant si tu as déjà beaucoup écrit.</p>
+          <div class="grid three">
+            ${LIB.formats.map(f=>`<div class="card mini"><h4>${esc(f.name)}</h4><p class="smalltext">${esc(f.desc)}</p><button class="btn small" data-action="applyFormat" data-format="${esc(f.name)}">Appliquer</button></div>`).join('')}
+          </div>
+        </div>`;
+    }
+    function renderGuide(){
+      const questions = wizardQuestions();
+      const idx = Math.min(state.meta.wizardIndex || 0, questions.length-1);
+      const q = questions[idx];
+      const answer = getPath(q.path) || '';
+      const unanswered = questions.filter(x => !(getPath(x.path)||'').trim()).length;
+      document.getElementById('guide').innerHTML = `
+        <div class="card soft">
+          <h3>Guide question par question</h3>
+          <p class="help">Une question, une réponse, puis la suivante. L’application garde tout et le transforme ensuite en dossier, scènes, numéros et audit.</p>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${Math.round(((questions.length-unanswered)/questions.length)*100)}%"></div></div>
+          <p class="smalltext">Question ${idx+1}/${questions.length} — ${unanswered} réponse(s) encore vide(s).</p>
+          <div class="quote">${esc(q.label)}</div>
+          <p class="help">${esc(q.hint)}</p>
+          <textarea class="tall" data-bind="${q.path}" placeholder="Ta réponse vivante, même imparfaite…">${esc(answer)}</textarea>
+          <div class="toolbar">
+            <button class="btn" data-action="wizardPrev">Précédent</button>
+            <button class="btn primary" data-action="wizardNext">Suivant</button>
+            <button class="btn" data-action="wizardNextEmpty">Aller à une question vide</button>
+            <button class="btn" data-tab="${q.tab}">Ouvrir l’onglet lié</button>
+          </div>
+          <div class="callout"><strong>Ce que cette réponse nourrit :</strong> ${esc(q.implies)}</div>
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          ${card('Réponses essentielles', questions.slice(0,8).map(x=>`<p><b>${esc(x.short)}</b><br><span class="smalltext">${esc((getPath(x.path)||'').slice(0,150)) || 'Non rempli'}</span></p>`).join(''))}
+          ${card('Pont vers la matière', '<p>Quand les questions majeures sont remplies, passe à la structure courte : 3 à 5 scènes, 2 à 3 numéros, puis lecture-test.</p><button class="btn rowbtn" data-tab="timeline">Voir la timeline</button>')}
+        </div>`;
+    }
+    function renderVision(){
+      document.getElementById('vision').innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Âme du projet</h3>
+            ${field('Cœur vivant du spectacle','vision.heart',{placeholder:'Ce que ce spectacle sert profondément…'})}
+            ${field('Ce que le public doit ressentir en sortant','vision.finalFeeling')}
+            ${field('Message central','vision.message',{placeholder:'Une phrase simple, presque comme une graine de chanson.'})}
+            ${field('Cadeau offert au public','vision.audienceGift')}
+          </div>
+          <div class="card">
+            <h3>Cadre vibratoire et artistique</h3>
+            ${field('Valeurs à faire rayonner','vision.values')}
+            ${field('Ce que le projet refuse ou ne veut pas nourrir','vision.taboo')}
+            ${field('Pourquoi ce projet doit être musical, et pas seulement parlé ?','vision.whyMusical')}
+            ${field('Signature unique','vision.signature',{placeholder:'Le détail qui rendra ce spectacle reconnaissable.'})}
+          </div>
+        </div>`;
+    }
+    function renderDramaturgie(){
+      document.getElementById('dramaturgie').innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Conflit central</h3>
+            <p class="help">Un conflit n’a pas besoin d’être violent. Il peut être une friction joyeuse : trop de contrôle contre vie, peur du ridicule contre liberté, monde gris contre imaginaire.</p>
+            ${field('Conflit central','dramaturgy.centralConflict')}
+            ${field('Qui veut quoi ?','dramaturgy.whoWantsWhat')}
+            ${field('Qu’est-ce qui empêche cela ?','dramaturgy.obstacle')}
+            ${field('Pourquoi maintenant ?','dramaturgy.whyNow')}
+            ${field('Enjeu sensible','dramaturgy.stakes')}
+          </div>
+          <div class="card">
+            <h3>Progression émotionnelle</h3>
+            ${field('Moteur comique principal','dramaturgy.comicEngine')}
+            ${field('Arc émotionnel','dramaturgy.emotionalArc',{placeholder:'Ex. rigidité → surprise → rire → tendresse → libération collective'})}
+            ${field('Point de bascule','dramaturgy.turningPoint')}
+            ${field('Ce qui change à la fin','dramaturgy.endingChange')}
+            ${field('Moment “Mary Poppins” : le quotidien devient magique','dramaturgy.ordinaryMagic')}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px"><h3>Courbe possible</h3><div class="badge-row">${LIB.emotions.map(e=>`<span class="tag">${e}</span>`).join('')}</div></div>`;
+    }
+    function renderUnivers(){
+      document.getElementById('univers').innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Monde scénique</h3>
+            ${field('Lieu principal','world.place')}
+            ${field('Époque / temporalité','world.time')}
+            ${field('Règles de ce monde','world.rules',{placeholder:'Qu’est-ce qui est normal ici ? Qu’est-ce qui devient possible quand la musique entre ?'})}
+            ${field('Logique magique ou poétique','world.magicLogic')}
+          </div>
+          <div class="card">
+            <h3>Ambiance visible et sonore</h3>
+            ${field('Mood visuel','world.visualMood')}
+            ${field('Mood sonore','world.soundMood')}
+            ${field('Objets symboliques / détournables','world.objects')}
+            ${field('Couleurs, matières, lumière','world.colors')}
+            ${field('Scénographie simple possible','world.scenography')}
+          </div>
+        </div>`;
+    }
+    function renderCharacters(){
+      const list = state.characters.map(ch => characterItem(ch)).join('') || empty('Aucun personnage encore. Crée d’abord 3 à 6 rôles très lisibles : un gardien du cadre, un être joyeux, un clown sage, un groupe…');
+      document.getElementById('personnages').innerHTML = `
+        <div class="card soft">
+          <h3>Personnages-fonctions</h3>
+          <p class="help">En comédie musicale, un personnage doit avoir une couleur scénique claire : désir, voix, corps, humour, transformation.</p>
+          <div class="toolbar">
+            <button class="btn primary" data-action="addCharacter">Ajouter un personnage</button>
+            <button class="btn" data-action="addArchetypes">Ajouter archétypes de base</button>
+          </div>
+        </div>
+        <div class="list">${list}</div>`;
+    }
+    function characterItem(ch){
+      return `<div class="item" data-item="characters" data-id="${ch.id}">
+        <div class="item-head"><div><div class="item-title">${esc(ch.name || 'Personnage sans nom')}</div><div class="smalltext">${esc(ch.archetype || 'archétype à définir')}</div></div><div class="item-actions"><button class="btn small danger" data-action="deleteItem" data-arr="characters" data-id="${ch.id}">Supprimer</button></div></div>
+        <div class="split">
+          ${arrayField('characters',ch.id,'name','Nom',{type:'input'})}
+          ${arrayField('characters',ch.id,'archetype','Archétype',{type:'input'})}
+        </div>
+        <div class="split">
+          ${arrayField('characters',ch.id,'desire','Ce qu’il/elle veut')}
+          ${arrayField('characters',ch.id,'fear','Peur / blocage')}
+        </div>
+        <div class="split">
+          ${arrayField('characters',ch.id,'comicTrait','Trait comique')}
+          ${arrayField('characters',ch.id,'change','Transformation finale')}
+        </div>
+        <div class="split">
+          ${arrayField('characters',ch.id,'body','Langage corporel')}
+          ${arrayField('characters',ch.id,'voice','Voix / chant / rythme')}
+        </div>
+      </div>`;
+    }
+    function renderScenes(){
+      const list = state.scenes.sort((a,b)=>(a.order||0)-(b.order||0)).map(sc => sceneItem(sc)).join('') || empty('Aucune scène encore. Tu peux appliquer une structure 10, 20 ou 35 minutes depuis l’accueil.');
+      document.getElementById('scenes').innerHTML = `
+        <div class="card soft">
+          <h3>Scènes / tableaux</h3>
+          <p class="help">Une scène doit avoir une fonction claire : ouvrir, rencontrer, fissurer, déclencher le chant, transformer, révéler, célébrer.</p>
+          <div class="toolbar"><button class="btn primary" data-action="addScene">Ajouter une scène</button><button class="btn" data-action="applyFormat" data-format="Prototype 20 minutes">Structure 20 min</button></div>
+        </div>
+        <div class="list">${list}</div>`;
+    }
+    function sceneItem(sc){
+      const numberOptions = [''].concat(state.numbers.map(n=>n.id));
+      const optionHtml = numberOptions.map(id=>`<option value="${id}" ${sc.numberId===id?'selected':''}>${id ? esc(findById(state.numbers,id)?.title || 'Numéro') : 'Aucun numéro lié'}</option>`).join('');
+      return `<div class="item">
+        <div class="item-head"><div><div class="item-title">${esc(sc.order ? sc.order + '. ' : '')}${esc(sc.title || 'Scène sans titre')}</div><div class="smalltext">${esc(sc.function || 'fonction à définir')}</div></div><div class="item-actions"><button class="btn small" data-action="moveItem" data-arr="scenes" data-id="${sc.id}" data-dir="-1">↑</button><button class="btn small" data-action="moveItem" data-arr="scenes" data-id="${sc.id}" data-dir="1">↓</button><button class="btn small danger" data-action="deleteItem" data-arr="scenes" data-id="${sc.id}">Supprimer</button></div></div>
+        <div class="split">${arrayField('scenes',sc.id,'title','Titre',{type:'input'})}${arrayField('scenes',sc.id,'function','Fonction dramaturgique',{type:'input'})}</div>
+        <div class="field"><label>Numéro musical lié <span class="hint">synchronisé dans l’audit ; évite les doubles liens contradictoires</span></label><select data-arr="scenes" data-id="${sc.id}" data-key="numberId">${optionHtml}</select></div>
+        <div class="split">${arrayField('scenes',sc.id,'emotion','Émotion dominante',{type:'select',options:['À choisir','Curiosité','Rire','Résistance','Surprise','Tendresse','Chaos joyeux','Révélation','Libération','Célébration']})}${arrayField('scenes',sc.id,'characters','Personnages présents',{type:'input'})}</div>
+        <div class="split">${arrayField('scenes',sc.id,'motif','Motif lié',{type:'input'})}${arrayField('scenes',sc.id,'gag','Gag ou running gag',{type:'input'})}</div>
+        <div class="split">${arrayField('scenes',sc.id,'situation','Situation de départ')}${arrayField('scenes',sc.id,'conflict','Friction / obstacle')}</div>
+        <div class="split">${arrayField('scenes',sc.id,'humour','Où est le rire ?')}${arrayField('scenes',sc.id,'transitionToSong','Phrase ou action qui déclenche le chant')}</div>
+        ${arrayField('scenes',sc.id,'script','Script de la scène',{tall:true})}
+        ${arrayField('scenes',sc.id,'notes','Notes de mise en scène')}
+      </div>`;
+    }
+    function renderNumbers(){
+      const list = state.numbers.map(n => numberItem(n)).join('') || empty('Aucun numéro musical encore. Chaque chanson doit déplacer l’histoire : désir, conflit, règle absurde, transformation ou célébration.');
+      document.getElementById('numeros').innerHTML = `
+        <div class="card soft">
+          <h3>Numéros chantés-dansés-joués</h3>
+          <p class="help">Le chant arrive quand parler ne suffit plus. La danse arrive quand chanter ne suffit plus. L’humour arrive quand la vérité veut passer sans écraser.</p>
+          <div class="toolbar"><button class="btn primary" data-action="addNumber">Ajouter un numéro</button><button class="btn" data-action="seedSongTypes">Ajouter types essentiels</button></div>
+        </div>
+        <div class="list">${list}</div>`;
+    }
+    function numberItem(n){
+      const sceneOptions = [''].concat(state.scenes.map(s=>s.id));
+      const optionHtml = sceneOptions.map(id=>`<option value="${id}" ${n.sceneId===id?'selected':''}>${id ? esc(findById(state.scenes,id)?.title || 'Scène') : 'Aucune scène liée'}</option>`).join('');
+      return `<div class="item">
+        <div class="item-head"><div><div class="item-title">${esc(n.title || 'Numéro sans titre')}</div><div class="smalltext">${esc(n.type || 'type à définir')} · ${esc(n.difficulty || 'difficulté ?')}</div></div><div class="item-actions"><button class="btn small danger" data-action="deleteItem" data-arr="numbers" data-id="${n.id}">Supprimer</button></div></div>
+        <div class="split">${arrayField('numbers',n.id,'title','Titre',{type:'input'})}${arrayField('numbers',n.id,'type','Type de chanson',{type:'input'})}</div>
+        <div class="split"><div class="field"><label>Scène liée</label><select data-arr="numbers" data-id="${n.id}" data-key="sceneId">${optionHtml}</select></div>${arrayField('numbers',n.id,'difficulty','Difficulté',{type:'select',options:['Facile','Moyenne','Ambitieuse','À décider']})}</div>
+        <div class="split">${arrayField('numbers',n.id,'startReason','Pourquoi ils commencent à chanter ?')}${arrayField('numbers',n.id,'refrain','Refrain / phrase centrale')}</div>
+        <div class="split">${arrayField('numbers',n.id,'style','Style musical / énergie')}${arrayField('numbers',n.id,'choreoSignature','Geste chorégraphique signature')}</div>
+        <div class="split">${arrayField('numbers',n.id,'progression','Progression du numéro')}${arrayField('numbers',n.id,'surprise','Moment de surprise / gag / bascule')}</div>
+        ${arrayField('numbers',n.id,'finalImage','Image finale du numéro')}
+        <div class="split">${arrayField('numbers',n.id,'verse1','Couplet 1 : situation')}${arrayField('numbers',n.id,'chorus','Refrain structuré')}</div>
+        <div class="split">${arrayField('numbers',n.id,'bridge','Pont / bascule')}${arrayField('numbers',n.id,'reprise','Reprise ou transformation future')}</div>
+        ${arrayField('numbers',n.id,'lyrics','Paroles brouillon',{tall:true})}
+      </div>`;
+    }
+
+    function renderMoteur(){
+      const rules = relationshipAudit();
+      const selected = selectedScene();
+      const sceneOptions = state.scenes.map(s=>`<option value="${s.id}" ${selected && selected.id===s.id?'selected':''}>${esc((s.order? s.order+'. ':'') + (s.title || 'Scène sans titre'))}</option>`).join('');
+      const editor = selected ? `
+        <div class="card soft">
+          <h3>Éditeur de scène en beats</h3>
+          <p class="help">Le beat est une micro-fonction dramatique. Il transforme une scène vague en action jouable : départ, désir, obstacle, décalage, escalade, chant, sortie, changement.</p>
+          <div class="field"><label>Scène à travailler</label><select data-action="selectSceneForEngine">${sceneOptions}</select></div>
+          <div class="toolbar"><button class="btn" data-action="fillSceneBeats">Pré-remplir depuis la fiche scène</button><button class="btn" data-tab="scenes">Voir la fiche complète</button></div>
+          <div class="beat-grid">
+            <div>${arrayField('scenes',selected.id,'beatStart','1. Situation de départ')}</div>
+            <div>${arrayField('scenes',selected.id,'beatTrigger','2. Événement déclencheur')}</div>
+            <div>${arrayField('scenes',selected.id,'beatWant','3. Ce que le personnage veut')}</div>
+            <div>${arrayField('scenes',selected.id,'beatObstacle','4. Ce qui bloque')}</div>
+            <div>${arrayField('scenes',selected.id,'beatComicShift','5. Premier décalage comique')}</div>
+            <div>${arrayField('scenes',selected.id,'beatEscalation','6. Répétition / escalade')}</div>
+            <div>${arrayField('scenes',selected.id,'beatSingTrigger','7. Moment où parler ne suffit plus')}</div>
+            <div>${arrayField('scenes',selected.id,'beatExit','8. Image ou action de sortie')}</div>
+            <div class="wide">${arrayField('scenes',selected.id,'beatChanged','9. Ce qui a changé à la fin de la scène')}</div>
+          </div>
+        </div>` : `<div class="card soft">${empty('Crée au moins une scène pour activer l’éditeur de beats.')}</div>`;
+      document.getElementById('moteur').innerHTML = `
+        <div class="grid two">
+          ${editor}
+          <div class="card">
+            <h3>Règles du moteur dramaturgique</h3>
+            <p class="help">Ces règles ne jugent pas ton imaginaire : elles vérifient que le public pourra suivre la transformation.</p>
+            <div class="grid">${rules.map(r=>engineRuleCard(r)).join('')}</div>
+            ${field('Notes de version / décisions du moteur','engine.versionNotes',{placeholder:'Ce que je décide de garder, simplifier ou tester en priorité…'})}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Relations à clarifier</h3>
+          <p class="help">Note ici les liens importants : tel personnage déclenche tel numéro, tel objet revient au final, tel gag devient plus tendre, tel refrain change de sens.</p>
+          ${field('Notes relationnelles','engine.relationNotes',{tall:true})}
+        </div>`;
+    }
+    function engineRuleCard(r){ return `<div class="engine-rule"><div class="score-ring" style="--score:${r.score}"><span>${r.score}%</span></div><div><b>${esc(r.title)}</b><p class="smalltext">${esc(r.text)}</p><div class="mini-flow">${r.tips.map(t=>`<span class="flow-chip">${esc(t)}</span>`).join('')}</div></div></div>`; }
+    function renderCarte(){
+      const scenes = orderedScenes();
+      const map = scenes.length ? scenes.map(sceneMapCard).join('') : empty('Crée ou applique une structure pour voir la carte du spectacle.');
+      document.getElementById('carte').innerHTML = `
+        <div class="card soft">
+          <h3>Carte du spectacle</h3>
+          <p class="help">Vue horizontale : chaque tableau doit montrer une fonction, une émotion, un éventuel numéro, un gag/motif et un changement. Si une carte reste vide, elle est peut-être encore mentale plutôt que scénique.</p>
+          <div class="story-map">${map}</div>
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          <div class="card"><h3>Matrice personnages × scènes</h3>${characterSceneMatrix()}</div>
+          <div class="card"><h3>Chaîne des numéros</h3>${numberSceneChain()}</div>
+        </div>`;
+    }
+    function sceneMapCard(sc){
+      const n = sc.numberId ? findById(state.numbers, sc.numberId) : state.numbers.find(x=>x.sceneId===sc.id);
+      return `<div class="story-card"><div class="num">Scène ${sc.order || ''}</div><h4>${esc(sc.title || 'Sans titre')}</h4><p class="smalltext"><b>Fonction :</b> ${esc(sc.function || 'à définir')}</p><p class="smalltext"><b>Émotion :</b> ${esc(sc.emotion || 'à choisir')}</p><p class="smalltext"><b>Numéro :</b> ${esc(n ? (n.title || 'numéro lié') : 'aucun')}</p><p class="smalltext"><b>Êtres :</b> ${esc(sc.characters || 'à relier')}</p><p class="smalltext"><b>Motif/gag :</b> ${esc(sc.motif || sc.gag || sc.humour || 'à faire revenir')}</p><p class="smalltext"><b>Changement :</b> ${esc(sc.beatChanged || 'à formuler')}</p></div>`;
+    }
+    function characterSceneMatrix(){
+      if(!state.characters.length || !state.scenes.length) return empty('Ajoute des personnages et des scènes pour voir la matrice.');
+      const scenes = orderedScenes();
+      return `<table class="matrix"><thead><tr><th>Personnage</th>${scenes.map(s=>`<th>${esc(s.order || '')}</th>`).join('')}</tr></thead><tbody>${state.characters.map(c=>`<tr><td><b>${esc(c.name || c.archetype || 'Sans nom')}</b><br><span class="smalltext">${esc(c.archetype || '')}</span></td>${scenes.map(s=>`<td>${sceneHasCharacter(s,c) ? '<span class="check">✓</span>' : '<span class="missing">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="smalltext">Astuce : renseigne le champ “Personnages présents” dans chaque scène pour rendre cette matrice plus fiable.</p>`;
+    }
+    function numberSceneChain(){
+      if(!state.numbers.length) return empty('Ajoute des numéros pour voir leur chaîne dramatique.');
+      return `<div class="list">${state.numbers.map(n=>{ const sc=n.sceneId?findById(state.scenes,n.sceneId):state.scenes.find(s=>s.numberId===n.id); return `<div class="item"><b>${esc(n.title || 'Numéro')}</b><p class="smalltext">Scène : ${esc(sc ? ((sc.order? sc.order+'. ':'') + (sc.title || 'sans titre')) : 'non liée')}</p><p class="smalltext">Raison de chanter : ${esc(n.startReason || 'à définir')}</p><p class="smalltext">Transformation : ${esc(n.progression || n.finalImage || 'à préciser')}</p></div>`}).join('')}</div>`;
+    }
+    function renderMotifs(){
+      const list = state.motifs.map(motifItem).join('') || empty('Aucun motif. Un motif est une chose qui revient transformée : phrase, geste, objet, gag, règle, mélodie, refrain, posture.');
+      document.getElementById('motifs').innerHTML = `
+        <div class="card soft"><h3>Motifs récurrents</h3><p class="help">Le motif est la mémoire secrète du spectacle. Il apparaît simple au début, revient déformé au milieu, puis devient révélation ou célébration à la fin.</p><div class="toolbar"><button class="btn primary" data-action="addMotif">Ajouter un motif</button><button class="btn" data-action="seedMotifs">Ajouter motifs de base</button></div></div>
+        <div class="list">${list}</div>`;
+    }
+    function motifItem(m){
+      return `<div class="item"><div class="item-head"><div><div class="item-title">${esc(m.title || 'Motif sans nom')}</div><div class="smalltext">${esc(m.type || 'type à définir')}</div></div><div class="item-actions"><button class="btn small danger" data-action="deleteItem" data-arr="motifs" data-id="${m.id}">Supprimer</button></div></div>
+        <div class="split">${arrayField('motifs',m.id,'title','Nom du motif',{type:'input'})}${arrayField('motifs',m.id,'type','Type',{type:'select',options:['Phrase','Geste','Objet','Gag','Règle','Mélodie','Refrain','Posture','Symbole']})}</div>
+        <div class="split">${arrayField('motifs',m.id,'firstAppearance','Première apparition')}${arrayField('motifs',m.id,'evolution','Comment il revient transformé')}</div>
+        <div class="split">${arrayField('motifs',m.id,'finalForm','Forme finale / révélation')}${arrayField('motifs',m.id,'linked','Scènes ou numéros liés')}</div>
+        ${arrayField('motifs',m.id,'notes','Notes',{tall:true})}
+      </div>`;
+    }
+
+    function renderDanse(){
+      document.getElementById('danse').innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Danse dramaturgique</h3>
+            ${field('Vocabulaire corporel général','choreo.vocabulary')}
+            ${field('Geste banal à transformer','choreo.banalGesture',{placeholder:'Ranger, marcher, signer, cuisiner, porter une chaise…'})}
+            ${field('Transformation de ce geste en danse','choreo.transformation')}
+            ${field('Évolution du groupe','choreo.groupEvolution')}
+          </div>
+          <div class="card">
+            <h3>Jeu théâtral du corps</h3>
+            ${field('Corps des personnages','choreo.characterBodies')}
+            ${field('Utilisation de l’espace','choreo.spaceUse')}
+            ${field('Accessibilité / simplicité des mouvements','choreo.accessibility')}
+            ${field('Image finale corporelle','choreo.finalImage')}
+            ${field('Notes de répétition','choreo.rehearsalNotes')}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px"><h3>Idées de mouvements</h3><div class="library-grid">${optionList(LIB.choreo)}</div></div>`;
+    }
+    function renderHumour(){
+      document.getElementById('humour').innerHTML = `
+        <div class="grid two">
+          <div class="card soft">
+            <h3>Ressorts comiques</h3>
+            ${field('Mécanismes comiques choisis','humour.engines')}
+            ${field('Gag récurrent','humour.runningGag')}
+            ${field('Timing : pauses, silences, regards, accélérations','humour.timing')}
+            ${field('Objet-gag','humour.objectGag')}
+          </div>
+          <div class="card">
+            <h3>Humour vivant et sécurisé</h3>
+            ${field('Relation au public','humour.publicRelation')}
+            ${field('Règle absurde','humour.ruleAbsurdity')}
+            ${field('Contraste central','humour.contrast')}
+            ${field('Escalade comique','humour.escalation')}
+            ${field('Limites : rire sans humilier','humour.safety')}
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px"><h3>Bibliothèque de gags scéniques</h3><div class="library-grid">${optionList(LIB.humour)}</div></div>`;
+    }
+    function renderScript(){
+      document.getElementById('script').innerHTML = `
+        <div class="card soft">
+          <h3>Écriture du script jouable</h3>
+          <p class="help">Écris d’abord une version imparfaite mais jouable. Le plateau corrigera ce que le mental ne voit pas.</p>
+          <div class="toolbar"><button class="btn" data-action="insertScriptTemplate">Insérer modèle de scène</button><button class="btn" data-action="generateSampleScene">Générer brouillon depuis la scène 1</button></div>
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          <div class="card">${field('Ouverture / première image','script.opening')}${field('Style des dialogues','script.dialogueStyle')}${field('Transitions parlées vers chansons','script.transitions')}</div>
+          <div class="card">${field('Indications de jeu et plateau','script.stageDirections')}${field('Paroles brouillon globales','script.lyricsDraft')}${field('Moment final','script.finalMoment')}</div>
+        </div>
+        <div class="card" style="margin-top:16px">${field('Scène modèle / extrait présentable','script.sampleScene',{tall:true})}</div>`;
+    }
+    function renderTimeline(){
+      document.getElementById('timeline').innerHTML = `
+        <div class="card soft">
+          <h3>Timeline de création</h3>
+          <p class="help">Certaines étapes peuvent avancer ensemble, mais d’autres dépendent d’une base claire. Cette carte évite de demander à la chorégraphie de naître avant que la scène sache pourquoi elle bouge.</p>
+        </div>
+        <div class="timeline">
+          ${timelineSteps().map((s,i)=>`<div class="tl-step"><div class="tl-dot">${i+1}</div><div class="tl-card"><b>${esc(s.title)}</b><p class="smalltext">${esc(s.desc)}</p><p><span class="tag">Dépend de : ${esc(s.dep)}</span> <span class="tag">En parallèle : ${esc(s.parallel)}</span></p></div></div>`).join('')}
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          <div class="card">${field('Choix de format actuel','production.formatChoice',{type:'select',options:['Graine 10 minutes','Prototype 20 minutes','Spectacle court 35 minutes','Version longue future']})}${field('Casting / besoins humains','production.castingNeeds',{placeholder:'Âges, nombre d’êtres, profils vocaux ou corporels, présences indispensables.'})}${field('Collaborateurs à chercher','production.collaborators')}</div>
+          <div class="card">${field('Besoins techniques sobres','production.techNeeds',{placeholder:'Espace, son, lumières simples, accessoires, costumes, contraintes de transport.'})}${field('Lieu test possible','production.testPlace')}${field('Plan de répétition','production.rehearsalPlan')}${field('Budget / sobriété matérielle','production.budgetNotes')}${field('Risques ou angles morts','production.risks')}${field('Prochaine micro-étape','production.nextMicroStep')}</div>
+        </div>`;
+    }
+    function renderAtelier(){
+      document.getElementById('atelier').innerHTML = `
+        <div class="card soft">
+          <h3>Atelier de co-création / lecture-test</h3>
+          <p class="help">Cette section prépare le passage dans la matière : quelques êtres, une scène, un numéro, des retours clairs, puis une version suivante.</p>
+        </div>
+        <div class="grid two" style="margin-top:16px">
+          <div class="card">${field('Objectif de la séance','atelier.sessionGoal')}${field('Participants idéaux','atelier.participants')}${field('Échauffements / jeux d’entrée','atelier.warmups')}${field('Checklist lecture-test','production.testChecklist',{placeholder:'Pitch imprimé, extrait, paroles, enceinte, accessoires, feuilles de retour, minuteur...'})}${field('Texte d’invitation','atelier.invitationText')}</div>
+          <div class="card">${field('Protocole de test en 60–120 minutes','atelier.testProtocol')}${field('Questions de retour','atelier.feedbackQuestions')}${field('Règles de version suivante','atelier.versionRules')}${field('Après le test : décisions','atelier.afterTest')}</div>
+        </div>
+        <div class="card" style="margin-top:16px"><h3>Protocole simple suggéré</h3><ol><li>Lire le pitch et l’intention en 3 minutes.</li><li>Lire une scène à voix haute, sans chercher à bien jouer.</li><li>Tester le geste signature en groupe.</li><li>Chanter ou rythmer seulement le refrain.</li><li>Observer ce qui devient vivant, drôle, clair ou trop lourd.</li><li>Noter trois choses à garder, trois choses à simplifier.</li></ol></div>`;
+    }
+    function renderBibliotheque(){
+      document.getElementById('bibliotheque').innerHTML = `
+        <div class="grid two">
+          ${card('Types de chansons', `<div class="library-grid">${optionList(LIB.songTypes)}</div>`)}
+          ${card('Modèles de scènes', `<div class="library-grid">${optionList(LIB.sceneModels)}</div>`)}
+          ${card('Archétypes de personnages', `<div class="library-grid">${optionList(LIB.archetypes)}</div>`)}
+          ${card('Mouvements dramaturgiques', `<div class="library-grid">${optionList(LIB.choreo)}</div>`)}
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>Notes libres</h3>
+          ${field('Réservoir d’idées, paroles, scènes, images, gags','notes.free',{tall:true})}
+        </div>`;
+    }
+    function renderAudit(){
+      const a = audit();
+      document.getElementById('audit').innerHTML = `
+        <div class="card soft">
+          <h3>Audit de cohérence</h3>
+          <p class="help">Score indicatif : il ne juge pas la beauté du projet, seulement la présence des éléments qui rendent une graine présentable et testable.</p>
+          <div class="progress-wrap"><div class="progress-bar" style="width:${a.score}%"></div></div>
+          <p><b>${a.score}%</b> — ${esc(a.label)}</p>
+          <div class="toolbar"><button class="btn" data-action="copyAudit">Copier l’audit</button><button class="btn" data-tab="dossier">Voir le dossier</button></div>
+        </div>
+        <div class="list" style="margin-top:16px">
+          ${a.items.map(it=>`<div class="item audit-${it.level}"><b>${esc(it.title)}</b><p class="smalltext">${esc(it.text)}</p></div>`).join('')}
+        </div>`;
+    }
+    function renderDossier(){
+      const html = dossierHTML();
+      document.getElementById('dossier').innerHTML = `
+        <div class="toolbar no-print">
+          <button class="btn primary" data-action="copyDossier">Copier Markdown</button>
+          <button class="btn" data-action="downloadDossier">Télécharger Markdown</button>
+          <button class="btn" id="printDossierBtn">Imprimer le dossier</button>
+        </div>
+        <div class="dossier" id="dossierContent">${html}</div>`;
+    }
+
+    // =========================
+    // ACTIONS
+    // =========================
+    function renderSection(tab){
+      const renders = {dashboard:renderDashboard, guide:renderGuide, vision:renderVision, dramaturgie:renderDramaturgie, univers:renderUnivers, personnages:renderCharacters, scenes:renderScenes, numeros:renderNumbers, moteur:renderMoteur, carte:renderCarte, danse:renderDanse, humour:renderHumour, motifs:renderMotifs, script:renderScript, timeline:renderTimeline, atelier:renderAtelier, bibliotheque:renderBibliotheque, audit:renderAudit, dossier:renderDossier};
+      if(renders[tab]) renders[tab]();
+    }
+    function switchTab(tab, save=true){
+      if(!TABS.some(t=>t[0]===tab)) tab = 'dashboard';
+      state.meta.activeTab = tab;
+      renderSection(tab);
+      document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active', s.id===tab));
+      document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab && b.closest('.nav')));
+      const found = TABS.find(t=>t[0]===tab);
+      document.getElementById('heroTitle').textContent = found ? found[1] : 'Atelier';
+      document.getElementById('heroSubtitle').textContent = heroSubtitle(tab);
+      if(save) saveState(false);
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function addCharacter(seed={}){
+      state.characters.push({id:uid(), name:'', archetype:'', desire:'', fear:'', comicTrait:'', body:'', voice:'', color:'', change:'', ...seed});
+      saveState(); renderCharacters(); renderNav(); updateChrome();
+    }
+    function addScene(seed={}){
+      state.scenes.push({id:uid(), order:state.scenes.length+1, title:'', function:'', emotion:'À choisir', characters:'', motif:'', gag:'', situation:'', conflict:'', humour:'', transitionToSong:'', numberId:'', beatStart:'', beatTrigger:'', beatWant:'', beatObstacle:'', beatComicShift:'', beatEscalation:'', beatSingTrigger:'', beatExit:'', beatChanged:'', script:'', notes:'', ...seed});
+      normalizeSceneOrder(); saveState(); renderScenes(); renderNav(); updateChrome();
+    }
+    function addNumber(seed={}){
+      state.numbers.push({id:uid(), title:'', type:'', sceneId:'', startReason:'', refrain:'', style:'', choreoSignature:'', progression:'', surprise:'', finalImage:'', verse1:'', chorus:'', bridge:'', reprise:'', difficulty:'À décider', lyrics:'', ...seed});
+      saveState(); renderNumbers(); renderScenes(); renderNav(); updateChrome();
+    }
+    function deleteItem(arr,id){
+      state[arr] = state[arr].filter(x=>x.id!==id);
+      if(arr==='numbers') state.scenes.forEach(s=>{ if(s.numberId===id) s.numberId=''; });
+      if(arr==='scenes') state.numbers.forEach(n=>{ if(n.sceneId===id) n.sceneId=''; });
+      normalizeSceneOrder(); saveState(); renderAll();
+    }
+    function moveItem(arr,id,dir){
+      const list = state[arr]; const i = list.findIndex(x=>x.id===id); const j = i + Number(dir);
+      if(i<0 || j<0 || j>=list.length) return;
+      [list[i],list[j]] = [list[j],list[i]];
+      normalizeSceneOrder(); saveState(); renderScenes(); renderNav();
+    }
+    function normalizeSceneOrder(){ state.scenes.forEach((s,i)=>s.order=i+1); }
+    function addArchetypes(){
+      LIB.archetypes.slice(0,5).forEach(a=> addCharacter({name:a[0], archetype:a[0], body:a[1], desire:'À définir', fear:'À définir'}));
+      renderAll();
+    }
+    function seedSongTypes(){
+      if(state.numbers.length && !confirm('Ajouter des numéros-types à la suite des numéros existants ?')) return;
+      LIB.songTypes.slice(0,5).forEach((s,i)=> addNumber({title:s[0], type:s[0], startReason:s[1], difficulty:i<2?'Facile':'Moyenne'}));
+      renderAll();
+    }
+    function applyFormat(name){
+      if((state.scenes.length || state.numbers.length) && !confirm('Ce modèle remplace les scènes et numéros actuels. Continuer ?')) return;
+      const format = LIB.formats.find(f=>f.name===name) || LIB.formats[0];
+      state.production.formatChoice = format.name;
+      state.scenes = [];
+      state.numbers = [];
+      const seeds = modelScenes(format.name);
+      seeds.scenes.forEach(s=>state.scenes.push({id:uid(), emotion:'À choisir', characters:'', motif:'', gag:'', numberId:'', beatStart:'', beatTrigger:'', beatWant:'', beatObstacle:'', beatComicShift:'', beatEscalation:'', beatSingTrigger:'', beatExit:'', beatChanged:'', script:'', notes:'', ...s}));
+      seeds.numbers.forEach((n,i)=>state.numbers.push({id:uid(), sceneId: state.scenes[n.sceneIndex]?.id || '', verse1:'', chorus:n.refrain || '', bridge:'', reprise:'', lyrics:'', ...n}));
+      state.numbers.forEach(n=>{ const sc = state.scenes.find(s=>s.id===n.sceneId); if(sc) sc.numberId = n.id; });
+      normalizeSceneOrder(); saveState(); renderAll();
+    }
+    function addMotif(seed={}){
+      state.motifs.push({id:uid(), title:'', type:'Geste', firstAppearance:'', evolution:'', finalForm:'', linked:'', notes:'', ...seed});
+      saveState(); renderMotifs(); renderNav(); updateChrome();
+    }
+    function seedMotifs(){
+      if(state.motifs.length && !confirm('Ajouter des motifs-types à la suite des motifs existants ?')) return;
+      [
+        {title:'Le geste trop carré', type:'Geste', firstAppearance:'Un geste rigide dans l’ouverture.', evolution:'Il déraille, devient gag, puis devient danse.', finalForm:'Le geste final devient rond, libre et collectif.'},
+        {title:'La règle qui chante', type:'Règle', firstAppearance:'Une consigne sérieuse dite en rythme.', evolution:'Le groupe la répète de travers.', finalForm:'La règle devient permission de jouer.'},
+        {title:'L’objet compagnon', type:'Objet', firstAppearance:'Un carnet, une chaise, un balai ou une valise.', evolution:'Il change de fonction à chaque retour.', finalForm:'Il devient symbole de transformation.'}
+      ].forEach(addMotif);
+      renderAll();
+    }
+    function selectedScene(){
+      if(!state.scenes.length) return null;
+      let sc = state.engine.selectedSceneId ? findById(state.scenes, state.engine.selectedSceneId) : null;
+      if(!sc){ sc = orderedScenes()[0]; state.engine.selectedSceneId = sc.id; }
+      return sc;
+    }
+    function fillSceneBeats(){
+      const sc = selectedScene(); if(!sc) return;
+      sc.beatStart = sc.beatStart || sc.situation || 'Le monde ou le groupe est installé dans son état actuel.';
+      sc.beatTrigger = sc.beatTrigger || sc.transitionToSong || 'Un détail, une erreur ou une entrée vient troubler le rythme.';
+      sc.beatWant = sc.beatWant || 'Le personnage principal veut obtenir, éviter ou prouver quelque chose.';
+      sc.beatObstacle = sc.beatObstacle || sc.conflict || 'Une règle, un autre personnage ou une peur bloque l’élan.';
+      sc.beatComicShift = sc.beatComicShift || sc.humour || 'Le sérieux devient trop grand et ouvre un décalage comique.';
+      sc.beatEscalation = sc.beatEscalation || 'La répétition amplifie le gag ou la tension.';
+      sc.beatSingTrigger = sc.beatSingTrigger || sc.transitionToSong || 'La parole ne suffit plus : le rythme prend le relais.';
+      sc.beatExit = sc.beatExit || 'La scène se ferme sur une image claire, drôle ou sensible.';
+      sc.beatChanged = sc.beatChanged || 'Quelque chose a changé dans le groupe, le désir ou la règle.';
+      saveState(); renderMoteur(); renderCarte();
+    }
+
+    function wizardNext(){ state.meta.wizardIndex = Math.min((state.meta.wizardIndex||0)+1, wizardQuestions().length-1); saveState(false); renderGuide(); }
+    function wizardPrev(){ state.meta.wizardIndex = Math.max((state.meta.wizardIndex||0)-1, 0); saveState(false); renderGuide(); }
+    function wizardNextEmpty(){
+      const qs = wizardQuestions(); const idx = qs.findIndex(q => !(getPath(q.path)||'').trim());
+      state.meta.wizardIndex = idx>=0 ? idx : 0; saveState(false); renderGuide();
+    }
+    function insertScriptTemplate(){
+      const template = `TITRE DE LA SCÈNE\n\nSituation : \nQui entre : \nCe que chacun veut : \nPremier décalage comique : \nRépétition qui déraille : \nObstacle : \nPhrase ou action qui déclenche le chant : \n\nDIALOGUE\n[Nom] — ...\n[Nom] — ...\n\nDÉBUT DU NUMÉRO\nRefrain : ...\nGeste signature : ...\nImage de sortie : ...`;
+      state.script.sampleScene = state.script.sampleScene ? state.script.sampleScene + '\n\n---\n\n' + template : template;
+      saveState(); renderScript();
+    }
+    function generateSampleScene(){
+      const sc = state.scenes[0];
+      if(!sc){ insertScriptTemplate(); return; }
+      const n = sc.numberId ? findById(state.numbers, sc.numberId) : null;
+      state.script.sampleScene = `SCÈNE 1 — ${sc.title || 'Titre à définir'}\n\nFonction : ${sc.function || 'ouvrir le monde'}\nSituation : ${sc.situation || 'à préciser'}\nFriction : ${sc.conflict || 'à préciser'}\nHumour : ${sc.humour || 'à préciser'}\n\n[Le plateau révèle le monde. Les corps montrent déjà la règle principale.]\n\nPERSONNAGE A — Il y a une règle ici. Une très belle règle. Une règle tellement droite qu’elle ne sait plus tourner.\nPERSONNAGE B — Et si elle apprenait à danser ?\n\nDéclencheur du chant : ${sc.transitionToSong || 'une phrase, un geste ou une erreur devient rythme'}\n${n ? `\nNUMÉRO — ${n.title}\nType : ${n.type}\nRefrain : ${n.refrain || 'à écrire'}\nGeste signature : ${n.choreoSignature || 'à définir'}\nImage finale : ${n.finalImage || 'à définir'}\n` : ''}`;
+      saveState(); renderScript();
+    }
+    function exportJSON(){ download(`${slug(state.project.title)}-atelier-comedie-v0-1-alpha.json`, JSON.stringify(state,null,2), 'application/json'); }
+    function importJSON(file){
+      const reader = new FileReader();
+      reader.onload = e => {
+        try{
+          const parsed = JSON.parse(e.target.result);
+          const error = validateImportData(parsed);
+          if(error){ notify(`Import impossible : ${error}`, 'danger'); return; }
+          if(!confirm('Importer ce fichier va remplacer les données actuellement ouvertes. Continuer ?')) return;
+          state = mergeDeep(defaultState(), parsed);
+          state.meta.version = APP_VERSION;
+          saveState();
+          renderAll();
+          notify('Import réussi.', 'ok');
+        }
+        catch(err){ notify('Import impossible : fichier JSON invalide.', 'danger'); }
+        finally{
+          const input = document.getElementById('importFile');
+          if(input) input.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+    async function copyText(text){
+      try{ await navigator.clipboard.writeText(text); setAutosave('Copié'); notify('Texte copié.', 'ok'); }
+      catch(e){ download('copie-secours.txt', text); notify('Copie directe indisponible : un fichier de secours a été téléchargé.', 'warn'); }
+    }
+    function resetAll(){
+      if(confirm('Effacer toute la sauvegarde locale de cette application ?')){ state = defaultState(); saveState(); renderAll(); }
+    }
+    function printWithMode(mode){ state.meta.printMode = mode; document.documentElement.dataset.printMode = mode; saveState(false); window.print(); }
+
+    // =========================
+    // CALCULS, AUDIT, DOSSIER
+    // =========================
+    function requiredPaths(){
+      return ['project.title','project.oneLine','project.pitchShort','vision.heart','vision.finalFeeling','vision.message','dramaturgy.centralConflict','dramaturgy.whoWantsWhat','dramaturgy.obstacle','dramaturgy.ordinaryMagic','world.place','world.visualMood','choreo.banalGesture','humour.engines','production.nextMicroStep'];
+    }
+    function tabCompletion(tab){
+      const map = {
+        dashboard:['project.title','project.oneLine','project.pitchShort'], guide:requiredPaths(), vision:['vision.heart','vision.finalFeeling','vision.message','vision.values','vision.whyMusical'], dramaturgie:['dramaturgy.centralConflict','dramaturgy.whoWantsWhat','dramaturgy.obstacle','dramaturgy.ordinaryMagic'], univers:['world.place','world.visualMood','world.objects'], personnages:[], scenes:[], numeros:[], moteur:['engine.relationNotes','engine.versionNotes'], carte:[], danse:['choreo.vocabulary','choreo.banalGesture','choreo.transformation'], humour:['humour.engines','humour.runningGag','humour.timing'], motifs:[], script:['script.opening','script.sampleScene','script.finalMoment'], timeline:['production.formatChoice','production.castingNeeds','production.techNeeds','production.nextMicroStep'], atelier:['atelier.sessionGoal','atelier.testProtocol','atelier.feedbackQuestions','production.testChecklist'], bibliotheque:['notes.free'], audit:requiredPaths(), dossier:requiredPaths()
+      };
+      if(tab==='personnages') return Math.min(100, state.characters.length * 25);
+      if(tab==='scenes') return Math.min(100, state.scenes.length * 20 + (state.scenes.filter(s=>s.script).length*10));
+      if(tab==='numeros') return Math.min(100, state.numbers.length * 22 + (state.numbers.filter(n=>n.refrain || n.chorus).length*10));
+      if(tab==='moteur') return relationshipAuditScore();
+      if(tab==='carte') return Math.min(100, state.scenes.length*14 + state.scenes.filter(s=>s.emotion && s.emotion!=='À choisir').length*6 + state.scenes.filter(s=>s.characters).length*6);
+      if(tab==='motifs') return Math.min(100, state.motifs.length*30 + state.motifs.filter(m=>m.finalForm).length*10);
+      const paths = map[tab] || [];
+      if(!paths.length) return 0;
+      return Math.round(paths.filter(p => (getPath(p)||'').trim()).length / paths.length * 100);
+    }
+    function globalProgress(){
+      const base = requiredPaths().filter(p=>(getPath(p)||'').trim()).length / requiredPaths().length * 50;
+      const collections = Math.min(50, state.characters.length*5 + state.scenes.length*5 + state.numbers.length*6 + state.scenes.filter(s=>s.script).length*4);
+      return Math.min(100, Math.round(base + collections));
+    }
+    function getMetrics(){ const a = audit(); return {characters:state.characters.length, scenes:state.scenes.length, numbers:state.numbers.length, motifs:state.motifs.length, auditScore:a.score}; }
+    function audit(){
+      const items=[]; let pts=0; let max=0;
+      function check(ok,title,text,weight=1,levelWhenBad='warn'){ max+=weight; if(ok){pts+=weight; items.push({level:'ok',title,text:'Présent / suffisamment défini.'});} else items.push({level:levelWhenBad,title,text}); }
+      check(!!state.project.title,'Titre','Le projet n’a pas encore de titre. Même provisoire, il aide les autres à entrer dans l’univers.',1);
+      check(!!state.project.oneLine,'Phrase en une ligne','Ajoute une phrase qui donne envie en moins de dix secondes.',1);
+      check(!!state.project.pitchShort,'Pitch court','Ajoute une version orale de 30 secondes pour présenter le projet simplement.',1);
+      check(!!state.vision.heart,'Cœur vivant','Clarifie ce que le spectacle sert profondément.',2,'danger');
+      check(!!state.dramaturgy.centralConflict,'Conflit central','Définis la friction principale : sans friction, le chant risque de devenir décoratif.',2,'danger');
+      check(!!state.dramaturgy.ordinaryMagic,'Moment Mary Poppins','Trouve l’action banale qui devient magique, drôle ou musicale.',1);
+      check(state.characters.length>=3,'Personnages','Prévois au moins 3 rôles lisibles : désir, blocage, humour, transformation.',2,'danger');
+      check(state.scenes.length>=3,'Scènes','Prévois au moins 3 scènes : ouverture, bascule, résolution.',2,'danger');
+      check(state.numbers.length>=2,'Numéros musicaux','Prévois au moins 2 numéros : un de règle/désir et un de transformation/final.',2,'danger');
+      check(state.numbers.every(n=>n.startReason || n.refrain),'Fonction des chansons','Chaque numéro devrait avoir une raison de chanter ou un refrain central.',1);
+      check(!!state.humour.engines,'Humour','Choisis les ressorts comiques principaux.',1);
+      check(!!state.choreo.banalGesture || !!state.choreo.vocabulary,'Danse dramaturgique','Définis le geste banal, le vocabulaire corporel ou l’évolution du groupe.',1);
+      check(!!state.script.sampleScene || state.scenes.some(s=>s.script),'Script jouable','Écris au moins une scène jouable ou un extrait présentable.',2,'danger');
+      check(!!state.production.nextMicroStep,'Micro-étape','Ajoute la prochaine action concrète pour sortir du pur imaginaire.',1);
+      check(!!state.production.castingNeeds || !!state.production.collaborators,'Besoins humains','Précise les êtres ou collaborateurs nécessaires pour tester la graine.',1);
+      check(!!state.production.techNeeds || !!state.production.testChecklist,'Test matériel','Note les besoins techniques sobres ou la checklist de lecture-test.',1);
+      const contradictions = findLinkContradictions();
+      check(!contradictions.length,'Liens scènes/numéros', contradictions.length ? 'Certains liens scène-numéro se contredisent. Vérifie les associations.' : 'Liens cohérents.',1);
+      check(relationshipAuditScore()>=55,'Moteur relationnel','Relie mieux scènes, personnages, chansons, émotions et motifs dans l’onglet Moteur / Carte.',2, relationshipAuditScore()<35?'danger':'warn');
+      check(state.motifs.length>=1 || state.scenes.some(s=>s.motif || s.gag),'Motifs récurrents','Ajoute au moins un motif : phrase, geste, objet, gag ou règle qui revient transformé.',1);
+      const score = Math.round((pts/max)*100);
+      const label = score>80 ? 'graine bien présentable' : score>55 ? 'bonne base à renforcer' : 'encore trop flou pour être proposé à une équipe';
+      return {score,label,items};
+    }
+    function findLinkContradictions(){
+      const out=[];
+      state.scenes.forEach(s=>{ if(s.numberId){ const n=findById(state.numbers,s.numberId); if(n && n.sceneId && n.sceneId!==s.id) out.push([s,n]); }});
+      state.numbers.forEach(n=>{ if(n.sceneId){ const s=findById(state.scenes,n.sceneId); if(s && s.numberId && s.numberId!==n.id) out.push([s,n]); }});
+      return out;
+    }
+    function orderedScenes(){ return [...state.scenes].sort((a,b)=>(a.order||0)-(b.order||0)); }
+    function sceneHasCharacter(sc,c){
+      const name = (c.name || c.archetype || '').trim().toLowerCase(); if(!name) return false;
+      const hay = `${sc.characters || ''} ${sc.script || ''} ${sc.notes || ''}`.toLowerCase();
+      return hay.includes(name);
+    }
+    function ratio(done,total){ return total ? Math.round(done/total*100) : 0; }
+    function relationshipAudit(){
+      const scenes = orderedScenes();
+      const beats = scenes.filter(s=>s.beatStart && s.beatWant && s.beatObstacle && s.beatChanged).length;
+      const emotions = scenes.filter(s=>s.emotion && s.emotion !== 'À choisir').length;
+      const linkedSongs = scenes.filter(s=>s.numberId || state.numbers.some(n=>n.sceneId===s.id)).length;
+      const usefulSongs = state.numbers.filter(n=>n.startReason && (n.progression || n.finalImage) && (n.refrain || n.chorus)).length;
+      const coveredChars = state.characters.filter(c=>scenes.some(s=>sceneHasCharacter(s,c))).length;
+      const recurringMotifs = state.motifs.filter(m=>m.firstAppearance && m.evolution && m.finalForm).length;
+      return [
+        {title:'Scènes en beats', score:ratio(beats, scenes.length), text:`${beats}/${scenes.length} scène(s) ont départ, désir, obstacle et changement.`, tips:['départ','désir','obstacle','changement']},
+        {title:'Courbe émotionnelle', score:ratio(emotions, scenes.length), text:`${emotions}/${scenes.length} scène(s) ont une émotion dominante lisible.`, tips:['rire','résistance','révélation','célébration']},
+        {title:'Chansons nécessaires', score:ratio(usefulSongs, state.numbers.length), text:`${usefulSongs}/${state.numbers.length} numéro(s) ont une raison, un refrain et une transformation.`, tips:['pourquoi chanter ?','refrain','progression','image finale']},
+        {title:'Liens scènes-numéros', score:ratio(linkedSongs, scenes.length), text:`${linkedSongs}/${scenes.length} scène(s) sont reliées à un numéro ou à une absence assumée.`, tips:['lier','assumer le silence','éviter le décoratif']},
+        {title:'Personnages distribués', score:ratio(coveredChars, state.characters.length), text:`${coveredChars}/${state.characters.length} personnage(s) apparaissent explicitement dans la matrice.`, tips:['présents','fonction','désir','transformation']},
+        {title:'Motifs récurrents', score:ratio(recurringMotifs, Math.max(1,state.motifs.length)), text:`${recurringMotifs}/${state.motifs.length} motif(s) ont apparition, évolution et forme finale.`, tips:['phrase','geste','objet','gag']}
+      ];
+    }
+    function relationshipAuditScore(){ const r=relationshipAudit(); return r.length ? Math.round(r.reduce((a,x)=>a+x.score,0)/r.length) : 0; }
+
+
+    function suggestNextStep(){
+      if(!state.vision.heart) return 'Écris le cœur vivant du spectacle dans l’onglet Vision.';
+      if(!state.dramaturgy.centralConflict) return 'Définis le conflit central : quelle friction joyeuse met l’histoire en mouvement ?';
+      if(state.characters.length < 3) return 'Crée 3 personnages-fonctions très lisibles.';
+      if(state.scenes.length < 3) return 'Applique une structure 10 minutes ou crée 3 scènes.';
+      if(state.numbers.length < 2) return 'Ajoute 2 numéros musicaux : un de tension, un de transformation.';
+      if(relationshipAuditScore()<55) return 'Ouvre le moteur dramaturgique : remplis les beats d’une scène et relie personnages, émotion, motif et numéro.';
+      if(!state.script.sampleScene && !state.scenes.some(s=>s.script)) return 'Écris un premier extrait jouable, même imparfait.';
+      return 'Prépare une lecture-test avec 2 à 6 êtres et observe ce qui devient vivant.';
+    }
+    function dossierMarkdown(){
+      const lines=[];
+      lines.push(`# ${state.project.title || 'Projet de comédie musicale'}`);
+      if(state.project.subtitle) lines.push(`_${state.project.subtitle}_`);
+      lines.push('', `**Phrase en une ligne :** ${state.project.oneLine || 'À définir'}`);
+      lines.push(`**Pitch court :** ${state.project.pitchShort || 'À définir'}`);
+      lines.push('', '## Intention');
+      lines.push(state.vision.heart || 'À définir.');
+      lines.push('', `**Public visé :** ${state.project.target || 'À définir'}`);
+      lines.push(`**Durée :** ${state.project.duration || 'À définir'}`);
+      lines.push(`**Ton :** ${state.project.tone || 'À définir'}`);
+      lines.push('', '## Message et promesse');
+      lines.push(`**Message central :** ${state.vision.message || 'À définir'}`);
+      lines.push(`**Ce que le public ressent :** ${state.vision.finalFeeling || 'À définir'}`);
+      lines.push(`**Signature :** ${state.vision.signature || 'À définir'}`);
+      lines.push('', '## Dramaturgie');
+      lines.push(`**Conflit central :** ${state.dramaturgy.centralConflict || 'À définir'}`);
+      lines.push(`**Qui veut quoi :** ${state.dramaturgy.whoWantsWhat || 'À définir'}`);
+      lines.push(`**Obstacle :** ${state.dramaturgy.obstacle || 'À définir'}`);
+      lines.push(`**Moment quotidien-magique :** ${state.dramaturgy.ordinaryMagic || 'À définir'}`);
+      lines.push('', '## Univers');
+      lines.push(`**Lieu :** ${state.world.place || 'À définir'}`);
+      lines.push(`**Ambiance visuelle :** ${state.world.visualMood || 'À définir'}`);
+      lines.push(`**Objets :** ${state.world.objects || 'À définir'}`);
+      lines.push('', '## Personnages');
+      if(state.characters.length) state.characters.forEach(c=>lines.push(`- **${c.name || 'Sans nom'}** — ${c.archetype || 'archétype ?'} ; désir : ${c.desire || '?'} ; trait comique : ${c.comicTrait || '?'} ; transformation : ${c.change || '?'}`)); else lines.push('À définir.');
+      lines.push('', '## Structure en scènes');
+      if(state.scenes.length) state.scenes.forEach(s=>lines.push(`### ${s.order || ''}. ${s.title || 'Scène'}\nFonction : ${s.function || 'à définir'}\nSituation : ${s.situation || 'à définir'}\nFriction : ${s.conflict || 'à définir'}\nHumour : ${s.humour || 'à définir'}\nDéclencheur du chant : ${s.transitionToSong || 'à définir'}\n`)); else lines.push('À définir.');
+      lines.push('', '## Numéros musicaux');
+      if(state.numbers.length) state.numbers.forEach(n=>lines.push(`### ${n.title || 'Numéro'}\nType : ${n.type || 'à définir'}\nPourquoi chanter : ${n.startReason || 'à définir'}\nRefrain : ${n.refrain || 'à définir'}\nGeste signature : ${n.choreoSignature || 'à définir'}\nImage finale : ${n.finalImage || 'à définir'}\n`)); else lines.push('À définir.');
+      lines.push('', '## Motifs récurrents');
+      if(state.motifs.length) state.motifs.forEach(m=>lines.push(`- **${m.title || 'Motif'}** — ${m.type || '?'} ; apparition : ${m.firstAppearance || '?'} ; évolution : ${m.evolution || '?'} ; forme finale : ${m.finalForm || '?'}`)); else lines.push('À définir.');
+      lines.push('', '## Moteur dramaturgique');
+      relationshipAudit().forEach(r=>lines.push(`- **${r.title} :** ${r.score}% — ${r.text}`));
+      lines.push('', '## Danse, jeu et humour');
+      lines.push(`**Danse :** ${state.choreo.vocabulary || state.choreo.banalGesture || 'À définir'}`);
+      lines.push(`**Humour :** ${state.humour.engines || 'À définir'}`);
+      lines.push('', '## Extrait de script');
+      lines.push(state.script.sampleScene || state.scenes.find(s=>s.script)?.script || 'À écrire.');
+      lines.push('', '## Ce que je cherche');
+      lines.push(state.production.collaborators || state.project.teamGoal || 'Collaborateurs à définir.');
+      lines.push('', '## Besoins pour tester');
+      lines.push(`**Casting / humains :** ${state.production.castingNeeds || 'À préciser.'}`);
+      lines.push(`**Technique sobre :** ${state.production.techNeeds || state.production.needs || 'À préciser.'}`);
+      lines.push(`**Checklist lecture-test :** ${state.production.testChecklist || 'À préparer.'}`);
+      lines.push('', '## Prochaine micro-étape');
+      lines.push(state.production.nextMicroStep || suggestNextStep());
+      return lines.join('\n');
+    }
+    function dossierHTML(){
+      const md = dossierMarkdown();
+      const lines = md.split('\n');
+      let out=''; let inList=false;
+      lines.forEach(line=>{
+        if(line.startsWith('# ')){ if(inList){out+='</ul>';inList=false;} out+=`<h1>${esc(line.slice(2))}</h1>`; }
+        else if(line.startsWith('## ')){ if(inList){out+='</ul>';inList=false;} out+=`<h2>${esc(line.slice(3))}</h2>`; }
+        else if(line.startsWith('### ')){ if(inList){out+='</ul>';inList=false;} out+=`<h3>${esc(line.slice(4))}</h3>`; }
+        else if(line.startsWith('- ')){ if(!inList){out+='<ul>';inList=true;} out+=`<li>${formatInline(line.slice(2))}</li>`; }
+        else if(!line.trim()){ if(inList){out+='</ul>';inList=false;} }
+        else { if(inList){out+='</ul>';inList=false;} out+=`<p>${formatInline(line)}</p>`; }
+      });
+      if(inList) out+='</ul>';
+      return out;
+    }
+    function formatInline(s){ return esc(s).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^_(.*)_$/,'<em>$1</em>'); }
+    function copyAudit(){
+      const a = audit();
+      copyText(`Audit — ${a.score}% — ${a.label}\n\n` + a.items.map(i=>`[${i.level}] ${i.title} — ${i.text}`).join('\n'));
+    }
+
+    // =========================
+    // CONTENU GÉNÉRATIF LOCAL
+    // =========================
+    function wizardQuestions(){
+      return [
+        {tab:'vision', path:'vision.heart', short:'Cœur', label:'Quel est le cœur vivant de cette comédie musicale ?', hint:'La force intérieure qui donne envie de la créer, même sans décor ni costume.', implies:'la promesse globale, le ton, la direction du dossier.'},
+        {tab:'vision', path:'vision.finalFeeling', short:'Ressenti final', label:'Quand le public sortira, qu’aimerais-tu qu’il ressente ?', hint:'Joie, paix, rire, confiance, courage, émerveillement…', implies:'le final, la dernière image, la couleur émotionnelle.'},
+        {tab:'dashboard', path:'project.oneLine', short:'Pitch', label:'Peux-tu résumer l’histoire en une seule phrase ?', hint:'Un être, un problème, une transformation.', implies:'le pitch présentable à des collaborateurs.'},
+        {tab:'dramaturgie', path:'dramaturgy.centralConflict', short:'Conflit', label:'Quelle friction joyeuse met l’histoire en mouvement ?', hint:'Trop de contrôle contre vie, peur du ridicule contre danse, monde gris contre imaginaire…', implies:'la structure des scènes et l’utilité des chansons.'},
+        {tab:'dramaturgie', path:'dramaturgy.whoWantsWhat', short:'Désir', label:'Qui veut quoi, très concrètement ?', hint:'Le héros, le groupe, l’antagonisme ou le cadre.', implies:'les personnages et les tensions scéniques.'},
+        {tab:'dramaturgie', path:'dramaturgy.ordinaryMagic', short:'Moment magique', label:'Quelle action banale pourrait devenir magique, musicale ou comique ?', hint:'Ranger, marcher, signer, cuisiner, faire la queue, ouvrir une porte…', implies:'le numéro signature et la chorégraphie.'},
+        {tab:'univers', path:'world.place', short:'Lieu', label:'Où se déroule l’histoire ?', hint:'Un lieu concret est souvent plus fort qu’un concept abstrait.', implies:'la scénographie, les objets, les déplacements.'},
+        {tab:'personnages', path:'choreo.characterBodies', short:'Corps', label:'Quels types de corps scéniques veux-tu voir ?', hint:'Carré, fluide, bondissant, retenu, mécanique, lunaire, clownesque…', implies:'les personnages et la chorégraphie.'},
+        {tab:'humour', path:'humour.engines', short:'Humour', label:'Quel type d’humour doit porter le spectacle ?', hint:'Répétition, règle absurde, sérieux excessif, objet détourné, regard public…', implies:'les scènes, les transitions, le rythme.'},
+        {tab:'numeros', path:'script.lyricsDraft', short:'Refrain', label:'Quelle phrase pourrait devenir un refrain ?', hint:'Même simple, même maladroite. Le refrain est une graine rythmique.', implies:'la chanson centrale.'},
+        {tab:'timeline', path:'production.collaborators', short:'Équipe', label:'De quels collaborateurs aurais-tu besoin pour ne pas créer seul ?', hint:'Musicien, chorégraphe, comédien, enfants testeurs, association, lieu…', implies:'le passage dans la matière.'},
+        {tab:'timeline', path:'production.nextMicroStep', short:'Micro-étape', label:'Quelle est la prochaine action concrète, faisable sans attendre le monde parfait ?', hint:'Écrire une scène, contacter une personne, tester un refrain, réunir 3 êtres…', implies:'l’ancrage immédiat.'}
+      ];
+    }
+    function modelScenes(name){
+      if(name === 'Spectacle court 35 minutes') return {
+        scenes:[
+          {order:1,title:'Le monde trop bien rangé',function:'Ouverture comique',situation:'Le groupe vit selon une règle trop sérieuse.',conflict:'Une petite erreur menace l’ordre.',humour:'Sérieux excessif et gestes mécaniques.',transitionToSong:'La règle devient rythme.'},
+          {order:2,title:'L’arrivée du rythme différent',function:'Rencontre',situation:'Un être entre avec une autre manière de bouger.',conflict:'Le cadre tente de le corriger.',humour:'Correction absurde, imitation ratée.',transitionToSong:'Le refus de danser devient déjà une danse.'},
+          {order:3,title:'La leçon impossible',function:'Règle absurde',situation:'On veut apprendre la joie comme une procédure.',conflict:'La joie échappe aux consignes.',humour:'Manuel trop rigide, gestes contradictoires.',transitionToSong:'Chaque consigne devient refrain.'},
+          {order:4,title:'Le désordre révélateur',function:'Crise joyeuse',situation:'Les objets, les gestes et les voix se mélangent.',conflict:'On croit que tout est perdu.',humour:'Faux chaos parfaitement chorégraphié.',transitionToSong:'Le groupe trouve un rythme commun.'},
+          {order:5,title:'La vérité du petit geste',function:'Révélation',situation:'Un geste simple révèle le vrai besoin.',conflict:'Un personnage doit lâcher son masque.',humour:'Tendresse et maladresse.',transitionToSong:'La parole devient trop petite.'},
+          {order:6,title:'On peut faire autrement',function:'Transformation de groupe',situation:'La règle n’est pas détruite, elle devient vivante.',conflict:'Dernière résistance du vieux cadre.',humour:'Reprise inversée du gag initial.',transitionToSong:'Le groupe répond ensemble.'},
+          {order:7,title:'Final : la règle qui danse',function:'Final lumineux',situation:'Le monde a gardé sa structure mais retrouvé sa joie.',conflict:'Aucune opposition : célébration lisible.',humour:'Dernier clin d’œil au public.',transitionToSong:'Final collectif.'}
+        ],
+        numbers:[
+          {sceneIndex:0,title:'Tout doit être bien comme il faut',type:'Ouverture / règle absurde',startReason:'Le groupe récite sa règle quotidienne.',refrain:'Tout doit être bien comme il faut… jusqu’au petit pas de côté.',style:'Marche comique, percussions corporelles',choreoSignature:'Gestes carrés qui se fissurent',progression:'Unisson mécanique → petits décalages → rire collectif',surprise:'Un personnage obéit trop bien et casse le rythme.',finalImage:'Le groupe figé dans une pose absurde.',difficulty:'Moyenne'},
+          {sceneIndex:2,title:'La méthode officielle de la joie',type:'Chanson comique',startReason:'Un personnage tente d’enseigner la joie par protocole.',refrain:'Souris à gauche, respire à droite, mais où est passée la joie ?',style:'Cabaret léger / music-hall',choreoSignature:'Manuel transformé en éventail ou accessoire',progression:'Consignes → contradictions → improvisation',surprise:'Le plus rigide devient le plus drôle sans le vouloir.',finalImage:'Le manuel tombe, tout le monde respire.',difficulty:'Moyenne'},
+          {sceneIndex:3,title:'Ça déborde de partout',type:'Numéro de groupe',startReason:'Le désordre devient impossible à contenir.',refrain:'Quand ça déborde, ça révèle le vivant.',style:'Ensemble dynamique',choreoSignature:'Objets circulant comme partenaires',progression:'Chaos → motifs → organisme collectif',surprise:'Un objet banal devient chef d’orchestre.',finalImage:'Spirale collective.',difficulty:'Ambitieuse'},
+          {sceneIndex:5,title:'On peut faire autrement',type:'Transformation',startReason:'Le groupe comprend une nouvelle manière d’habiter la règle.',refrain:'On peut faire autrement, sans perdre le centre.',style:'Énergique, tendre, lumineux',choreoSignature:'Même geste qu’au début mais arrondi',progression:'Solo → duo → groupe',surprise:'La règle initiale revient en version joyeuse.',finalImage:'Cadre transformé en portail.',difficulty:'Moyenne'},
+          {sceneIndex:6,title:'La règle qui danse',type:'Final célébratif',startReason:'Tout le groupe offre au public la nouvelle règle vivante.',refrain:'Une règle qui danse garde le cœur vivant.',style:'Final familial',choreoSignature:'Geste simple transmissible au public',progression:'Scène → salle symboliquement incluse',surprise:'Faux final puis dernier pas comique.',finalImage:'Tableau lumineux de troupe.',difficulty:'Facile'}
+        ]};
+      if(name === 'Prototype 20 minutes') return {
+        scenes:[
+          {order:1,title:'Le lieu où tout est trop sérieux',function:'Ouverture comique',situation:'Un groupe suit une routine parfaitement réglée.',conflict:'Un détail imprévu dérange le cadre.',humour:'Gestes mécaniques, sérieux excessif.',transitionToSong:'La routine devient chant.'},
+          {order:2,title:'Le pas de côté',function:'Rencontre / perturbation',situation:'Un être propose un autre rythme.',conflict:'Le groupe hésite entre peur et curiosité.',humour:'Imitations maladroites.',transitionToSong:'Un refus devient refrain.'},
+          {order:3,title:'La grande méthode absurde',function:'Numéro comique central',situation:'On veut contrôler la joie.',conflict:'La joie ne rentre pas dans la méthode.',humour:'Règle absurde, répétition qui déraille.',transitionToSong:'Les consignes se mettent à swinguer.'},
+          {order:4,title:'Ce que le cœur savait déjà',function:'Révélation douce',situation:'Un personnage avoue sa peur du ridicule ou du désordre.',conflict:'Oser être vu autrement.',humour:'Maladresse tendre.',transitionToSong:'Le silence devient chant simple.'},
+          {order:5,title:'Final : on peut faire autrement',function:'Transformation collective',situation:'Le groupe reprend le geste initial autrement.',conflict:'Dernier petit doute.',humour:'Retour du gag initial en version libérée.',transitionToSong:'Final collectif.'}
+        ],
+        numbers:[
+          {sceneIndex:0,title:'Bien comme il faut',type:'Ouverture / règle absurde',startReason:'La routine quotidienne devient trop rythmique pour rester parlée.',refrain:'Bien comme il faut, bien comme il faut… mais le cœur fait un pas de côté.',style:'Marche comique',choreoSignature:'Geste carré répété puis décalé',progression:'Unisson → déraillement → arrêt net',surprise:'Un personnage se trompe et tout devient meilleur.',finalImage:'Tableau figé impossible à tenir.',difficulty:'Facile'},
+          {sceneIndex:2,title:'La méthode officielle de la joie',type:'Chanson comique centrale',startReason:'Le groupe tente de fabriquer la joie avec une procédure.',refrain:'Étape un : sourire. Étape deux : ne pas oublier de vivre.',style:'Music-hall léger',choreoSignature:'Manuel / carnet utilisé comme accessoire chorégraphique',progression:'Consignes → contradictions → rire',surprise:'Le chef du cadre est contaminé par le rythme.',finalImage:'Les carnets deviennent ailes ou éventails.',difficulty:'Moyenne'},
+          {sceneIndex:4,title:'On peut faire autrement',type:'Final célébratif',startReason:'La transformation doit se vivre par le corps et le groupe.',refrain:'On peut faire autrement, ensemble et simplement.',style:'Final lumineux',choreoSignature:'Le geste du début devient rond, fluide, partageable',progression:'Solo → duo → groupe',surprise:'Faux final puis clin d’œil public.',finalImage:'Cercle ouvert vers la salle.',difficulty:'Facile'}
+        ]};
+      return {
+        scenes:[
+          {order:1,title:'Tout doit être bien comme il faut',function:'Ouverture comique',situation:'Un groupe suit une règle trop rigide.',conflict:'Un geste imprévu dérange tout.',humour:'Sérieux excessif.',transitionToSong:'La règle devient refrain.'},
+          {order:2,title:'Le grain de joie',function:'Bascule',situation:'Un être propose un pas différent.',conflict:'Le groupe ne sait pas s’il a le droit.',humour:'Refus de chanter tout en chantant.',transitionToSong:'Le pas se répète malgré eux.'},
+          {order:3,title:'On peut faire autrement',function:'Final lumineux',situation:'Le groupe transforme la règle.',conflict:'Dernier doute comique.',humour:'Retour du gag initial.',transitionToSong:'Tout le monde reprend le refrain.'}
+        ],
+        numbers:[
+          {sceneIndex:0,title:'Bien comme il faut',type:'Ouverture / règle absurde',startReason:'La routine devient rythme.',refrain:'Bien comme il faut… jusqu’au pas de côté.',style:'Marche comique',choreoSignature:'Gestes carrés qui déraillent',progression:'Unisson → erreur → surprise',surprise:'L’erreur est plus belle que la règle.',finalImage:'Groupe figé en déséquilibre.',difficulty:'Facile'},
+          {sceneIndex:2,title:'On peut faire autrement',type:'Final célébratif',startReason:'Parler ne suffit plus pour montrer la transformation.',refrain:'On peut faire autrement, sans perdre le centre.',style:'Lumineux et simple',choreoSignature:'Geste initial transformé en ronde',progression:'Solo → groupe',surprise:'Faux final comique.',finalImage:'Cercle ouvert.',difficulty:'Facile'}
+        ]};
+    }
+    function timelineSteps(){
+      return [
+        {title:'1. Vision centrale', desc:'Titre, public, message, émotion finale, raison d’être musicale.', dep:'aucune', parallel:'recherche d’inspirations'},
+        {title:'2. Conflit et transformation', desc:'Qui veut quoi, qu’est-ce qui bloque, ce qui change à la fin.', dep:'vision', parallel:'univers visuel et sonore'},
+        {title:'3. Personnages-fonctions', desc:'Rôles lisibles, corps, voix, désir, humour, transformation.', dep:'conflit', parallel:'premiers objets et gags'},
+        {title:'4. Structure en tableaux', desc:'3, 5 ou 7 scènes avec une fonction claire.', dep:'vision + conflit', parallel:'premières phrases de refrains'},
+        {title:'5. Numéros musicaux', desc:'Chaque chanson reçoit une fonction dramatique, un refrain, un geste, une image finale.', dep:'scènes', parallel:'recherche musicale'},
+        {title:'6. Script jouable', desc:'Dialogues, transitions vers chansons, indications de plateau, extrait présentable.', dep:'scènes + personnages', parallel:'intentions chorégraphiques'},
+        {title:'7. Chorégraphie et humour', desc:'Gestes signatures, rythme comique, pauses, objets, progression du groupe.', dep:'numéros + personnages', parallel:'costumes simples'},
+        {title:'8. Dossier de présentation', desc:'Pitch, synopsis, rôles, numéros, besoins, ce que tu cherches.', dep:'base écrite', parallel:'invitation collaborateurs'},
+        {title:'9. Lecture-test / atelier', desc:'Tester une scène et un refrain avec 2 à 6 êtres.', dep:'extrait jouable', parallel:'captation notes et retours'},
+        {title:'10. Réécriture', desc:'Garder ce qui vit, simplifier ce qui pèse, renforcer le rire et la clarté.', dep:'retours', parallel:'préparation prototype'}
+      ];
+    }
+    function heroSubtitle(tab){
+      const map={
+        dashboard:'Vue globale de la graine : titre, avancement, prochaine action et formats rapides.', guide:'Une question à la fois pour faire émerger le projet sans te noyer dans toute la cathédrale.', vision:'Clarifie le cœur, le message, la promesse émotionnelle et la signature lumineuse du spectacle.', dramaturgie:'Trouve la friction joyeuse qui rend le théâtre nécessaire et le chant inévitable.', univers:'Définis le monde scénique, les objets, les règles et l’ambiance visuelle/sonore.', personnages:'Crée des rôles lisibles, drôles et transformables, avec corps, voix et désir.', scenes:'Organise l’histoire en tableaux jouables, chacun avec une fonction claire.', numeros:'Construit les chansons comme des moteurs d’action, pas comme des décorations jolies mais timides.', moteur:'Relie scènes, désirs, obstacles, émotions, chansons et changements grâce aux beats dramaturgiques.', carte:'Visualise le spectacle en cartes, avec matrice personnages × scènes et chaîne des numéros.', danse:'Transforme les gestes du quotidien en langage corporel, chorégraphique et théâtral.', humour:'Choisis les ressorts comiques : répétition, règle absurde, objet détourné, regard public.', motifs:'Fais revenir gestes, phrases, objets, gags ou refrains sous une forme transformée.', script:'Écris une version imparfaite mais jouable : le plateau affinera la vérité.', timeline:'Vois les étapes, dépendances et travaux parallèles pour passer dans la matière.', atelier:'Prépare une lecture-test ou un atelier avec d’autres êtres, sans rester seul avec l’idée.', bibliotheque:'Réservoir d’idées pour scènes, chansons, personnages, humour et chorégraphie.', audit:'Contrôle la cohérence du projet avant de le présenter.', dossier:'Génère une présentation claire à partager, imprimer ou envoyer.'
+      };
+      return map[tab] || '';
+    }
+
+    // =========================
+    // CONTROLLERS — événements DOM
+    // =========================
+    document.addEventListener('input', e=>{
+      const bind = e.target.dataset.bind;
+      if(bind){ setPath(bind, e.target.value); scheduleSave(); updateChrome(); return; }
+      const arr = e.target.dataset.arr, id=e.target.dataset.id, key=e.target.dataset.key;
+      if(arr && id && key){ const item=findById(state[arr],id); if(item){ item[key]=e.target.value; syncLinks(arr,id,key,e.target.value); scheduleSave(); updateChrome(); } }
+    });
+    document.addEventListener('change', e=>{
+      if(e.target.id === 'importFile' && e.target.files[0]) importJSON(e.target.files[0]);
+      if(e.target.id === 'mobileTabSelect') switchTab(e.target.value);
+      if(e.target.dataset.action === 'selectSceneForEngine'){ state.engine.selectedSceneId = e.target.value; saveState(false); renderMoteur(); renderCarte(); }
+    });
+    document.addEventListener('click', e=>{
+      const tabBtn = e.target.closest('[data-tab]');
+      if(tabBtn){ switchTab(tabBtn.dataset.tab); return; }
+      const btn = e.target.closest('[data-action]');
+      const sceneSelector = e.target.closest('[data-action="selectSceneForEngine"]');
+      if(sceneSelector){ state.engine.selectedSceneId = sceneSelector.value; saveState(false); renderMoteur(); return; }
+      if(!btn) return;
+      const a = btn.dataset.action;
+      if(a==='addCharacter') addCharacter();
+      if(a==='addScene') addScene();
+      if(a==='addNumber') addNumber();
+      if(a==='addMotif') addMotif();
+      if(a==='seedMotifs') seedMotifs();
+      if(a==='fillSceneBeats') fillSceneBeats();
+      if(a==='deleteItem') deleteItem(btn.dataset.arr, btn.dataset.id);
+      if(a==='moveItem') moveItem(btn.dataset.arr, btn.dataset.id, btn.dataset.dir);
+      if(a==='addArchetypes') addArchetypes();
+      if(a==='seedSongTypes') seedSongTypes();
+      if(a==='applyFormat') applyFormat(btn.dataset.format);
+      if(a==='wizardPrev') wizardPrev();
+      if(a==='wizardNext') wizardNext();
+      if(a==='wizardNextEmpty') wizardNextEmpty();
+      if(a==='insertScriptTemplate') insertScriptTemplate();
+      if(a==='generateSampleScene') generateSampleScene();
+      if(a==='copyDossier') copyText(dossierMarkdown());
+      if(a==='downloadDossier') download(`${slug(state.project.title)}-dossier-comedie-musicale.md`, dossierMarkdown(), 'text/markdown');
+      if(a==='copyAudit') copyAudit();
+    });
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      state.meta.theme = state.meta.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = state.meta.theme;
+      document.getElementById('themeBtn').textContent = state.meta.theme === 'dark' ? 'Mode jour' : 'Mode nuit';
+      document.getElementById('themeBtn').setAttribute('aria-pressed', state.meta.theme === 'dark' ? 'true' : 'false');
+      saveState(false);
+    });
+    document.getElementById('saveBtn').addEventListener('click', ()=>saveState(true));
+    document.getElementById('exportBtn').addEventListener('click', exportJSON);
+    document.getElementById('printCurrentBtn').addEventListener('click', ()=>printWithMode('current'));
+    document.getElementById('printAllBtn').addEventListener('click', ()=>printWithMode('all'));
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+    document.addEventListener('click', e=>{ if(e.target.id === 'printDossierBtn') printWithMode('current'); });
+    window.addEventListener('beforeprint', ()=>{ document.documentElement.dataset.printMode = state.meta.printMode || 'current'; });
+    window.addEventListener('afterprint', ()=>{ document.documentElement.dataset.printMode = state.meta.printMode || 'current'; });
+    window.addEventListener('keydown', e=>{
+      if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='s'){ e.preventDefault(); saveState(true); }
+    });
+    function syncLinks(arr,id,key,value){
+      if(arr==='scenes' && key==='numberId' && value){ const n=findById(state.numbers,value); if(n) n.sceneId = id; }
+      if(arr==='numbers' && key==='sceneId' && value){ const s=findById(state.scenes,value); if(s) s.numberId = id; }
+    }
+    function updateChrome(){
+      const p = globalProgress();
+      document.getElementById('progressBar').style.width = p + '%';
+      document.getElementById('progressText').textContent = p + '%';
+      const st = getMetrics();
+      document.getElementById('quickStats').innerHTML = `${st.characters} personnage(s) · ${st.scenes} scène(s) · ${st.numbers} numéro(s) · ${st.motifs} motif(s)<br>Audit : ${st.auditScore}%`;
+      document.documentElement.dataset.theme = state.meta.theme || 'light';
+      document.documentElement.dataset.printMode = state.meta.printMode || 'current';
+      document.getElementById('themeBtn').textContent = state.meta.theme === 'dark' ? 'Mode jour' : 'Mode nuit';
+      document.getElementById('themeBtn').setAttribute('aria-pressed', state.meta.theme === 'dark' ? 'true' : 'false');
+      renderNav();
+    }
+
+    // Initialisation
+    document.documentElement.dataset.theme = state.meta.theme || 'light';
+    renderAll();
+  </script>
+</body>
+</html>
