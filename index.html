@@ -473,25 +473,65 @@
         /* Mobile */
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr; }
-            .card { flex-direction: column; }
+            .card {
+                display: grid;
+                grid-template-columns: 92px minmax(0, 1fr);
+                grid-template-areas:
+                    "audience audience"
+                    "preview content";
+                align-items: start;
+            }
             .card.tall-card { grid-row: auto; }
             .card-image-side {
-                flex: 0 0 150px;
-                width: 100%;
-                min-width: 100%;
-                min-height: 150px;
-                height: 150px;
+                grid-area: preview;
+                flex: 0 0 auto;
+                width: 72px;
+                min-width: 0;
+                min-height: 0;
+                height: 96px;
+                margin: 18px 0 0 16px;
+                border-radius: 16px;
+                border: 1px solid rgba(142, 125, 196, 0.16);
+                box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
             }
             .card-content {
+                grid-area: content;
                 flex: 1 1 auto;
-                width: 100%;
+                width: auto;
+                padding: 22px 18px 22px 8px;
             }
-            .dual-captures { height: auto; }
-            .capture-thumb { min-height: 150px; }
+            .card.tall-card .dual-captures {
+                flex: 0 0 auto;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+                width: 72px;
+                min-width: 0;
+                min-height: 0;
+                height: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+            .card.tall-card .capture-thumb {
+                width: 72px;
+                aspect-ratio: 1 / 1;
+                min-height: 0;
+                height: auto;
+                background-size: cover;
+                background-position: center top;
+                background-color: #ffffff;
+                border-radius: 16px;
+                box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
+            }
             .container { padding: 30px 15px; }
             .card-audience {
+                grid-area: audience;
                 align-items: flex-start;
                 flex-direction: column;
+                flex: 0 0 auto;
+                width: 100%;
                 gap: 6px;
             }
             .audience-line,
@@ -661,12 +701,12 @@
             </div>
             <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
                 <div class="capture-thumb zoomable-image"
-                    style="background-image: url('assets/seve-essentiel-full.png');"
+                    style="background-image: url('assets/seve-essentiel-preview.png');"
                     data-full="assets/seve-essentiel-full.png">
                     <span>Essentiel</span>
                 </div>
                 <div class="capture-thumb zoomable-image"
-                    style="background-image: url('assets/seve-full.png');"
+                    style="background-image: url('assets/seve-preview.png');"
                     data-full="assets/seve-full.png">
                     <span>Complet</span>
                 </div>
