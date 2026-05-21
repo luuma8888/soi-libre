@@ -1,0 +1,1977 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Almanach lunaire - Lecture quotidienne offline</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8fbf8;
+      --panel: #ffffff;
+      --panel-soft: #eef8f4;
+      --ink: #23312d;
+      --muted: #66746f;
+      --line: #dbe8e2;
+      --accent: #5a9e8f;
+      --accent-2: #d99a8a;
+      --accent-3: #e8d78c;
+      --shadow: 0 18px 45px rgba(55, 92, 83, 0.12);
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #16201e;
+      --panel: #202d29;
+      --panel-soft: #243b35;
+      --ink: #eef8f4;
+      --muted: #b8c7c1;
+      --line: #35514a;
+      --accent: #8bd0bd;
+      --accent-2: #f0b09f;
+      --accent-3: #f0df91;
+      --shadow: 0 18px 45px rgba(0, 0, 0, 0.26);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(135deg, rgba(232, 215, 140, 0.16), transparent 35%),
+        linear-gradient(225deg, rgba(90, 158, 143, 0.14), transparent 38%),
+        var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 36px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 4.6rem);
+      line-height: 0.94;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      max-width: 720px;
+      line-height: 1.5;
+    }
+
+    .app-version {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--panel) 72%, transparent);
+      color: var(--muted);
+      padding: 0 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      min-height: 42px;
+      border-radius: var(--radius);
+      padding: 0 14px;
+      background: var(--panel);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(55, 92, 83, 0.08);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #09201b;
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 16px;
+      position: sticky;
+      top: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 13px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      min-height: 42px;
+      padding: 9px 10px;
+    }
+
+    small {
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .day-nav {
+      display: grid;
+      grid-template-columns: 42px 1fr 42px;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .icon-btn {
+      min-height: 42px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 1.25rem;
+      box-shadow: 0 6px 18px rgba(55, 92, 83, 0.08);
+    }
+
+    .results {
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero {
+      min-height: 300px;
+      display: grid;
+      grid-template-columns: minmax(190px, 0.9fr) 1.2fr;
+      gap: 18px;
+      align-items: center;
+      padding: 22px;
+      overflow: hidden;
+    }
+
+    .moon-stage {
+      aspect-ratio: 1;
+      width: min(100%, 280px);
+      margin: 0 auto;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 42% 35%, rgba(255,255,255,0.95), rgba(255,255,255,0.58) 35%, rgba(230,226,205,0.2) 58%, rgba(0,0,0,0.08) 100%),
+        linear-gradient(var(--moon-light-direction, 270deg), var(--moon-light, #f6f2d8) var(--moon-lit, 50%), #50615c 0);
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: inset -18px -22px 42px rgba(0,0,0,0.16), 0 24px 60px rgba(51, 82, 77, 0.22);
+      position: relative;
+    }
+
+    .moon-stage::after {
+      content: "";
+      position: absolute;
+      inset: 8%;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.24);
+      background:
+        radial-gradient(circle at 34% 28%, rgba(120,130,118,0.14) 0 4%, transparent 4.5%),
+        radial-gradient(circle at 63% 42%, rgba(120,130,118,0.16) 0 6%, transparent 6.5%),
+        radial-gradient(circle at 48% 68%, rgba(120,130,118,0.12) 0 5%, transparent 5.5%);
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 12px;
+    }
+
+    .kicker {
+      color: var(--accent);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+    }
+
+    .phase-title {
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1;
+    }
+
+    .meta {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .reading-card {
+      display: grid;
+      gap: 8px;
+      background: color-mix(in srgb, var(--panel-soft) 82%, var(--panel));
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 12px;
+      line-height: 1.45;
+    }
+
+    .reading-section {
+      padding: 16px;
+    }
+
+    .reading-section h2 {
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+
+    .reading-card strong {
+      font-size: 1rem;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      padding: 0 9px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      min-height: 86px;
+    }
+
+    .metric span, .kv span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 7px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.12rem;
+      line-height: 1.15;
+      overflow-wrap: anywhere;
+    }
+
+    .sections {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .section {
+      padding: 16px;
+    }
+
+    .section h2 {
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+
+    .kv-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.9fr) 1.2fr;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .kv:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .kv strong {
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .events {
+      display: grid;
+      gap: 8px;
+    }
+
+    .event {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--event-color, var(--accent));
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+
+    .event.phase { --event-color: var(--accent-2); }
+    .event.sign { --event-color: #7bc6a4; }
+    .event.mansion { --event-color: var(--accent-3); }
+    .event.rise { --event-color: #9bc7e6; }
+    .event.set { --event-color: #b9a7d8; }
+    .event.culmination { --event-color: #78b9c8; }
+    .event.lower { --event-color: #a8b7cf; }
+
+    .event strong {
+      font-size: 0.95rem;
+    }
+
+    .event time {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: right;
+    }
+
+    .timeline-panel {
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+
+    .timeline-title {
+      font-size: 1.1rem;
+    }
+
+    .timeline-meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: right;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: minmax(72px, 92px) 1fr;
+      gap: 8px 10px;
+      align-items: center;
+    }
+
+    .timeline-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .lane-track {
+      position: relative;
+      min-height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      overflow: hidden;
+    }
+
+    .phase-track {
+      background:
+        linear-gradient(90deg, #26342f 0 6%, #8aa097 20%, #f5edcb 49% 51%, #8aa097 80%, #26342f 94% 100%);
+    }
+
+    .sign-lane,
+    .mansion-lane {
+      background: var(--panel-soft);
+    }
+
+    .lane-segment {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      padding: 0 8px;
+      border-left: 1px solid var(--line);
+      color: #15362e;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sign-segment {
+      background: color-mix(in srgb, #7bc6a4 55%, var(--panel));
+      border-left-color: color-mix(in srgb, #7bc6a4 65%, var(--line));
+    }
+
+    .mansion-segment {
+      background: color-mix(in srgb, var(--accent-3) 58%, var(--panel));
+      border-left-color: color-mix(in srgb, var(--accent-3) 65%, var(--line));
+    }
+
+    [data-theme="dark"] .lane-segment {
+      color: #ecfff9;
+    }
+
+    [data-theme="dark"] .sign-segment {
+      background: color-mix(in srgb, #7bc6a4 38%, var(--panel));
+    }
+
+    [data-theme="dark"] .mansion-segment {
+      background: color-mix(in srgb, var(--accent-3) 34%, var(--panel));
+    }
+
+    .hour-row {
+      position: relative;
+      grid-column: 2;
+      min-height: 26px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .hour-row span {
+      position: absolute;
+      transform: translateX(-50%);
+      border-left: 1px solid var(--line);
+      padding-left: 6px;
+      white-space: nowrap;
+    }
+
+    .hour-row span:first-child { transform: translateX(0); }
+    .hour-row span:last-child { transform: translateX(-100%); }
+
+    .timeline-marker {
+      position: absolute;
+      top: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 26px;
+      margin-top: -13px;
+      border-radius: 999px;
+      border: 2px solid var(--panel);
+      background: var(--accent);
+      box-shadow: 0 10px 20px rgba(55, 92, 83, 0.18);
+      z-index: 4;
+    }
+
+    .timeline-marker.phase { background: var(--accent-2); }
+    .timeline-marker.sign { background: #7bc6a4; }
+    .timeline-marker.mansion { background: var(--accent-3); }
+    .timeline-marker.rise { background: #9bc7e6; }
+    .timeline-marker.set { background: #b9a7d8; }
+    .timeline-marker.culmination { background: #78b9c8; }
+    .timeline-marker.lower { background: #a8b7cf; }
+    .timeline-marker.angle {
+      width: 10px;
+      height: 22px;
+      margin-top: -11px;
+      background: rgba(255, 255, 255, 0.72);
+      border-color: rgba(35, 49, 45, 0.25);
+    }
+
+    .timeline-marker.is-active {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .timeline-cursor,
+    .now-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 2px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .timeline-cursor {
+      width: 0;
+      border-left: 2px dashed #357e75;
+    }
+
+    .now-marker {
+      background: rgba(217, 154, 138, 0.9);
+      box-shadow: 0 0 0 2px rgba(217, 154, 138, 0.18);
+    }
+
+    .timeline-cursor-label {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 3px 7px;
+      color: var(--ink);
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 6px 14px rgba(55, 92, 83, 0.12);
+    }
+
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--legend-color);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--legend-color) 25%, transparent);
+    }
+
+    .event-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .event-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      border-left: 6px solid var(--event-color, var(--accent));
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      min-height: 72px;
+    }
+
+    .event-card.phase { --event-color: var(--accent-2); }
+    .event-card.sign { --event-color: #7bc6a4; }
+    .event-card.mansion { --event-color: var(--accent-3); }
+    .event-card.rise { --event-color: #9bc7e6; }
+    .event-card.set { --event-color: #b9a7d8; }
+    .event-card.culmination { --event-color: #78b9c8; }
+    .event-card.lower { --event-color: #a8b7cf; }
+
+    .event-card.is-active {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .event-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+
+    .event-card strong {
+      display: block;
+      line-height: 1.2;
+    }
+
+    details.expert {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--panel-soft) 72%, transparent);
+      padding: 10px 12px;
+    }
+
+    details.expert summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    details.expert[open] summary {
+      margin-bottom: 10px;
+    }
+
+    .status {
+      min-height: 22px;
+      color: var(--muted);
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .import-box {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    @media (max-width: 900px) {
+      header, .layout, .hero, .sections {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        width: min(100% - 18px, 1180px);
+        padding-top: 12px;
+      }
+
+      .hero, .section, .controls {
+        padding: 13px;
+      }
+
+      .metric-grid, .kv, .event {
+        grid-template-columns: 1fr;
+      }
+
+      .event time {
+        text-align: left;
+      }
+    }
+
+    @media print {
+      :root {
+        --bg: #fff;
+        --panel: #fff;
+        --panel-soft: #fff;
+        --ink: #111;
+        --muted: #444;
+        --line: #bbb;
+        --shadow: none;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+
+      .toolbar, .controls, .status {
+        display: none !important;
+      }
+
+      .layout, .sections, .hero {
+        display: block;
+      }
+
+      .panel {
+        box-shadow: none;
+        break-inside: avoid;
+        margin-bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="kicker">Almanach lunaire offline</div>
+        <h1>Lune du jour</h1>
+        <p class="subtitle">Une lecture lunaire locale de 00h à 24h: phase, signe, demeures, passages et repères utiles pour observer ou interpréter la journée.</p>
+        <span class="app-version">v0.1.alpha</span>
+      </div>
+      <div class="toolbar">
+        <button class="btn" type="button" id="themeBtn">Mode nuit</button>
+        <button class="btn" type="button" id="printBtn">Imprimer</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="panel controls">
+        <form id="moonForm">
+          <div class="field">
+            <label for="dateInput">Date locale</label>
+            <input id="dateInput" name="date" type="date" required />
+          </div>
+          <div class="field">
+            <label for="timezoneInput">Fuseau</label>
+            <select id="timezoneInput" name="timezone" required>
+              <option value="-12">(UTC-12:00)</option>
+              <option value="-11">(UTC-11:00)</option>
+              <option value="-10">(UTC-10:00) Hawaii</option>
+              <option value="-9">(UTC-09:00) Alaska</option>
+              <option value="-8">(UTC-08:00) Pacifique hiver</option>
+              <option value="-7">(UTC-07:00) Pacifique été / Mountain hiver</option>
+              <option value="-6">(UTC-06:00) Central hiver</option>
+              <option value="-5">(UTC-05:00) Eastern hiver</option>
+              <option value="-4">(UTC-04:00) Eastern été</option>
+              <option value="-3">(UTC-03:00)</option>
+              <option value="-1">(UTC-01:00)</option>
+              <option value="0">(UTC+00:00)</option>
+              <option value="1">(UTC+01:00) Paris hiver</option>
+              <option value="2" selected>(UTC+02:00) Paris été</option>
+              <option value="3">(UTC+03:00)</option>
+              <option value="4">(UTC+04:00)</option>
+              <option value="5.5">(UTC+05:30)</option>
+              <option value="7">(UTC+07:00)</option>
+              <option value="8">(UTC+08:00)</option>
+              <option value="9">(UTC+09:00)</option>
+              <option value="10">(UTC+10:00)</option>
+              <option value="12">(UTC+12:00)</option>
+              <option value="13">(UTC+13:00)</option>
+              <option value="14">(UTC+14:00)</option>
+            </select>
+            <small>Lever/coucher: repère indicatif au méridien central du fuseau, latitude 0. Un vrai lever local exige latitude et longitude.</small>
+          </div>
+          <div class="button-row">
+            <button class="btn primary" type="submit">Calculer</button>
+            <button class="btn" type="button" id="nowBtn">Maintenant</button>
+          </div>
+          <div class="day-nav">
+            <button class="icon-btn" type="button" id="prevDayBtn" title="Jour précédent">‹</button>
+            <button class="btn" type="button" id="todayBtn" title="Revenir à aujourd’hui">Aujourd’hui</button>
+            <button class="icon-btn" type="button" id="nextDayBtn" title="Jour suivant">›</button>
+          </div>
+          <p class="status" id="statusText"></p>
+        </form>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0" />
+
+        <details class="expert">
+          <summary>Options avancées</summary>
+          <div class="field">
+            <label for="jsonBox">Export / import JSON</label>
+            <textarea class="import-box" id="jsonBox" spellcheck="false"></textarea>
+            <small>Export lisible, importable dans cette page hors ligne.</small>
+          </div>
+          <div class="button-row">
+            <button class="btn" type="button" id="exportBtn">Exporter</button>
+            <button class="btn" type="button" id="importBtn">Importer</button>
+          </div>
+        </details>
+      </aside>
+
+      <section class="results" aria-live="polite">
+        <section class="panel hero">
+          <div class="moon-stage" id="moonVisual" aria-hidden="true"></div>
+          <div class="hero-copy">
+            <div class="kicker" id="utcLabel">Journée locale</div>
+            <h2 class="phase-title" id="phaseTitle">Journée lunaire</h2>
+            <p class="meta" id="phaseMeta">Choisis une date et un fuseau pour lire la Lune de 00h à 24h.</p>
+            <div class="metric-grid">
+              <article class="metric"><span>Illumination</span><strong id="illuminationValue">n/a</strong></article>
+              <article class="metric"><span>Depuis Nouvelle Lune</span><strong id="ageValue">n/a</strong></article>
+              <article class="metric"><span>Tendance</span><strong id="trendValue">n/a</strong></article>
+              <article class="metric"><span>Distance</span><strong id="distanceValue">n/a</strong></article>
+              <article class="metric"><span>Prochain jalon</span><strong id="nextEventValue">n/a</strong></article>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel timeline-panel">
+          <div class="timeline-head">
+            <div>
+              <div class="kicker">Timeline</div>
+              <h2 class="timeline-title" id="timelineTitle">Jalons du jour</h2>
+            </div>
+            <div class="timeline-meta" id="timelineMeta">00h → 24h</div>
+          </div>
+          <div class="timeline" id="timeline">
+            <div class="timeline-label">Jalons</div>
+            <div class="lane-track event-lane" id="eventLane"></div>
+            <div class="timeline-label">Angle</div>
+            <div class="lane-track phase-track" id="phaseAngleLane"></div>
+            <div class="timeline-label">Signes</div>
+            <div class="lane-track sign-lane" id="signLane"></div>
+            <div class="timeline-label">Demeures</div>
+            <div class="lane-track mansion-lane" id="mansionLane"></div>
+            <div class="hour-row">
+              <span style="left:0%">00h</span><span style="left:16.6667%">04h</span><span style="left:33.3333%">08h</span><span style="left:50%">12h</span><span style="left:66.6667%">16h</span><span style="left:83.3333%">20h</span><span style="left:100%">24h</span>
+            </div>
+          </div>
+          <div class="timeline-legend">
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: var(--accent-2)"></span>Phase</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #7bc6a4"></span>Signe</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: var(--accent-3)"></span>Demeure</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #9bc7e6"></span>Lever</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #b9a7d8"></span>Coucher</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #78b9c8"></span>Culmination</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #d99a8a"></span>Maintenant</span>
+            <span class="legend-item"><span class="legend-dot" style="--legend-color: #357e75"></span>Sélection</span>
+          </div>
+          <div class="event-strip" id="dayEvents"></div>
+        </section>
+
+        <section class="panel reading-section">
+          <h2>Lecture du jour</h2>
+          <article class="reading-card" id="readingCard">
+            <strong>Lecture du jour</strong>
+            <p class="meta">La synthèse apparaîtra après calcul.</p>
+          </article>
+        </section>
+
+        <div class="sections">
+          <section class="panel section">
+            <h2>Astrologie lunaire</h2>
+            <div class="kv-list" id="astroList"></div>
+          </section>
+
+          <section class="panel section">
+            <h2>Astronomie</h2>
+            <div class="kv-list" id="astroNomieList"></div>
+          </section>
+
+          <section class="panel section">
+            <h2>Changements du jour</h2>
+            <div class="events" id="eventsList"></div>
+          </section>
+
+          <section class="panel section">
+            <h2>Détails du cycle</h2>
+            <div class="kv-list" id="cycleList"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "luuma.lune.utc.v1";
+    const SYNODIC_MONTH = 29.530588853;
+    const KM_PER_AU = 149597870.7;
+    const MOON_RADIUS_KM = 1737.4;
+    const AYANAMSAS = {
+      lahiri: 23.8531,
+      faganBradley: 24.0420,
+      krishnamurti: 23.8565
+    };
+    const AYANAMSA_LABELS = {
+      lahiri: "Lahiri",
+      faganBradley: "Fagan-Bradley",
+      krishnamurti: "Krishnamurti"
+    };
+    const SIGNS = [
+      { name: "Bélier", element: "Feu", mode: "Cardinal" },
+      { name: "Taureau", element: "Terre", mode: "Fixe" },
+      { name: "Gémeaux", element: "Air", mode: "Mutable" },
+      { name: "Cancer", element: "Eau", mode: "Cardinal" },
+      { name: "Lion", element: "Feu", mode: "Fixe" },
+      { name: "Vierge", element: "Terre", mode: "Mutable" },
+      { name: "Balance", element: "Air", mode: "Cardinal" },
+      { name: "Scorpion", element: "Eau", mode: "Fixe" },
+      { name: "Sagittaire", element: "Feu", mode: "Mutable" },
+      { name: "Capricorne", element: "Terre", mode: "Cardinal" },
+      { name: "Verseau", element: "Air", mode: "Fixe" },
+      { name: "Poissons", element: "Eau", mode: "Mutable" }
+    ];
+    const NAKSHATRAS = [
+      "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha",
+      "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+      "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+    ];
+    const MANSIONS_28 = [
+      "Al Sharatain", "Al Butain", "Al Thurayya", "Al Dabaran", "Al Hak'ah", "Al Han'ah", "Al Dhira", "Al Nathrah",
+      "Al Tarf", "Al Jabhah", "Al Zubrah", "Al Sarfah", "Al Awwa", "Al Simak", "Al Ghafr", "Al Jubana",
+      "Al Iklil", "Al Qalb", "Al Shaulah", "Al Na'am", "Al Baldah", "Sa'd al Dhabih", "Sa'd Bula", "Sa'd al Su'ud",
+      "Sa'd al Akhbiya", "Al Fargh al Awwal", "Al Fargh al Thani", "Al Batn al Hut"
+    ];
+    const PHASE_EVENTS = [
+      { key: "newMoon", label: "Nouvelle Lune", angleDeg: 0 },
+      { key: "firstQuarter", label: "Premier quartier", angleDeg: 90 },
+      { key: "fullMoon", label: "Pleine Lune", angleDeg: 180 },
+      { key: "lastQuarter", label: "Dernier quartier", angleDeg: 270 }
+    ];
+    const LONGITUDE_DISTANCE_TERMS = [
+      { d: 0, m: 0, mp: 1, f: 0, lon: 6.288774, dist: -20905.355 },
+      { d: 2, m: 0, mp: -1, f: 0, lon: 1.274027, dist: -3699.111 },
+      { d: 2, m: 0, mp: 0, f: 0, lon: 0.658314, dist: -2955.968 },
+      { d: 0, m: 0, mp: 2, f: 0, lon: 0.213618, dist: -569.925 },
+      { d: 0, m: 1, mp: 0, f: 0, lon: -0.185116, dist: 48.888 },
+      { d: 0, m: 0, mp: 0, f: 2, lon: -0.114332, dist: 0 },
+      { d: 2, m: 0, mp: -2, f: 0, lon: 0.058793, dist: 246.158 },
+      { d: 2, m: -1, mp: -1, f: 0, lon: 0.057066, dist: -152.138 },
+      { d: 2, m: 0, mp: 1, f: 0, lon: 0.053322, dist: -170.733 },
+      { d: 2, m: -1, mp: 0, f: 0, lon: 0.045758, dist: -204.586 },
+      { d: 0, m: 1, mp: -1, f: 0, lon: -0.040923, dist: -129.620 },
+      { d: 1, m: 0, mp: 0, f: 0, lon: -0.034720, dist: 108.743 },
+      { d: 0, m: 1, mp: 1, f: 0, lon: -0.030383, dist: 104.755 },
+      { d: 2, m: 0, mp: 0, f: -2, lon: 0.015327, dist: 10.321 },
+      { d: 0, m: 0, mp: 1, f: 2, lon: -0.012528, dist: 0 },
+      { d: 0, m: 0, mp: 1, f: -2, lon: 0.010980, dist: 79.661 },
+      { d: 4, m: 0, mp: -1, f: 0, lon: 0.010675, dist: -34.782 },
+      { d: 0, m: 0, mp: 3, f: 0, lon: 0.010034, dist: -23.210 },
+      { d: 4, m: 0, mp: -2, f: 0, lon: 0.008548, dist: -21.636 },
+      { d: 2, m: 1, mp: -1, f: 0, lon: -0.007888, dist: 24.208 },
+      { d: 2, m: 1, mp: 0, f: 0, lon: -0.006766, dist: 30.824 },
+      { d: 1, m: 0, mp: -1, f: 0, lon: -0.005163, dist: -8.379 },
+      { d: 1, m: 1, mp: 0, f: 0, lon: 0.004987, dist: -16.675 },
+      { d: 2, m: 0, mp: 2, f: 0, lon: 0.004036, dist: -12.831 },
+      { d: 2, m: 0, mp: -3, f: 0, lon: 0.003994, dist: 14.403 },
+      { d: 2, m: 1, mp: -2, f: 0, lon: 0.003861, dist: -11.650 },
+      { d: 0, m: 1, mp: -2, f: 0, lon: -0.003665, dist: -7.003 },
+      { d: 2, m: -1, mp: 1, f: 0, lon: 0.002695, dist: 0 },
+      { d: 2, m: 0, mp: 1, f: -2, lon: 0.002602, dist: 0 },
+      { d: 2, m: -1, mp: -2, f: 0, lon: 0.002396, dist: 0 }
+    ];
+    const LATITUDE_TERMS = [
+      { d: 0, m: 0, mp: 0, f: 1, lat: 5.128122 },
+      { d: 0, m: 0, mp: 1, f: 1, lat: 0.280602 },
+      { d: 0, m: 0, mp: 1, f: -1, lat: 0.277693 },
+      { d: 2, m: 0, mp: 0, f: -1, lat: 0.173237 },
+      { d: 2, m: 0, mp: -1, f: 1, lat: 0.055413 },
+      { d: 2, m: 0, mp: -1, f: -1, lat: 0.046271 },
+      { d: 2, m: 0, mp: 0, f: 1, lat: 0.032573 },
+      { d: 0, m: 0, mp: 2, f: 1, lat: 0.017198 },
+      { d: 2, m: 0, mp: 1, f: -1, lat: 0.009266 },
+      { d: 0, m: 0, mp: 2, f: -1, lat: 0.008822 },
+      { d: 2, m: -1, mp: 0, f: -1, lat: 0.008216 },
+      { d: 2, m: 0, mp: -2, f: -1, lat: 0.004324 },
+      { d: 2, m: 0, mp: 1, f: 1, lat: 0.004200 },
+      { d: 2, m: 1, mp: 0, f: -1, lat: -0.003359 },
+      { d: 2, m: -1, mp: -1, f: 1, lat: 0.002463 },
+      { d: 2, m: -1, mp: 0, f: 1, lat: 0.002211 },
+      { d: 2, m: -1, mp: -1, f: -1, lat: 0.002065 },
+      { d: 0, m: 1, mp: -1, f: -1, lat: -0.001870 },
+      { d: 4, m: 0, mp: -1, f: -1, lat: 0.001828 },
+      { d: 0, m: 1, mp: 0, f: 1, lat: -0.001794 },
+      { d: 0, m: 0, mp: 0, f: 3, lat: -0.001749 },
+      { d: 0, m: 1, mp: -1, f: 1, lat: -0.001565 },
+      { d: 1, m: 0, mp: 0, f: 1, lat: -0.001491 },
+      { d: 0, m: 1, mp: 1, f: 1, lat: -0.001475 },
+      { d: 0, m: 1, mp: 1, f: -1, lat: -0.001410 },
+      { d: 0, m: 1, mp: 0, f: -1, lat: -0.001344 },
+      { d: 1, m: 0, mp: 0, f: -1, lat: -0.001335 },
+      { d: 0, m: 0, mp: 3, f: 1, lat: 0.001107 },
+      { d: 4, m: 0, mp: 0, f: -1, lat: 0.001021 },
+      { d: 4, m: 0, mp: -1, f: 1, lat: 0.000833 }
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    function degToRad(deg) { return deg * Math.PI / 180; }
+    function radToDeg(rad) { return rad * 180 / Math.PI; }
+    function normalizeDeg(deg) {
+      let result = deg % 360;
+      if (result < 0) result += 360;
+      return result;
+    }
+    function normalize180(deg) {
+      let result = normalizeDeg(deg);
+      if (result > 180) result -= 360;
+      return result;
+    }
+    function sinDeg(deg) { return Math.sin(degToRad(deg)); }
+    function cosDeg(deg) { return Math.cos(degToRad(deg)); }
+    function atan2Deg(y, x) { return radToDeg(Math.atan2(y, x)); }
+    function asinDeg(value) { return radToDeg(Math.asin(value)); }
+    function eclipticToEquatorial(lambdaDeg, betaDeg, epsilonDeg) {
+      const x = cosDeg(lambdaDeg) * cosDeg(betaDeg);
+      const y = sinDeg(lambdaDeg) * cosDeg(betaDeg) * cosDeg(epsilonDeg) - sinDeg(betaDeg) * sinDeg(epsilonDeg);
+      const z = sinDeg(lambdaDeg) * cosDeg(betaDeg) * sinDeg(epsilonDeg) + sinDeg(betaDeg) * cosDeg(epsilonDeg);
+      return { raDeg: normalizeDeg(atan2Deg(y, x)), decDeg: asinDeg(z) };
+    }
+    function julianDayFromDate(date) { return (date.getTime() / 86400000) + 2440587.5; }
+    function dateFromJulianDay(jd) { return new Date((jd - 2440587.5) * 86400000); }
+    function julianCenturiesSinceJ2000(jd) { return (jd - 2451545.0) / 36525; }
+    function meanObliquityDeg(T) {
+      const seconds = 21.448 - T * (46.8150 + T * (0.00059 - T * 0.001813));
+      return 23 + (26 + seconds / 60) / 60;
+    }
+    function trueObliquityDeg(T) {
+      const omega = 125.04 - 1934.136 * T;
+      return meanObliquityDeg(T) + 0.00256 * cosDeg(omega);
+    }
+
+    function computeSunFromJd(jd) {
+      const T = julianCenturiesSinceJ2000(jd);
+      const epsilonDeg = trueObliquityDeg(T);
+      const L0 = normalizeDeg(280.46646 + 36000.76983 * T);
+      const M = normalizeDeg(357.52911 + 35999.05029 * T);
+      const eccentricity = 0.016708634 - T * (0.000042037 + 0.0000001267 * T);
+      const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * sinDeg(M)
+        + (0.019993 - 0.000101 * T) * sinDeg(2 * M)
+        + 0.000289 * sinDeg(3 * M);
+      const trueLongitude = normalizeDeg(L0 + C);
+      const trueAnomaly = normalizeDeg(M + C);
+      const omega = 125.04 - 1934.136 * T;
+      const apparentLongitude = normalizeDeg(trueLongitude - 0.00569 - 0.00478 * sinDeg(omega));
+      const distanceAu = (1.000001018 * (1 - eccentricity * eccentricity)) / (1 + eccentricity * cosDeg(trueAnomaly));
+      const eq = eclipticToEquatorial(apparentLongitude, 0, epsilonDeg);
+      return { longitudeDeg: apparentLongitude, latitudeDeg: 0, rightAscensionDeg: eq.raDeg, declinationDeg: eq.decDeg, distanceAu };
+    }
+
+    function termEccentricityFactor(term, E) {
+      return term.m === 0 ? 1 : E ** Math.abs(term.m);
+    }
+    function termArgumentDeg(term, D, M, Mprime, F) {
+      return term.d * D + term.m * M + term.mp * Mprime + term.f * F;
+    }
+    function computeMoonFromJd(jd) {
+      const T = julianCenturiesSinceJ2000(jd);
+      const epsilonDeg = trueObliquityDeg(T);
+      const L = normalizeDeg(218.3164477 + 481267.88123421 * T);
+      const M = normalizeDeg(357.5291092 + 35999.0502909 * T);
+      const Mprime = normalizeDeg(134.9633964 + 477198.8675055 * T);
+      const D = normalizeDeg(297.8501921 + 445267.1114034 * T);
+      const F = normalizeDeg(93.2720950 + 483202.0175233 * T);
+      const E = 1 - 0.002516 * T - 0.0000074 * T * T;
+      const A1 = normalizeDeg(119.75 + 131.849 * T);
+      const A2 = normalizeDeg(53.09 + 479264.290 * T);
+      const A3 = normalizeDeg(313.45 + 481266.484 * T);
+      let longitudeCorrection = 0;
+      let latitudeCorrection = 0;
+      let distanceCorrectionKm = 0;
+
+      for (const term of LONGITUDE_DISTANCE_TERMS) {
+        const factor = termEccentricityFactor(term, E);
+        const angleDeg = termArgumentDeg(term, D, M, Mprime, F);
+        longitudeCorrection += term.lon * factor * sinDeg(angleDeg);
+        distanceCorrectionKm += term.dist * factor * cosDeg(angleDeg);
+      }
+      for (const term of LATITUDE_TERMS) {
+        const factor = termEccentricityFactor(term, E);
+        const angleDeg = termArgumentDeg(term, D, M, Mprime, F);
+        latitudeCorrection += term.lat * factor * sinDeg(angleDeg);
+      }
+
+      longitudeCorrection += 0.003958 * sinDeg(A1);
+      longitudeCorrection += 0.001962 * sinDeg(L - F);
+      longitudeCorrection += 0.000318 * sinDeg(A2);
+      latitudeCorrection += -0.002235 * sinDeg(L);
+      latitudeCorrection += 0.000382 * sinDeg(A3);
+      latitudeCorrection += 0.000175 * sinDeg(A1 - F);
+      latitudeCorrection += 0.000175 * sinDeg(A1 + F);
+      latitudeCorrection += 0.000127 * sinDeg(L - Mprime);
+      latitudeCorrection += -0.000115 * sinDeg(L + Mprime);
+
+      const longitude = normalizeDeg(L + longitudeCorrection);
+      const latitude = latitudeCorrection;
+      const distanceKm = 385000.56 + distanceCorrectionKm;
+      const eq = eclipticToEquatorial(longitude, latitude, epsilonDeg);
+      return {
+        longitudeDeg: longitude,
+        latitudeDeg: latitude,
+        rightAscensionDeg: eq.raDeg,
+        declinationDeg: eq.decDeg,
+        distanceKm,
+        meanLongitudeDeg: L,
+        meanAnomalyDeg: Mprime,
+        argumentLatitudeDeg: F,
+        elongationDeg: D
+      };
+    }
+
+    function moonPhaseAngle(sunLonDeg, moonLonDeg) {
+      return normalizeDeg(moonLonDeg - sunLonDeg);
+    }
+    function getMoonPhaseLabel(sunLonDeg, moonLonDeg) {
+      const phase = moonPhaseAngle(sunLonDeg, moonLonDeg);
+      if (phase < 22.5 || phase >= 337.5) return "Nouvelle Lune";
+      if (phase < 67.5) return "Premier croissant";
+      if (phase < 112.5) return "Premier quartier";
+      if (phase < 157.5) return "Gibbeuse croissante";
+      if (phase < 202.5) return "Pleine Lune";
+      if (phase < 247.5) return "Gibbeuse décroissante";
+      if (phase < 292.5) return "Dernier quartier";
+      return "Dernier croissant";
+    }
+    function emptyMoonPhaseEvents() {
+      return { previous: [], next: [], previousByKey: {}, nextByKey: {} };
+    }
+    function buildMoonPhaseData(sunBody, moonBody, jd, options = {}) {
+      const angle = moonPhaseAngle(sunBody.longitudeDeg, moonBody.longitudeDeg);
+      const phaseAngleRad = degToRad(angle);
+      const sunDistanceKm = (sunBody.distanceAu ?? 1) * KM_PER_AU;
+      const moonDistanceKm = moonBody.distanceKm ?? 384400;
+      const i = Math.atan2(
+        sunDistanceKm * Math.sin(phaseAngleRad),
+        moonDistanceKm - sunDistanceKm * Math.cos(phaseAngleRad)
+      );
+      const illuminationFraction = (1 + Math.cos(i)) / 2;
+      const events = options.phaseEventsAround
+        ?? (options.includeCycle === false ? emptyMoonPhaseEvents() : computeMoonPhaseEventsAround(jd));
+      const previousNewMoon = events.previousByKey.newMoon ?? null;
+      const nextNewMoon = events.nextByKey.newMoon ?? null;
+      const currentCycleLengthDays = previousNewMoon && nextNewMoon ? nextNewMoon.jd - previousNewMoon.jd : SYNODIC_MONTH;
+      const trueAgeDays = previousNewMoon ? jd - previousNewMoon.jd : (angle / 360) * SYNODIC_MONTH;
+      const apparentAngularDiameterDeg = radToDeg(2 * Math.atan(MOON_RADIUS_KM / moonDistanceKm));
+      return {
+        angleDeg: angle,
+        illuminationFraction,
+        illuminationPercent: illuminationFraction * 100,
+        brightLimbPhaseAngleDeg: normalizeDeg(radToDeg(i)),
+        ageDays: (angle / 360) * SYNODIC_MONTH,
+        trueAgeDays,
+        synodicCycleLengthDays: currentCycleLengthDays,
+        synodicProgress: currentCycleLengthDays > 0 ? trueAgeDays / currentCycleLengthDays : null,
+        apparentAngularDiameterDeg,
+        apparentAngularDiameterArcMin: apparentAngularDiameterDeg * 60,
+        label: getMoonPhaseLabel(sunBody.longitudeDeg, moonBody.longitudeDeg),
+        waxing: angle > 0 && angle < 180,
+        previousMajorPhase: events.previous[0] ?? null,
+        nextMajorPhase: events.next[0] ?? null,
+        previousNewMoon,
+        nextNewMoon,
+        events
+      };
+    }
+
+    function phaseErrorDeg(jd, targetAngleDeg) {
+      const sun = computeSunFromJd(jd);
+      const moon = computeMoonFromJd(jd);
+      return normalize180((moon.longitudeDeg - sun.longitudeDeg) - targetAngleDeg);
+    }
+    function phaseDistanceDeg(jd, targetAngleDeg) {
+      return Math.abs(phaseErrorDeg(jd, targetAngleDeg));
+    }
+    function refineEventJd(lowerJd, upperJd, targetAngleDeg) {
+      let low = lowerJd;
+      let high = upperJd;
+      for (let i = 0; i < 40; i += 1) {
+        const leftThird = low + (high - low) / 3;
+        const rightThird = high - (high - low) / 3;
+        if (phaseDistanceDeg(leftThird, targetAngleDeg) <= phaseDistanceDeg(rightThird, targetAngleDeg)) {
+          high = rightThird;
+        } else {
+          low = leftThird;
+        }
+      }
+      return (low + high) / 2;
+    }
+    function findEventCandidates(startJd, direction, targetAngleDeg) {
+      const step = 0.25 * direction;
+      const steps = Math.ceil(40 / 0.25);
+      const samples = [];
+      for (let i = 0; i <= steps; i += 1) {
+        const jd = startJd + i * step;
+        samples.push({ jd, distance: phaseDistanceDeg(jd, targetAngleDeg) });
+      }
+      const results = [];
+      for (let i = 1; i < samples.length - 1; i += 1) {
+        const previous = samples[i - 1];
+        const current = samples[i];
+        const next = samples[i + 1];
+        if (current.distance <= previous.distance && current.distance < next.distance) {
+          const refinedJd = refineEventJd(Math.min(previous.jd, next.jd), Math.max(previous.jd, next.jd), targetAngleDeg);
+          if (phaseDistanceDeg(refinedJd, targetAngleDeg) <= 1) results.push(refinedJd);
+        }
+      }
+      return [...new Set(results.map((value) => value.toFixed(9)))].map(Number).sort((a, b) => a - b);
+    }
+    function computeMoonPhaseEventsAround(jd) {
+      const previous = [];
+      const next = [];
+      for (const target of PHASE_EVENTS) {
+        const previousHits = findEventCandidates(jd, -1, target.angleDeg);
+        const nextHits = findEventCandidates(jd, 1, target.angleDeg);
+        const previousJd = previousHits.filter((value) => value < jd - 1e-8).at(-1);
+        const nextJd = nextHits.find((value) => value > jd + 1e-8);
+        if (previousJd != null) previous.push({ ...target, jd: previousJd, utcIso: dateFromJulianDay(previousJd).toISOString() });
+        if (nextJd != null) next.push({ ...target, jd: nextJd, utcIso: dateFromJulianDay(nextJd).toISOString() });
+      }
+      previous.sort((a, b) => b.jd - a.jd);
+      next.sort((a, b) => a.jd - b.jd);
+      return {
+        previous,
+        next,
+        previousByKey: Object.fromEntries(previous.map((event) => [event.key, event])),
+        nextByKey: Object.fromEntries(next.map((event) => [event.key, event]))
+      };
+    }
+
+    function getSign(longitudeDeg) {
+      const lon = normalizeDeg(longitudeDeg);
+      const index = Math.floor(lon / 30);
+      return { ...SIGNS[index], index, degreeInSign: lon % 30 };
+    }
+    function getSiderealSign(longitudeDeg, ayanamsaKey) {
+      const siderealLongitude = normalizeDeg(longitudeDeg - (AYANAMSAS[ayanamsaKey] ?? AYANAMSAS.lahiri));
+      return { ...getSign(siderealLongitude), siderealLongitude };
+    }
+    function getNakshatra(siderealLongitude) {
+      const span = 360 / 27;
+      const index = Math.floor(normalizeDeg(siderealLongitude) / span);
+      const pada = Math.floor((normalizeDeg(siderealLongitude) % span) / (span / 4)) + 1;
+      return { name: NAKSHATRAS[index], index, pada, degree: normalizeDeg(siderealLongitude) % span };
+    }
+    function getMansion28(longitudeDeg) {
+      const span = 360 / 28;
+      const index = Math.floor(normalizeDeg(longitudeDeg) / span);
+      return { name: MANSIONS_28[index], index, degree: normalizeDeg(longitudeDeg) % span };
+    }
+    function getDecan(sign) {
+      return Math.floor(sign.degreeInSign / 10) + 1;
+    }
+
+    function greenwichSiderealTimeDeg(jd) {
+      const T = (jd - 2451545.0) / 36525;
+      return normalizeDeg(280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - (T * T * T) / 38710000);
+    }
+    function localSiderealTimeDeg(jd, longitudeDeg) {
+      return normalizeDeg(greenwichSiderealTimeDeg(jd) + longitudeDeg);
+    }
+    function parseDateParts(dateText) {
+      const [year, month, day] = dateText.split("-").map(Number);
+      if (![year, month, day].every(Number.isFinite)) throw new Error("Date invalide.");
+      return { year, month, day };
+    }
+    function localDayStartUtc(dateText, utcOffsetHours) {
+      const { year, month, day } = parseDateParts(dateText);
+      return new Date(Date.UTC(year, month - 1, day) - Math.round(utcOffsetHours * 3600000));
+    }
+    function toInputDateForOffset(date, utcOffsetHours) {
+      const shifted = new Date(date.getTime() + Math.round(utcOffsetHours * 3600000));
+      return shifted.toISOString().slice(0, 10);
+    }
+    function shiftDateText(dateText, days) {
+      const { year, month, day } = parseDateParts(dateText);
+      const date = new Date(Date.UTC(year, month - 1, day + days));
+      return date.toISOString().slice(0, 10);
+    }
+    function formatOffset(offset) {
+      const sign = offset >= 0 ? "+" : "-";
+      const absoluteMinutes = Math.abs(Math.round(offset * 60));
+      const hours = String(Math.floor(absoluteMinutes / 60)).padStart(2, "0");
+      const minutes = String(absoluteMinutes % 60).padStart(2, "0");
+      return `UTC${sign}${hours}:${minutes}`;
+    }
+    function formatUtc(date) {
+      return date.toISOString().replace(".000Z", " UTC");
+    }
+    function formatLocalTime(isoString, utcOffsetHours) {
+      const date = new Date(isoString);
+      if (Number.isNaN(date.getTime())) return "n/a";
+      const shifted = new Date(date.getTime() + Math.round(utcOffsetHours * 3600000));
+      const hours = String(shifted.getUTCHours()).padStart(2, "0");
+      const minutes = String(shifted.getUTCMinutes()).padStart(2, "0");
+      return `${hours}h${minutes}`;
+    }
+    function formatHumanLocalDateTime(isoString, utcOffsetHours) {
+      const date = new Date(isoString);
+      if (Number.isNaN(date.getTime())) return "n/a";
+      const shifted = new Date(date.getTime() + Math.round(utcOffsetHours * 3600000));
+      const parts = new Intl.DateTimeFormat("fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC"
+      }).formatToParts(shifted);
+      const map = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+      const weekday = map.weekday ? map.weekday.charAt(0).toUpperCase() + map.weekday.slice(1) : "";
+      return `${weekday} ${map.day} ${map.month} ${map.year} à ${map.hour}h${map.minute}`;
+    }
+    function formatDeg(value, digits = 2) {
+      return Number.isFinite(value) ? `${value.toFixed(digits)}°` : "n/a";
+    }
+    function formatSignedDeg(value, digits = 2) {
+      if (!Number.isFinite(value)) return "n/a";
+      return `${value >= 0 ? "+" : ""}${value.toFixed(digits)}°`;
+    }
+    function formatPercent(value, digits = 2) {
+      return Number.isFinite(value) ? `${value.toFixed(digits)}%` : "n/a";
+    }
+    function formatKm(value) {
+      return Number.isFinite(value) ? `${Math.round(value).toLocaleString("fr-FR")} km` : "n/a";
+    }
+    function formatDurationDays(days) {
+      if (!Number.isFinite(days)) return "n/a";
+      const totalMinutes = Math.max(0, Math.round(days * 1440));
+      const wholeDays = Math.floor(totalMinutes / 1440);
+      const hours = Math.floor((totalMinutes % 1440) / 60);
+      const minutes = totalMinutes % 60;
+      if (wholeDays > 0) return `${wholeDays} j ${hours} h`;
+      if (hours > 0) return `${hours} h ${minutes} min`;
+      return `${minutes} min`;
+    }
+    function formatNavDate(dateText, utcOffsetHours) {
+      if (!dateText) return "Aujourd’hui";
+      const todayText = toInputDateForOffset(new Date(), utcOffsetHours);
+      if (dateText === todayText) return "Aujourd’hui";
+      const { year, month, day } = parseDateParts(dateText);
+      const date = new Date(Date.UTC(year, month - 1, day));
+      const label = new Intl.DateTimeFormat("fr-FR", {
+        weekday: "short",
+        day: "numeric",
+        month: "short"
+      }).format(date);
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+    function formatDegreeInSign(value) {
+      if (!Number.isFinite(value)) return "n/a";
+      const deg = Math.floor(value);
+      const minutes = Math.floor((value - deg) * 60);
+      const seconds = Math.round((((value - deg) * 60) - minutes) * 60);
+      return `${deg}° ${String(minutes).padStart(2, "0")}' ${String(seconds).padStart(2, "0")}"`;
+    }
+    function shortDegree(value) {
+      if (!Number.isFinite(value)) return "n/a";
+      const totalMinutes = Math.round(value * 60);
+      return `${Math.floor(totalMinutes / 60)}°${String(totalMinutes % 60).padStart(2, "0")}`;
+    }
+    function eventProgress(event, data) {
+      return Math.max(0, Math.min(1, (event.jd - data.startJd) / (data.endJd - data.startJd)));
+    }
+    function getPhaseArchetype(phase) {
+      const angle = phase.angleDeg;
+      if (angle < 22.5 || angle >= 337.5) return { name: "Intention", text: "moment de reset, de silence et de choix simples" };
+      if (angle < 67.5) return { name: "Elan", text: "croissance initiale, curiosité et premiers gestes" };
+      if (angle < 112.5) return { name: "Ajustement", text: "décisions, friction constructive et mise en mouvement" };
+      if (angle < 157.5) return { name: "Affinage", text: "préparation, amélioration et montée en intensité" };
+      if (angle < 202.5) return { name: "Culmination", text: "visibilité, révélation et pleine intensité émotionnelle" };
+      if (angle < 247.5) return { name: "Intégration", text: "partage, digestion et tri de ce qui a mûri" };
+      if (angle < 292.5) return { name: "Réorientation", text: "bilan, correction de trajectoire et simplification" };
+      return { name: "Délestage", text: "repos, clôture et retour à l’essentiel" };
+    }
+    function getSignKeywords(sign) {
+      const keywords = [
+        "directe, vive, initiatrice", "stable, sensorielle, patiente", "mobile, mentale, communicante",
+        "protectrice, intime, mémorielle", "expressive, chaleureuse, créative", "précise, utile, discernante",
+        "relationnelle, harmonisante, diplomate", "intense, lucide, transformatrice", "ouverte, franche, exploratrice",
+        "structurante, responsable, concrète", "collective, inventive, détachée", "sensible, imaginale, poreuse"
+      ];
+      return keywords[sign.index] ?? "nuancée";
+    }
+    function buildReading(focus) {
+      const phase = getPhaseArchetype(focus.phase);
+      const signKeywords = getSignKeywords(focus.tropical);
+      const trend = focus.phase.waxing ? "La dynamique monte" : "La dynamique descend";
+      return {
+        title: `${phase.name} · Lune ${focus.tropical.name}`,
+        text: `${trend}: ${phase.text}. La tonalité ${focus.tropical.name.toLowerCase()} rend la journée ${signKeywords}.`,
+        tags: [focus.phase.label, focus.tropical.element, focus.tropical.mode, `Demeure ${focus.mansion.index + 1}`]
+      };
+    }
+    function getNextMajorPhaseLabel(focus, utcOffset) {
+      const event = focus.phase.nextMajorPhase;
+      if (!event) return "n/a";
+      return `${event.label} · ${formatDurationDays(event.jd - focus.jd)} · ${formatLocalTime(event.utcIso, utcOffset)}`;
+    }
+    function kv(label, value) {
+      return `<div class="kv"><span>${label}</span><strong>${value}</strong></div>`;
+    }
+    function altitudeDegAtJd(jd, latitudeDeg, longitudeDeg) {
+      const moon = computeMoonFromJd(jd);
+      const hourAngleDeg = normalize180(localSiderealTimeDeg(jd, longitudeDeg) - moon.rightAscensionDeg);
+      const altitudeDeg = asinDeg(
+        sinDeg(latitudeDeg) * sinDeg(moon.declinationDeg)
+        + cosDeg(latitudeDeg) * cosDeg(moon.declinationDeg) * cosDeg(hourAngleDeg)
+      );
+      const horizontalParallaxDeg = asinDeg(6378.14 / moon.distanceKm);
+      const thresholdDeg = 0.7275 * horizontalParallaxDeg - 0.5667;
+      return altitudeDeg - thresholdDeg;
+    }
+    function refineAltitudeCrossing(lowerJd, upperJd, latitudeDeg, longitudeDeg) {
+      let low = lowerJd;
+      let high = upperJd;
+      let lowValue = altitudeDegAtJd(low, latitudeDeg, longitudeDeg);
+      for (let i = 0; i < 32; i += 1) {
+        const mid = (low + high) / 2;
+        const midValue = altitudeDegAtJd(mid, latitudeDeg, longitudeDeg);
+        if (Math.sign(midValue) === Math.sign(lowValue)) {
+          low = mid;
+          lowValue = midValue;
+        } else {
+          high = mid;
+        }
+      }
+      return (low + high) / 2;
+    }
+    function computeIndicativeRiseSetEvents(startJd, endJd, utcOffsetHours) {
+      const latitudeDeg = 0;
+      const longitudeDeg = utcOffsetHours * 15;
+      const step = 10 / 1440;
+      const events = [];
+      let previousJd = startJd;
+      let previousValue = altitudeDegAtJd(previousJd, latitudeDeg, longitudeDeg);
+      for (let jd = startJd + step; jd <= endJd + 1e-9; jd += step) {
+        const value = altitudeDegAtJd(jd, latitudeDeg, longitudeDeg);
+        if (Math.sign(previousValue) !== Math.sign(value)) {
+          const eventJd = refineAltitudeCrossing(previousJd, jd, latitudeDeg, longitudeDeg);
+          const before = altitudeDegAtJd(eventJd - 0.002, latitudeDeg, longitudeDeg);
+          const after = altitudeDegAtJd(eventJd + 0.002, latitudeDeg, longitudeDeg);
+          events.push({
+            type: after > before ? "rise" : "set",
+            title: after > before ? "Lever de Lune" : "Coucher de Lune",
+            detail: "Repère indicatif du fuseau, latitude 0",
+            jd: eventJd,
+            utcIso: dateFromJulianDay(eventJd).toISOString()
+          });
+        }
+        previousJd = jd;
+        previousValue = value;
+      }
+      return events;
+    }
+    function refineHourAngleTarget(lowerJd, upperJd, longitudeDeg, targetDeg) {
+      let low = lowerJd;
+      let high = upperJd;
+      for (let i = 0; i < 32; i += 1) {
+        const mid = (low + high) / 2;
+        const lowMoon = computeMoonFromJd(low);
+        const midMoon = computeMoonFromJd(mid);
+        const lowError = normalize180(localSiderealTimeDeg(low, longitudeDeg) - lowMoon.rightAscensionDeg - targetDeg);
+        const midError = normalize180(localSiderealTimeDeg(mid, longitudeDeg) - midMoon.rightAscensionDeg - targetDeg);
+        if (Math.sign(lowError) === Math.sign(midError)) low = mid;
+        else high = mid;
+      }
+      return (low + high) / 2;
+    }
+    function computeIndicativeCulminationEvents(startJd, endJd, utcOffsetHours) {
+      const longitudeDeg = utcOffsetHours * 15;
+      const step = 20 / 1440;
+      const events = [];
+      const targets = [
+        { targetDeg: 0, type: "culmination", title: "Culmination haute" },
+        { targetDeg: 180, type: "lower", title: "Culmination basse" }
+      ];
+      for (const target of targets) {
+        let previousJd = startJd;
+        let previousMoon = computeMoonFromJd(previousJd);
+        let previousValue = normalize180(localSiderealTimeDeg(previousJd, longitudeDeg) - previousMoon.rightAscensionDeg - target.targetDeg);
+        for (let jd = startJd + step; jd <= endJd + 1e-9; jd += step) {
+          const moon = computeMoonFromJd(jd);
+          const value = normalize180(localSiderealTimeDeg(jd, longitudeDeg) - moon.rightAscensionDeg - target.targetDeg);
+          if (Math.abs(value - previousValue) < 180 && Math.sign(previousValue) !== Math.sign(value)) {
+            const eventJd = refineHourAngleTarget(previousJd, jd, longitudeDeg, target.targetDeg);
+            events.push({
+              type: target.type,
+              title: target.title,
+              detail: "Passage au méridien indicatif",
+              jd: eventJd,
+              utcIso: dateFromJulianDay(eventJd).toISOString()
+            });
+          }
+          previousJd = jd;
+          previousValue = value;
+        }
+      }
+      return events;
+    }
+    function findMoonSignTransitions(startJd, endJd) {
+      const transitions = [];
+      const step = 30 / 1440;
+      let previousJd = startJd;
+      let previous = getSign(computeMoonFromJd(previousJd).longitudeDeg);
+      for (let jd = startJd + step; jd <= endJd + 1e-9; jd += step) {
+        const current = getSign(computeMoonFromJd(jd).longitudeDeg);
+        if (current.index !== previous.index) {
+          let low = previousJd;
+          let high = jd;
+          for (let i = 0; i < 32; i += 1) {
+            const mid = (low + high) / 2;
+            const midSign = getSign(computeMoonFromJd(mid).longitudeDeg);
+            if (midSign.index === previous.index) low = mid;
+            else high = mid;
+          }
+          const eventJd = (low + high) / 2;
+          const to = getSign(computeMoonFromJd(eventJd + 1e-6).longitudeDeg);
+          transitions.push({
+            type: "sign",
+            title: `La Lune entre en ${to.name}`,
+            detail: "Changement de signe tropical",
+            jd: eventJd,
+            utcIso: dateFromJulianDay(eventJd).toISOString()
+          });
+        }
+        previousJd = jd;
+        previous = current;
+      }
+      return transitions;
+    }
+    function buildSignSegments(startJd, endJd, transitions) {
+      const boundaries = [startJd, ...transitions.map((event) => event.jd), endJd];
+      const segments = [];
+      for (let index = 0; index < boundaries.length - 1; index += 1) {
+        const start = boundaries[index];
+        const end = boundaries[index + 1];
+        const sampleJd = start + Math.min(0.001, Math.max(0, (end - start) / 2));
+        const sign = getSign(computeMoonFromJd(sampleJd).longitudeDeg);
+        segments.push({ startJd: start, endJd: end, sign });
+      }
+      return segments;
+    }
+    function buildMansionSegments(startJd, endJd, transitions) {
+      const boundaries = [startJd, ...transitions.map((event) => event.jd), endJd];
+      const segments = [];
+      for (let index = 0; index < boundaries.length - 1; index += 1) {
+        const start = boundaries[index];
+        const end = boundaries[index + 1];
+        const sampleJd = start + Math.min(0.001, Math.max(0, (end - start) / 2));
+        const mansion = getMansion28(computeMoonFromJd(sampleJd).longitudeDeg);
+        segments.push({ startJd: start, endJd: end, mansion });
+      }
+      return segments;
+    }
+    function findMansionTransitions(startJd, endJd) {
+      const transitions = [];
+      const step = 30 / 1440;
+      let previousJd = startJd;
+      let previous = getMansion28(computeMoonFromJd(previousJd).longitudeDeg).name;
+      for (let jd = startJd + step; jd <= endJd + 1e-9; jd += step) {
+        const current = getMansion28(computeMoonFromJd(jd).longitudeDeg).name;
+        if (current !== previous) {
+          let low = previousJd;
+          let high = jd;
+          for (let i = 0; i < 28; i += 1) {
+            const mid = (low + high) / 2;
+            const midName = getMansion28(computeMoonFromJd(mid).longitudeDeg).name;
+            if (midName === previous) low = mid;
+            else high = mid;
+          }
+          const eventJd = (low + high) / 2;
+          const to = getMansion28(computeMoonFromJd(eventJd + 1e-6).longitudeDeg).name;
+          transitions.push({
+            type: "mansion",
+            title: `Demeure lunaire: ${to}`,
+            detail: "Changement de demeure lunaire 28",
+            jd: eventJd,
+            utcIso: dateFromJulianDay(eventJd).toISOString()
+          });
+        }
+        previousJd = jd;
+        previous = current;
+      }
+      return transitions;
+    }
+    function computeMoonAtJd(jd, options = {}) {
+      const sun = computeSunFromJd(jd);
+      const moon = computeMoonFromJd(jd);
+      const phase = buildMoonPhaseData(sun, moon, jd, options);
+      const tropical = getSign(moon.longitudeDeg);
+      const siderealReadings = Object.keys(AYANAMSAS).map((key) => {
+        const sign = getSiderealSign(moon.longitudeDeg, key);
+        return {
+          key,
+          label: AYANAMSA_LABELS[key],
+          ayanamsaDeg: AYANAMSAS[key],
+          sign,
+          nakshatra: getNakshatra(sign.siderealLongitude)
+        };
+      });
+      const mansion = getMansion28(moon.longitudeDeg);
+      return { jd, utcIso: dateFromJulianDay(jd).toISOString(), sun, moon, phase, tropical, siderealReadings, mansion };
+    }
+    function computeAll(input) {
+      const utcOffset = Number(input.utcOffset);
+      if (!input.date || !Number.isFinite(utcOffset)) throw new Error("Date ou fuseau invalide.");
+      const startDate = localDayStartUtc(input.date, utcOffset);
+      const endDate = new Date(startDate.getTime() + 86400000);
+      const startJd = julianDayFromDate(startDate);
+      const endJd = julianDayFromDate(endDate);
+      const noonJd = startJd + 0.5;
+      const phaseEventsAround = computeMoonPhaseEventsAround(noonJd);
+      const focus = computeMoonAtJd(noonJd, { phaseEventsAround });
+      const phaseEvents = phaseEventsAround.next.concat(phaseEventsAround.previous)
+        .filter((event) => event.jd >= startJd && event.jd < endJd)
+        .map((event) => ({ type: "phase", title: event.label, detail: "Phase majeure", jd: event.jd, utcIso: event.utcIso }));
+      const signEvents = findMoonSignTransitions(startJd, endJd);
+      const mansionEvents = findMansionTransitions(startJd, endJd);
+      const events = [
+        ...phaseEvents,
+        ...signEvents,
+        ...mansionEvents,
+        ...computeIndicativeRiseSetEvents(startJd, endJd, utcOffset),
+        ...computeIndicativeCulminationEvents(startJd, endJd, utcOffset)
+      ].sort((a, b) => a.jd - b.jd);
+      const signSegments = buildSignSegments(startJd, endJd, signEvents);
+      const mansionSegments = buildMansionSegments(startJd, endJd, mansionEvents);
+      const samples = Array.from({ length: 25 }, (_, hour) => {
+        const jd = startJd + hour / 24;
+        const snapshot = computeMoonAtJd(jd, { includeCycle: false });
+        return { hour, jd, illumination: snapshot.phase.illuminationPercent, phaseAngle: snapshot.phase.angleDeg, sign: snapshot.tropical.name };
+      });
+      const currentJd = julianDayFromDate(new Date());
+      const currentProgress = currentJd >= startJd && currentJd < endJd ? (currentJd - startJd) / (endJd - startJd) : null;
+      return { input: { date: input.date, utcOffset }, startJd, endJd, startUtcIso: startDate.toISOString(), endUtcIso: endDate.toISOString(), focus, events, signSegments, mansionSegments, samples, currentProgress };
+    }
+    function renderEvents(events, utcOffset) {
+      if (!events.length) {
+        return `<article class="event"><strong>Aucun changement majeur détecté</strong><time>Journée continue</time></article>`;
+      }
+      return events.map((event) => `
+        <article class="event ${event.type}">
+          <strong>${event.title}</strong>
+          <time datetime="${event.utcIso}">${formatHumanLocalDateTime(event.utcIso, utcOffset)}</time>
+        </article>
+      `).join("");
+    }
+    function clearTrack(trackId) {
+      $(trackId).innerHTML = "";
+    }
+    function addTrackLine(track, className, leftPercent, title = "") {
+      const line = document.createElement("span");
+      line.className = className;
+      line.style.left = `${leftPercent}%`;
+      if (title) line.title = title;
+      track.appendChild(line);
+      return line;
+    }
+    function renderTimelineSegments(trackId, segments, getClassName, getLabel, getTitle) {
+      $(trackId).innerHTML = segments.map((segment) => {
+        const left = ((segment.startJd - currentTimelineData.startJd) / (currentTimelineData.endJd - currentTimelineData.startJd)) * 100;
+        const width = ((segment.endJd - segment.startJd) / (currentTimelineData.endJd - currentTimelineData.startJd)) * 100;
+        return `<div class="lane-segment ${getClassName(segment)}" style="left:${left}%;width:${width}%" title="${getTitle(segment)}">${getLabel(segment)}</div>`;
+      }).join("");
+    }
+    let currentTimelineData = null;
+    function addTrackLabel(track, className, leftPercent, label) {
+      const badge = document.createElement("span");
+      badge.className = className;
+      badge.style.left = `${leftPercent}%`;
+      badge.textContent = label;
+      track.appendChild(badge);
+      return badge;
+    }
+    function setTimelineCursor(progress, label = "Sélection") {
+      document.querySelectorAll(".timeline-cursor, .timeline-cursor-label").forEach((el) => el.remove());
+      if (!Number.isFinite(progress)) return;
+      const leftPercent = Math.max(0, Math.min(1, progress)) * 100;
+      document.querySelectorAll(".lane-track").forEach((track) => {
+        addTrackLine(track, "timeline-cursor", leftPercent, label);
+      });
+      addTrackLabel($("eventLane"), "timeline-cursor-label", leftPercent, label);
+    }
+    function renderTimeline(data) {
+      currentTimelineData = data;
+      $("timelineTitle").textContent = `${data.input.date} · ${formatOffset(data.input.utcOffset)}`;
+      $("timelineMeta").textContent = `${formatUtc(new Date(data.startUtcIso))} → ${formatUtc(new Date(data.endUtcIso))}`;
+      ["eventLane", "phaseAngleLane", "signLane", "mansionLane"].forEach(clearTrack);
+      renderTimelineSegments(
+        "signLane",
+        data.signSegments,
+        () => "sign-segment",
+        (segment) => segment.sign.name,
+        (segment) => `${segment.sign.name} · ${shortDegree(segment.sign.degreeInSign)}`
+      );
+      renderTimelineSegments(
+        "mansionLane",
+        data.mansionSegments,
+        () => "mansion-segment",
+        (segment) => `${segment.mansion.index + 1}. ${segment.mansion.name}`,
+        (segment) => `Demeure ${segment.mansion.index + 1} · ${segment.mansion.name}`
+      );
+      for (const sample of data.samples) {
+        const angleMarker = addTrackLine(
+          $("phaseAngleLane"),
+          "timeline-marker angle",
+          (sample.hour / 24) * 100,
+          `${String(sample.hour).padStart(2, "0")}h · angle ${formatDeg(sample.phaseAngle, 1)}`
+        );
+        angleMarker.setAttribute("aria-hidden", "true");
+      }
+      for (const event of data.events) {
+        const progress = eventProgress(event, data);
+        const marker = document.createElement("button");
+        marker.className = `timeline-marker ${event.type}`;
+        marker.dataset.eventIndex = String(data.events.indexOf(event));
+        marker.style.left = `${progress * 100}%`;
+        marker.title = `${event.title} · ${formatLocalTime(event.utcIso, data.input.utcOffset)}`;
+        marker.addEventListener("click", () => renderFocus(data, computeMoonAtJd(event.jd), event));
+        $("eventLane").appendChild(marker);
+        if (event.type === "phase") {
+          const phaseMarker = marker.cloneNode(false);
+          phaseMarker.title = marker.title;
+          phaseMarker.dataset.eventIndex = marker.dataset.eventIndex;
+          phaseMarker.addEventListener("click", () => renderFocus(data, computeMoonAtJd(event.jd), event));
+          $("phaseAngleLane").appendChild(phaseMarker);
+        }
+      }
+      if (data.currentProgress != null) {
+        const nowPercent = data.currentProgress * 100;
+        document.querySelectorAll(".lane-track").forEach((track) => {
+          addTrackLine(track, "now-marker", nowPercent, "Maintenant");
+        });
+      }
+      setTimelineCursor(0.5, "Synthèse midi");
+      $("dayEvents").innerHTML = data.events.length ? data.events.map((event, index) => `
+        <button class="event-card ${event.type}" type="button" data-event-index="${index}">
+          <span>${formatLocalTime(event.utcIso, data.input.utcOffset)} · ${event.detail}</span>
+          <strong>${event.title}</strong>
+        </button>
+      `).join("") : `
+        <article class="event-card">
+          <span>Journée calme</span>
+          <strong>Aucun changement majeur détecté</strong>
+        </article>
+      `;
+      $("dayEvents").querySelectorAll("[data-event-index]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const event = data.events[Number(button.dataset.eventIndex)];
+          renderFocus(data, computeMoonAtJd(event.jd), event);
+        });
+      });
+    }
+    function renderFocus(data, focus, selectedEvent = null) {
+      const reading = buildReading(focus);
+      $("utcLabel").textContent = selectedEvent
+        ? `${formatLocalTime(selectedEvent.utcIso, data.input.utcOffset)} · ${selectedEvent.detail}`
+        : `Synthèse à midi · ${formatOffset(data.input.utcOffset)}`;
+      $("phaseTitle").textContent = focus.phase.label;
+      $("phaseMeta").textContent = `${selectedEvent ? selectedEvent.title + " · " : ""}Lune ${focus.tropical.name}, ${focus.phase.waxing ? "croissante" : "décroissante"}, illumination ${formatPercent(focus.phase.illuminationPercent)}.`;
+      $("readingCard").innerHTML = `
+        <strong>${reading.title}</strong>
+        <p class="meta">${reading.text}</p>
+        <div class="tag-row">${reading.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
+      `;
+      $("illuminationValue").textContent = formatPercent(focus.phase.illuminationPercent);
+      $("ageValue").textContent = `${focus.phase.trueAgeDays.toFixed(2)} j`;
+      $("trendValue").textContent = focus.phase.waxing ? "Croissante" : "Décroissante";
+      $("distanceValue").textContent = formatKm(focus.moon.distanceKm);
+      $("nextEventValue").textContent = getNextMajorPhaseLabel(focus, data.input.utcOffset);
+      $("moonVisual").style.setProperty("--moon-lit", `${Math.max(0, Math.min(100, focus.phase.illuminationPercent))}%`);
+      $("moonVisual").style.setProperty("--moon-light-direction", focus.phase.waxing ? "270deg" : "90deg");
+      $("dayEvents").querySelectorAll(".event-card").forEach((card) => card.classList.remove("is-active"));
+      ["eventLane", "phaseAngleLane"].forEach((trackId) => {
+        $(trackId).querySelectorAll(".timeline-marker").forEach((marker) => marker.classList.remove("is-active"));
+      });
+      setTimelineCursor((focus.jd - data.startJd) / (data.endJd - data.startJd), selectedEvent ? "Sélection" : "Synthèse midi");
+      if (selectedEvent) {
+        const index = data.events.indexOf(selectedEvent);
+        const active = $("dayEvents").querySelector(`[data-event-index="${index}"]`);
+        if (active) active.classList.add("is-active");
+        ["eventLane", "phaseAngleLane"].forEach((trackId) => {
+          $(trackId).querySelectorAll(`[data-event-index="${index}"]`).forEach((marker) => marker.classList.add("is-active"));
+        });
+      }
+      $("astroList").innerHTML = [
+        kv("Lune tropicale", `${focus.tropical.name} · ${focus.tropical.element} · ${focus.tropical.mode}`),
+        kv("Position", `${formatDegreeInSign(focus.tropical.degreeInSign)} · décan ${getDecan(focus.tropical)}`),
+        kv("Sidéral Lahiri", `${focus.siderealReadings[0].sign.name} · ${formatDegreeInSign(focus.siderealReadings[0].sign.degreeInSign)}`),
+        kv("Nakshatra", `${focus.siderealReadings[0].nakshatra.index + 1}. ${focus.siderealReadings[0].nakshatra.name} · pada ${focus.siderealReadings[0].nakshatra.pada} · ${formatDegreeInSign(focus.siderealReadings[0].nakshatra.degree)}`),
+        kv("Demeure lunaire", `${focus.mansion.index + 1}. ${focus.mansion.name} · ${formatDegreeInSign(focus.mansion.degree)}`)
+      ].join("");
+      $("astroNomieList").innerHTML = `
+        <details class="expert">
+          <summary>Détails astronomiques</summary>
+          <div class="kv-list">
+            ${[
+              kv("Longitude écliptique", formatDeg(focus.moon.longitudeDeg, 4)),
+              kv("Latitude écliptique", formatSignedDeg(focus.moon.latitudeDeg, 4)),
+              kv("Ascension droite", formatDeg(focus.moon.rightAscensionDeg, 4)),
+              kv("Déclinaison", formatSignedDeg(focus.moon.declinationDeg, 4)),
+              kv("Diamètre apparent", `${focus.phase.apparentAngularDiameterArcMin.toFixed(2)}′`),
+              kv("Longitude solaire", formatDeg(focus.sun.longitudeDeg, 4)),
+              kv("Jour julien", focus.jd.toFixed(6))
+            ].join("")}
+          </div>
+        </details>
+      `;
+      $("cycleList").innerHTML = `
+        <details class="expert">
+          <summary>Détails du cycle lunaire</summary>
+          <div class="kv-list">
+            ${[
+              kv("Nouvelle Lune précédente", focus.phase.previousNewMoon ? formatUtc(new Date(focus.phase.previousNewMoon.utcIso)) : "n/a"),
+              kv("Nouvelle Lune suivante", focus.phase.nextNewMoon ? formatUtc(new Date(focus.phase.nextNewMoon.utcIso)) : "n/a"),
+              kv("Durée lunaison estimée", `${focus.phase.synodicCycleLengthDays.toFixed(3)} jours`),
+              kv("Progression synodique", formatPercent(focus.phase.synodicProgress * 100)),
+              kv("Angle Soleil-Lune", formatDeg(focus.phase.angleDeg, 2)),
+              kv("Angle du limbe éclairé", formatDeg(focus.phase.brightLimbPhaseAngleDeg, 2))
+            ].join("")}
+          </div>
+        </details>
+      `;
+    }
+    function render(data) {
+      renderTimeline(data);
+      renderFocus(data, data.focus);
+      $("eventsList").innerHTML = renderEvents(data.events, data.input.utcOffset);
+    }
+
+    function readForm() {
+      return {
+        date: $("dateInput").value,
+        utcOffset: Number($("timezoneInput").value)
+      };
+    }
+    function writeForm(input) {
+      $("dateInput").value = input.date;
+      $("timezoneInput").value = String(input.utcOffset ?? input.timezone ?? 2);
+      $("todayBtn").textContent = formatNavDate($("dateInput").value, Number($("timezoneInput").value || 2));
+    }
+    function saveState(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        input: data.input,
+        theme: document.documentElement.dataset.theme || "light",
+        savedAt: new Date().toISOString()
+      }));
+    }
+    function loadState() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      } catch {
+        return null;
+      }
+    }
+    function runCalculation() {
+      try {
+        const data = computeAll(readForm());
+        render(data);
+        saveState(data);
+        $("jsonBox").value = JSON.stringify(data, null, 2);
+        $("statusText").textContent = "Calcul mis à jour et enregistré localement.";
+      } catch (error) {
+        $("statusText").textContent = error.message || "Calcul impossible.";
+      }
+    }
+    function setNow() {
+      const now = new Date();
+      const utcOffset = Number($("timezoneInput").value || 2);
+      writeForm({ date: toInputDateForOffset(now, utcOffset), utcOffset });
+      runCalculation();
+    }
+    function shiftDay(days) {
+      const input = readForm();
+      writeForm({ ...input, date: shiftDateText(input.date, days) });
+      runCalculation();
+    }
+    function toggleTheme() {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      $("themeBtn").textContent = next === "dark" ? "Mode jour" : "Mode nuit";
+      const state = loadState() || {};
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, theme: next }));
+    }
+    function importJson() {
+      try {
+        const parsed = JSON.parse($("jsonBox").value);
+        const input = parsed.input ?? parsed;
+        if (!input.date) throw new Error("JSON sans date.");
+        writeForm({ date: input.date, utcOffset: input.utcOffset ?? input.timezone ?? 2 });
+        runCalculation();
+      } catch (error) {
+        $("statusText").textContent = `Import impossible: ${error.message}`;
+      }
+    }
+
+    $("moonForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      runCalculation();
+    });
+    $("nowBtn").addEventListener("click", setNow);
+    $("todayBtn").addEventListener("click", setNow);
+    $("prevDayBtn").addEventListener("click", () => shiftDay(-1));
+    $("nextDayBtn").addEventListener("click", () => shiftDay(1));
+    $("dateInput").addEventListener("change", () => writeForm(readForm()));
+    $("timezoneInput").addEventListener("change", () => writeForm(readForm()));
+    $("themeBtn").addEventListener("click", toggleTheme);
+    $("printBtn").addEventListener("click", () => window.print());
+    $("exportBtn").addEventListener("click", () => {
+      const data = computeAll(readForm());
+      $("jsonBox").value = JSON.stringify(data, null, 2);
+      $("statusText").textContent = "Export JSON généré.";
+    });
+    $("importBtn").addEventListener("click", importJson);
+
+    const saved = loadState();
+    if (saved?.theme === "dark") {
+      document.documentElement.dataset.theme = "dark";
+      $("themeBtn").textContent = "Mode jour";
+    }
+    if (saved?.input) {
+      writeForm(saved.input);
+    } else {
+      setNow();
+    }
+    if (saved?.input) runCalculation();
+  </script>
+</body>
+</html>
