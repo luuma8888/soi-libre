@@ -47,11 +47,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 
 /* v0.2.alpha — confort grand écran : panneaux ajustables, zones de découpage plus généreuses, édition ample. */
-.capture-split,.compose-split,.library-split{display:grid;align-items:start;gap:0}
+.capture-split,.compose-split,.library-split,.variables-split{display:grid;align-items:start;gap:0}
 .capture-split{grid-template-columns:minmax(380px,var(--split-left,58%)) 12px minmax(380px,1fr)}
 .compose-split{grid-template-columns:minmax(400px,var(--split-left,60%)) 12px minmax(380px,1fr)}
 .library-split{grid-template-columns:minmax(360px,var(--split-left,50%)) 12px minmax(360px,1fr)}
-.capture-split>.card,.compose-split>.card,.library-split>.card{min-width:0}
+.variables-split{grid-template-columns:minmax(340px,var(--split-left,46%)) 12px minmax(400px,1fr)}
+.capture-split>.card,.compose-split>.card,.library-split>.card,.variables-split>.card{min-width:0}
 .split-handle{align-self:stretch;min-height:300px;display:flex;justify-content:center;cursor:col-resize;touch-action:none;padding:0 2px}
 .split-handle::before{content:"";width:4px;border-radius:999px;background:var(--line);margin:10px 0;transition:.15s}
 .split-handle:hover::before,.split-handle:focus-visible::before{background:var(--accent);width:7px}
@@ -71,7 +72,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 .compose-split .viewer{position:sticky;top:10px;max-height:calc(100vh - 36px);overflow:auto}.compose-split .codebox{max-height:70vh}.compose-split .builder-list{max-height:calc(100vh - 420px);overflow:auto;padding-right:2px}.compose-split .builder-item textarea{min-height:150px;font-family:var(--mono)}
 @media (min-width:1280px){.bigarea{min-height:330px}.suggestion-edit textarea.suggestion-textarea{min-height:340px}.capture-suggestions-panel .smalllist{min-height:520px;max-height:calc(100vh - 210px)}.viewer #extractArea .smalllist{min-height:420px}.compose-split .builder-item textarea{min-height:190px}}
 @media (min-width:1500px){.capture-suggestions-panel .smalllist{min-height:590px}.suggestion-preview{max-height:280px}.suggestion-edit textarea.suggestion-textarea{min-height:420px}.compose-split .builder-item textarea{min-height:230px}}
-@media (max-width:900px){.capture-split,.compose-split,.library-split{grid-template-columns:1fr!important;gap:var(--space)}.split-handle{display:none}.panel-layout-tools{max-width:none;justify-content:flex-start}.capture-suggestions-panel{position:static;max-height:none;overflow:visible}.capture-suggestions-panel .smalllist,.viewer #extractArea .smalllist{max-height:none;min-height:0}.suggestion-editor-modal textarea{min-height:55vh}}
+@media (max-width:900px){.capture-split,.compose-split,.library-split,.variables-split{grid-template-columns:1fr!important;gap:var(--space)}.split-handle{display:none}.panel-layout-tools{max-width:none;justify-content:flex-start}.capture-suggestions-panel{position:static;max-height:none;overflow:visible}.capture-suggestions-panel .smalllist,.viewer #extractArea .smalllist{max-height:none;min-height:0}.suggestion-editor-modal textarea{min-height:55vh}}
 
 @media (max-width:900px){.segchoice{border-radius:var(--radius2)}.segoption{flex:1;min-width:106px}.mobile-fab{display:flex;position:fixed;right:16px;bottom:16px;z-index:18;border-radius:999px;padding:13px 16px}.brand p{display:none}.capture-actions .btn{flex:1}.primary-actions .btn{flex:1}.viewer .toolbar .btn{flex:1}.top-actions [data-tab-go="capture"]{display:none}}
 
@@ -79,6 +80,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
 @media print{.topbar,.nav,.toolbar,.btn,.toast,.modal,.filters,.no-print{display:none!important}.app{max-width:none;padding:0}.card{box-shadow:none;border:0}.codebox{max-height:none;background:white!important;color:black!important;border:1px solid #bbb}.grid.two,.row,.row.three{display:block}.details{break-inside:avoid}}
 
 .compare-mini{display:grid;gap:8px}.qualityline{font-size:.86rem;color:var(--muted)}.thumb{max-width:150px;max-height:110px;border-radius:12px;border:1px solid var(--line);display:block;margin-top:8px;object-fit:cover}.print-title{margin:0 0 12px}.version-mini{font-size:.84rem;color:var(--muted)}.import-preview{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:10px;margin-top:8px}.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space)}.statcard{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.statcard strong{display:block;font-size:1.55rem}.workflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.workflow .btn{text-align:left;border-radius:var(--radius2);padding:12px}.filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.filterbar .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.helpbox{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.helpbox h3{margin:0 0 6px}
+.library-mode{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.library-mode .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.library-layout .list{max-height:none;overflow:visible}.collection-browse-layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:10px;align-items:start}.collection-rail{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:9px;position:sticky;top:10px}.collection-rail summary{cursor:pointer;font-weight:800}.collection-browser{display:grid;gap:7px;margin-top:8px}.collection-folder{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:8px;text-align:left}.collection-folder.active{outline:2px solid color-mix(in srgb,var(--accent) 65%,transparent);border-color:var(--accent);background:var(--panel)}.folder-icon{width:22px;height:18px;border-radius:6px;background:var(--dot,#9cc5b8);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}input[type="color"]{min-height:42px;padding:4px;background:var(--panel);cursor:pointer}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}input[type="color"]::-moz-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}.collection-create-box{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:9px;margin-top:8px}.quick-choice{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:6px}.quick-choice .segchoice{border:0;background:transparent;margin:0}.quick-choice details{margin-top:5px}.quick-choice details[open]{border-top:1px solid var(--line);padding-top:6px}.audit-list{display:grid;gap:8px}.audit-item{border:1px solid var(--line);border-radius:var(--radius2);background:var(--panel);padding:10px}.audit-item h3{margin:0 0 4px;font-size:.98rem}.audit-score{font-weight:800}.advice-list{margin:8px 0 0;padding-left:18px;color:var(--muted)}.advice-list li{margin:3px 0}.variables-tools{display:grid;gap:8px;margin-bottom:10px}.variables-list{max-height:none;overflow:visible}
+@media (max-width:900px){.collection-browse-layout{grid-template-columns:1fr}.collection-rail{position:static}}
 </style>
 </head>
 <body>
@@ -207,6 +210,12 @@ body.is-resizing{user-select:none;cursor:col-resize}
     selectedKind: null,
     selectedId: null,
     variablePromptId: null,
+    variableItemKind: 'prompt',
+    variableKindFilter: 'all',
+    variableQuery: '',
+    libraryMode: 'search',
+    selectedCollectionId: '',
+    auditFilter: 'attention',
     fragmentPickerQuery: '',
     recipePickerQuery: '',
     diagnostics: null,
@@ -222,6 +231,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     captureSplit: 58,
     librarySplit: 50,
     composeSplit: 60,
+    variablesSplit: 46,
     importPreview: null,
     importDraft: null
   };
@@ -241,7 +251,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     return {
       schemaVersion: 6,
       version: VERSION,
-      settings: { theme:'light', density:'comfortable', optionLists:{} },
+      settings: { theme:'light', density:'comfortable', optionLists:{}, quickOptions:{} },
       meta: { createdAt:now(), updatedAt:null, lastExportAt:null, changesSinceExport:0, migratedFrom:null },
       prompts: [],
       fragments: [],
@@ -384,6 +394,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     base.settings.density = ['comfortable','dense'].includes(settings.density) ? settings.density : 'comfortable';
     base.settings.defaultOutputFormat = ['simple','sections','image','video','conversation'].includes(settings.defaultOutputFormat) ? settings.defaultOutputFormat : 'simple';
     base.settings.optionLists = normalizeOptionLists(settings.optionLists);
+    base.settings.quickOptions = normalizeQuickOptions(settings.quickOptions, base.settings.optionLists);
     base.meta.createdAt = meta.createdAt || now();
     base.meta.updatedAt = meta.updatedAt || null;
     base.meta.lastExportAt = meta.lastExportAt || null;
@@ -419,6 +430,22 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const arr = Array.isArray(value) ? value : [];
     return uniq([...arr.map(strip).filter(Boolean), ...fallback]);
   }
+  function normalizeQuickOptions(value, lists=null){
+    const src = value && typeof value === 'object' ? value : {};
+    const all = lists || normalizeOptionLists({});
+    return {
+      types: normalizeQuickList(src.types, QUICK_TYPE_OPTIONS, all.types),
+      tools: normalizeQuickList(src.tools, QUICK_TOOL_OPTIONS, all.tools),
+      roles: normalizeQuickList(src.roles, QUICK_ROLE_OPTIONS, all.roles),
+      statuses: normalizeQuickList(src.statuses, STATUS_OPTIONS.slice(0,4), all.statuses)
+    };
+  }
+  function normalizeQuickList(value, fallback, allowed){
+    const src = Array.isArray(value) ? value : [];
+    const allowedSet = new Set(ensureArray(allowed).map(x=>normalizeText(x)));
+    const merged = uniq([...src.map(strip).filter(Boolean), ...fallback]);
+    return merged.filter(x => allowedSet.has(normalizeText(x))).slice(0, 9);
+  }
   function optionList(name){
     const lists = normalizingOptionLists || state?.settings?.optionLists || {};
     if(name === 'types') return normalizeCustomList(lists.types, TYPE_OPTIONS);
@@ -427,13 +454,19 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(name === 'statuses') return normalizeCustomList(lists.statuses, STATUS_OPTIONS);
     return [];
   }
+  function quickOptionList(name, fallback){
+    const all = optionList(name);
+    const quick = state?.settings?.quickOptions?.[name] || fallback || [];
+    return normalizeQuickList(quick, fallback || [], all);
+  }
   function toolsForType(type){
     const all = optionList('tools');
     const preferred = TOOL_OPTIONS_BY_TYPE[sanitizeOption(type, TYPE_OPTIONS, type || 'générique')] || TOOL_OPTIONS_BY_TYPE['générique'];
     return uniq([...preferred, ...all.filter(t=>!preferred.includes(t))]);
   }
   function quickToolsForType(type){
-    return toolsForType(type).slice(0,5);
+    const preferred = quickOptionList('tools', QUICK_TOOL_OPTIONS);
+    return uniq([...preferred.filter(t=>toolsForType(type).includes(t)), ...toolsForType(type)]).slice(0,5);
   }
 
 
@@ -502,6 +535,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       notes: String(f.notes || ''),
       tests: ensureArray(f.tests).map(normalizeTest),
       versions: ensureArray(f.versions).map(normalizeVersion).filter(Boolean),
+      variableSets: ensureArray(f.variableSets || f.variablePresets || f.fillSets).map(normalizePromptVariableSet).filter(Boolean),
       createdAt: f.createdAt || now(),
       updatedAt: f.updatedAt || f.createdAt || now(),
       deletedAt: f.deletedAt || null
@@ -799,6 +833,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     else if(ui.space === 'library') elView.innerHTML = viewLibrary();
     else if(ui.space === 'variables') elView.innerHTML = viewVariables();
     else if(ui.space === 'compose') elView.innerHTML = viewCompose();
+    else if(ui.space === 'audit') elView.innerHTML = viewAudit();
     else if(ui.space === 'vault') elView.innerHTML = viewVault();
   }
   function renderTabs(){
@@ -808,6 +843,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       ['library','Retrouver'],
       ['variables','Variables'],
       ['compose','Assembler'],
+      ['audit','Audit'],
       ['vault','Coffre']
     ];
     elTabs.innerHTML = tabs.map(([id,label]) => `<button class="tab ${ui.space===id?'active':''}" data-space="${id}" ${ui.space===id?'aria-current="page"':''}>${label}</button>`).join('');
@@ -866,10 +902,15 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
 
   function splitTools(name){
-    const current = Math.round(name === 'capture' ? (ui.captureSplit || 58) : (ui.composeSplit || 60));
-    const presets = name === 'capture'
-      ? [[58,'Équilibré'],[70,'Saisie large'],[42,'Découpage large']]
-      : [[60,'Équilibré'],[72,'Composition large'],[44,'Prompt final large']];
+    const defaults = {capture:58, compose:60, library:50, variables:46};
+    const current = Math.round(ui[name + 'Split'] || defaults[name] || 58);
+    const presetMap = {
+      capture:[[58,'Équilibré'],[70,'Saisie large'],[42,'Découpage large']],
+      compose:[[60,'Équilibré'],[72,'Composition large'],[44,'Prompt final large']],
+      library:[[50,'Équilibré'],[66,'Liste large'],[40,'Détails larges']],
+      variables:[[46,'Équilibré'],[62,'Liste large'],[38,'Remplissage large']]
+    };
+    const presets = presetMap[name] || presetMap.capture;
     return `<div class="panel-layout-tools no-print" aria-label="Réglage des panneaux">
       ${presets.map(([value,label])=>`<button class="btn small ${Math.abs(current-value)<3?'active':''}" data-action="set-split-preset" data-split="${name}" data-value="${value}">${label}</button>`).join('')}
       <span class="hint">ou glisse la poignée</span>
@@ -892,6 +933,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       collectionIds: fd.getAll('collectionIds').map(String),
       newCollectionName: String(fd.get('newCollectionName') || ''),
       newCollectionDescription: String(fd.get('newCollectionDescription') || ''),
+      newCollectionColor: String(fd.get('newCollectionColor') || '#6f8f84'),
       notes: String(fd.get('notes') || '')
     };
   }
@@ -933,7 +975,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
             ${segmentedRadios('kind', [['prompt','Prompt complet'],['fragment','Fragment réutilisable']], ui.captureKind)}
           </div>
           <div class="row">
-            <div class="form-section"><label>Type fréquent</label>${quickChoice('type', QUICK_TYPE_OPTIONS, optionList('types'), draft.type || 'image', 'Autre')}</div>
+            <div class="form-section"><label>Type fréquent</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), draft.type || 'image', 'Autre')}</div>
             <div class="form-section"><label>Outil IA</label>${quickChoice('tool', quickToolsForType(draft.type), toolsForType(draft.type), draft.tool || 'générique', 'Autre outil')}</div>
           </div>
           <div class="form-section">
@@ -950,7 +992,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
             <label>Statut</label>${segmentedRadios('status', optionList('statuses'), draft.status || 'brut', 'wrap')}
             <label>Catégorie / précision</label>
             <p class="hint">Utile pour les prompts complets comme personnage, face sheet, character sheet, lieu, décor, style, etc. L’assemblage reste réservé aux fragments.</p>
-            ${quickChoice('role', QUICK_ROLE_OPTIONS, optionList('roles'), draft.role || 'personnage', 'Plus de catégories')}
+            ${quickChoice('role', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), draft.role || 'personnage', 'Plus de catégories')}
             <label>Tags manuels</label><input name="tags" value="${esc(draft.tags)}" placeholder="personnage, face-sheet, décor, tiktok, negative…">
             <label>Collections</label>${collectionChecks(draft.collectionIds || [], draft)}
             <label for="captureNotes">Notes</label><textarea id="captureNotes" name="notes" placeholder="Contexte, résultat attendu, précaution…">${esc(draft.notes)}</textarea>
@@ -998,8 +1040,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const quick = quickOptions.map(o => Array.isArray(o) ? o[0] : o).map(String);
     const selectedQuick = quick.includes(String(selected));
     const radioOptions = [...quickOptions.map(o=>Array.isArray(o)?o:[o, choiceLabel(o)]), ['__custom', label]];
-    return `${segmentedRadios(name, radioOptions, selectedQuick ? selected : '__custom', 'wrap')}
-      <details class="choice-more" ${selectedQuick ? '' : 'open'}><summary>Choisir une autre option</summary><select name="${esc(name)}Custom">${optionTags(allOptions, selectedQuick ? (allOptions[0] || '') : selected)}</select></details>`;
+    return `<div class="quick-choice" data-quick-choice="${esc(name)}">${segmentedRadios(name, radioOptions, selectedQuick ? selected : '__custom', 'wrap')}
+      <details class="choice-more" ${selectedQuick ? '' : 'open'}><summary>${esc(label)} dans la liste complète</summary><select name="${esc(name)}Custom" data-quick-custom="${esc(name)}">${optionTags(allOptions, selectedQuick ? (allOptions[0] || '') : selected)}</select></details></div>`;
   }
   function formChoice(fd, name, fallback=''){
     const raw = String(fd.get(name) || '');
@@ -1014,13 +1056,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const ids = new Set(selected || []);
     const cols = active(state.collections);
     const existing = cols.length ? `<div class="checkgrid">${cols.map(c => `<label class="check"><input type="checkbox" name="collectionIds" value="${esc(c.id)}" ${ids.has(c.id)?'checked':''}> <span class="dot" style="--dot:${esc(c.color)}"></span>${esc(c.name)}</label>`).join('')}</div>` : `<p class="hint">Aucune collection pour l’instant.</p>`;
-    const create = draft ? `<details class="choice-more"><summary>Créer une nouvelle collection avec cet élément</summary><div class="row"><input name="newCollectionName" value="${esc(draft.newCollectionName || '')}" placeholder="Nom de la collection"><input name="newCollectionDescription" value="${esc(draft.newCollectionDescription || '')}" placeholder="Description facultative"></div><p class="hint">La collection sera créée lors de la sauvegarde et associée à cet élément.</p></details>` : '<p class="hint">Gestion complète des collections : onglet Coffre > Collections.</p>';
+    const create = draft ? `<details class="choice-more"><summary>Créer une collection maintenant</summary><div class="collection-create-box"><div class="row three"><input name="newCollectionName" value="${esc(draft.newCollectionName || '')}" placeholder="Nom de la collection"><input name="newCollectionDescription" value="${esc(draft.newCollectionDescription || '')}" placeholder="Description facultative"><input type="color" name="newCollectionColor" value="${esc(draft.newCollectionColor || '#6f8f84')}" aria-label="Couleur de la collection"></div><div class="toolbar" style="margin-top:8px"><button class="btn small" type="button" data-action="create-inline-collection">Ajouter cette collection</button></div><p class="hint">La collection est créée tout de suite, puis cochée pour cet élément. Tu peux en ajouter plusieurs avant de sauvegarder le prompt.</p></div></details>` : '<p class="hint">Gestion complète des collections : onglet Coffre > Collections.</p>';
     return existing + create;
   }
 
   function filteredItems(){
     let list = allActiveItems();
     if(ui.libraryKind !== 'all') list = list.filter(x => x._kind === ui.libraryKind);
+    if(ui.selectedCollectionId) list = list.filter(x => ensureArray(x.collectionIds).includes(ui.selectedCollectionId));
     if(ui.query) list = list.filter(x => matchesSearch(x, ui.query));
     return list;
   }
@@ -1045,19 +1088,51 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const selected = selectedItem();
     return `<section class="library-split library-layout" style="--split-left:${Math.round(ui.librarySplit || 50)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Retrouver</h2><p>Recherche simple en premier, filtres précis seulement si besoin.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
+        <div class="section-title"><div><h2>Retrouver</h2><p>Recherche directe ou parcours par collections comme des dossiers.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
+        <div class="library-mode">
+          <button class="btn small ${ui.libraryMode==='search'?'active':''}" data-action="set-library-mode" data-mode="search">Recherche</button>
+          <button class="btn small ${ui.libraryMode==='browse'?'active':''}" data-action="set-library-mode" data-mode="browse">Parcourir les collections</button>
+          ${ui.selectedCollectionId ? `<button class="btn small" data-action="clear-collection-filter">Toutes les collections</button>` : ''}
+        </div>
         <div class="filters">
           <input id="librarySearch" value="${esc(ui.query)}" placeholder="Rechercher un prompt, un tag, un outil, une collection…">
           <div class="toolbar"><div class="togglebar">${kindFilterButtons()}</div><button class="btn small" data-action="clear-search">Effacer</button></div>
           ${quickSearchFilters()}
+          ${ui.libraryMode === 'search' ? collectionFilterChips() : ''}
           <details class="details"><summary>Aide recherche avancée</summary><p class="hint search-help">Exemples : <span class="kbd">tag:negative</span>, <span class="kbd">type:image</span>, <span class="kbd">outil:ChatGPT</span>, <span class="kbd">statut:validé</span>, <span class="kbd">fav:true</span>, <span class="kbd">collection:Portraits</span>. Les guillemets fonctionnent : <span class="kbd">tag:"negative prompt"</span>.</p><div class="kbdline"><span class="kbd">Ctrl/⌘ K</span><span class="kbd">tag:portrait</span><span class="kbd">role:personnage</span><span class="kbd">fav:true</span></div></details>
         </div>
-        ${quickFilterChips()}
-        <div class="list">${list.length ? list.map(itemCard).join('') : '<div class="empty">Aucun élément trouvé.</div>'}</div>
+        ${ui.libraryMode === 'browse'
+          ? `<div class="collection-browse-layout">${collectionBrowser()}<div>${quickFilterChips()}${libraryResultBlock(list)}</div></div>`
+          : `${quickFilterChips()}${libraryResultBlock(list)}`}
       </div>
       <div class="split-handle no-print" data-resize-split="library" title="Glisser pour ajuster la largeur des panneaux"></div>
-      <aside class="card viewer">${selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>'}</aside>
+      <aside class="card viewer library-viewer">${selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>'}</aside>
     </section>`;
+  }
+
+  function collectionFilterChips(){
+    const cols = active(state.collections);
+    if(!cols.length) return '<p class="hint">Aucune collection créée. Tu peux en créer depuis Capturer ou Coffre.</p>';
+    return `<div class="quickchips" aria-label="Collections disponibles"><span class="pill ${ui.selectedCollectionId?'tagclick':''}" data-action="clear-collection-filter">Toutes collections</span>${cols.slice(0,18).map(c=>`<span class="pill tagclick ${ui.selectedCollectionId===c.id?'ok':''}" data-action="filter-collection-id" data-id="${esc(c.id)}"><span class="dot" style="--dot:${esc(c.color)}"></span>${esc(c.name)} · ${collectionCount(c.id)}</span>`).join('')}</div>`;
+  }
+  function collectionCount(id){
+    return allActiveItems().filter(x=>ensureArray(x.collectionIds).includes(id)).length;
+  }
+  function collectionBrowser(){
+    const cols = active(state.collections).sort((a,b)=>a.name.localeCompare(b.name));
+    if(!cols.length) return '<div class="empty">Aucune collection. Crée une collection depuis un élément ou dans le Coffre.</div>';
+    const activeName = ui.selectedCollectionId ? collectionName(ui.selectedCollectionId) : 'Toutes les collections';
+    return `<details class="collection-rail" open><summary>Collections</summary><p class="hint">Ouvert : <strong>${esc(activeName)}</strong></p>
+      <div class="collection-browser">
+        <button class="collection-folder ${ui.selectedCollectionId?'':'active'}" data-action="clear-collection-filter"><span class="folder-icon"></span><span><strong>Toutes</strong><br><span class="hint">Aucun dossier sélectionné</span></span><span class="pill">${allActiveItems().length}</span></button>
+        ${cols.map(c=>`<button class="collection-folder ${ui.selectedCollectionId===c.id?'active':''}" data-action="filter-collection-id" data-id="${esc(c.id)}"><span class="folder-icon" style="--dot:${esc(c.color)}"></span><span><strong>${esc(c.name)}</strong><br><span class="hint">${esc(c.description || 'Sans description')}</span></span><span class="pill">${collectionCount(c.id)}</span></button>`).join('')}
+      </div></details>`;
+  }
+
+  function libraryResultBlock(list){
+    const col = ui.selectedCollectionId ? collectionName(ui.selectedCollectionId) : '';
+    const title = col ? `Résultats dans “${esc(col)}”` : 'Résultats';
+    return `<div class="section-title"><div><h3>${title}</h3><p>${list.length} élément(s) affiché(s).</p></div></div><div class="list library-results">${list.length ? list.map(itemCard).join('') : '<div class="empty">Aucun élément trouvé.</div>'}</div>`;
   }
 
   function quickFilterChips(){
@@ -1106,6 +1181,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="section-title"><div><h2>${item.favorite?'★ ':''}${esc(item.title)}</h2><p>${kindLabel(item._kind)} · ${esc(item.type || item.role || 'générique')} · ${item.role && item._kind==='prompt' ? esc(item.role)+' · ' : ''}${esc(item.tool || 'générique')}</p></div></div>
       <div class="minirow">${statusPill(item.status)}${item._kind==='fragment'?rolePill(item.role,true):typePill(item.type)}${item._kind==='prompt' && item.role ? rolePill(item.role,true) : ''}${(item.tags||[]).map(t=>`<span class="pill tagclick" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</span>`).join('')}${collections.map(c=>`<span class="pill tagclick" data-action="filter-collection" data-name="${esc(c)}">${esc(c)}</span>`).join('')}</div>
       ${qualityLine(item)}
+      <details class="details"><summary>Pourquoi ce repère ?</summary>${qualityAdviceBlock(item)}</details>
       <div class="primary-actions"><button class="btn primary" data-action="copy-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Copier</button>${canAssemble?`<button class="btn" data-action="load-recipe-builder" data-id="${esc(item.id)}">Assembler</button>`:''}<button class="btn" data-action="duplicate-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Dupliquer</button></div>
       <details class="details more-actions"><summary>Plus d’actions</summary><div class="toolbar"><button class="btn" data-action="toggle-favorite" data-kind="${item._kind}" data-id="${esc(item.id)}">${item.favorite?'Retirer favori':'Favori'}</button><button class="btn danger" data-action="trash-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Mettre à la corbeille</button></div></details>
       <pre class="codebox">${esc(content)}</pre>
@@ -1113,7 +1189,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <details class="details"><summary>Notes, résultats et tests</summary>${notesTestsBlock(item)}</details>
       <details class="details"><summary>Historique de versions</summary>${versionHistoryBlock(item)}</details>
       ${item._kind === 'prompt' || item._kind === 'recipe' ? compareBlock(item) : ''}
-      ${item._kind === 'prompt' ? `<details class="details"><summary>Extraire des fragments</summary><p class="hint">Découpe ce prompt en morceaux réutilisables. Rien n’est sauvegardé sans validation.</p><div class="toolbar"><button class="btn small" data-action="suggest-from-prompt" data-id="${esc(item.id)}">Analyser ce prompt</button></div><div id="extractArea">${ui.extractorSourceId===item.id ? suggestionList(ui.extractorSuggestions, 'prompt') : ''}</div></details>` : ''}
+      ${item._kind === 'prompt' ? `<details class="details" ${ui.extractorSourceId===item.id?'open':''}><summary>Extraire des fragments</summary><p class="hint">Découpe ce prompt en morceaux réutilisables. Rien n’est sauvegardé sans validation.</p><div class="toolbar"><button class="btn small" data-action="suggest-from-prompt" data-id="${esc(item.id)}">Analyser ce prompt</button></div><div id="extractArea">${ui.extractorSourceId===item.id ? suggestionList(ui.extractorSuggestions, 'prompt') : ''}</div></details>` : ''}
       ${item._kind === 'recipe' && missingFragments(item).length ? `<p class="warntext">⚠ Cette recette contient ${missingFragments(item).length} fragment(s) manquant(s).</p>` : ''}
     </div>`;
   }
@@ -1124,8 +1200,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const typeOrRole = isFrag ? item.role : item.type;
     return `<form class="editItemForm" data-kind="${item._kind}" data-id="${esc(item.id)}">
       <div class="row"><div><label>Titre</label><input name="title" value="${esc(item.title)}"></div><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), item.status, 'wrap')}</div></div>
-      <div class="row"><div><label>${isFrag?'Rôle':'Type'}</label>${isFrag ? quickChoice('typeOrRole', QUICK_ROLE_OPTIONS, optionList('roles'), typeOrRole, 'Plus de rôles') : quickChoice('typeOrRole', QUICK_TYPE_OPTIONS, optionList('types'), typeOrRole || 'générique', 'Autre')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(item.type), toolsForType(item.type), item.tool||'générique', 'Autre outil')}</div></div>
-      ${!isFrag && !isRecipe ? `<label>Catégorie / précision</label>${quickChoice('promptRole', QUICK_ROLE_OPTIONS, optionList('roles'), item.role || 'personnage', 'Plus de catégories')}` : ''}
+      <div class="row"><div><label>${isFrag?'Rôle':'Type'}</label>${isFrag ? quickChoice('typeOrRole', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), typeOrRole, 'Plus de rôles') : quickChoice('typeOrRole', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), typeOrRole || 'générique', 'Autre')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(item.type), toolsForType(item.type), item.tool||'générique', 'Autre outil')}</div></div>
+      ${!isFrag && !isRecipe ? `<label>Catégorie / précision</label>${quickChoice('promptRole', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), item.role || 'personnage', 'Plus de catégories')}` : ''}
       <label>Tags</label><input name="tags" value="${esc(tagsText(item.tags))}">
       <label>Collections</label>${collectionChecks(item.collectionIds||[])}
       ${isRecipe ? `<label>Description</label><textarea name="description">${esc(item.description||'')}</textarea>` : `<label>Contenu</label><textarea class="bigarea" name="content">${esc(item.content||'')}</textarea>`}
@@ -1172,6 +1248,26 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const label=q>=78?'très riche':q>=55?'bien renseigné':q>=32?'quelques repères':'minimal';
     return `<div class="qualityline"><span>Repères : ${label}</span><span class="qbar" style="--q:${q}%" title="Indice indicatif, non qualitatif"><span></span></span></div>`;
   }
+  function qualityAdvice(item){
+    const text = itemContent(item);
+    const adv = [];
+    if(strip(text).length < 180) adv.push('Ajouter un contenu plus complet : intention, contexte, contraintes et résultat attendu.');
+    if(!item.tool || normalizeText(item.tool) === 'generique') adv.push('Préciser l’outil cible pour mieux adapter le format du prompt.');
+    if(!ensureArray(item.tags).length) adv.push('Ajouter quelques tags pour retrouver plus vite cet élément.');
+    if(item._kind !== 'fragment' && !item.type) adv.push('Préciser le type : image, vidéo, conversation, texte ou code.');
+    if(item._kind === 'fragment' && !item.role) adv.push('Préciser le rôle du fragment : style, personnage, lieu, caméra, contrainte, etc.');
+    if(item.status === 'brut') adv.push('Passer par un test terrain puis choisir “à tester”, “à corriger” ou “validé”.');
+    if(item.status === 'à tester') adv.push('Ajouter une note de test ou une miniature de résultat dans “Notes, résultats et tests”.');
+    if((item.status === 'à corriger' || item.status === 'obsolète') && !strip(item.notes)) adv.push('Décrire le point à corriger dans les notes.');
+    if(/\{[^}]{1,40}\}|\[[^\]]{1,40}\]/.test(text) && !ensureArray(item.variableSets).length) adv.push('Créer au moins un remplissage de variables dans l’onglet Variables.');
+    if(!ensureArray(item.collectionIds).length) adv.push('Associer l’élément à une collection si tu veux le parcourir comme un dossier.');
+    return adv;
+  }
+  function qualityAdviceBlock(item){
+    const adv = qualityAdvice(item);
+    if(!adv.length) return '<p class="hint">Aucun manque évident détecté. Le repère reste indicatif : le vrai test est le résultat obtenu.</p>';
+    return `<ul class="advice-list">${adv.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`;
+  }
 
   function itemContent(item){
     if(item._kind === 'recipe') return buildRecipe(item).final;
@@ -1210,7 +1306,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="card">
         <div class="section-title"><div><h2>Assembler</h2><p>Compose un prompt final depuis des fragments vivants, du texte libre et des variables.</p></div>${splitTools('compose')}</div>
         <form id="builderMeta" class="grid form-compact">
-          <div class="row"><div><label>Titre de recette</label><input name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Type</label>${quickChoice('type', QUICK_TYPE_OPTIONS, optionList('types'), builder.type || 'image', 'Autre')}</div></div>
+          <div class="row"><div><label>Titre de recette</label><input name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Type</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), builder.type || 'image', 'Autre')}</div></div>
           <div><label>Format de sortie</label>${segmentedRadios('outputFormat', OUTPUT_FORMAT_OPTIONS, builder.outputFormat || ui.outputFormat || 'simple', 'wrap')}</div>
           <details class="details"><summary>Paramètres de la recette</summary>
             <div class="row"><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), builder.status, 'wrap')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(builder.type), toolsForType(builder.type), builder.tool, 'Autre outil')}</div></div>
@@ -1254,8 +1350,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function varsForm(raw, vars){
     const names = extractVars(raw);
-    if(!names.length) return '<p class="hint">Aucune variable détectée. Écris par exemple {personnage}, {lieu} ou {action} dans un bloc.</p>';
-    return `<details class="details" open><summary>Variables à remplir</summary><div class="grid">${names.map(name => `<label>${esc(name)}</label><input data-var-name="${esc(name)}" value="${esc((vars[name]&&vars[name].value)||'')}" placeholder="Valeur pour {${esc(name)}}">`).join('')}</div></details>`;
+    if(!names.length) return '<p class="hint">Aucune variable détectée. Écris par exemple {personnage}, [lieu] ou {action} dans un bloc.</p>';
+    return `<details class="details" open><summary>Variables à remplir</summary><div class="grid">${names.map(name => `<label>${esc(name)}</label><input data-var-name="${esc(name)}" value="${esc((vars[name]&&vars[name].value)||'')}" placeholder="Valeur pour ${esc(name)}">`).join('')}</div></details>`;
   }
 
 
@@ -1291,7 +1387,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(!candidates.length) return '';
     const [ck,cid] = String(ui.compareTarget||'').split('|');
     const target = ck && cid ? getByKind(ck,cid) : null;
-    return `<details class="details"><summary>Comparer avec une variante</summary>
+    return `<details class="details" ${target?'open':''}><summary>Comparer avec une variante</summary>
       <p class="hint">Repère rapidement les lignes communes et les différences entre deux prompts ou recettes.</p>
       <select id="compareTargetSelect"><option value="">Choisir un élément…</option>${candidates.slice(0,160).map(x=>`<option value="${x._kind}|${x.id}" ${ui.compareTarget===x._kind+'|'+x.id?'selected':''}>${esc(kindLabel(x._kind)+' · '+x.title)}</option>`).join('')}</select>
       ${target ? compareReportBlock(item, target) : ''}
@@ -1356,6 +1452,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function extractVars(text){
     const set = new Set();
     String(text||'').replace(/\{([a-zA-ZÀ-ÿ0-9_\- ]{1,40})\}/g, (m, name)=>{ set.add(strip(name)); return m; });
+    String(text||'').replace(/\[([a-zA-ZÀ-ÿ0-9_\- ]{1,40})\]/g, (m, name)=>{ set.add(strip(name)); return m; });
     return Array.from(set);
   }
   function topVariableNames(text){
@@ -1372,32 +1469,32 @@ body.is-resizing{user-select:none;cursor:col-resize}
     }
     return uniq(names);
   }
-  function promptVariableNames(prompt){
-    return uniq([...topVariableNames(prompt?.content), ...extractVars(prompt?.content)]);
+  function variableItemNames(item){
+    return uniq([...topVariableNames(item?.content), ...extractVars(item?.content)]);
   }
-  function promptHasVariables(prompt){
-    return promptVariableNames(prompt).length > 0;
+  function variableItemHasVariables(item){
+    return variableItemNames(item).length > 0;
   }
-  function currentPromptVariableValues(prompt){
+  function currentVariableValues(item){
     const values = {};
-    const names = promptVariableNames(prompt);
+    const names = variableItemNames(item);
     names.forEach(name => values[name] = {value:'', hint:'', preset:''});
-    String(prompt?.content || '').split(/\r?\n/).forEach(line => {
+    String(item?.content || '').split(/\r?\n/).forEach(line => {
       const m = line.match(/^([A-Z][A-Z0-9_]{2,})\s*:\s*(.*)$/);
       if(m && values[m[1]]) values[m[1]].value = strip(m[2]);
     });
     return values;
   }
   function applyVars(text, vars){
-    return String(text||'').replace(/\{([a-zA-ZÀ-ÿ0-9_\- ]{1,40})\}/g, (m, name)=>{
+    return String(text||'').replace(/[\{\[]([a-zA-ZÀ-ÿ0-9_\- ]{1,40})[\}\]]/g, (m, name)=>{
       const key = strip(name);
       const val = vars && vars[key] ? vars[key].value : '';
       return val || m;
     });
   }
-  function applyPromptVariables(prompt, values){
+  function applyItemVariables(item, values){
     const vars = normalizeVars(values);
-    let text = String(prompt?.content || '');
+    let text = String(item?.content || '');
     Object.keys(vars).forEach(name => {
       const value = vars[name]?.value || '';
       if(!value) return;
@@ -1407,36 +1504,59 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function missingFragments(recipe){ return buildRecipe(recipe).missing; }
 
+  function allVariableItems(){
+    let items = [...active(state.prompts).map(x=>kindWrap('prompt',x)), ...active(state.fragments).map(x=>kindWrap('fragment',x))].filter(variableItemHasVariables);
+    if(ui.variableKindFilter !== 'all') items = items.filter(x=>x._kind === ui.variableKindFilter);
+    if(ui.variableQuery) items = items.filter(x => matchesSearch(x, ui.variableQuery) || variableItemNames(x).some(n=>normalizeText(n).includes(normalizeText(ui.variableQuery))));
+    return items.sort(byUpdated);
+  }
   function viewVariables(){
-    const prompts = active(state.prompts).filter(promptHasVariables).sort(byUpdated);
-    if(!prompts.length){
-      return `<section class="card"><div class="section-title"><div><h2>Variables</h2><p>Les prompts contenant un bloc NOM_VARIABLE: valeur ou des marqueurs {variable} apparaîtront ici.</p></div><button class="btn primary" data-space="capture">+ Ajouter un prompt</button></div><div class="empty">Aucun prompt variable pour l’instant. Ajoute un prompt avec des lignes comme CHARACTER_NAME: Kaelis ou des zones comme {sujet}.</div></section>`;
+    const allItems = [...active(state.prompts).map(x=>kindWrap('prompt',x)), ...active(state.fragments).map(x=>kindWrap('fragment',x))].filter(variableItemHasVariables);
+    const items = allVariableItems();
+    if(!items.length){
+      return `<section class="card"><div class="section-title"><div><h2>Variables</h2><p>Les prompts et fragments contenant un bloc NOM_VARIABLE: valeur, {variable} ou [variable] apparaîtront ici.</p></div><button class="btn primary" data-space="capture">+ Ajouter un élément</button></div>${variableFiltersBlock()}<div class="empty">${allItems.length ? 'Aucun élément ne correspond à ce filtre.' : 'Aucun élément variable pour l’instant. Ajoute un prompt ou un fragment avec CHARACTER_NAME: Kaelis, {sujet} ou [sujet].'}</div></section>`;
     }
-    if(!ui.variablePromptId || !prompts.some(p=>p.id===ui.variablePromptId)) ui.variablePromptId = prompts[0].id;
-    const selected = prompts.find(p=>p.id===ui.variablePromptId) || prompts[0];
-    return `<section class="grid two">
+    if(!ui.variablePromptId || !items.some(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind)){ ui.variablePromptId = items[0].id; ui.variableItemKind = items[0]._kind; }
+    const selected = items.find(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind) || items[0];
+    return `<section class="variables-split" style="--split-left:${Math.round(ui.variablesSplit || 46)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Prompts à variables</h2><p>Sélectionne un prompt, puis sauvegarde des remplissages réutilisables.</p></div></div>
-        <div class="list">${prompts.map(p=>variablePromptCard(p, selected.id)).join('')}</div>
+        <div class="section-title"><div><h2>Éléments à variables</h2><p>Sélectionne un prompt ou un fragment, puis sauvegarde des remplissages réutilisables.</p></div>${splitTools('variables')}</div>
+        ${variableFiltersBlock()}
+        <div class="list variables-list">${items.map(p=>variablePromptCard(p, selected)).join('')}</div>
       </div>
-      <aside class="card viewer">${variablePromptPanel(selected)}</aside>
+      <div class="split-handle no-print" data-resize-split="variables" title="Glisser pour ajuster la largeur des panneaux"></div>
+      <aside class="card viewer variables-viewer">${variablePromptPanel(selected)}</aside>
     </section>`;
   }
-  function variablePromptCard(prompt, selectedId){
-    const names = promptVariableNames(prompt);
+  function variableFiltersBlock(){
+    const counts = {
+      all: [...active(state.prompts), ...active(state.fragments)].filter(variableItemHasVariables).length,
+      prompt: active(state.prompts).filter(variableItemHasVariables).length,
+      fragment: active(state.fragments).filter(variableItemHasVariables).length
+    };
+    return `<div class="variables-tools">
+      <input id="variableSearch" value="${esc(ui.variableQuery)}" placeholder="Rechercher un titre, variable, tag, outil…">
+      <div class="filterbar">
+        ${[['all','Tout',counts.all],['prompt','Prompts',counts.prompt],['fragment','Fragments',counts.fragment]].map(([id,label,count])=>`<button class="btn small ${ui.variableKindFilter===id?'active':''}" data-action="set-variable-kind-filter" data-kind-filter="${id}">${label} · ${count}</button>`).join('')}
+        ${ui.variableQuery ? '<button class="btn small" data-action="clear-variable-search">Effacer</button>' : ''}
+      </div>
+    </div>`;
+  }
+  function variablePromptCard(prompt, selected){
+    const names = variableItemNames(prompt);
     const sets = active(prompt.variableSets || []);
-    return `<button class="item ${prompt.id===selectedId?'active':''}" data-action="select-variable-prompt" data-id="${esc(prompt.id)}">
+    return `<button class="item ${prompt.id===selected.id && prompt._kind===selected._kind?'active':''}" data-action="select-variable-prompt" data-kind="${esc(prompt._kind)}" data-id="${esc(prompt.id)}">
       <h4>${esc(prompt.title)}</h4>
-      <p>${names.length} variable(s) · ${sets.length} remplissage(s)</p>
+      <p>${kindLabel(prompt._kind)} · ${names.length} variable(s) · ${sets.length} remplissage(s)</p>
       <div class="meta">${names.slice(0,5).map(n=>`<span class="pill">${esc(n)}</span>`).join('')}${names.length>5?`<span class="pill">+${names.length-5}</span>`:''}</div>
     </button>`;
   }
   function variablePromptPanel(prompt){
-    const names = promptVariableNames(prompt);
+    const names = variableItemNames(prompt);
     const sets = active(prompt.variableSets || []);
-    const currentValues = currentPromptVariableValues(prompt);
+    const currentValues = currentVariableValues(prompt);
     return `<div>
-      <div class="section-title"><div><h2>${esc(prompt.title)}</h2><p>${esc(prompt.tool || 'générique')} · ${names.length} variable(s) détectée(s)</p></div></div>
+      <div class="section-title"><div><h2>${esc(prompt.title)}</h2><p>${kindLabel(prompt._kind)} · ${esc(prompt.tool || 'générique')} · ${names.length} variable(s) détectée(s)</p></div></div>
       <div class="minirow">${names.map(n=>`<span class="pill">${esc(n)}</span>`).join('')}</div>
       <details class="details" open><summary>Nouveau remplissage</summary>${variableSetForm(prompt, null, currentValues)}</details>
       <details class="details" open><summary>Remplissages sauvegardés</summary>${sets.length ? `<div class="list smalllist">${sets.map(set=>variableSetItem(prompt, set)).join('')}</div>` : '<div class="empty">Aucun remplissage sauvegardé pour ce prompt.</div>'}</details>
@@ -1444,21 +1564,111 @@ body.is-resizing{user-select:none;cursor:col-resize}
     </div>`;
   }
   function variableSetForm(prompt, set=null, fallbackValues=null){
-    const names = promptVariableNames(prompt);
-    const values = Object.assign({}, fallbackValues || currentPromptVariableValues(prompt), set?.values || {});
-    return `<form class="promptVariableSetForm" data-prompt-id="${esc(prompt.id)}" ${set?`data-set-id="${esc(set.id)}"`:''}>
+    const names = variableItemNames(prompt);
+    const values = Object.assign({}, fallbackValues || currentVariableValues(prompt), set?.values || {});
+    return `<form class="promptVariableSetForm" data-kind="${esc(prompt._kind || 'prompt')}" data-prompt-id="${esc(prompt.id)}" ${set?`data-set-id="${esc(set.id)}"`:''}>
       <label>Nom du remplissage</label><input name="name" value="${esc(set?.name || '')}" placeholder="Ex : Kaelis · carte personnage">
+      <details class="details">
+        <summary>Coller plusieurs variables d’un coup</summary>
+        <p class="hint">Format conseillé : une ligne <span class="kbd">NOM_VARIABLE: valeur</span>. Les valeurs longues peuvent continuer sur les lignes suivantes jusqu’à la prochaine variable.</p>
+        <textarea name="bulkVariables" placeholder="CHARACTER_NAME: Kaelis&#10;STYLE: aquarelle douce, lumière dorée&#10;BACKGROUND: jardin suspendu au lever du soleil"></textarea>
+        <div class="toolbar"><button class="btn" type="button" data-action="apply-variable-bulk">Remplir les champs</button></div>
+      </details>
       <div class="grid">${names.map(name => `<div><label>${esc(name)}</label><textarea name="var:${esc(name)}" placeholder="Valeur pour ${esc(name)}">${esc((values[name] && values[name].value) || '')}</textarea></div>`).join('')}</div>
       <label>Notes</label><textarea name="notes" placeholder="Contexte, variante, image de référence utilisée…">${esc(set?.notes || '')}</textarea>
-      <div class="toolbar"><button class="btn primary" type="submit">${set?'Mettre à jour':'Sauvegarder ce remplissage'}</button>${set?`<button class="btn" type="button" data-action="copy-variable-set" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Copier prompt rempli</button>`:''}</div>
+      <div class="toolbar"><button class="btn primary" type="submit">${set?'Mettre à jour':'Sauvegarder ce remplissage'}</button>${set?`<button class="btn" type="button" data-action="copy-variable-set" data-kind="${esc(prompt._kind || 'prompt')}" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Copier élément rempli</button>`:''}</div>
     </form>`;
   }
   function variableSetItem(prompt, set){
-    const preview = promptVariableNames(prompt).map(name => `${name}: ${(set.values?.[name]?.value || '').slice(0,60)}`).join(' · ');
+    const preview = variableItemNames(prompt).map(name => `${name}: ${(set.values?.[name]?.value || '').slice(0,60)}`).join(' · ');
     return `<div class="item"><h4>${esc(set.name)}</h4><p>${esc(preview || 'Remplissage vide')}</p>${set.notes?`<p class="hint">${esc(set.notes)}</p>`:''}
-      <div class="toolbar"><button class="btn small primary" data-action="copy-variable-set" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Copier prompt rempli</button><button class="btn small" data-action="load-variable-set" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Modifier</button><button class="btn small danger" data-action="delete-variable-set" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Supprimer</button></div>
+      <div class="toolbar"><button class="btn small primary" data-action="copy-variable-set" data-kind="${esc(prompt._kind || 'prompt')}" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Copier élément rempli</button><button class="btn small" data-action="load-variable-set" data-kind="${esc(prompt._kind || 'prompt')}" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Modifier</button><button class="btn small danger" data-action="delete-variable-set" data-kind="${esc(prompt._kind || 'prompt')}" data-prompt-id="${esc(prompt.id)}" data-set-id="${esc(set.id)}">Supprimer</button></div>
       ${ui.variableSetId===set.id ? variableSetForm(prompt, set) : ''}
     </div>`;
+  }
+  function variableKey(value){
+    return normalizeText(strip(String(value || '').replace(/[{}\[\]]/g, ''))).replace(/[\s_-]+/g, '');
+  }
+  function parseBulkVariableValues(text, names){
+    const byKey = {};
+    names.forEach(name => { byKey[variableKey(name)] = name; });
+    const values = {};
+    let current = '';
+    let buffer = [];
+    const flush = () => {
+      if(current) values[current] = buffer.join('\n').trim();
+      buffer = [];
+    };
+    String(text || '').split(/\r?\n/).forEach(line => {
+      const match = line.match(/^\s*[\{\[]?([a-zA-ZÀ-ÿ0-9_\- ]{1,80})[\}\]]?\s*[:=]\s*(.*)$/);
+      const nextName = match ? byKey[variableKey(match[1])] : '';
+      if(nextName){
+        flush();
+        current = nextName;
+        buffer = [match[2] || ''];
+      }else if(current){
+        buffer.push(line);
+      }
+    });
+    flush();
+    return values;
+  }
+  function applyBulkVariablePaste(button){
+    const form = button.closest('.promptVariableSetForm');
+    if(!form) return;
+    const fields = qsa('textarea', form).filter(el => String(el.name || '').startsWith('var:'));
+    const names = fields.map(el => el.name.slice(4));
+    const bulk = form.elements.bulkVariables ? form.elements.bulkVariables.value : '';
+    const parsed = parseBulkVariableValues(bulk, names);
+    let count = 0;
+    fields.forEach(field => {
+      const name = field.name.slice(4);
+      if(Object.prototype.hasOwnProperty.call(parsed, name)){
+        field.value = parsed[name];
+        count++;
+      }
+    });
+    toast(count ? `${count} variable(s) remplie(s).` : 'Aucune variable reconnue dans le texte collé.');
+  }
+
+  function auditRows(){
+    return allActiveItems().map(item => {
+      const q = qualityScore(item);
+      const advice = qualityAdvice(item);
+      const needsAttention = advice.length || ['brut','à tester','à corriger','obsolète'].includes(item.status);
+      return {item, q, advice, needsAttention};
+    }).filter(row => {
+      if(ui.auditFilter === 'all') return true;
+      if(ui.auditFilter === 'attention') return row.needsAttention;
+      if(ui.auditFilter === 'validé') return row.item.status === 'validé';
+      return row.item.status === ui.auditFilter;
+    }).sort((a,b)=>a.q-b.q || String(a.item.updatedAt||'').localeCompare(String(b.item.updatedAt||'')));
+  }
+  function viewAudit(){
+    const rows = auditRows();
+    const counts = {
+      all: allActiveItems().length,
+      attention: allActiveItems().filter(x=>qualityAdvice(x).length || ['brut','à tester','à corriger','obsolète'].includes(x.status)).length
+    };
+    return `<section class="grid">
+      <div class="card">
+        <div class="section-title"><div><h2>Audit</h2><p>Améliorer, tester et valider les prompts, fragments et recettes à partir des repères existants.</p></div></div>
+        <div class="filterbar">
+          ${[['attention','Points à traiter'],['brut','Bruts'],['à tester','À tester'],['à corriger','À corriger'],['validé','Validés'],['all','Tout']].map(([id,label])=>`<button class="btn small ${ui.auditFilter===id?'active':''}" data-action="set-audit-filter" data-filter="${esc(id)}">${esc(label)}</button>`).join('')}
+        </div>
+        <p class="hint">${counts.attention} élément(s) avec point d’attention sur ${counts.all}. Les suggestions sont des pistes pratiques, pas un verdict.</p>
+      </div>
+      <div class="audit-list">${rows.length ? rows.map(auditCard).join('') : '<div class="card empty">Aucun élément dans ce filtre.</div>'}</div>
+    </section>`;
+  }
+  function auditCard(row){
+    const item = row.item;
+    return `<article class="audit-item">
+      <div class="section-title"><div><h3>${esc(item.title)}</h3><p>${kindLabel(item._kind)} · ${esc(item.tool || 'générique')} · ${statusPill(item.status)}</p></div><span class="audit-score">${row.q}/100</span></div>
+      ${qualityLine(item)}
+      ${row.advice.length ? `<ul class="advice-list">${row.advice.slice(0,5).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="hint">Aucun manque évident détecté.</p>'}
+      <div class="toolbar"><button class="btn small primary" data-action="open-item" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}">Ouvrir</button><button class="btn small" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="à tester">À tester</button><button class="btn small" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="validé">Valider</button><button class="btn small warn" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="à corriger">À corriger</button></div>
+    </article>`;
   }
 
   function viewVault(){
@@ -1548,11 +1758,17 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
 
   function optionListsBlock(){
+    const quick = state.settings.quickOptions || normalizeQuickOptions({}, state.settings.optionLists);
     return `<details class="details"><summary>Listes prédéfinies</summary>
-      <p class="hint">Une valeur par ligne. Les valeurs de base restent disponibles pour préserver les anciens exports.</p>
+      <p class="hint">Une valeur par ligne. Les listes complètes restent disponibles dans “Autre”. Les valeurs mises en avant deviennent les boutons visibles.</p>
       <form id="optionListsForm" class="grid">
         <div class="row"><div><label>Types</label><textarea name="types">${esc(optionList('types').join('\n'))}</textarea></div><div><label>Outils IA</label><textarea name="tools">${esc(optionList('tools').join('\n'))}</textarea></div></div>
         <div class="row"><div><label>Catégories / rôles</label><textarea name="roles">${esc(optionList('roles').join('\n'))}</textarea></div><div><label>Statuts</label><textarea name="statuses">${esc(optionList('statuses').join('\n'))}</textarea></div></div>
+        <details class="details"><summary>Valeurs mises en avant</summary>
+          <p class="hint">Ces valeurs apparaissent comme boutons rapides. Les autres restent accessibles dans la liste déroulante.</p>
+          <div class="row"><div><label>Types mis en avant</label><textarea name="quickTypes">${esc(quick.types.join('\n'))}</textarea></div><div><label>Outils mis en avant</label><textarea name="quickTools">${esc(quick.tools.join('\n'))}</textarea></div></div>
+          <div class="row"><div><label>Catégories mises en avant</label><textarea name="quickRoles">${esc(quick.roles.join('\n'))}</textarea></div><div><label>Statuts mis en avant</label><textarea name="quickStatuses">${esc(quick.statuses.join('\n'))}</textarea></div></div>
+        </details>
         <div class="toolbar"><button class="btn primary" type="submit">Enregistrer les listes</button><button class="btn" type="button" data-action="reset-option-lists">Réinitialiser les listes</button></div>
       </form>
     </details>`;
@@ -1807,7 +2023,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(newCollectionName){
         let c = collectionByName(newCollectionName);
         if(!c){
-          c = normalizeCollection({id:uid('col'), name:newCollectionName, color:'#6f8f84', description:String(fd.get('newCollectionDescription')||''), createdAt:now(), updatedAt:now()});
+          c = normalizeCollection({id:uid('col'), name:newCollectionName, color:validColor(fd.get('newCollectionColor')) ? fd.get('newCollectionColor') : '#6f8f84', description:String(fd.get('newCollectionDescription')||''), createdAt:now(), updatedAt:now()});
           state.collections = ensureArray(state.collections);
           state.collections.unshift(c);
         }
@@ -1864,11 +2080,12 @@ body.is-resizing{user-select:none;cursor:col-resize}
   async function savePromptVariableSet(e){
     e.preventDefault();
     const form = e.target;
-    const prompt = state.prompts.find(p=>p.id===form.dataset.promptId && !p.deletedAt);
-    if(!prompt){ toast('Prompt introuvable.'); return; }
+    const kind = form.dataset.kind || 'prompt';
+    const prompt = baseItem(kind, form.dataset.promptId);
+    if(!prompt || prompt.deletedAt){ toast('Élément introuvable.'); return; }
     const fd = new FormData(form);
     const values = {};
-    promptVariableNames(prompt).forEach(name => {
+    variableItemNames(prompt).forEach(name => {
       values[name] = { value:String(fd.get('var:'+name) || ''), hint:'', preset:'' };
     });
     prompt.variableSets = ensureArray(prompt.variableSets);
@@ -1893,20 +2110,21 @@ body.is-resizing{user-select:none;cursor:col-resize}
     }
     prompt.updatedAt = now();
     ui.variablePromptId = prompt.id;
+    ui.variableItemKind = kind;
     ui.variableSetId = payload.id;
     await persist();
     render();
   }
 
-  async function copyPromptVariableSet(promptId, setId){
-    const prompt = state.prompts.find(p=>p.id===promptId && !p.deletedAt);
+  async function copyPromptVariableSet(promptId, setId, kind='prompt'){
+    const prompt = baseItem(kind, promptId);
     const set = prompt ? active(prompt.variableSets || []).find(s=>s.id===setId) : null;
     if(!prompt || !set){ toast('Remplissage introuvable.'); return; }
-    await copyText(applyPromptVariables(prompt, set.values));
+    await copyText(applyItemVariables(prompt, set.values));
   }
 
-  async function deletePromptVariableSet(promptId, setId){
-    const prompt = state.prompts.find(p=>p.id===promptId && !p.deletedAt);
+  async function deletePromptVariableSet(promptId, setId, kind='prompt'){
+    const prompt = baseItem(kind, promptId);
     const set = prompt ? ensureArray(prompt.variableSets).find(s=>s.id===setId) : null;
     if(!prompt || !set) return;
     const ok = await appConfirm('Supprimer ce remplissage de variables ?', 'Supprimer un remplissage', 'Supprimer', true);
@@ -2247,6 +2465,35 @@ body.is-resizing{user-select:none;cursor:col-resize}
     state.collections.unshift(normalizeCollection({id:uid('col'), name, color:validColor(fd.get('color'))?fd.get('color'):'#6f8f84', description:String(fd.get('description')||''), createdAt:now(), updatedAt:now()}));
     await persist(); toast('Collection créée.'); render();
   }
+  async function createInlineCollection(button){
+    const form = button.closest('form');
+    if(!form){ toast('Formulaire introuvable.'); return; }
+    syncCaptureDraftFromDOM();
+    const fd = new FormData(form);
+    const name = strip(fd.get('newCollectionName'));
+    if(!name){ toast('Indique un nom de collection.'); return; }
+    let col = collectionByName(name);
+    if(!col){
+      col = normalizeCollection({
+        id:uid('col'),
+        name,
+        color:validColor(fd.get('newCollectionColor')) ? fd.get('newCollectionColor') : '#6f8f84',
+        description:String(fd.get('newCollectionDescription') || ''),
+        createdAt:now(),
+        updatedAt:now()
+      });
+      state.collections.unshift(col);
+      await persist();
+      toast('Collection ajoutée et cochée.');
+    }else{
+      toast('Collection existante cochée.');
+    }
+    ui.captureDraftData.collectionIds = uniq([...(ui.captureDraftData.collectionIds || []), col.id]);
+    ui.captureDraftData.newCollectionName = '';
+    ui.captureDraftData.newCollectionDescription = '';
+    ui.captureDraftData.newCollectionColor = '#6f8f84';
+    render();
+  }
   async function editCollection(e){
     e.preventDefault(); const id=e.target.dataset.id; const c=state.collections.find(x=>x.id===id); if(!c) return; const fd=new FormData(e.target);
     c.name = strip(fd.get('name')) || c.name; c.color = validColor(fd.get('color')) ? fd.get('color') : c.color; c.description = String(fd.get('description')||''); c.updatedAt=now();
@@ -2265,12 +2512,19 @@ body.is-resizing{user-select:none;cursor:col-resize}
   async function saveOptionLists(e){
     e.preventDefault();
     const fd = new FormData(e.target);
-    state.settings.optionLists = normalizeOptionLists({
+    const optionLists = normalizeOptionLists({
       types: listFromTextarea(fd.get('types')),
       tools: listFromTextarea(fd.get('tools')),
       roles: listFromTextarea(fd.get('roles')),
       statuses: listFromTextarea(fd.get('statuses'))
     });
+    state.settings.optionLists = optionLists;
+    state.settings.quickOptions = normalizeQuickOptions({
+      types: listFromTextarea(fd.get('quickTypes')),
+      tools: listFromTextarea(fd.get('quickTools')),
+      roles: listFromTextarea(fd.get('quickRoles')),
+      statuses: listFromTextarea(fd.get('quickStatuses'))
+    }, optionLists);
     await persist(false);
     toast('Listes prédéfinies enregistrées.');
     render();
@@ -2280,6 +2534,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   async function resetOptionLists(){
     state.settings.optionLists = normalizeOptionLists({});
+    state.settings.quickOptions = normalizeQuickOptions({}, state.settings.optionLists);
     await persist(false);
     toast('Listes prédéfinies réinitialisées.');
     render();
@@ -2437,17 +2692,26 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='set-capture-mode'){ syncCaptureDraftFromDOM(); ui.captureMode = btn.dataset.mode || 'paste'; if(ui.captureMode==='split') ui.captureKind='prompt'; render(); return; }
     if(a==='fill-guided-template'){ fillGuidedTemplate(); return; }
     if(a==='use-title-suggestion'){ applyCaptureTitleSuggestion(btn); return; }
+    if(a==='create-inline-collection'){ await createInlineCollection(btn); return; }
     if(a==='toggle-theme'){ state.settings.theme = state.settings.theme==='dark'?'light':'dark'; await persist(false); render(); return; }
     if(a==='toggle-density'){ state.settings.density = state.settings.density==='dense'?'comfortable':'dense'; await persist(false); render(); return; }
     if(a==='install-starter-kit'){ await installStarterKit(); return; }
     if(a==='clear-search'){ ui.query=''; render(); return; }
+    if(a==='set-library-mode'){ ui.libraryMode = btn.dataset.mode || 'search'; render(); return; }
+    if(a==='filter-collection-id'){ ui.libraryMode='browse'; ui.selectedCollectionId=id; ui.libraryKind='all'; ui.query=''; ui.space='library'; render(); return; }
+    if(a==='clear-collection-filter'){ ui.selectedCollectionId=''; render(); return; }
     if(a==='filter-query'){ ui.space='library'; ui.query=btn.dataset.query || ''; render(); return; }
     if(a==='filter-tag'){ ui.space='library'; ui.query = 'tag:"' + (btn.dataset.tag||'') + '"'; render(); return; }
     if(a==='filter-collection'){ ui.space='library'; ui.query = 'collection:"' + (btn.dataset.name||'') + '"'; render(); return; }
-    if(a==='select-variable-prompt'){ ui.variablePromptId=id; ui.variableSetId=''; render(); return; }
-    if(a==='load-variable-set'){ ui.variablePromptId=btn.dataset.promptId; ui.variableSetId=btn.dataset.setId; render(); return; }
-    if(a==='copy-variable-set'){ await copyPromptVariableSet(btn.dataset.promptId, btn.dataset.setId); return; }
-    if(a==='delete-variable-set'){ await deletePromptVariableSet(btn.dataset.promptId, btn.dataset.setId); return; }
+    if(a==='set-audit-filter'){ ui.auditFilter = btn.dataset.filter || 'attention'; render(); return; }
+    if(a==='set-item-status'){ const item=baseItem(kind,id); if(item){ item.status=sanitizeOption(btn.dataset.status, optionList('statuses'), btn.dataset.status); item.updatedAt=now(); await persist(); render(); } return; }
+    if(a==='set-variable-kind-filter'){ ui.variableKindFilter = btn.dataset.kindFilter || 'all'; render(); return; }
+    if(a==='clear-variable-search'){ ui.variableQuery=''; render(); return; }
+    if(a==='select-variable-prompt'){ ui.variablePromptId=id; ui.variableItemKind=kind || 'prompt'; ui.variableSetId=''; render(); return; }
+    if(a==='load-variable-set'){ ui.variablePromptId=btn.dataset.promptId; ui.variableItemKind=btn.dataset.kind || 'prompt'; ui.variableSetId=btn.dataset.setId; render(); return; }
+    if(a==='apply-variable-bulk'){ applyBulkVariablePaste(btn); return; }
+    if(a==='copy-variable-set'){ await copyPromptVariableSet(btn.dataset.promptId, btn.dataset.setId, btn.dataset.kind || 'prompt'); return; }
+    if(a==='delete-variable-set'){ await deletePromptVariableSet(btn.dataset.promptId, btn.dataset.setId, btn.dataset.kind || 'prompt'); return; }
     if(a==='select-item'){ ui.selectedKind=kind; ui.selectedId=id; render(); return; }
     if(a==='copy-item'){ const item=getByKind(kind,id); if(item) copyText(itemContent(item)); return; }
     if(a==='toggle-favorite'){ const item=baseItem(kind,id); if(item){ item.favorite=!item.favorite; item.updatedAt=now(); await persist(); render(); } return; }
@@ -2460,7 +2724,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='merge-suggestion-next'){ mergeSuggestionNext(btn.dataset.source, btn.dataset.index); render(); return; }
     if(a==='split-suggestion'){ splitSuggestionAtCursor(btn.dataset.source, btn.dataset.index); render(); return; }
     if(a==='remove-suggestion'){ removeSuggestion(btn.dataset.source, btn.dataset.index); render(); return; }
-    if(a==='set-split-preset'){ const val=clamp(btn.dataset.value, 36, 76); if(btn.dataset.split==='capture') ui.captureSplit=val; else if(btn.dataset.split==='library') ui.librarySplit=val; else ui.composeSplit=val; render(); return; }
+    if(a==='set-split-preset'){ const val=clamp(btn.dataset.value, 36, 76); if(btn.dataset.split==='capture') ui.captureSplit=val; else if(btn.dataset.split==='library') ui.librarySplit=val; else if(btn.dataset.split==='variables') ui.variablesSplit=val; else ui.composeSplit=val; render(); return; }
     if(a==='open-suggestion-editor'){ openSuggestionEditor(btn.dataset.source, btn.dataset.index); return; }
     if(a==='apply-suggestion-editor'){ applySuggestionEditor(); return; }
     if(a==='close-suggestion-modal'){ closeSuggestionEditor(); return; }
@@ -2546,6 +2810,41 @@ body.is-resizing{user-select:none;cursor:col-resize}
     }, 160);
   }
 
+  function updateLibraryPane(){
+    if(ui.space !== 'library') return false;
+    const list = filteredItems();
+    ensureSelection(list);
+    const results = qs('.library-results');
+    const viewer = qs('.library-viewer');
+    const browseLayout = qs('.collection-browse-layout');
+    if(browseLayout && ui.libraryMode === 'browse'){
+      browseLayout.innerHTML = `${collectionBrowser()}<div>${quickFilterChips()}${libraryResultBlock(list)}</div>`;
+    }
+    if(results) results.innerHTML = list.length ? list.map(itemCard).join('') : '<div class="empty">Aucun élément trouvé.</div>';
+    if(viewer){
+      const selected = selectedItem();
+      viewer.innerHTML = selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>';
+    }
+    return true;
+  }
+
+  function updateVariablesPane(){
+    if(ui.space !== 'variables') return false;
+    const items = allVariableItems();
+    if(!items.length) return false;
+    if(!ui.variablePromptId || !items.some(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind)){
+      ui.variablePromptId = items[0].id;
+      ui.variableItemKind = items[0]._kind;
+    }
+    const selected = items.find(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind) || items[0];
+    const list = qs('.variables-list');
+    const viewer = qs('.variables-viewer');
+    if(!list || !viewer) return false;
+    if(list) list.innerHTML = items.map(p=>variablePromptCard(p, selected)).join('');
+    if(viewer) viewer.innerHTML = variablePromptPanel(selected);
+    return true;
+  }
+
 
 
   function handlePointerDown(e){
@@ -2558,7 +2857,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const handle = e.target.closest('[data-resize-split]');
     if(!handle) return;
     const splitName = handle.dataset.resizeSplit;
-    const section = handle.closest('.capture-split,.compose-split,.library-split');
+    const section = handle.closest('.capture-split,.compose-split,.library-split,.variables-split');
     if(!section) return;
     e.preventDefault();
     document.body.classList.add('is-resizing');
@@ -2569,6 +2868,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(splitName === 'capture') ui.captureSplit = pct;
       if(splitName === 'compose') ui.composeSplit = pct;
       if(splitName === 'library') ui.librarySplit = pct;
+      if(splitName === 'variables') ui.variablesSplit = pct;
     };
     const stop = () => {
       document.body.classList.remove('is-resizing');
@@ -2583,6 +2883,16 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
 
   function handleInput(e){
+    if(e.target.matches && e.target.matches('[data-quick-custom]')){
+      const wrap = e.target.closest('[data-quick-choice]');
+      const custom = wrap?.querySelector('input[type="radio"][value="__custom"]');
+      if(custom) custom.checked = true;
+    }
+    if(e.target.matches && e.target.matches('.quick-choice input[type="radio"]') && e.target.value !== '__custom'){
+      const wrap = e.target.closest('[data-quick-choice]');
+      const select = wrap?.querySelector('select[data-quick-custom]');
+      if(select) select.selectedIndex = 0;
+    }
     if(e.target.closest && e.target.closest('#captureForm')){
       syncCaptureDraftFromDOM();
       if(e.target.id === 'captureContent') updateCaptureTitleSuggestion();
@@ -2591,7 +2901,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
     }
     if(e.target.id === 'importFile'){ ui.importPreview = null; ui.importDraft = null; return; }
     if(e.target.matches('[data-suggestion-field]')){ const arr=getSuggestionArray(e.target.dataset.source); const s=arr[Number(e.target.dataset.index)]; if(s) s[e.target.dataset.suggestionField]=e.target.value; return; }
-    if(e.target.id === 'librarySearch'){ ui.query = e.target.value; renderSoonWithFocus('librarySearch', e.target.selectionStart || e.target.value.length); return; }
+    if(e.target.id === 'librarySearch'){ ui.query = e.target.value; updateLibraryPane(); return; }
+    if(e.target.id === 'variableSearch'){ ui.variableQuery = e.target.value; if(!updateVariablesPane()) renderSoonWithFocus('variableSearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'fragmentPickerSearch'){ ui.fragmentPickerQuery = e.target.value; renderSoonWithFocus('fragmentPickerSearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'recipePickerSearch'){ ui.recipePickerQuery = e.target.value; renderSoonWithFocus('recipePickerSearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'compareTargetSelect'){ ui.compareTarget = e.target.value; render(); return; }
