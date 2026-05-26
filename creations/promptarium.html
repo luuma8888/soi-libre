@@ -61,12 +61,21 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .library-split{grid-template-columns:minmax(360px,var(--split-left,50%)) 12px minmax(360px,1fr)}
 .variables-split{grid-template-columns:minmax(340px,var(--split-left,46%)) 12px minmax(400px,1fr)}
 .capture-split>.card,.compose-split>.card,.library-split>.card,.variables-split>.card{min-width:0}
+.capture-split[data-panel-layout="left-only"],.compose-split[data-panel-layout="left-only"],.library-split[data-panel-layout="left-only"],.variables-split[data-panel-layout="left-only"]{grid-template-columns:minmax(0,1fr)}
+.capture-split[data-panel-layout="right-only"],.compose-split[data-panel-layout="right-only"],.library-split[data-panel-layout="right-only"],.variables-split[data-panel-layout="right-only"]{grid-template-columns:minmax(0,1fr)}
+.capture-split[data-panel-layout="left-only"]>.split-handle,.capture-split[data-panel-layout="left-only"]>aside,.compose-split[data-panel-layout="left-only"]>.split-handle,.compose-split[data-panel-layout="left-only"]>aside,.library-split[data-panel-layout="left-only"]>.split-handle,.library-split[data-panel-layout="left-only"]>aside,.variables-split[data-panel-layout="left-only"]>.split-handle,.variables-split[data-panel-layout="left-only"]>aside{display:none}
+.capture-split[data-panel-layout="right-only"]>.split-handle,.capture-split[data-panel-layout="right-only"]>.card:first-child,.compose-split[data-panel-layout="right-only"]>.split-handle,.compose-split[data-panel-layout="right-only"]>.card:first-child,.library-split[data-panel-layout="right-only"]>.split-handle,.library-split[data-panel-layout="right-only"]>.card:first-child,.variables-split[data-panel-layout="right-only"]>.split-handle,.variables-split[data-panel-layout="right-only"]>.card:first-child{display:none}
+.capture-split[data-panel-layout="focus"],.compose-split[data-panel-layout="focus"],.library-split[data-panel-layout="focus"],.variables-split[data-panel-layout="focus"]{position:fixed;inset:12px;z-index:25;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 22px 80px rgba(0,0,0,.24);padding:12px;overflow:auto}
+.capture-split[data-panel-layout="focus"] .viewer,.compose-split[data-panel-layout="focus"] .viewer,.library-split[data-panel-layout="focus"] .viewer,.variables-split[data-panel-layout="focus"] .viewer,.capture-split[data-panel-layout="focus"] .capture-suggestions-panel{top:12px;max-height:calc(100vh - 48px)}
 .split-handle{align-self:stretch;min-height:300px;display:flex;justify-content:center;cursor:col-resize;touch-action:none;padding:0 2px}
 .split-handle::before{content:"";width:4px;border-radius:999px;background:var(--line);margin:10px 0;transition:.15s}
 .split-handle:hover::before,.split-handle:focus-visible::before{background:var(--accent);width:7px}
 body.is-resizing{user-select:none;cursor:col-resize}
-.panel-layout-tools{display:flex;gap:5px;align-items:center;justify-content:flex-end;flex-wrap:wrap;max-width:360px}
+.panel-layout-tools{display:flex;gap:5px;align-items:center;justify-content:flex-end;flex-wrap:wrap;max-width:540px}
 .panel-layout-tools .btn{padding:5px 8px;font-size:.8rem}.panel-layout-tools .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.layout-hint{font-size:.78rem;color:var(--muted);flex-basis:100%;text-align:right}
+.panel-restore-tools{display:none;margin-bottom:10px}
+[data-panel-layout="right-only"]>.panel-restore-tools,[data-panel-layout="right-only"]>aside>.panel-restore-tools{display:flex}
 .capture-suggestions-panel{position:sticky;top:10px;max-height:calc(100vh - 36px);overflow:hidden;display:flex;flex-direction:column}
 .capture-suggestions-panel #captureSuggestions{min-height:0;display:flex;flex-direction:column}
 .capture-suggestions-panel .smalllist{max-height:calc(100vh - 230px);min-height:420px;overflow:auto}
@@ -81,6 +90,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 @media (min-width:1280px){.bigarea{min-height:330px}.suggestion-edit textarea.suggestion-textarea{min-height:340px}.capture-suggestions-panel .smalllist{min-height:520px;max-height:calc(100vh - 210px)}.viewer #extractArea .smalllist{min-height:420px}.compose-split .builder-item textarea{min-height:190px}}
 @media (min-width:1500px){.capture-suggestions-panel .smalllist{min-height:590px}.suggestion-preview{max-height:280px}.suggestion-edit textarea.suggestion-textarea{min-height:420px}.compose-split .builder-item textarea{min-height:230px}}
 @media (max-width:900px){.capture-split,.compose-split,.library-split,.variables-split{grid-template-columns:1fr!important;gap:var(--space)}.split-handle{display:none}.panel-layout-tools{max-width:none;justify-content:flex-start}.capture-suggestions-panel{position:static;max-height:none;overflow:visible}.capture-suggestions-panel .smalllist,.viewer #extractArea .smalllist{max-height:none;min-height:0}.suggestion-editor-modal textarea{min-height:55vh}}
+@media (max-width:900px){.capture-split[data-panel-layout="right-only"]>.card:first-child,.compose-split[data-panel-layout="right-only"]>.card:first-child,.library-split[data-panel-layout="right-only"]>.card:first-child,.variables-split[data-panel-layout="right-only"]>.card:first-child{display:none}.capture-split[data-panel-layout="left-only"]>aside,.compose-split[data-panel-layout="left-only"]>aside,.library-split[data-panel-layout="left-only"]>aside,.variables-split[data-panel-layout="left-only"]>aside{display:none}.capture-split[data-panel-layout="focus"],.compose-split[data-panel-layout="focus"],.library-split[data-panel-layout="focus"],.variables-split[data-panel-layout="focus"]{inset:6px;padding:8px}.layout-hint{text-align:left}}
 
 @media (max-width:900px){.segchoice{border-radius:var(--radius2)}.segoption{flex:1;min-width:106px}.mobile-fab{display:flex;position:fixed;right:16px;bottom:16px;z-index:18;border-radius:999px;padding:13px 16px}.brand p{display:none}.capture-actions .btn{flex:1}.primary-actions .btn{flex:1}.viewer .toolbar .btn{flex:1}.top-actions [data-tab-go="capture"]{display:none}}
 
@@ -240,6 +250,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     librarySplit: 50,
     composeSplit: 60,
     variablesSplit: 46,
+    panelModes: { capture:'balanced', library:'balanced', compose:'balanced', variables:'balanced' },
     importPreview: null,
     importDraft: null
   };
@@ -259,7 +270,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     return {
       schemaVersion: 6,
       version: VERSION,
-      settings: { theme:'light', density:'comfortable', optionLists:{}, quickOptions:{} },
+      settings: { theme:'light', density:'comfortable', optionLists:{}, quickOptions:{}, panelLayout:{} },
       meta: { createdAt:now(), updatedAt:null, lastExportAt:null, changesSinceExport:0, migratedFrom:null },
       prompts: [],
       fragments: [],
@@ -403,6 +414,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     base.settings.defaultOutputFormat = ['simple','sections','image','video','conversation'].includes(settings.defaultOutputFormat) ? settings.defaultOutputFormat : 'simple';
     base.settings.optionLists = normalizeOptionLists(settings.optionLists);
     base.settings.quickOptions = normalizeQuickOptions(settings.quickOptions, base.settings.optionLists);
+    base.settings.panelLayout = normalizePanelLayout(settings.panelLayout);
     base.meta.createdAt = meta.createdAt || now();
     base.meta.updatedAt = meta.updatedAt || null;
     base.meta.lastExportAt = meta.lastExportAt || null;
@@ -423,6 +435,21 @@ body.is-resizing{user-select:none;cursor:col-resize}
       item.tags = uniq(item.tags.map(cleanTag).filter(Boolean));
     });
     return base;
+  }
+
+  function normalizePanelLayout(value){
+    const src = value && typeof value === 'object' ? value : {};
+    const modes = src.modes && typeof src.modes === 'object' ? src.modes : {};
+    const splits = src.splits && typeof src.splits === 'object' ? src.splits : {};
+    const allowedModes = new Set(['balanced','left','right','left-only','right-only','focus']);
+    const defaults = { capture:58, library:50, compose:60, variables:46 };
+    const out = { modes:{}, splits:{} };
+    Object.keys(defaults).forEach(name => {
+      out.modes[name] = allowedModes.has(modes[name]) ? modes[name] : 'balanced';
+      const raw = Number(splits[name]);
+      out.splits[name] = Number.isFinite(raw) ? clamp(raw, 36, 76) : defaults[name];
+    });
+    return out;
   }
 
   function normalizeOptionLists(optionLists){
@@ -776,6 +803,27 @@ body.is-resizing{user-select:none;cursor:col-resize}
     document.documentElement.dataset.density = state.settings.density || 'comfortable';
     document.documentElement.dataset.space = ui.space || 'dashboard';
   }
+  function syncPanelLayoutFromSettings(){
+    const layout = normalizePanelLayout(state?.settings?.panelLayout);
+    ui.panelModes = Object.assign({}, layout.modes);
+    ui.captureSplit = layout.splits.capture;
+    ui.librarySplit = layout.splits.library;
+    ui.composeSplit = layout.splits.compose;
+    ui.variablesSplit = layout.splits.variables;
+  }
+  async function savePanelLayout(count=false){
+    if(!state || !state.settings) return;
+    state.settings.panelLayout = normalizePanelLayout({
+      modes: ui.panelModes,
+      splits: {
+        capture: ui.captureSplit,
+        library: ui.librarySplit,
+        compose: ui.composeSplit,
+        variables: ui.variablesSplit
+      }
+    });
+    await persist(count);
+  }
   function toast(msg){
     if(!elToast) return;
     elToast.textContent = msg;
@@ -910,17 +958,53 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function splitTools(name){
     const defaults = {capture:58, compose:60, library:50, variables:46};
     const current = Math.round(ui[name + 'Split'] || defaults[name] || 58);
+    const mode = ui.panelModes?.[name] || 'balanced';
     const presetMap = {
       capture:[[58,'Équilibré'],[70,'Saisie large'],[42,'Découpage large']],
       compose:[[60,'Équilibré'],[72,'Composition large'],[44,'Prompt final large']],
       library:[[50,'Équilibré'],[66,'Liste large'],[40,'Détails larges']],
       variables:[[46,'Équilibré'],[62,'Liste large'],[38,'Remplissage large']]
     };
+    const labels = {
+      capture:['Saisie seule','Découpage seul'],
+      compose:['Composition seule','Final seul'],
+      library:['Liste seule','Détails seuls'],
+      variables:['Liste seule','Remplissage seul']
+    }[name] || ['Gauche seule','Droite seule'];
     const presets = presetMap[name] || presetMap.capture;
     return `<div class="panel-layout-tools no-print" aria-label="Réglage des panneaux">
-      ${presets.map(([value,label])=>`<button class="btn small ${Math.abs(current-value)<3?'active':''}" data-action="set-split-preset" data-split="${name}" data-value="${value}">${label}</button>`).join('')}
-      <span class="hint">ou glisse la poignée</span>
+      ${presets.map(([value,label])=>`<button class="btn small ${mode==='balanced' && Math.abs(current-value)<3?'active':''}" data-action="set-split-preset" data-split="${name}" data-value="${value}">${label}</button>`).join('')}
+      <button class="btn small ${mode==='left-only'?'active':''}" data-action="set-panel-layout" data-split="${name}" data-layout="left-only">${labels[0]}</button>
+      <button class="btn small ${mode==='right-only'?'active':''}" data-action="set-panel-layout" data-split="${name}" data-layout="right-only">${labels[1]}</button>
+      <button class="btn small ${mode==='focus'?'active':''}" data-action="set-panel-layout" data-split="${name}" data-layout="${mode==='focus'?'balanced':'focus'}">${mode==='focus'?'Quitter grand format':'Grand format'}</button>
+      <span class="layout-hint">Réglage fin possible avec la poignée centrale.</span>
     </div>`;
+  }
+
+  function panelLayoutAttr(name){
+    return `data-panel-layout="${esc(ui.panelModes?.[name] || 'balanced')}"`;
+  }
+  function applyPanelLayoutDOM(name){
+    const section = qs(`.${name}-split`);
+    if(!section) return;
+    const mode = ui.panelModes?.[name] || 'balanced';
+    const defaults = {capture:58, compose:60, library:50, variables:46};
+    const splitValue = Math.round(ui[name + 'Split'] || defaults[name] || 58);
+    section.dataset.panelLayout = mode;
+    section.style.setProperty('--split-left', splitValue + '%');
+    qsa(`[data-action="set-split-preset"][data-split="${name}"]`).forEach(btn => {
+      const value = Number(btn.dataset.value || 0);
+      btn.classList.toggle('active', mode === 'balanced' && Math.abs(splitValue - value) < 3);
+    });
+    qsa(`[data-action="set-panel-layout"][data-split="${name}"]`).forEach(btn => {
+      const layout = btn.dataset.layout || 'balanced';
+      const isFocusToggle = layout === 'focus' || (layout === 'balanced' && btn.textContent.includes('Quitter'));
+      btn.classList.toggle('active', isFocusToggle ? mode === 'focus' : mode === layout);
+      if(isFocusToggle){
+        btn.dataset.layout = mode === 'focus' ? 'balanced' : 'focus';
+        btn.textContent = mode === 'focus' ? 'Quitter grand format' : 'Grand format';
+      }
+    });
   }
 
   function syncCaptureDraftFromDOM(){
@@ -962,7 +1046,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const mode = ui.captureMode || 'paste';
     const draft = Object.assign(emptyCaptureDraftData(), ui.captureDraftData || {});
     const titleSuggestions = suggestTitles({content:ui.captureDraft || '', type:draft.type, role:draft.role, tags:parseTags(draft.tags)});
-    return `<section class="capture-split" style="--split-left:${Math.round(ui.captureSplit || 58)}%">
+    return `<section class="capture-split" ${panelLayoutAttr('capture')} style="--split-left:${Math.round(ui.captureSplit || 58)}%">
       <div class="card">
         <div class="section-title"><div><h2>Ajouter un élément</h2><p>Colle un contenu, choisis son type, puis sauvegarde localement.</p></div>${splitTools('capture')}</div>
         ${summaryLine()}
@@ -1007,6 +1091,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       </div>
       <div class="split-handle no-print" data-resize-split="capture" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card capture-suggestions-panel">
+        <div class="panel-restore-tools no-print">${splitTools('capture')}</div>
         <div class="section-title"><div><h2>Découpage proposé</h2><p>Les morceaux proposés restent modifiables avant sauvegarde.</p></div></div>
         <p>Tu peux agrandir ce panneau, glisser la poignée centrale, éditer chaque morceau en grand, fusionner ou découper avant de valider.</p>
         <div class="splitline"></div>
@@ -1092,7 +1177,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const list = filteredItems();
     ensureSelection(list);
     const selected = selectedItem();
-    return `<section class="library-split library-layout" style="--split-left:${Math.round(ui.librarySplit || 50)}%">
+    return `<section class="library-split library-layout" ${panelLayoutAttr('library')} style="--split-left:${Math.round(ui.librarySplit || 50)}%">
       <div class="card">
         <div class="section-title"><div><h2>Bibliothèque</h2><p>Recherche directe, collections et copie rapide des éléments.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
         <div class="library-mode">
@@ -1112,7 +1197,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
           : `${quickFilterChips()}${libraryResultBlock(list)}`}
       </div>
       <div class="split-handle no-print" data-resize-split="library" title="Glisser pour ajuster la largeur des panneaux"></div>
-      <aside class="card viewer library-viewer">${selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>'}</aside>
+      <aside class="card viewer library-viewer"><div class="panel-restore-tools no-print">${splitTools('library')}</div>${selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>'}</aside>
     </section>`;
   }
 
@@ -1308,7 +1393,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const built = buildBuilderFromDOMSafe();
     const recipeList = active(state.recipes).filter(r => !ui.recipePickerQuery || matchesSearch(kindWrap('recipe', r), ui.recipePickerQuery)).sort(byUpdated);
     const fragList = active(state.fragments).filter(f => !ui.fragmentPickerQuery || matchesSearch(kindWrap('fragment', f), ui.fragmentPickerQuery)).sort(byUpdated);
-    return `<section class="compose-split compose-layout" style="--split-left:${Math.round(ui.composeSplit || 60)}%">
+    return `<section class="compose-split compose-layout" ${panelLayoutAttr('compose')} style="--split-left:${Math.round(ui.composeSplit || 60)}%">
       <div class="card">
         <div class="section-title"><div><h2>Composer un prompt</h2><p>Assemble un prompt final depuis des morceaux réutilisables, du texte libre et des variables.</p></div>${splitTools('compose')}</div>
         <form id="builderMeta" class="grid form-compact">
@@ -1331,6 +1416,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       </div>
       <div class="split-handle no-print" data-resize-split="compose" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card viewer">
+        <div class="panel-restore-tools no-print">${splitTools('compose')}</div>
         <div class="section-title"><div><h2>Prompt final</h2><p>${built.missing.length ? `${built.missing.length} morceau(x) manquant(s)` : 'Prêt à copier en un seul bloc.'}</p></div></div>
         ${varsForm(built.raw, built.vars)}
         ${variablePresetControls(built.raw)}
@@ -1524,14 +1610,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
     }
     if(!ui.variablePromptId || !items.some(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind)){ ui.variablePromptId = items[0].id; ui.variableItemKind = items[0]._kind; }
     const selected = items.find(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind) || items[0];
-    return `<section class="variables-split" style="--split-left:${Math.round(ui.variablesSplit || 46)}%">
+    return `<section class="variables-split" ${panelLayoutAttr('variables')} style="--split-left:${Math.round(ui.variablesSplit || 46)}%">
       <div class="card">
         <div class="section-title"><div><h2>Prompts et morceaux à remplir</h2><p>Sélectionne un élément, puis sauvegarde des jeux de valeurs réutilisables.</p></div>${splitTools('variables')}</div>
         ${variableFiltersBlock()}
         <div class="list variables-list">${items.map(p=>variablePromptCard(p, selected)).join('')}</div>
       </div>
       <div class="split-handle no-print" data-resize-split="variables" title="Glisser pour ajuster la largeur des panneaux"></div>
-      <aside class="card viewer variables-viewer">${variablePromptPanel(selected)}</aside>
+      <aside class="card viewer variables-viewer"><div class="panel-restore-tools no-print">${splitTools('variables')}</div>${variablePromptPanel(selected)}</aside>
     </section>`;
   }
   function variableFiltersBlock(){
@@ -2443,6 +2529,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       }
       ui.importPreview = null;
       ui.importDraft = null;
+      if(replace) syncPanelLayoutFromSettings();
       await persist(); if(replace) toast('Bibliothèque remplacée.'); render();
     }catch(e){ console.error(e); toast('Import impossible : JSON invalide ou incompatible.'); }
   }
@@ -2679,6 +2766,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(String(answer || '').trim().toUpperCase() !== 'SUPPRIMER'){ toast('Réinitialisation annulée.'); return; }
     state = templateState();
     builder = emptyBuilder();
+    syncPanelLayoutFromSettings();
     ui.selectedKind = null;
     ui.selectedId = null;
     ui.query = '';
@@ -2690,9 +2778,9 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
 
   async function handleClick(e){
-    const spaceBtn = e.target.closest('[data-space]');
+    const spaceBtn = e.target.closest('button[data-space]');
     if(spaceBtn){ syncCaptureDraftFromDOM(); ui.space = spaceBtn.dataset.space; render(); return; }
-    const tabGo = e.target.closest('[data-tab-go]');
+    const tabGo = e.target.closest('button[data-tab-go]');
     if(tabGo){ syncCaptureDraftFromDOM(); ui.space = tabGo.dataset.tabGo; render(); return; }
     const libKind = e.target.closest('[data-lib-kind]');
     if(libKind){ ui.libraryKind = libKind.dataset.libKind; render(); return; }
@@ -2736,7 +2824,23 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='merge-suggestion-next'){ mergeSuggestionNext(btn.dataset.source, btn.dataset.index); render(); return; }
     if(a==='split-suggestion'){ splitSuggestionAtCursor(btn.dataset.source, btn.dataset.index); render(); return; }
     if(a==='remove-suggestion'){ removeSuggestion(btn.dataset.source, btn.dataset.index); render(); return; }
-    if(a==='set-split-preset'){ const val=clamp(btn.dataset.value, 36, 76); if(btn.dataset.split==='capture') ui.captureSplit=val; else if(btn.dataset.split==='library') ui.librarySplit=val; else if(btn.dataset.split==='variables') ui.variablesSplit=val; else ui.composeSplit=val; render(); return; }
+    if(a==='set-split-preset'){
+      const split = btn.dataset.split;
+      const val=clamp(btn.dataset.value, 36, 76);
+      if(split==='capture') ui.captureSplit=val; else if(split==='library') ui.librarySplit=val; else if(split==='variables') ui.variablesSplit=val; else ui.composeSplit=val;
+      ui.panelModes[split] = 'balanced';
+      await savePanelLayout(false);
+      applyPanelLayoutDOM(split);
+      return;
+    }
+    if(a==='set-panel-layout'){
+      const split = btn.dataset.split;
+      const layout = btn.dataset.layout || 'balanced';
+      if(ui.panelModes && split) ui.panelModes[split] = layout;
+      await savePanelLayout(false);
+      applyPanelLayoutDOM(split);
+      return;
+    }
     if(a==='open-suggestion-editor'){ openSuggestionEditor(btn.dataset.source, btn.dataset.index); return; }
     if(a==='apply-suggestion-editor'){ applySuggestionEditor(); return; }
     if(a==='close-suggestion-modal'){ closeSuggestionEditor(); return; }
@@ -2835,7 +2939,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(results) results.innerHTML = list.length ? list.map(itemCard).join('') : '<div class="empty">Aucun élément trouvé.</div>';
     if(viewer){
       const selected = selectedItem();
-      viewer.innerHTML = selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>';
+      viewer.innerHTML = `<div class="panel-restore-tools no-print">${splitTools('library')}</div>${selected ? itemViewer(selected) : '<div class="empty">Sélectionne un élément dans la bibliothèque.</div>'}`;
     }
     return true;
   }
@@ -2853,7 +2957,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const viewer = qs('.variables-viewer');
     if(!list || !viewer) return false;
     if(list) list.innerHTML = items.map(p=>variablePromptCard(p, selected)).join('');
-    if(viewer) viewer.innerHTML = variablePromptPanel(selected);
+    if(viewer) viewer.innerHTML = `<div class="panel-restore-tools no-print">${splitTools('variables')}</div>${variablePromptPanel(selected)}`;
     return true;
   }
 
@@ -2881,12 +2985,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(splitName === 'compose') ui.composeSplit = pct;
       if(splitName === 'library') ui.librarySplit = pct;
       if(splitName === 'variables') ui.variablesSplit = pct;
+      if(ui.panelModes) ui.panelModes[splitName] = 'balanced';
     };
     const stop = () => {
       document.body.classList.remove('is-resizing');
       document.removeEventListener('pointermove', update);
       document.removeEventListener('pointerup', stop);
       document.removeEventListener('pointercancel', stop);
+      savePanelLayout(false);
     };
     document.addEventListener('pointermove', update);
     document.addEventListener('pointerup', stop);
@@ -2968,6 +3074,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   async function init(){
     state = await loadState();
+    syncPanelLayoutFromSettings();
     document.addEventListener('click', handleClick);
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('input', handleInput);
