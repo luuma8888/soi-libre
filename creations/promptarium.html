@@ -13,11 +13,19 @@
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+[data-space="dashboard"]{--bg:#f7f6ee;--panel2:#eeefe1;--accent:#7d997c}
+[data-space="capture"]{--bg:#fbf5e8;--panel2:#f3ead8;--accent:#b99462}
+[data-space="library"]{--bg:#f1f8f8;--panel2:#e2eeee;--accent:#6f9aa0}
+[data-space="variables"]{--bg:#f7f3fb;--panel2:#ebe3f3;--accent:#9279ad}
+[data-space="compose"]{--bg:#fbf1ec;--panel2:#f2dfd6;--accent:#b9826b}
+[data-space="audit"]{--bg:#fbf0f2;--panel2:#f3dfe4;--accent:#b97687}
+[data-space="vault"]{--bg:#f4f4f0;--panel2:#e8e8df;--accent:#7c8778}
 [data-theme="dark"]{
   --bg:#171817; --panel:#20221f; --panel2:#292b27; --ink:#f3f0e6; --muted:#b8b1a4;
   --line:#3a3a33; --soft:#2f322e; --accent:#9cc5b8; --accent2:#d0b17f; --danger:#d98780;
   --ok:#a0c6a8; --warn:#d4b265; --shadow:0 18px 45px rgba(0,0,0,.28);
 }
+[data-theme="dark"][data-space]{--bg:#171817;--panel:#20221f;--panel2:#292b27}
 [data-density="dense"]{ --space:10px; --fs:13px; --radius:14px; --radius2:10px; }
 *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:var(--fs);line-height:1.45}
 button,input,select,textarea{font:inherit;color:inherit} button{cursor:pointer} input,select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:var(--radius2);padding:9px 10px;outline:none} textarea{min-height:110px;resize:vertical}.bigarea{min-height:250px;font-family:var(--mono);font-size:.92rem;line-height:1.5}
@@ -79,7 +87,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 @media (max-width:900px){.grid.two,.row,.row.three{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.top-actions{justify-content:flex-start}.viewer{position:static}.list{max-height:none}.app{padding:12px 12px 96px}.nav{position:sticky;top:0;background:var(--bg);z-index:10;padding:8px 0}.inlineitem{grid-template-columns:1fr}.brand p{font-size:.82rem}}
 @media print{.topbar,.nav,.toolbar,.btn,.toast,.modal,.filters,.no-print{display:none!important}.app{max-width:none;padding:0}.card{box-shadow:none;border:0}.codebox{max-height:none;background:white!important;color:black!important;border:1px solid #bbb}.grid.two,.row,.row.three{display:block}.details{break-inside:avoid}}
 
-.compare-mini{display:grid;gap:8px}.qualityline{font-size:.86rem;color:var(--muted)}.thumb{max-width:150px;max-height:110px;border-radius:12px;border:1px solid var(--line);display:block;margin-top:8px;object-fit:cover}.print-title{margin:0 0 12px}.version-mini{font-size:.84rem;color:var(--muted)}.import-preview{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:10px;margin-top:8px}.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:var(--space)}.statcard{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.statcard strong{display:block;font-size:1.55rem}.workflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.workflow .btn{text-align:left;border-radius:var(--radius2);padding:12px}.filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.filterbar .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.helpbox{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.helpbox h3{margin:0 0 6px}
+.compare-mini{display:grid;gap:8px}.qualityline{font-size:.86rem;color:var(--muted)}.thumb{max-width:150px;max-height:110px;border-radius:12px;border:1px solid var(--line);display:block;margin-top:8px;object-fit:cover}.print-title{margin:0 0 12px}.version-mini{font-size:.84rem;color:var(--muted)}.import-preview{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:10px;margin-top:8px}.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space)}.statcard{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.statcard strong{display:block;font-size:1.55rem}.workflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.workflow .btn{text-align:left;border-radius:var(--radius2);padding:12px}.home-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.home-actions .btn{border-radius:var(--radius2);text-align:left;padding:14px}.filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.filterbar .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.helpbox{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.helpbox h3{margin:0 0 6px}
 .library-mode{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.library-mode .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.library-layout .list{max-height:none;overflow:visible}.collection-browse-layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:10px;align-items:start}.collection-rail{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:9px;position:sticky;top:10px}.collection-rail summary{cursor:pointer;font-weight:800}.collection-browser{display:grid;gap:7px;margin-top:8px}.collection-folder{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:8px;text-align:left}.collection-folder.active{outline:2px solid color-mix(in srgb,var(--accent) 65%,transparent);border-color:var(--accent);background:var(--panel)}.folder-icon{width:22px;height:18px;border-radius:6px;background:var(--dot,#9cc5b8);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}input[type="color"]{min-height:42px;padding:4px;background:var(--panel);cursor:pointer}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}input[type="color"]::-moz-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}.collection-create-box{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:9px;margin-top:8px}.quick-choice{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:6px}.quick-choice .segchoice{border:0;background:transparent;margin:0}.quick-choice details{margin-top:5px}.quick-choice details[open]{border-top:1px solid var(--line);padding-top:6px}.audit-list{display:grid;gap:8px}.audit-item{border:1px solid var(--line);border-radius:var(--radius2);background:var(--panel);padding:10px}.audit-item h3{margin:0 0 4px;font-size:.98rem}.audit-score{font-weight:800}.advice-list{margin:8px 0 0;padding-left:18px;color:var(--muted)}.advice-list li{margin:3px 0}.variables-tools{display:grid;gap:8px;margin-bottom:10px}.variables-list{max-height:none;overflow:visible}
 @media (max-width:900px){.collection-browse-layout{grid-template-columns:1fr}.collection-rail{position:static}}
 </style>
@@ -89,7 +97,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   <header class="topbar">
     <div class="brand">
       <div class="logo">P</div>
-      <div><h1>Promptarium <span class="muted">v0.2.alpha</span></h1><p>Capture rapide, bibliothèque claire, recettes vivantes, versions, résultats et packs. Tout reste local, offline et exportable.</p></div>
+      <div><h1>Promptarium <span class="muted">v0.2.alpha</span></h1><p>Bibliothèque locale de prompts, morceaux réutilisables et modèles à remplir.</p></div>
     </div>
     <div class="top-actions no-print">
       <button class="btn small" data-action="toggle-theme">🌗 Thème</button>
@@ -112,14 +120,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
 <div class="modal suggestion-editor-modal" id="suggestionModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="suggestionModalTitle">
   <div class="modalbox">
-    <div class="section-title"><div><h3 id="suggestionModalTitle">Édition grand format du fragment proposé</h3><p>Vérifie, corrige, complète ou prépare ce morceau avant de le sauvegarder.</p></div><button class="btn small" data-action="close-suggestion-modal">Fermer</button></div>
+    <div class="section-title"><div><h3 id="suggestionModalTitle">Édition grand format du morceau proposé</h3><p>Vérifie, corrige, complète ou prépare ce morceau avant de le sauvegarder.</p></div><button class="btn small" data-action="close-suggestion-modal">Fermer</button></div>
     <div class="row">
       <div><label>Titre proposé</label><input id="sgModalTitle"></div>
       <div><label>Étiquette</label><select id="sgModalRole"></select></div>
     </div>
-    <label>Texte complet du fragment</label>
-    <textarea id="sgModalContent" placeholder="Texte complet du fragment…"></textarea>
-    <div class="toolbar" style="margin-top:10px"><button class="btn primary" data-action="apply-suggestion-editor">Appliquer au fragment proposé</button><button class="btn" data-action="close-suggestion-modal">Annuler</button></div>
+    <label>Texte complet du morceau</label>
+    <textarea id="sgModalContent" placeholder="Texte complet du morceau…"></textarea>
+    <div class="toolbar" style="margin-top:10px"><button class="btn primary" data-action="apply-suggestion-editor">Appliquer au morceau proposé</button><button class="btn" data-action="close-suggestion-modal">Annuler</button></div>
   </div>
 </div>
 
@@ -559,7 +567,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(!r || typeof r !== 'object') return null;
     return {
       id: String(r.id || uid('rc')),
-      title: strip(r.title) || 'Recette',
+      title: strip(r.title) || 'Modèle',
       description: String(r.description || ''),
       type: sanitizeOption(r.type, optionList('types'), 'image'),
       tool: sanitizeOption(r.tool, optionList('tools'), r.tool || 'générique'),
@@ -766,6 +774,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function applyTheme(){
     document.documentElement.dataset.theme = state.settings.theme || 'light';
     document.documentElement.dataset.density = state.settings.density || 'comfortable';
+    document.documentElement.dataset.space = ui.space || 'dashboard';
   }
   function toast(msg){
     if(!elToast) return;
@@ -838,13 +847,13 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function renderTabs(){
     const tabs = [
-      ['dashboard','Accueil'],
-      ['capture','Capturer'],
-      ['library','Retrouver'],
-      ['variables','Variables'],
-      ['compose','Assembler'],
-      ['audit','Audit'],
-      ['vault','Coffre']
+      ['dashboard','Vue d’ensemble'],
+      ['capture','Ajouter'],
+      ['library','Bibliothèque'],
+      ['variables','Remplir'],
+      ['compose','Composer'],
+      ['audit','Améliorer'],
+      ['vault','Sauvegarder']
     ];
     elTabs.innerHTML = tabs.map(([id,label]) => `<button class="tab ${ui.space===id?'active':''}" data-space="${id}" ${ui.space===id?'aria-current="page"':''}>${label}</button>`).join('');
   }
@@ -852,8 +861,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function summaryLine(){
     return `<div class="minirow summaryline">
       <span class="pill"><strong>${active(state.prompts).length}</strong> prompts</span>
-      <span class="pill"><strong>${active(state.fragments).length}</strong> fragments</span>
-      <span class="pill"><strong>${active(state.recipes).length}</strong> recettes</span>
+      <span class="pill"><strong>${active(state.fragments).length}</strong> morceaux</span>
+      <span class="pill"><strong>${active(state.recipes).length}</strong> modèles</span>
       <span class="pill"><strong>${active(state.collections).length}</strong> collections</span>
       <span class="pill ${state.meta.changesSinceExport>0?'warn':'ok'}">${Number(state.meta.changesSinceExport||0)} changement(s) depuis export</span>
     </div>`;
@@ -862,33 +871,30 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function viewDashboard(){
     const items = allActiveItems();
     const latest = items.slice(0,6);
-    const favs = items.filter(x=>x.favorite).slice(0,6);
     const todo = items.filter(x=>x.status==='à tester' || x.status==='à corriger').slice(0,6);
     return `<section class="grid">
       <div class="card">
-        <div class="section-title"><div><h2>Tableau de bord</h2><p>Commence vite, retrouve l’essentiel et garde une vue claire de ta bibliothèque.</p></div><button class="btn primary" data-space="capture">+ Nouveau prompt</button></div>
-        ${summaryLine()}
-        <div class="dashgrid">
-          ${dashboardStat('Prompts', active(state.prompts).length, 'Prompts complets prêts à copier')}
-          ${dashboardStat('Fragments', active(state.fragments).length, 'Morceaux réutilisables')}
-          ${dashboardStat('Recettes', active(state.recipes).length, 'Assemblages dynamiques')}
-          ${dashboardStat('À revoir', todo.length, 'Tests ou corrections à faire')}
+        <div class="section-title"><div><h2>Vue d’ensemble</h2><p>Choisis le prochain geste utile : ajouter, retrouver, composer ou améliorer.</p></div></div>
+        <div class="home-actions">
+          <button class="btn primary" data-space="capture"><strong>Ajouter un prompt</strong><br><span class="hint">Coller, classer ou découper un nouvel élément.</span></button>
+          <button class="btn" data-space="library"><strong>Ouvrir la bibliothèque</strong><br><span class="hint">Chercher, parcourir les collections et copier.</span></button>
+          <button class="btn" data-space="audit"><strong>Améliorer les éléments</strong><br><span class="hint">Voir ce qui reste à tester, compléter ou valider.</span></button>
         </div>
+        ${summaryLine()}
       </div>
       <div class="card">
-        <div class="section-title"><div><h2>Créer rapidement</h2><p>Choisis une intention, Promptarium prépare le bon espace.</p></div></div>
+        <div class="section-title"><div><h2>Départs rapides</h2><p>Promptarium prépare le bon espace selon ton intention.</p></div></div>
         <div class="workflow">
           <button class="btn" data-action="start-workflow" data-workflow="image"><strong>Image</strong><br><span class="hint">Prompt visuel, style, format, negative prompt.</span></button>
           <button class="btn" data-action="start-workflow" data-workflow="video"><strong>Vidéo</strong><br><span class="hint">Scène, mouvement, caméra, rythme.</span></button>
           <button class="btn" data-action="start-workflow" data-workflow="conversation"><strong>Conversation</strong><br><span class="hint">Rôle, objectif, contraintes, sortie attendue.</span></button>
-          <button class="btn" data-action="start-workflow" data-workflow="split"><strong>Découper</strong><br><span class="hint">Transformer un long prompt en fragments.</span></button>
+          <button class="btn" data-action="start-workflow" data-workflow="split"><strong>Découper</strong><br><span class="hint">Transformer un long prompt en morceaux.</span></button>
         </div>
       </div>
       <section class="grid two">
         <div class="card">${dashboardList('Derniers éléments', latest, 'Aucun élément pour l’instant.')}</div>
-        <div class="card">${dashboardList(favs.length ? 'Favoris' : 'À tester / corriger', favs.length ? favs : todo, 'Aucun favori ou point d’attention.')}</div>
+        <div class="card">${dashboardList('À tester / corriger', todo, 'Aucun point d’attention pour l’instant.')}</div>
       </section>
-      <div class="card">${helpBlock(false)}</div>
     </section>`;
   }
   function dashboardStat(label, value, hint){
@@ -958,24 +964,24 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const titleSuggestions = suggestTitles({content:ui.captureDraft || '', type:draft.type, role:draft.role, tags:parseTags(draft.tags)});
     return `<section class="capture-split" style="--split-left:${Math.round(ui.captureSplit || 58)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Capturer simplement</h2><p>Colle, choisis vite, sauvegarde. Les options avancées restent rangées.</p></div>${splitTools('capture')}</div>
+        <div class="section-title"><div><h2>Ajouter un élément</h2><p>Colle un contenu, choisis son type, puis sauvegarde localement.</p></div>${splitTools('capture')}</div>
         ${summaryLine()}
         <div class="form-section">
-          <label>Mon intention</label>
+          <label>Ce que je veux faire</label>
           <div class="workflow">
-            ${captureModeButton('paste','Coller un prompt','Garder un prompt complet ou un fragment.')}
-            ${captureModeButton('guided','Construire pas à pas','Partir d’une structure prête à remplir.')}
-            ${captureModeButton('split','Découper un prompt','Extraire des fragments réutilisables.')}
+            ${captureModeButton('paste','Coller un contenu','Garder un prompt complet ou un morceau réutilisable.')}
+            ${captureModeButton('guided','Partir d’un modèle','Insérer une structure prête à remplir.')}
+            ${captureModeButton('split','Découper un prompt','Extraire des morceaux réutilisables.')}
           </div>
           <p class="hint">${captureModeHint(mode)}</p>
         </div>
         <form id="captureForm" class="grid form-compact">
           <div class="form-section">
-            <label>Je sauvegarde</label>
-            ${segmentedRadios('kind', [['prompt','Prompt complet'],['fragment','Fragment réutilisable']], ui.captureKind)}
+            <label>Type d’élément</label>
+            ${segmentedRadios('kind', [['prompt','Prompt prêt à copier'],['fragment','Morceau réutilisable']], ui.captureKind)}
           </div>
           <div class="row">
-            <div class="form-section"><label>Type fréquent</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), draft.type || 'image', 'Autre')}</div>
+            <div class="form-section"><label>Usage principal</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), draft.type || 'image', 'Autre')}</div>
             <div class="form-section"><label>Outil IA</label>${quickChoice('tool', quickToolsForType(draft.type), toolsForType(draft.type), draft.tool || 'générique', 'Autre outil')}</div>
           </div>
           <div class="form-section">
@@ -985,13 +991,13 @@ body.is-resizing{user-select:none;cursor:col-resize}
             </div>
           </div>
           <label for="captureContent">Contenu</label>
-          <textarea class="bigarea" name="content" id="captureContent" placeholder="Colle ici le prompt complet ou le morceau de prompt à garder…">${esc(ui.captureDraft||'')}</textarea>
-          <div class="capture-actions"><button class="btn primary" type="submit">Sauvegarder tel quel</button><button class="btn" type="button" data-action="suggest-capture">Découper en fragments</button>${mode==='guided'?'<button class="btn" type="button" data-action="fill-guided-template">Insérer une base guidée</button>':''}</div>
+          <textarea class="bigarea" name="content" id="captureContent" placeholder="Colle ici le prompt complet ou le morceau à garder…">${esc(ui.captureDraft||'')}</textarea>
+          <div class="capture-actions"><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-action="suggest-capture">Proposer un découpage</button>${mode==='guided'?'<button class="btn" type="button" data-action="fill-guided-template">Insérer une base guidée</button>':''}</div>
           <details class="details">
             <summary>Détails facultatifs</summary>
             <label>Statut</label>${segmentedRadios('status', optionList('statuses'), draft.status || 'brut', 'wrap')}
             <label>Catégorie / précision</label>
-            <p class="hint">Utile pour les prompts complets comme personnage, face sheet, character sheet, lieu, décor, style, etc. L’assemblage reste réservé aux fragments.</p>
+            <p class="hint">Utile pour les prompts complets comme personnage, face sheet, character sheet, lieu, décor, style, etc. La composition reste réservée aux morceaux.</p>
             ${quickChoice('role', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), draft.role || 'personnage', 'Plus de catégories')}
             <label>Tags manuels</label><input name="tags" value="${esc(draft.tags)}" placeholder="personnage, face-sheet, décor, tiktok, negative…">
             <label>Collections</label>${collectionChecks(draft.collectionIds || [], draft)}
@@ -1001,7 +1007,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       </div>
       <div class="split-handle no-print" data-resize-split="capture" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card capture-suggestions-panel">
-        <div class="section-title"><div><h2>Découpage proposé</h2><p>Les fragments proposés restent modifiables avant sauvegarde.</p></div></div>
+        <div class="section-title"><div><h2>Découpage proposé</h2><p>Les morceaux proposés restent modifiables avant sauvegarde.</p></div></div>
         <p>Tu peux agrandir ce panneau, glisser la poignée centrale, éditer chaque morceau en grand, fusionner ou découper avant de valider.</p>
         <div class="splitline"></div>
         <div id="captureSuggestions">${suggestionList(ui.lastCaptureSuggestions, 'capture')}</div>
@@ -1014,7 +1020,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function captureModeHint(mode){
     if(mode === 'guided') return 'Une base guidée aide à structurer sujet, style, contraintes et résultat attendu.';
-    if(mode === 'split') return 'Colle un prompt long, puis utilise le découpage proposé pour créer des fragments.';
+    if(mode === 'split') return 'Colle un prompt long, puis utilise le découpage proposé pour créer des morceaux.';
     return 'Le mode direct est idéal pour sauvegarder rapidement une idée ou un prompt déjà prêt.';
   }
 
@@ -1056,7 +1062,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const ids = new Set(selected || []);
     const cols = active(state.collections);
     const existing = cols.length ? `<div class="checkgrid">${cols.map(c => `<label class="check"><input type="checkbox" name="collectionIds" value="${esc(c.id)}" ${ids.has(c.id)?'checked':''}> <span class="dot" style="--dot:${esc(c.color)}"></span>${esc(c.name)}</label>`).join('')}</div>` : `<p class="hint">Aucune collection pour l’instant.</p>`;
-    const create = draft ? `<details class="choice-more"><summary>Créer une collection maintenant</summary><div class="collection-create-box"><div class="row three"><input name="newCollectionName" value="${esc(draft.newCollectionName || '')}" placeholder="Nom de la collection"><input name="newCollectionDescription" value="${esc(draft.newCollectionDescription || '')}" placeholder="Description facultative"><input type="color" name="newCollectionColor" value="${esc(draft.newCollectionColor || '#6f8f84')}" aria-label="Couleur de la collection"></div><div class="toolbar" style="margin-top:8px"><button class="btn small" type="button" data-action="create-inline-collection">Ajouter cette collection</button></div><p class="hint">La collection est créée tout de suite, puis cochée pour cet élément. Tu peux en ajouter plusieurs avant de sauvegarder le prompt.</p></div></details>` : '<p class="hint">Gestion complète des collections : onglet Coffre > Collections.</p>';
+    const create = draft ? `<details class="choice-more"><summary>Créer une collection maintenant</summary><div class="collection-create-box"><div class="row three"><input name="newCollectionName" value="${esc(draft.newCollectionName || '')}" placeholder="Nom de la collection"><input name="newCollectionDescription" value="${esc(draft.newCollectionDescription || '')}" placeholder="Description facultative"><input type="color" name="newCollectionColor" value="${esc(draft.newCollectionColor || '#6f8f84')}" aria-label="Couleur de la collection"></div><div class="toolbar" style="margin-top:8px"><button class="btn small" type="button" data-action="create-inline-collection">Ajouter cette collection</button></div><p class="hint">La collection est créée tout de suite, puis cochée pour cet élément. Tu peux en ajouter plusieurs avant de sauvegarder le prompt.</p></div></details>` : '<p class="hint">Gestion complète des collections : onglet Sauvegarder > Collections.</p>';
     return existing + create;
   }
 
@@ -1088,14 +1094,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const selected = selectedItem();
     return `<section class="library-split library-layout" style="--split-left:${Math.round(ui.librarySplit || 50)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Retrouver</h2><p>Recherche directe ou parcours par collections comme des dossiers.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
+        <div class="section-title"><div><h2>Bibliothèque</h2><p>Recherche directe, collections et copie rapide des éléments.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
         <div class="library-mode">
           <button class="btn small ${ui.libraryMode==='search'?'active':''}" data-action="set-library-mode" data-mode="search">Recherche</button>
-          <button class="btn small ${ui.libraryMode==='browse'?'active':''}" data-action="set-library-mode" data-mode="browse">Parcourir les collections</button>
+          <button class="btn small ${ui.libraryMode==='browse'?'active':''}" data-action="set-library-mode" data-mode="browse">Collections</button>
           ${ui.selectedCollectionId ? `<button class="btn small" data-action="clear-collection-filter">Toutes les collections</button>` : ''}
         </div>
         <div class="filters">
-          <input id="librarySearch" value="${esc(ui.query)}" placeholder="Rechercher un prompt, un tag, un outil, une collection…">
+          <input id="librarySearch" value="${esc(ui.query)}" placeholder="Rechercher titre, tag, outil, collection…">
           <div class="toolbar"><div class="togglebar">${kindFilterButtons()}</div><button class="btn small" data-action="clear-search">Effacer</button></div>
           ${quickSearchFilters()}
           ${ui.libraryMode === 'search' ? collectionFilterChips() : ''}
@@ -1112,7 +1118,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   function collectionFilterChips(){
     const cols = active(state.collections);
-    if(!cols.length) return '<p class="hint">Aucune collection créée. Tu peux en créer depuis Capturer ou Coffre.</p>';
+    if(!cols.length) return '<p class="hint">Aucune collection créée. Tu peux en créer depuis Ajouter ou Sauvegarder.</p>';
     return `<div class="quickchips" aria-label="Collections disponibles"><span class="pill ${ui.selectedCollectionId?'tagclick':''}" data-action="clear-collection-filter">Toutes collections</span>${cols.slice(0,18).map(c=>`<span class="pill tagclick ${ui.selectedCollectionId===c.id?'ok':''}" data-action="filter-collection-id" data-id="${esc(c.id)}"><span class="dot" style="--dot:${esc(c.color)}"></span>${esc(c.name)} · ${collectionCount(c.id)}</span>`).join('')}</div>`;
   }
   function collectionCount(id){
@@ -1120,7 +1126,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function collectionBrowser(){
     const cols = active(state.collections).sort((a,b)=>a.name.localeCompare(b.name));
-    if(!cols.length) return '<div class="empty">Aucune collection. Crée une collection depuis un élément ou dans le Coffre.</div>';
+    if(!cols.length) return '<div class="empty">Aucune collection. Crée une collection depuis un élément ou dans Sauvegarder.</div>';
     const activeName = ui.selectedCollectionId ? collectionName(ui.selectedCollectionId) : 'Toutes les collections';
     return `<details class="collection-rail" open><summary>Collections</summary><p class="hint">Ouvert : <strong>${esc(activeName)}</strong></p>
       <div class="collection-browser">
@@ -1131,7 +1137,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   function libraryResultBlock(list){
     const col = ui.selectedCollectionId ? collectionName(ui.selectedCollectionId) : '';
-    const title = col ? `Résultats dans “${esc(col)}”` : 'Résultats';
+    const title = col ? `Dans “${esc(col)}”` : 'Résultats';
     return `<div class="section-title"><div><h3>${title}</h3><p>${list.length} élément(s) affiché(s).</p></div></div><div class="list library-results">${list.length ? list.map(itemCard).join('') : '<div class="empty">Aucun élément trouvé.</div>'}</div>`;
   }
 
@@ -1144,7 +1150,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
 
   function kindFilterButtons(){
-    const arr = [['all','Tout'],['prompt','Prompts'],['fragment','Fragments'],['recipe','Recettes']];
+    const arr = [['all','Tout'],['prompt','Prompts'],['fragment','Morceaux'],['recipe','Modèles']];
     return arr.map(([id,label]) => `<button class="${ui.libraryKind===id?'active':''}" data-lib-kind="${id}">${label}</button>`).join('');
   }
   function quickSearchFilters(){
@@ -1171,7 +1177,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="meta">${role}${meta.filter(m=>m!==item.type && m!==item.role).map(m=>`<span class="pill">${esc(m)}</span>`).join('')}${(item.tags||[]).slice(0,4).map(t=>`<span class="pill tagclick" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</span>`).join('')}</div>
     </button>`;
   }
-  function kindLabel(k){ return ({prompt:'Prompt',fragment:'Fragment',recipe:'Recette',collection:'Collection'})[k] || k; }
+  function kindLabel(k){ return ({prompt:'Prompt',fragment:'Morceau',recipe:'Modèle',collection:'Collection'})[k] || k; }
 
   function itemViewer(item){
     const content = itemContent(item);
@@ -1182,15 +1188,15 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="minirow">${statusPill(item.status)}${item._kind==='fragment'?rolePill(item.role,true):typePill(item.type)}${item._kind==='prompt' && item.role ? rolePill(item.role,true) : ''}${(item.tags||[]).map(t=>`<span class="pill tagclick" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</span>`).join('')}${collections.map(c=>`<span class="pill tagclick" data-action="filter-collection" data-name="${esc(c)}">${esc(c)}</span>`).join('')}</div>
       ${qualityLine(item)}
       <details class="details"><summary>Pourquoi ce repère ?</summary>${qualityAdviceBlock(item)}</details>
-      <div class="primary-actions"><button class="btn primary" data-action="copy-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Copier</button>${canAssemble?`<button class="btn" data-action="load-recipe-builder" data-id="${esc(item.id)}">Assembler</button>`:''}<button class="btn" data-action="duplicate-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Dupliquer</button></div>
+      <div class="primary-actions"><button class="btn primary" data-action="copy-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Copier</button>${canAssemble?`<button class="btn" data-action="load-recipe-builder" data-id="${esc(item.id)}">Composer</button>`:''}<button class="btn" data-action="duplicate-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Dupliquer</button></div>
       <details class="details more-actions"><summary>Plus d’actions</summary><div class="toolbar"><button class="btn" data-action="toggle-favorite" data-kind="${item._kind}" data-id="${esc(item.id)}">${item.favorite?'Retirer favori':'Favori'}</button><button class="btn danger" data-action="trash-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Mettre à la corbeille</button></div></details>
       <pre class="codebox">${esc(content)}</pre>
       <details class="details"><summary>Modifier</summary>${editItemForm(item)}</details>
       <details class="details"><summary>Notes, résultats et tests</summary>${notesTestsBlock(item)}</details>
       <details class="details"><summary>Historique de versions</summary>${versionHistoryBlock(item)}</details>
       ${item._kind === 'prompt' || item._kind === 'recipe' ? compareBlock(item) : ''}
-      ${item._kind === 'prompt' ? `<details class="details" ${ui.extractorSourceId===item.id?'open':''}><summary>Extraire des fragments</summary><p class="hint">Découpe ce prompt en morceaux réutilisables. Rien n’est sauvegardé sans validation.</p><div class="toolbar"><button class="btn small" data-action="suggest-from-prompt" data-id="${esc(item.id)}">Analyser ce prompt</button></div><div id="extractArea">${ui.extractorSourceId===item.id ? suggestionList(ui.extractorSuggestions, 'prompt') : ''}</div></details>` : ''}
-      ${item._kind === 'recipe' && missingFragments(item).length ? `<p class="warntext">⚠ Cette recette contient ${missingFragments(item).length} fragment(s) manquant(s).</p>` : ''}
+      ${item._kind === 'prompt' ? `<details class="details" ${ui.extractorSourceId===item.id?'open':''}><summary>Extraire des morceaux</summary><p class="hint">Découpe ce prompt en morceaux réutilisables. Rien n’est sauvegardé sans validation.</p><div class="toolbar"><button class="btn small" data-action="suggest-from-prompt" data-id="${esc(item.id)}">Analyser ce prompt</button></div><div id="extractArea">${ui.extractorSourceId===item.id ? suggestionList(ui.extractorSuggestions, 'prompt') : ''}</div></details>` : ''}
+      ${item._kind === 'recipe' && missingFragments(item).length ? `<p class="warntext">⚠ Ce modèle contient ${missingFragments(item).length} morceau(x) manquant(s).</p>` : ''}
     </div>`;
   }
 
@@ -1255,7 +1261,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(!item.tool || normalizeText(item.tool) === 'generique') adv.push('Préciser l’outil cible pour mieux adapter le format du prompt.');
     if(!ensureArray(item.tags).length) adv.push('Ajouter quelques tags pour retrouver plus vite cet élément.');
     if(item._kind !== 'fragment' && !item.type) adv.push('Préciser le type : image, vidéo, conversation, texte ou code.');
-    if(item._kind === 'fragment' && !item.role) adv.push('Préciser le rôle du fragment : style, personnage, lieu, caméra, contrainte, etc.');
+    if(item._kind === 'fragment' && !item.role) adv.push('Préciser le rôle du morceau : style, personnage, lieu, caméra, contrainte, etc.');
     if(item.status === 'brut') adv.push('Passer par un test terrain puis choisir “à tester”, “à corriger” ou “validé”.');
     if(item.status === 'à tester') adv.push('Ajouter une note de test ou une miniature de résultat dans “Notes, résultats et tests”.');
     if((item.status === 'à corriger' || item.status === 'obsolète') && !strip(item.notes)) adv.push('Décrire le point à corriger dans les notes.');
@@ -1304,33 +1310,33 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const fragList = active(state.fragments).filter(f => !ui.fragmentPickerQuery || matchesSearch(kindWrap('fragment', f), ui.fragmentPickerQuery)).sort(byUpdated);
     return `<section class="compose-split compose-layout" style="--split-left:${Math.round(ui.composeSplit || 60)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Assembler</h2><p>Compose un prompt final depuis des fragments vivants, du texte libre et des variables.</p></div>${splitTools('compose')}</div>
+        <div class="section-title"><div><h2>Composer un prompt</h2><p>Assemble un prompt final depuis des morceaux réutilisables, du texte libre et des variables.</p></div>${splitTools('compose')}</div>
         <form id="builderMeta" class="grid form-compact">
-          <div class="row"><div><label>Titre de recette</label><input name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Type</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), builder.type || 'image', 'Autre')}</div></div>
+          <div class="row"><div><label>Titre du modèle</label><input name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Usage</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), builder.type || 'image', 'Autre')}</div></div>
           <div><label>Format de sortie</label>${segmentedRadios('outputFormat', OUTPUT_FORMAT_OPTIONS, builder.outputFormat || ui.outputFormat || 'simple', 'wrap')}</div>
-          <details class="details"><summary>Paramètres de la recette</summary>
+          <details class="details"><summary>Paramètres du modèle</summary>
             <div class="row"><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), builder.status, 'wrap')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(builder.type), toolsForType(builder.type), builder.tool, 'Autre outil')}</div></div>
-            <label>Description</label><input name="description" value="${esc(builder.description)}" placeholder="À quoi sert cette recette ?">
+            <label>Description</label><input name="description" value="${esc(builder.description)}" placeholder="À quoi sert ce modèle ?">
             <label>Tags</label><input name="tags" value="${esc(tagsText(builder.tags))}">
             <label>Collections</label>${collectionChecks(builder.collectionIds)}
             <label>Notes</label><textarea name="notes">${esc(builder.notes)}</textarea>
           </details>
         </form>
-        <details class="details"><summary>Modèles express</summary><p class="hint">Ils créent une base de recette modifiable. Rien n’est figé.</p><div class="toolbar"><button class="btn small" data-action="apply-template" data-template="image">Base image</button><button class="btn small" data-action="apply-template" data-template="video">Base vidéo</button><button class="btn small" data-action="apply-template" data-template="conversation">Base conversation</button><button class="btn small" data-action="apply-template" data-template="character">Fiche personnage</button><button class="btn small" data-action="apply-template" data-template="negative">Negative prompt</button></div></details>
-        <div class="toolbar"><button class="btn" data-action="add-text-builder">+ Texte libre</button><button class="btn" data-action="sort-builder-roles">Ordonner par rôle</button><button class="btn" data-action="clear-builder">Vider</button><button class="btn" data-action="new-recipe">Nouvelle recette</button><button class="btn primary" data-action="save-recipe">Sauver recette</button><button class="btn" data-action="save-built-prompt">Sauver comme prompt complet</button></div>
+        <details class="details"><summary>Modèles express</summary><p class="hint">Ils créent une base modifiable. Rien n’est figé.</p><div class="toolbar"><button class="btn small" data-action="apply-template" data-template="image">Base image</button><button class="btn small" data-action="apply-template" data-template="video">Base vidéo</button><button class="btn small" data-action="apply-template" data-template="conversation">Base conversation</button><button class="btn small" data-action="apply-template" data-template="character">Fiche personnage</button><button class="btn small" data-action="apply-template" data-template="negative">Negative prompt</button></div></details>
+        <div class="toolbar"><button class="btn" data-action="add-text-builder">+ Texte libre</button><button class="btn" data-action="sort-builder-roles">Ordonner par rôle</button><button class="btn" data-action="clear-builder">Vider</button><button class="btn" data-action="new-recipe">Nouveau modèle</button><button class="btn primary" data-action="save-recipe">Sauver modèle</button><button class="btn" data-action="save-built-prompt">Sauver comme prompt complet</button></div>
         <h3>Composition</h3>
-        <div class="builder-list">${builder.items.length ? builder.items.map(builderItem).join('') : '<div class="empty">Ajoute des fragments ou du texte libre. Le prompt final apparaîtra à droite.</div>'}</div>
-        <details class="details"><summary>Ajouter un fragment</summary><input id="fragmentPickerSearch" value="${esc(ui.fragmentPickerQuery)}" placeholder="Chercher un fragment : role:style tag:portrait validé…"><div class="list pickerlist">${fragList.length ? fragList.slice(0,80).map(f=>`<div class="item inlineitem"><div><h4>${esc(f.title)}</h4><p>${rolePill(f.role)} <span class="pill">${esc(f.tool)}</span> ${esc((f.tags||[]).join(', '))}</p></div><button class="btn small" data-action="add-fragment-builder" data-id="${esc(f.id)}">Ajouter</button></div>`).join('') : '<div class="empty">Aucun fragment.</div>'}</div></details>
-        <details class="details"><summary>Recettes sauvegardées</summary><input id="recipePickerSearch" value="${esc(ui.recipePickerQuery)}" placeholder="Chercher une recette"><div class="list pickerlist">${recipeList.length ? recipeList.map(r=>`<div class="item inlineitem ${builder.id===r.id?'active':''}"><div><h4>${r.favorite?'★ ':''}${esc(r.title)}</h4><p>${esc(r.description || `${r.items.length} élément(s)`)}</p></div><button class="btn small" data-action="load-recipe-builder" data-id="${esc(r.id)}">Ouvrir</button></div>`).join('') : '<div class="empty">Aucune recette sauvegardée.</div>'}</div></details>
+        <div class="builder-list">${builder.items.length ? builder.items.map(builderItem).join('') : '<div class="empty">Ajoute des morceaux ou du texte libre. Le prompt final apparaîtra à droite.</div>'}</div>
+        <details class="details"><summary>Ajouter un morceau</summary><input id="fragmentPickerSearch" value="${esc(ui.fragmentPickerQuery)}" placeholder="Chercher un morceau : role:style tag:portrait validé…"><div class="list pickerlist">${fragList.length ? fragList.slice(0,80).map(f=>`<div class="item inlineitem"><div><h4>${esc(f.title)}</h4><p>${rolePill(f.role)} <span class="pill">${esc(f.tool)}</span> ${esc((f.tags||[]).join(', '))}</p></div><button class="btn small" data-action="add-fragment-builder" data-id="${esc(f.id)}">Ajouter</button></div>`).join('') : '<div class="empty">Aucun morceau.</div>'}</div></details>
+        <details class="details"><summary>Modèles sauvegardés</summary><input id="recipePickerSearch" value="${esc(ui.recipePickerQuery)}" placeholder="Chercher un modèle"><div class="list pickerlist">${recipeList.length ? recipeList.map(r=>`<div class="item inlineitem ${builder.id===r.id?'active':''}"><div><h4>${r.favorite?'★ ':''}${esc(r.title)}</h4><p>${esc(r.description || `${r.items.length} élément(s)`)}</p></div><button class="btn small" data-action="load-recipe-builder" data-id="${esc(r.id)}">Ouvrir</button></div>`).join('') : '<div class="empty">Aucun modèle sauvegardé.</div>'}</div></details>
       </div>
       <div class="split-handle no-print" data-resize-split="compose" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card viewer">
-        <div class="section-title"><div><h2>Prompt final</h2><p>${built.missing.length ? `${built.missing.length} fragment(s) manquant(s)` : 'Prêt à copier en un seul bloc.'}</p></div></div>
+        <div class="section-title"><div><h2>Prompt final</h2><p>${built.missing.length ? `${built.missing.length} morceau(x) manquant(s)` : 'Prêt à copier en un seul bloc.'}</p></div></div>
         ${varsForm(built.raw, built.vars)}
         ${variablePresetControls(built.raw)}
         <div class="primary-actions"><button class="btn primary" data-action="copy-built">Copier</button><button class="btn" data-action="clean-builder-output">Nettoyer</button><button class="btn" data-action="optimize-builder-output">Optimiser</button></div>
         ${repetitionBlock(built.final)}
-        ${built.missing.length ? `<p class="warntext">⚠ Fragments manquants : ${built.missing.map(esc).join(', ')}</p>` : ''}
+        ${built.missing.length ? `<p class="warntext">⚠ Morceaux manquants : ${built.missing.map(esc).join(', ')}</p>` : ''}
         <pre class="codebox">${esc(built.final)}</pre>
       </aside>
     </section>`;
@@ -1388,7 +1394,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const [ck,cid] = String(ui.compareTarget||'').split('|');
     const target = ck && cid ? getByKind(ck,cid) : null;
     return `<details class="details" ${target?'open':''}><summary>Comparer avec une variante</summary>
-      <p class="hint">Repère rapidement les lignes communes et les différences entre deux prompts ou recettes.</p>
+      <p class="hint">Repère rapidement les lignes communes et les différences entre deux prompts ou modèles.</p>
       <select id="compareTargetSelect"><option value="">Choisir un élément…</option>${candidates.slice(0,160).map(x=>`<option value="${x._kind}|${x.id}" ${ui.compareTarget===x._kind+'|'+x.id?'selected':''}>${esc(kindLabel(x._kind)+' · '+x.title)}</option>`).join('')}</select>
       ${target ? compareReportBlock(item, target) : ''}
     </details>`;
@@ -1427,8 +1433,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(it.kind === 'text') out.push({label:'Texte libre '+(idx+1), role:'texte', content:it.content || ''});
       if(it.kind === 'fragment'){
         const f = state.fragments.find(x => x.id === it.id && !x.deletedAt);
-        if(f) out.push({label:f.title || 'Fragment', role:f.role || 'fragment', content:f.content || ''});
-        else { out.push({label:'Fragment manquant', role:'manquant', content:`[Fragment manquant: ${it.id}]`}); missing.push(it.id); }
+        if(f) out.push({label:f.title || 'Morceau', role:f.role || 'morceau', content:f.content || ''});
+        else { out.push({label:'Morceau manquant', role:'manquant', content:`[Morceau manquant: ${it.id}]`}); missing.push(it.id); }
       }
     });
     out.missing = missing;
@@ -1514,13 +1520,13 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const allItems = [...active(state.prompts).map(x=>kindWrap('prompt',x)), ...active(state.fragments).map(x=>kindWrap('fragment',x))].filter(variableItemHasVariables);
     const items = allVariableItems();
     if(!items.length){
-      return `<section class="card"><div class="section-title"><div><h2>Variables</h2><p>Les prompts et fragments contenant un bloc NOM_VARIABLE: valeur, {variable} ou [variable] apparaîtront ici.</p></div><button class="btn primary" data-space="capture">+ Ajouter un élément</button></div>${variableFiltersBlock()}<div class="empty">${allItems.length ? 'Aucun élément ne correspond à ce filtre.' : 'Aucun élément variable pour l’instant. Ajoute un prompt ou un fragment avec CHARACTER_NAME: Kaelis, {sujet} ou [sujet].'}</div></section>`;
+      return `<section class="card"><div class="section-title"><div><h2>Remplir</h2><p>Les prompts et morceaux contenant un bloc NOM_VARIABLE: valeur, {variable} ou [variable] apparaîtront ici.</p></div><button class="btn primary" data-space="capture">+ Ajouter un élément</button></div>${variableFiltersBlock()}<div class="empty">${allItems.length ? 'Aucun élément ne correspond à ce filtre.' : 'Aucun élément variable pour l’instant. Ajoute un prompt ou un morceau avec CHARACTER_NAME: Kaelis, {sujet} ou [sujet].'}</div></section>`;
     }
     if(!ui.variablePromptId || !items.some(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind)){ ui.variablePromptId = items[0].id; ui.variableItemKind = items[0]._kind; }
     const selected = items.find(p=>p.id===ui.variablePromptId && p._kind===ui.variableItemKind) || items[0];
     return `<section class="variables-split" style="--split-left:${Math.round(ui.variablesSplit || 46)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Éléments à variables</h2><p>Sélectionne un prompt ou un fragment, puis sauvegarde des remplissages réutilisables.</p></div>${splitTools('variables')}</div>
+        <div class="section-title"><div><h2>Prompts et morceaux à remplir</h2><p>Sélectionne un élément, puis sauvegarde des jeux de valeurs réutilisables.</p></div>${splitTools('variables')}</div>
         ${variableFiltersBlock()}
         <div class="list variables-list">${items.map(p=>variablePromptCard(p, selected)).join('')}</div>
       </div>
@@ -1537,7 +1543,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     return `<div class="variables-tools">
       <input id="variableSearch" value="${esc(ui.variableQuery)}" placeholder="Rechercher un titre, variable, tag, outil…">
       <div class="filterbar">
-        ${[['all','Tout',counts.all],['prompt','Prompts',counts.prompt],['fragment','Fragments',counts.fragment]].map(([id,label,count])=>`<button class="btn small ${ui.variableKindFilter===id?'active':''}" data-action="set-variable-kind-filter" data-kind-filter="${id}">${label} · ${count}</button>`).join('')}
+        ${[['all','Tout',counts.all],['prompt','Prompts',counts.prompt],['fragment','Morceaux',counts.fragment]].map(([id,label,count])=>`<button class="btn small ${ui.variableKindFilter===id?'active':''}" data-action="set-variable-kind-filter" data-kind-filter="${id}">${label} · ${count}</button>`).join('')}
         ${ui.variableQuery ? '<button class="btn small" data-action="clear-variable-search">Effacer</button>' : ''}
       </div>
     </div>`;
@@ -1556,11 +1562,11 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const sets = active(prompt.variableSets || []);
     const currentValues = currentVariableValues(prompt);
     return `<div>
-      <div class="section-title"><div><h2>${esc(prompt.title)}</h2><p>${kindLabel(prompt._kind)} · ${esc(prompt.tool || 'générique')} · ${names.length} variable(s) détectée(s)</p></div></div>
+      <div class="section-title"><div><h2>${esc(prompt.title)}</h2><p>${kindLabel(prompt._kind)} · ${esc(prompt.tool || 'générique')} · ${names.length} champ(s) à remplir</p></div></div>
       <div class="minirow">${names.map(n=>`<span class="pill">${esc(n)}</span>`).join('')}</div>
-      <details class="details" open><summary>Nouveau remplissage</summary>${variableSetForm(prompt, null, currentValues)}</details>
-      <details class="details" open><summary>Remplissages sauvegardés</summary>${sets.length ? `<div class="list smalllist">${sets.map(set=>variableSetItem(prompt, set)).join('')}</div>` : '<div class="empty">Aucun remplissage sauvegardé pour ce prompt.</div>'}</details>
-      <details class="details"><summary>Aperçu du prompt source</summary><pre class="codebox">${esc(prompt.content)}</pre></details>
+      <details class="details" open><summary>Nouveau jeu de valeurs</summary>${variableSetForm(prompt, null, currentValues)}</details>
+      <details class="details" open><summary>Jeux de valeurs sauvegardés</summary>${sets.length ? `<div class="list smalllist">${sets.map(set=>variableSetItem(prompt, set)).join('')}</div>` : '<div class="empty">Aucun jeu de valeurs sauvegardé pour cet élément.</div>'}</details>
+      <details class="details"><summary>Aperçu de l’élément source</summary><pre class="codebox">${esc(prompt.content)}</pre></details>
     </div>`;
   }
   function variableSetForm(prompt, set=null, fallbackValues=null){
@@ -1652,7 +1658,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     };
     return `<section class="grid">
       <div class="card">
-        <div class="section-title"><div><h2>Audit</h2><p>Améliorer, tester et valider les prompts, fragments et recettes à partir des repères existants.</p></div></div>
+        <div class="section-title"><div><h2>Améliorer</h2><p>Compléter, tester et valider les prompts, morceaux et modèles à partir des repères existants.</p></div></div>
         <div class="filterbar">
           ${[['attention','Points à traiter'],['brut','Bruts'],['à tester','À tester'],['à corriger','À corriger'],['validé','Validés'],['all','Tout']].map(([id,label])=>`<button class="btn small ${ui.auditFilter===id?'active':''}" data-action="set-audit-filter" data-filter="${esc(id)}">${esc(label)}</button>`).join('')}
         </div>
@@ -1664,27 +1670,33 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function auditCard(row){
     const item = row.item;
     return `<article class="audit-item">
-      <div class="section-title"><div><h3>${esc(item.title)}</h3><p>${kindLabel(item._kind)} · ${esc(item.tool || 'générique')} · ${statusPill(item.status)}</p></div><span class="audit-score">${row.q}/100</span></div>
+      <div class="section-title"><div><h3>${esc(item.title)}</h3><p>${kindLabel(item._kind)} · ${esc(item.tool || 'générique')} · ${statusPill(item.status)}</p></div><span class="audit-score">${auditReadiness(row.q)}</span></div>
       ${qualityLine(item)}
       ${row.advice.length ? `<ul class="advice-list">${row.advice.slice(0,5).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="hint">Aucun manque évident détecté.</p>'}
       <div class="toolbar"><button class="btn small primary" data-action="open-item" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}">Ouvrir</button><button class="btn small" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="à tester">À tester</button><button class="btn small" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="validé">Valider</button><button class="btn small warn" data-action="set-item-status" data-kind="${esc(item._kind)}" data-id="${esc(item.id)}" data-status="à corriger">À corriger</button></div>
     </article>`;
   }
+  function auditReadiness(score){
+    if(score >= 78) return 'Prêt';
+    if(score >= 55) return 'À tester';
+    if(score >= 32) return 'À compléter';
+    return 'Base légère';
+  }
 
   function viewVault(){
     return `<section class="grid two vault-layout">
       <div class="card">
-        <div class="section-title"><div><h2>Coffre</h2><p>Sauvegarde, collections, tags, diagnostic et corbeille. Les outils puissants restent rangés ici.</p></div></div>
+        <div class="section-title"><div><h2>Sauvegarder</h2><p>Exporter, importer, imprimer et protéger la bibliothèque locale.</p></div></div>
         ${summaryLine()}
-        <details class="details" open><summary>Bien démarrer</summary>${helpBlock(true)}</details>
         <details class="details" open><summary>Sauvegarde et import</summary>${backupBlock()}</details>
-        <details class="details"><summary>Collections</summary>${collectionsBlock()}</details>
-        <details class="details"><summary>Tags</summary>${tagsBlock()}</details>
-      </div>
-      <aside class="card">
-        <details class="details" open><summary>Diagnostic de bibliothèque</summary>${diagnosticBlock()}</details>
         <details class="details"><summary>Corbeille</summary>${trashBlock()}</details>
         <details class="details"><summary>Réglages</summary>${settingsBlock()}</details>
+      </div>
+      <aside class="card">
+        <details class="details" open><summary>Bien démarrer</summary>${helpBlock(true)}</details>
+        <details class="details"><summary>Collections</summary>${collectionsBlock()}</details>
+        <details class="details"><summary>Tags</summary>${tagsBlock()}</details>
+        <details class="details" open><summary>Diagnostic de bibliothèque</summary>${diagnosticBlock()}</details>
       </aside>
     </section>`;
   }
@@ -1704,8 +1716,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
   function helpBlock(compact){
     return `<div class="helpgrid">
       <div class="helpbox"><h3>Prompt</h3><p class="hint">Un bloc complet prêt à copier dans un outil IA. Idéal pour une image, une vidéo, une conversation ou une tâche précise.</p></div>
-      <div class="helpbox"><h3>Fragment</h3><p class="hint">Un morceau réutilisable : style, personnage, caméra, contrainte, negative prompt, format, ambiance.</p></div>
-      <div class="helpbox"><h3>Recette</h3><p class="hint">Un assemblage vivant de fragments et de variables comme {sujet}, {lieu} ou {style}.</p></div>
+      <div class="helpbox"><h3>Morceau</h3><p class="hint">Un bloc réutilisable : style, personnage, caméra, contrainte, negative prompt, format, ambiance.</p></div>
+      <div class="helpbox"><h3>Modèle</h3><p class="hint">Un assemblage vivant de morceaux et de variables comme {sujet}, {lieu} ou {style}.</p></div>
       <div class="helpbox"><h3>Sauvegarde</h3><p class="hint">Tout reste dans ce navigateur. Exporte un JSON après chaque grande séance pour garder une copie portable.</p></div>
       ${compact ? '' : '<div class="helpbox"><h3>Conseil</h3><p class="hint">Commence par capturer vite, puis classe seulement ce qui devient vraiment utile.</p></div>'}
     </div>`;
@@ -1716,14 +1728,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(!p) return '<p class="hint">Tu peux analyser un fichier avant import pour voir son contenu et les doublons probables.</p>';
     if(p.error) return `<div class="import-preview"><p class="warntext">${esc(p.error)}</p></div>`;
     return `<div class="import-preview">
-      <p><strong>Aperçu import :</strong> ${esc(p.name)} · ${p.prompts} prompt(s), ${p.fragments} fragment(s), ${p.recipes} recette(s), ${p.collections} collection(s), ${p.variablePresets} preset(s).</p>
+      <p><strong>Aperçu import :</strong> ${esc(p.name)} · ${p.prompts} prompt(s), ${p.fragments} morceau(x), ${p.recipes} modèle(s), ${p.collections} collection(s), ${p.variablePresets} preset(s).</p>
       <p class="hint">${p.duplicates} doublon(s) probable(s) seront ignorés pendant la fusion.</p>
     </div>`;
   }
 
   function collectionsBlock(){
     const cols = active(state.collections);
-    return `<p class="hint">Tu peux créer une collection ici, ou directement depuis l’ajout d’un prompt dans l’onglet Capturer.</p><form id="collectionForm" class="grid"><div class="row"><div><label>Nom</label><input name="name" placeholder="Personnages, Face sheets, Lieux, Negative prompts…"></div><div><label>Couleur</label><input name="color" type="color" value="#6f8f84"></div></div><label>Description</label><input name="description" placeholder="Usage de cette collection"><button class="btn primary" type="submit">Créer collection</button></form>
+    return `<p class="hint">Tu peux créer une collection ici, ou directement depuis l’ajout d’un prompt dans l’onglet Ajouter.</p><form id="collectionForm" class="grid"><div class="row"><div><label>Nom</label><input name="name" placeholder="Personnages, Face sheets, Lieux, Negative prompts…"></div><div><label>Couleur</label><input name="color" type="color" value="#6f8f84"></div></div><label>Description</label><input name="description" placeholder="Usage de cette collection"><button class="btn primary" type="submit">Créer collection</button></form>
       <div class="splitline"></div><div class="list smalllist">${cols.length?cols.map(collectionItem).join(''):'<div class="empty">Aucune collection.</div>'}</div>`;
   }
   function collectionItem(c){
@@ -1737,14 +1749,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="splitline"></div><form id="tagToolForm" class="grid"><div class="row"><div><label>Tag à modifier</label><input name="oldTag" placeholder="ancien-tag"></div><div><label>Nouveau nom</label><input name="newTag" placeholder="nouveau-tag"></div></div><div class="toolbar"><button class="btn" type="submit" name="mode" value="rename">Renommer / fusionner</button><button class="btn danger" type="submit" name="mode" value="delete">Supprimer le tag</button></div></form>`;
   }
   function diagnosticBlock(){
-    return `<div class="toolbar"><button class="btn primary" data-action="run-diagnostic">Vérifier la bibliothèque</button></div>${ui.diagnostics ? renderDiagnostics(ui.diagnostics) : '<p class="hint">Le diagnostic repère les recettes cassées, tags inutilisés et doublons probables.</p>'}`;
+    return `<div class="toolbar"><button class="btn primary" data-action="run-diagnostic">Vérifier la bibliothèque</button></div>${ui.diagnostics ? renderDiagnostics(ui.diagnostics) : '<p class="hint">Le diagnostic repère les modèles cassés, tags inutilisés et doublons probables.</p>'}`;
   }
   function renderDiagnostics(d){
     return `<div class="diag">
       <p><strong>${d.total}</strong> éléments actifs · <strong>${d.trash}</strong> dans la corbeille · <strong>${d.tags}</strong> tags · <strong>${d.versionCount||0}</strong> versions · <strong>${d.mediaCount||0}</strong> miniatures.</p>
-      <p>${d.missing.length ? '⚠ Recettes avec fragments manquants : '+esc(d.missing.length) : '✓ Aucun fragment manquant dans les recettes.'}</p>
+      <p>${d.missing.length ? '⚠ Modèles avec morceaux manquants : '+esc(d.missing.length) : '✓ Aucun morceau manquant dans les modèles.'}</p>
       <p>${d.duplicates.length ? '⚠ Doublons probables : '+esc(d.duplicates.length) : '✓ Aucun doublon évident.'}</p>
-      ${d.missing.length ? `<details><summary>Détails fragments manquants</summary>${d.missing.map(x=>`<div class="item"><h4>${esc(x.recipe)}</h4><p>${esc(x.missing.join(', '))}</p></div>`).join('')}</details>` : ''}
+      ${d.missing.length ? `<details><summary>Détails morceaux manquants</summary>${d.missing.map(x=>`<div class="item"><h4>${esc(x.recipe)}</h4><p>${esc(x.missing.join(', '))}</p></div>`).join('')}</details>` : ''}
       ${d.duplicates.length ? `<details><summary>Détails doublons probables</summary>${d.duplicates.map(x=>`<div class="item"><h4>${esc(x.a)} ↔ ${esc(x.b)}</h4><p>${esc(x.reason)}</p></div>`).join('')}</details>` : ''}
     </div>`;
   }
@@ -1778,7 +1790,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(!suggestions || !suggestions.length) return '<p class="hint">Aucune suggestion affichée.</p>';
     const duplicates = hasDuplicateSuggestionRoles(suggestions);
     return `<div class="suggestion-tools">
-      <span class="hint">${suggestions.length} fragment(s) proposés. Tu peux ouvrir, éditer, fusionner ou découper avant sauvegarde.</span>
+      <span class="hint">${suggestions.length} morceau(x) proposés. Tu peux ouvrir, éditer, fusionner ou découper avant sauvegarde.</span>
       <button class="btn small" data-action="merge-suggestions-role" data-source="${source}" ${duplicates?'':'disabled'}>Fusionner mêmes étiquettes</button>
     </div>
     <div class="list smalllist">${suggestions.map((s,i)=>suggestionCard(s,i,source,suggestions.length)).join('')}</div>`;
@@ -1793,12 +1805,12 @@ body.is-resizing{user-select:none;cursor:col-resize}
       </div>
       <div class="suggestion-preview">${esc(preview)}</div>
       <details class="details suggestion-edit">
-        <summary>Afficher / éditer le fragment complet</summary>
+        <summary>Afficher / éditer le morceau complet</summary>
         <div class="row">
           <div><label>Titre proposé</label><input id="sg_${source}_${i}_title" data-suggestion-field="title" data-source="${source}" data-index="${i}" value="${esc(s.title || titleForRole(s.role))}"></div>
           <div><label>Étiquette</label><select id="sg_${source}_${i}_role" data-suggestion-field="role" data-source="${source}" data-index="${i}">${optionTags(ROLE_OPTIONS, s.role || 'autre')}</select></div>
         </div>
-        <label>Texte complet du fragment</label>
+        <label>Texte complet du morceau</label>
         <textarea class="suggestion-textarea" id="sg_${source}_${i}_content" data-suggestion-field="content" data-source="${source}" data-index="${i}" placeholder="Vérifie, corrige ou complète avant sauvegarde…">${esc(content)}</textarea>
         <div class="suggestion-actions">
           <button class="btn small" data-action="split-suggestion" data-source="${source}" data-index="${i}">Découper en deux</button>
@@ -1812,7 +1824,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   function openSuggestionEditor(source, index){
     const s = syncSuggestionFromDOM(source, index);
-    if(!s){ toast('Fragment proposé introuvable.'); return; }
+    if(!s){ toast('Morceau proposé introuvable.'); return; }
     const modal = qs('#suggestionModal');
     modal.dataset.source = source;
     modal.dataset.index = String(index);
@@ -1838,7 +1850,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     s.role = sanitizeOption(qs('#sgModalRole')?.value || s.role, ROLE_OPTIONS, qs('#sgModalRole')?.value || 'autre');
     s.content = String(qs('#sgModalContent')?.value || '');
     closeSuggestionEditor();
-    toast('Fragment proposé mis à jour.');
+    toast('Morceau proposé mis à jour.');
     render();
   }
 
@@ -1896,7 +1908,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const ta = qs(`#sg_${source}_${i}_content`);
     const text = String(s.content || '');
     let pos = ta && ta.selectionStart > 20 && ta.selectionStart < text.length - 20 ? ta.selectionStart : smartSplitPosition(text);
-    if(!pos || pos < 20 || pos > text.length - 20){ toast('Fragment trop court pour être découpé proprement.'); return; }
+    if(!pos || pos < 20 || pos > text.length - 20){ toast('Morceau trop court pour être découpé proprement.'); return; }
     const a = strip(text.slice(0,pos));
     const b = strip(text.slice(pos));
     if(!a || !b){ toast('Découpe impossible à cet endroit.'); return; }
@@ -1982,7 +1994,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(t.includes('forest') || t.includes('room') || t.includes('landscape') || t.includes('place')) return 'lieu';
     return 'structure';
   }
-  function titleForRole(role){ return ({'negative prompt':'Negative prompt','style graphique':'Style graphique','personnage':'Personnage','visage':'Visage','habillement':'Habillement','lieu':'Lieu','action':'Action','caméra':'Caméra','lumière':'Lumière','univers':'Univers','format':'Format','contrainte':'Contrainte','structure':'Structure'})[role] || 'Fragment'; }
+  function titleForRole(role){ return ({'negative prompt':'Negative prompt','style graphique':'Style graphique','personnage':'Personnage','visage':'Visage','habillement':'Habillement','lieu':'Lieu','action':'Action','caméra':'Caméra','lumière':'Lumière','univers':'Univers','format':'Format','contrainte':'Contrainte','structure':'Structure'})[role] || 'Morceau'; }
 
   function syncBuilderFromDOM(updateVars=true){
     const form = qs('#builderMeta');
@@ -2035,7 +2047,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(kind === 'fragment'){
         const fr = normalizeFragment(Object.assign({id:uid('fr'), role}, common));
         state.fragments.unshift(fr); ui.selectedKind='fragment'; ui.selectedId=fr.id; ui.space='library';
-        toast('Fragment sauvegardé.');
+        toast('Morceau sauvegardé.');
       }else{
         const pr = normalizePrompt(Object.assign({id:uid('pr'), type, role}, common));
         state.prompts.unshift(pr); ui.selectedKind='prompt'; ui.selectedId=pr.id; ui.space='library';
@@ -2146,16 +2158,16 @@ body.is-resizing{user-select:none;cursor:col-resize}
     Object.keys(builder.vars).forEach(k => { if(!names.includes(k)) delete builder.vars[k]; });
     const obj = normalizeRecipe(Object.assign({}, builder, {
       id: builder.id || uid('rc'),
-      title: strip(builder.title) || 'Recette sans titre',
+      title: strip(builder.title) || 'Modèle sans titre',
       createdAt: builder.createdAt || now(),
       updatedAt: now(),
       tags: uniq([...builder.tags, ...autoTags(built.raw, builder.type, builder.tool)])
     }));
     const existing = state.recipes.find(r=>r.id===obj.id);
-    if(existing){ pushVersion('recipe', existing, 'Avant mise à jour de recette'); Object.assign(existing, obj); } else state.recipes.unshift(obj);
+    if(existing){ pushVersion('recipe', existing, 'Avant mise à jour de modèle'); Object.assign(existing, obj); } else state.recipes.unshift(obj);
     builder = JSON.parse(JSON.stringify(obj));
     await persist();
-    toast(existing ? 'Recette mise à jour.' : 'Recette sauvegardée.');
+    toast(existing ? 'Modèle mis à jour.' : 'Modèle sauvegardé.');
     render();
   }
 
@@ -2170,7 +2182,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     syncBuilderFromDOM(true);
     const built = buildRecipe(builder);
     if(!strip(built.final)){ toast('Le prompt final est vide.'); return; }
-    const pr = normalizePrompt({ id:uid('pr'), title:strip(builder.title) || 'Prompt assemblé', content:built.final, type:builder.type, tool:builder.tool, status:'brut', favorite:false, tags:uniq([...builder.tags,...autoTags(built.final,builder.type,builder.tool),'assemblé']), collectionIds:builder.collectionIds, notes:'Créé depuis une recette dynamique. '+(builder.notes||''), tests:[], createdAt:now(), updatedAt:now() });
+    const pr = normalizePrompt({ id:uid('pr'), title:strip(builder.title) || 'Prompt composé', content:built.final, type:builder.type, tool:builder.tool, status:'brut', favorite:false, tags:uniq([...builder.tags,...autoTags(built.final,builder.type,builder.tool),'composé']), collectionIds:builder.collectionIds, notes:'Créé depuis un modèle dynamique. '+(builder.notes||''), tests:[], createdAt:now(), updatedAt:now() });
     state.prompts.unshift(pr);
     ui.selectedKind='prompt'; ui.selectedId=pr.id; ui.space='library';
     await persist(); toast('Prompt complet sauvegardé.'); render();
@@ -2196,7 +2208,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     state.fragments.unshift(fr);
     ui.selectedKind='fragment'; ui.selectedId=fr.id;
     suggestions.splice(Number(index),1);
-    await persist(); toast('Fragment extrait sauvegardé.'); render();
+    await persist(); toast('Morceau extrait sauvegardé.'); render();
   }
 
   async function duplicateItem(kind,id){
@@ -2582,9 +2594,9 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function applyTemplate(id){
     const base = {
-      image:{title:'Recette image générative', type:'image', tool:'générique', outputFormat:'image', tags:['image','modèle'], items:[{kind:'text',content:'Create a {style} image of {subject} in {place}.\n\nMain action: {action}.\n\nMood and light: {mood}.\n\nComposition: clear, refined, coherent, ready for image generation.'}]},
-      video:{title:'Recette vidéo générative', type:'vidéo', tool:'Veo', outputFormat:'video', tags:['vidéo','modèle'], items:[{kind:'text',content:'Create a short cinematic video of {subject} in {place}.\n\nAction: {action}.\n\nCamera movement: {camera_movement}.\n\nMood, light and rhythm: {mood}.\n\nKeep the scene coherent, readable and visually stable.'}]},
-      conversation:{title:'Recette conversation IA', type:'conversation', tool:'ChatGPT', outputFormat:'conversation', tags:['conversation','modèle'], items:[{kind:'text',content:'Act as {role}.\n\nGoal: {goal}.\n\nContext: {context}.\n\nConstraints: {constraints}.\n\nExpected output: {expected_output}.'}]},
+      image:{title:'Modèle image générative', type:'image', tool:'générique', outputFormat:'image', tags:['image','modèle'], items:[{kind:'text',content:'Create a {style} image of {subject} in {place}.\n\nMain action: {action}.\n\nMood and light: {mood}.\n\nComposition: clear, refined, coherent, ready for image generation.'}]},
+      video:{title:'Modèle vidéo générative', type:'vidéo', tool:'Veo', outputFormat:'video', tags:['vidéo','modèle'], items:[{kind:'text',content:'Create a short cinematic video of {subject} in {place}.\n\nAction: {action}.\n\nCamera movement: {camera_movement}.\n\nMood, light and rhythm: {mood}.\n\nKeep the scene coherent, readable and visually stable.'}]},
+      conversation:{title:'Modèle conversation IA', type:'conversation', tool:'ChatGPT', outputFormat:'conversation', tags:['conversation','modèle'], items:[{kind:'text',content:'Act as {role}.\n\nGoal: {goal}.\n\nContext: {context}.\n\nConstraints: {constraints}.\n\nExpected output: {expected_output}.'}]},
       character:{title:'Fiche personnage visuelle', type:'image', tool:'ChatGPT', outputFormat:'image', tags:['personnage','fiche-personnage','modèle'], items:[{kind:'text',content:'Create a clear character sheet for {character_name}.\n\nIdentity and role: {identity}.\n\nFace and expression: {face}.\n\nClothing and distinctive details: {outfit}.\n\nFull body reference, front view and useful variation notes: {reference_notes}.\n\nVisual style: {style}.\n\nConstraints: coherent proportions, readable silhouette, consistent design, clean background, ready for image generation.\n\nNegative prompt: readable text, logo, watermark, distorted anatomy, inconsistent clothing, blurry details, muddy colors.'}]},
       negative:{title:'Negative prompt propre', type:'image', tool:'générique', outputFormat:'simple', tags:['negative','modèle'], items:[{kind:'text',content:'Negative prompt: readable text, letters, words, logo, watermark, signature, random pseudo-text, dark horror atmosphere, fear, violence, gore, distorted hands, distorted face, extra limbs, broken anatomy, muddy colors, chaotic composition, low quality, blurry details.'}]}
     }[id];
@@ -2736,7 +2748,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='move-builder-down'){ syncBuilderFromDOM(); moveBuilder(Number(btn.dataset.index),1); render(); return; }
     if(a==='sort-builder-roles'){ syncBuilderFromDOM(); sortBuilderByRole(); toast('Composition ordonnée par rôle.'); render(); return; }
     if(a==='clear-builder'){ if(await appConfirm('Vider la composition actuelle ?', 'Vider la composition', 'Vider')){ builder=emptyBuilder(); render(); } return; }
-    if(a==='new-recipe'){ syncBuilderFromDOM(); builder.id=null; builder.title = builder.title.replace(/ · copie$/,''); toast('La prochaine sauvegarde créera une nouvelle recette.'); render(); return; }
+    if(a==='new-recipe'){ syncBuilderFromDOM(); builder.id=null; builder.title = builder.title.replace(/ · copie$/,''); toast('La prochaine sauvegarde créera un nouveau modèle.'); render(); return; }
     if(a==='save-recipe'){ await saveRecipe(); return; }
     if(a==='save-built-prompt'){ await saveBuiltAsPrompt(); return; }
     if(a==='copy-built'){ const built=buildBuilderFromDOMSafe(); copyText(built.final); return; }
@@ -2778,7 +2790,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   async function installStarterKit(){
     let col = collectionByName('Pack de départ');
-    if(!col){ col = normalizeCollection({id:uid('col'), name:'Pack de départ', color:'#9cc5b8', description:'Fragments pratiques installés pour démarrer une bibliothèque générique de prompts.', createdAt:now(), updatedAt:now()}); state.collections.unshift(col); }
+    if(!col){ col = normalizeCollection({id:uid('col'), name:'Pack de départ', color:'#9cc5b8', description:'Morceaux pratiques installés pour démarrer une bibliothèque générique de prompts.', createdAt:now(), updatedAt:now()}); state.collections.unshift(col); }
     const starters = [
       ['Qualité photoréaliste','qualité','photorealistic, hyperrealistic, extremely detailed, professional photography, refined textures, coherent anatomy, premium cinematic quality',['qualité','image']],
       ['Négatif standard image','negative prompt','blurry, low quality, pixelated, jpeg artifacts, watermark, logo, readable text, bad anatomy, distorted hands, deformed face, muddy colors',['negative','image']],
@@ -2794,7 +2806,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(active(state.fragments).some(f=>normalizeText(f.title)===normalizeText(title))) return;
       state.fragments.unshift(normalizeFragment({id:uid('fr'), title, role, content, tool:'générique', status:'validé', tags, collectionIds:[col.id], createdAt:now(), updatedAt:now()})); added++;
     });
-    await persist(); toast(added ? `Pack de départ installé : ${added} fragments.` : 'Pack de départ déjà présent.'); render();
+    await persist(); toast(added ? `Pack de départ installé : ${added} morceau(x).` : 'Pack de départ déjà présent.'); render();
   }
 
   function moveBuilder(i, dir){ const j=i+dir; if(j<0 || j>=builder.items.length) return; const tmp=builder.items[i]; builder.items[i]=builder.items[j]; builder.items[j]=tmp; }
