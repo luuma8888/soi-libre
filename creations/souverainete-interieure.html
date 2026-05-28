@@ -763,6 +763,103 @@
       min-height: 92px;
       font-size: 0.88rem;
     }
+    .source-review-list,
+    .subject-catalog-group,
+    .subject-editor {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .source-review-list {
+      margin-top: 0.85rem;
+    }
+    .source-card,
+    .subject-choice-card,
+    .subject-block {
+      border: var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      padding: 0.85rem;
+    }
+    .source-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: start;
+    }
+    .source-card.is-ignored {
+      opacity: 0.62;
+    }
+    .source-card-title,
+    .subject-block-title {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .source-card-meta,
+    .subject-category-title {
+      font-family: var(--font-ui);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .subject-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.7rem;
+      margin-top: 0.6rem;
+    }
+    .subject-choice-card {
+      min-height: 118px;
+    }
+    .subject-choice-card.selected {
+      border-color: var(--sage);
+      background: var(--sage-light);
+    }
+    .subject-choice-card label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      color: var(--text-primary);
+      margin-bottom: 0.55rem;
+    }
+    .subject-choice-card input[type="checkbox"] {
+      width: auto;
+      margin-top: 0.2rem;
+    }
+    .subject-choice-card select {
+      padding: 0.42rem 0.55rem;
+      font-size: 0.78rem;
+    }
+    .subject-editor-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .subject-editor textarea {
+      min-height: 150px;
+    }
+    .subject-block textarea {
+      margin-top: 0.45rem;
+    }
+    .subject-block-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.55rem;
+    }
+    .suggestion-pill {
+      border: var(--border);
+      border-radius: 50px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: var(--font-ui);
+      font-size: 0.74rem;
+      padding: 0.28rem 0.55rem;
+    }
     .export-actions {
       display: flex;
       flex-wrap: wrap;
@@ -900,6 +997,8 @@
       .suggestion-grid { grid-template-columns: 1fr; }
       .mode-card-grid { grid-template-columns: 1fr; }
       .subject-grid { grid-template-columns: 1fr; }
+      .subject-choice-grid { grid-template-columns: 1fr; }
+      .source-card { grid-template-columns: 1fr; }
       .declaration-library-item { grid-template-columns: 1fr; }
       .declaration-library-actions { justify-content: flex-start; }
     }
@@ -1789,7 +1888,7 @@
             <section class="studio-step-panel" data-studio-step="identity" id="decl-part-identity">
               <div class="studio-step-header">
                 <div class="studio-step-title">Étape 1 — Identifier la déclaration</div>
-                <p class="muted-small">Posez un repère simple, puis choisissez la manière principale de travailler cette déclaration.</p>
+                <p class="muted-small">Posez un repère simple, puis choisissez la forme globale dominante. Les sujets pourront ensuite combiner écriture libre, phrases guidées et données déjà saisies.</p>
               </div>
               <div class="form-row" style="margin-top:0.5rem;">
                 <div class="form-group">
@@ -1820,10 +1919,39 @@
               </div>
             </section>
 
+            <section class="studio-step-panel" data-studio-step="sources" id="decl-part-sources" hidden>
+              <div class="studio-step-header">
+                <div class="studio-step-title">Étape 2 — Relire mes données</div>
+                <p class="muted-small">L’application propose des sujets depuis les engagements, révocations, restitutions, actions, mantras favoris et journal récent.</p>
+              </div>
+              <div id="decl-source-review" class="source-review-list"></div>
+            </section>
+
+            <section class="studio-step-panel" data-studio-step="subjects" id="decl-part-subjects" hidden>
+              <div class="studio-step-header">
+                <div class="studio-step-title">Étape 3 — Choisir les sujets</div>
+                <p class="muted-small">Sélectionnez les domaines, valeurs ou refus à intégrer. Chaque sujet sélectionné devient une étape d’écriture.</p>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="decl-custom-subject">Sujet libre</label>
+                  <input type="text" id="decl-custom-subject" placeholder="Ex : parole publique, lieu de vie, relation à la loi vivante…">
+                </div>
+                <div class="form-group" style="align-self:end;">
+                  <button class="btn btn-primary" onclick="Controller.addCustomDeclarationSubject()">+ Ajouter ce sujet</button>
+                </div>
+              </div>
+              <div id="decl-subject-catalog" class="subject-catalog-group"></div>
+            </section>
+
+            <section class="studio-step-panel" data-studio-step="subject-detail" id="decl-part-subject-detail" hidden>
+              <div id="decl-subject-editor" class="subject-editor"></div>
+            </section>
+
             <section class="studio-step-panel" data-studio-step="matter" id="decl-part-matter" hidden>
               <div class="studio-step-header">
-                <div class="studio-step-title">Étape 2 — Choisir la matière</div>
-                <p class="muted-small">Rédigez librement ou sélectionnez des phrases. Cette matière servira au texte final.</p>
+                <div class="studio-step-title">Écriture libre et phrases guidées</div>
+                <p class="muted-small">Complétez si nécessaire par de grands blocs libres ou des phrases courtes. Cette matière reste compatible avec les sujets.</p>
               </div>
               <div id="decl-free-panel" class="mode-panel">
                 <div class="form-group">
@@ -1900,8 +2028,8 @@
               </div>
 
               <div id="decl-subject-panel" class="mode-panel" hidden>
-                <div class="alert alert-info">Choisissez les sujets qui doivent entrer dans la déclaration, puis ajoutez quelques mots pour chacun. Les sujets nourriront automatiquement les bonnes parties du texte.</div>
-                <div id="decl-subject-list" class="subject-grid"></div>
+                <div class="alert alert-info">Les sujets se travaillent maintenant dans l’étape dédiée “Choisir les sujets”, puis sujet par sujet avec les blocs honorer, refuser et choisir.</div>
+                <button class="btn btn-primary btn-sm" onclick="Controller.setDeclarationStudioStepById('subjects')">Ouvrir le choix des sujets</button>
               </div>
             </section>
 
@@ -2202,15 +2330,34 @@ Ainsi soit-il, dans la dignité et la joie de la Vie.
 Ainsi soit-il.`;
 
 const DECLARATION_SUBJECTS = [
-  { id: 'identite', title: 'Identité vivante', section: 'principes', prompt: 'Ce que je reconnais comme identité profonde, au-delà des rôles et des attentes.' },
-  { id: 'souverainete', title: 'Souveraineté intérieure', section: 'principes', prompt: 'Ce que je choisis de garder comme autorité intérieure et discernement vivant.' },
-  { id: 'refus', title: 'Refus conscients', section: 'refus', prompt: 'Ce à quoi je retire mon accord, sans violence mais avec clarté.' },
-  { id: 'restitution', title: 'Restitution', section: 'refus', prompt: 'Ce que je rends à sa juste source parce que cela ne m’appartient pas.' },
-  { id: 'engagements', title: 'Engagements envers la Vie', section: 'engagements', prompt: 'Ce que je choisis de nourrir dans mes pensées, paroles, actes et relations.' },
-  { id: 'actes', title: 'Actes concrets', section: 'actes', prompt: 'Les gestes simples qui rendront cette déclaration visible dans la matière.' },
-  { id: 'protection', title: 'Protection', section: 'principes', prompt: 'La manière dont je protège mon intégrité et ce qui est vulnérable autour de moi.' },
-  { id: 'paix', title: 'Paix et coopération', section: 'engagements', prompt: 'La qualité de présence que je veux apporter dans mes choix et mes relations.' },
-  { id: 'cloture', title: 'Clôture symbolique', section: 'engagements', prompt: 'La phrase qui ferme la déclaration avec simplicité, cohérence et présence.' }
+  { id: 'identite', title: 'Identité vivante', category: 'principes', prompt: 'Au-delà des rôles, ce que je reconnais comme identité profonde.', prompts: { honor: 'Ce que je reconnais comme vrai dans mon identité vivante…', refuse: 'Ce que je ne consens plus à confondre avec mon être…', choose: 'Ce que je choisis d’incarner depuis mon nom d’être…' } },
+  { id: 'souverainete', title: 'Souveraineté intérieure', category: 'principes', prompt: 'Autorité intérieure, discernement vivant, responsabilité de soi.', prompts: { honor: 'Ce que j’honore dans ma souveraineté intérieure…', refuse: 'Ce à quoi je retire mon accord quand cela diminue ma souveraineté…', choose: 'Ce que je choisis pour agir depuis ma clarté…' } },
+  { id: 'enfance', title: 'Enfance', category: 'domaines', prompt: 'Protection, innocence, rythme, joie et croissance.', prompts: { honor: 'Ce que je reconnais comme sacré dans l’enfance…', refuse: 'Ce à quoi je retire mon accord concernant l’enfance…', choose: 'Ce que je choisis de protéger, transmettre ou incarner…' } },
+  { id: 'education', title: 'Éducation', category: 'domaines', prompt: 'Transmission, apprentissage, liberté intérieure et vérité.', prompts: { honor: 'Ce que j’honore dans une éducation au service de la vie…', refuse: 'Ce que je refuse de nourrir dans l’éducation…', choose: 'Ce que je choisis de transmettre ou de soutenir…' } },
+  { id: 'famille', title: 'Famille', category: 'domaines', prompt: 'Liens, héritages, loyautés, limites et soutien.', prompts: { honor: 'Ce que j’honore dans mes liens familiaux…', refuse: 'Ce que je restitue ou refuse de porter dans la famille…', choose: 'Ce que je choisis comme posture familiale consciente…' } },
+  { id: 'couple', title: 'Couple', category: 'domaines', prompt: 'Alliance, respect, consentement, vérité et liberté.', prompts: { honor: 'Ce que j’honore dans le lien de couple…', refuse: 'Ce à quoi je retire mon accord dans la relation…', choose: 'Ce que je choisis de vivre ou d’offrir dans l’alliance…' } },
+  { id: 'travail', title: 'Travail', category: 'domaines', prompt: 'Œuvre, contribution, rythme, valeur et cohérence.', prompts: { honor: 'Ce que j’honore dans mon œuvre ou mon service…', refuse: 'Ce que je ne consens plus à nourrir dans le travail…', choose: 'Ce que je choisis d’incarner dans ma contribution…' } },
+  { id: 'argent', title: 'Argent', category: 'domaines', prompt: 'Échange, dette, autonomie, sobriété et circulation juste.', prompts: { honor: 'Ce que je reconnais comme circulation juste de l’énergie et de la valeur…', refuse: 'Ce à quoi je retire mon accord dans mon rapport à l’argent…', choose: 'Ce que je choisis comme relation plus libre à l’échange…' } },
+  { id: 'administration', title: 'Administration', category: 'domaines', prompt: 'Rapport aux structures, documents, obligations et limites.', prompts: { honor: 'Ce que j’honore dans l’ordre utile et la clarté administrative…', refuse: 'Ce que je ne consens plus à laisser définir mon être vivant…', choose: 'Ce que je choisis de poser avec calme dans la matière…' } },
+  { id: 'justice', title: 'Justice', category: 'domaines', prompt: 'Légitime, réparation, vérité, équité et dignité.', prompts: { honor: 'Ce que j’honore comme justice vivante et légitime…', refuse: 'Ce que je refuse quand la justice trahit la vie…', choose: 'Ce que je choisis pour rester droit, clair et responsable…' } },
+  { id: 'corps', title: 'Corps et santé', category: 'domaines', prompt: 'Intégrité, écoute, soin, limites et présence incarnée.', prompts: { honor: 'Ce que j’honore dans mon corps vivant…', refuse: 'Ce que je ne consens plus à imposer ou subir dans mon corps…', choose: 'Ce que je choisis pour respecter ma présence incarnée…' } },
+  { id: 'nature', title: 'Nature et vivant', category: 'domaines', prompt: 'Terre, animaux, plantes, eau, cycles et respect du vivant.', prompts: { honor: 'Ce que j’honore dans la nature et le vivant…', refuse: 'Ce que je refuse quand le vivant est exploité ou détruit…', choose: 'Ce que je choisis comme gardiennage concret du vivant…' } },
+  { id: 'spiritualite', title: 'Spiritualité', category: 'domaines', prompt: 'Lien direct à la Source, discernement, lumière et simplicité.', prompts: { honor: 'Ce que j’honore dans mon lien direct au divin et à la vie…', refuse: 'Ce que je refuse dans toute influence contraire à la lumière…', choose: 'Ce que je choisis d’incarner spirituellement avec sobriété…' } },
+  { id: 'autorite', title: 'Autorité', category: 'valeurs', prompt: 'Autorité intérieure, limites, responsabilité et discernement.', prompts: { honor: 'Ce que j’honore comme autorité juste…', refuse: 'Ce que je refuse dans l’abus de pouvoir ou l’emprise…', choose: 'Ce que je choisis pour reprendre ma juste autorité…' } },
+  { id: 'liberte', title: 'Liberté', category: 'valeurs', prompt: 'Libre arbitre, cohérence, choix et actes vérifiables.', prompts: { honor: 'Ce que j’honore dans ma liberté vivante…', refuse: 'Ce que je ne consens plus à accepter comme entrave…', choose: 'Ce que je choisis pour rendre ma liberté concrète…' } },
+  { id: 'verite', title: 'Vérité', category: 'valeurs', prompt: 'Clarté, parole juste, discernement et refus du mensonge.', prompts: { honor: 'Ce que j’honore dans la vérité et la parole claire…', refuse: 'Ce que je refuse dans le mensonge, la confusion ou la manipulation…', choose: 'Ce que je choisis pour servir la clarté…' } },
+  { id: 'consentement', title: 'Consentement', category: 'valeurs', prompt: 'Oui clair, non clair, limites et respect du libre arbitre.', prompts: { honor: 'Ce que j’honore dans le consentement libre et conscient…', refuse: 'Ce à quoi je retire tout consentement forcé ou confus…', choose: 'Ce que je choisis pour respecter mon oui et mon non…' } },
+  { id: 'protection', title: 'Protection', category: 'valeurs', prompt: 'Intégrité, paix, vigilance et protection du vulnérable.', prompts: { honor: 'Ce que j’honore dans la protection juste…', refuse: 'Ce que je refuse de laisser entrer ou prospérer…', choose: 'Ce que je choisis de protéger par mes actes…' } },
+  { id: 'paix', title: 'Paix et coopération', category: 'valeurs', prompt: 'Présence, coopération, sortie de la peur et lien vivant.', prompts: { honor: 'Ce que j’honore dans la paix et la coopération…', refuse: 'Ce que je refuse dans la division ou la domination par la peur…', choose: 'Ce que je choisis pour nourrir la paix concrète…' } },
+  { id: 'violence-enfants', title: 'Violence envers les enfants', category: 'refus', prompt: 'Position de protection, sans accusation factuelle.', prompts: { honor: 'Ce que j’honore dans l’innocence et la dignité des enfants…', refuse: 'Je retire mon accord à toute dynamique de violence envers les enfants…', choose: 'Ce que je choisis pour protéger l’enfance et soutenir la vie…' } },
+  { id: 'exploitation-sexuelle', title: 'Exploitation sexuelle', category: 'refus', prompt: 'Refus clair de toute prédation et atteinte à la dignité.', prompts: { honor: 'Ce que j’honore dans la dignité du corps et du consentement…', refuse: 'Je retire mon accord à toute dynamique d’exploitation sexuelle…', choose: 'Ce que je choisis pour protéger l’intégrité et la dignité…' } },
+  { id: 'abus-pouvoir', title: 'Abus de pouvoir', category: 'refus', prompt: 'Limite posée face à l’emprise, la coercition et la domination.', prompts: { honor: 'Ce que j’honore dans l’autorité juste et responsable…', refuse: 'Je retire mon accord à tout abus de pouvoir et à toute emprise…', choose: 'Ce que je choisis pour agir avec autorité saine…' } },
+  { id: 'manipulation', title: 'Manipulation mentale', category: 'refus', prompt: 'Refus de la confusion, de la peur et de la captation.', prompts: { honor: 'Ce que j’honore dans la clarté de conscience…', refuse: 'Je retire mon accord à toute manipulation mentale ou domination par la peur…', choose: 'Ce que je choisis pour nourrir discernement, calme et lucidité…' } },
+  { id: 'corruption', title: 'Corruption', category: 'refus', prompt: 'Position intérieure de droiture, de vérité et de responsabilité.', prompts: { honor: 'Ce que j’honore dans la droiture et le service du bien commun…', refuse: 'Je retire mon accord à toute corruption et trahison de la vie…', choose: 'Ce que je choisis pour rester intègre dans mes décisions…' } },
+  { id: 'rituels-contraires-vie', title: 'Rituels contraires à la vie', category: 'refus', prompt: 'Refus spirituel de toute pratique contraire à la dignité du vivant.', prompts: { honor: 'Ce que j’honore dans les pratiques reliées à l’amour, la paix et la vie…', refuse: 'Je retire mon accord à tout rituel contraire à la vie, à la dignité et à l’innocence…', choose: 'Ce que je choisis comme ancrage spirituel lumineux et responsable…' } },
+  { id: 'captation-energie', title: 'Captation de l’énergie vitale', category: 'refus', prompt: 'Restitution, protection de l’énergie et limites claires.', prompts: { honor: 'Ce que j’honore dans mon énergie vitale et ma présence…', refuse: 'Je retire mon accord à toute captation, prédation ou détournement de mon énergie vitale…', choose: 'Ce que je choisis pour garder, restaurer et offrir mon énergie librement…' } },
+  { id: 'restitution', title: 'Restitution', category: 'principes', prompt: 'Rendre ce qui ne m’appartient pas et reprendre ce qui est mien.', prompts: { honor: 'Ce que j’honore dans l’ordre juste des responsabilités…', refuse: 'Ce que je refuse de porter à la place d’un autre être ou d’une structure…', choose: 'Ce que je restitue et ce que je reprends avec clarté…' } },
+  { id: 'actes', title: 'Actes concrets', category: 'principes', prompt: 'Gestes simples qui rendent la déclaration visible dans la matière.', prompts: { honor: 'Ce que j’honore comme passage à l’acte…', refuse: 'Ce que je refuse de laisser au seul niveau des mots…', choose: 'Les actes simples et vérifiables que je choisis de poser…' } }
 ];
 
 /* Templates de révocation selon le type */
@@ -2404,6 +2551,11 @@ const Model = {
           engagements: [],
           actes: []
         },
+        selectedSubjectIds: [],
+        sourceReview: {
+          acceptedSuggestionIds: [],
+          ignoredSuggestionIds: []
+        },
         subjects: [],
         draftText: '',
         finalText: '',
@@ -2561,6 +2713,37 @@ const Model = {
         }))
         .filter(item => item.text)
       : [];
+    const subjectCatalog = () => DECLARATION_SUBJECTS;
+    const subjectById = new Map(subjectCatalog().map(subject => [subject.id, subject]));
+    const normalizeSubjectBlock = (block) => ({
+      freeText: text(block?.freeText),
+      guidedItems: normalizeItems(block?.guidedItems),
+      sourceItems: normalizeItems(block?.sourceItems),
+      actions: normalizeItems(block?.actions)
+    });
+    const normalizeSubjectEntry = (item) => {
+      if (!item || typeof item !== 'object') return null;
+      const rawId = text(item.id);
+      const catalogItem = subjectById.get(rawId);
+      const id = catalogItem ? rawId : safeId(rawId || item.title || 'sujet-libre');
+      const title = text(item.title) || catalogItem?.title || 'Sujet libre';
+      const priority = pick(item.priority, ['essentiel','important','optionnel','exclu'], item.selected === false ? 'exclu' : 'important');
+      const legacyText = text(item.text);
+      const section = catalogItem?.category === 'refus' || item.section === 'refus' ? 'refuse' : (item.section === 'actes' || item.section === 'engagements' ? 'choose' : 'honor');
+      const entry = {
+        id,
+        title,
+        category: text(item.category) || catalogItem?.category || 'libres',
+        priority,
+        status: pick(item.status, ['todo','done','skipped'], 'todo'),
+        honor: normalizeSubjectBlock(item.honor),
+        refuse: normalizeSubjectBlock(item.refuse),
+        choose: normalizeSubjectBlock(item.choose),
+        notes: text(item.notes)
+      };
+      if (legacyText && !entry[section].freeText) entry[section].freeText = legacyText;
+      return entry;
+    };
     const normalizeIndividual = (previous) => {
       if (!previous || typeof previous !== 'object' || Array.isArray(previous)) {
         previous = defaults.declarationIndividuelle;
@@ -2569,15 +2752,14 @@ const Model = {
       const guide = previous.guide && typeof previous.guide === 'object' && !Array.isArray(previous.guide) ? previous.guide : {};
       const mode = ['libre','guide','sujets'].includes(previous.mode) ? previous.mode : 'libre';
       const subjects = Array.isArray(previous.subjects)
-        ? previous.subjects
-          .filter(item => item && typeof item === 'object')
-          .map(item => ({
-            id: text(item.id),
-            selected: Boolean(item.selected),
-            text: text(item.text)
-          }))
-          .filter(item => DECLARATION_SUBJECTS.some(subject => subject.id === item.id))
+        ? previous.subjects.map(normalizeSubjectEntry).filter(Boolean)
         : [];
+      const selectedSubjectIds = Array.isArray(previous.selectedSubjectIds)
+        ? previous.selectedSubjectIds.map(item => text(item)).filter(Boolean)
+        : subjects.filter(item => item.priority !== 'exclu').map(item => item.id);
+      const sourceReview = previous.sourceReview && typeof previous.sourceReview === 'object' && !Array.isArray(previous.sourceReview)
+        ? previous.sourceReview
+        : {};
       return {
         mode,
         nomination: text(previous.nomination),
@@ -2596,6 +2778,11 @@ const Model = {
           engagements: normalizeItems(guide.engagements),
           actes: normalizeItems(guide.actes)
         },
+        selectedSubjectIds: [...new Set(selectedSubjectIds)],
+        sourceReview: {
+          acceptedSuggestionIds: Array.isArray(sourceReview.acceptedSuggestionIds) ? sourceReview.acceptedSuggestionIds.map(text).filter(Boolean) : [],
+          ignoredSuggestionIds: Array.isArray(sourceReview.ignoredSuggestionIds) ? sourceReview.ignoredSuggestionIds.map(text).filter(Boolean) : []
+        },
         subjects,
         draftText: text(previous.draftText),
         finalText: text(previous.finalText),
@@ -2609,7 +2796,7 @@ const Model = {
       individual.finalText ||
       Object.values(individual.libre || {}).some(Boolean) ||
       Object.values(individual.guide || {}).some(items => Array.isArray(items) && items.length) ||
-      (individual.subjects || []).some(item => item.selected || item.text)
+      (individual.subjects || []).some(item => item.priority !== 'exclu' || item.honor?.freeText || item.refuse?.freeText || item.choose?.freeText)
     );
     const individualToRecord = (individual, source = {}) => ({
       id: safeId(source.id),
@@ -2618,11 +2805,12 @@ const Model = {
       statut: pick(source.statut || source.status, declarationStatuses, individual.finalText ? 'finalisee' : 'brouillon'),
       mode: individual.mode,
       steps: Array.isArray(source.steps) ? source.steps : [],
-      subjects: Array.isArray(source.subjects) ? source.subjects.map(item => text(item)).filter(Boolean) : [],
       nomination: individual.nomination,
       lieuDate: individual.lieuDate,
       libre: individual.libre,
       guide: individual.guide,
+      selectedSubjectIds: individual.selectedSubjectIds || [],
+      sourceReview: individual.sourceReview || { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: individual.subjects || [],
       draftText: individual.draftText,
       finalText: individual.finalText,
@@ -2635,6 +2823,8 @@ const Model = {
       lieuDate: text(record.lieuDate),
       libre: record.libre && typeof record.libre === 'object' ? record.libre : defaults.declarationIndividuelle.libre,
       guide: record.guide && typeof record.guide === 'object' ? record.guide : defaults.declarationIndividuelle.guide,
+      selectedSubjectIds: Array.isArray(record.selectedSubjectIds) ? record.selectedSubjectIds : [],
+      sourceReview: record.sourceReview && typeof record.sourceReview === 'object' ? record.sourceReview : { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: Array.isArray(record.subjects) ? record.subjects : [],
       draftText: text(record.draftText),
       finalText: text(record.finalText),
@@ -3173,8 +3363,10 @@ const View = {
     this.renderDeclarationMode();
     this.renderGuidedDeclarationItems();
     this.renderDeclarationSuggestions();
+    this.renderDeclarationSourceReview();
     this.renderGuidedDeclarationPreview();
     this.renderDeclarationSubjects();
+    this.renderActiveDeclarationSubject();
     this.renderDeclarationStudio();
     const preview = document.getElementById('decl-individual-preview');
     const declarationText = d.finalText || d.draftText || Controller.composeIndividualDeclaration(d);
@@ -3277,21 +3469,126 @@ const View = {
   },
 
   renderDeclarationSubjects() {
-    const container = document.getElementById('decl-subject-list');
+    const container = document.getElementById('decl-subject-catalog') || document.getElementById('decl-subject-list');
     if (!container) return;
-    const current = Model.data.declarationIndividuelle?.subjects || [];
-    const byId = new Map(current.map(item => [item.id, item]));
-    container.innerHTML = DECLARATION_SUBJECTS.map(subject => {
-      const value = byId.get(subject.id) || {};
-      const selected = Boolean(value.selected);
-      return `<div class="subject-card ${selected ? 'selected' : ''}">
+    const d = Model.data.declarationIndividuelle || {};
+    const selectedIds = new Set(d.selectedSubjectIds || []);
+    const subjects = d.subjects || [];
+    const byCategory = DECLARATION_SUBJECTS.reduce((acc, subject) => {
+      const category = subject.category || 'principes';
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(subject);
+      return acc;
+    }, {});
+    const categoryLabels = {
+      principes: 'Fondations',
+      domaines: 'Domaines de vie',
+      valeurs: 'Valeurs et principes',
+      refus: 'Refus explicites'
+    };
+    const renderCard = (subject) => {
+      const entry = subjects.find(item => item.id === subject.id) || {};
+      const selected = selectedIds.has(subject.id);
+      return `<div class="subject-choice-card ${selected ? 'selected' : ''}">
         <label>
-          <input type="checkbox" ${selected ? 'checked' : ''} onchange="Controller.updateDeclarationSubject('${subject.id}', this.checked, null)">
+          <input type="checkbox" ${selected ? 'checked' : ''} onchange="Controller.toggleDeclarationSubject('${subject.id}', this.checked)">
           <span><strong>${this.esc(subject.title)}</strong><span class="muted-small">${this.esc(subject.prompt)}</span></span>
         </label>
-        <textarea placeholder="Quelques mots pour ce sujet…" oninput="Controller.updateDeclarationSubject('${subject.id}', null, this.value)">${this.esc(value.text || '')}</textarea>
+        <label class="sr-only" for="decl-priority-${this.esc(subject.id)}">Priorité</label>
+        <select id="decl-priority-${this.esc(subject.id)}" onchange="Controller.updateDeclarationSubjectPriority('${subject.id}', this.value)">
+          ${['essentiel','important','optionnel','exclu'].map(priority => `<option value="${priority}" ${entry.priority === priority ? 'selected' : ''}>${priority}</option>`).join('')}
+        </select>
       </div>`;
+    };
+    const catalogHtml = Object.entries(byCategory).map(([category, items]) => `
+      <section class="subject-catalog-group">
+        <div class="subject-category-title">${categoryLabels[category] || category}</div>
+        <div class="subject-choice-grid">${items.map(renderCard).join('')}</div>
+      </section>
+    `).join('');
+    const customSubjects = (subjects || []).filter(item => !DECLARATION_SUBJECTS.some(subject => subject.id === item.id));
+    const customHtml = customSubjects.length ? `
+      <section class="subject-catalog-group">
+        <div class="subject-category-title">Sujets libres</div>
+        <div class="subject-choice-grid">${customSubjects.map(item => renderCard({ id: item.id, title: item.title, prompt: 'Sujet ajouté manuellement.', category: 'libres' })).join('')}</div>
+      </section>
+    ` : '';
+    container.innerHTML = catalogHtml + customHtml;
+  },
+
+  renderDeclarationSourceReview() {
+    const container = document.getElementById('decl-source-review');
+    if (!container) return;
+    const suggestions = Controller.getDeclarationSourceSuggestions();
+    const review = Model.data.declarationIndividuelle?.sourceReview || {};
+    const ignored = new Set(review.ignoredSuggestionIds || []);
+    const accepted = new Set(review.acceptedSuggestionIds || []);
+    if (!suggestions.length) {
+      container.innerHTML = '<p class="muted-small">Aucune donnée forte à proposer pour le moment. Vous pouvez avancer et choisir les sujets à la main.</p>';
+      return;
+    }
+    container.innerHTML = suggestions.map(item => {
+      const isIgnored = ignored.has(item.id);
+      const isAccepted = accepted.has(item.id);
+      return `<article class="source-card ${isIgnored ? 'is-ignored' : ''}">
+        <div>
+          <div class="source-card-title">${this.esc(item.subjectTitle)}</div>
+          <p>${this.esc(item.text)}</p>
+          <div class="source-card-meta">${this.esc(item.reason)}</div>
+        </div>
+        <div class="actions-row compact">
+          <button class="btn btn-primary btn-sm" onclick="Controller.acceptSourceSuggestion('${item.id}')">${isAccepted ? 'Ajouté' : 'Ajouter comme sujet'}</button>
+          <button class="btn btn-secondary btn-sm" onclick="Controller.ignoreSourceSuggestion('${item.id}')">${isIgnored ? 'Ignoré' : 'Ignorer'}</button>
+        </div>
+      </article>`;
     }).join('');
+    this.ensureButtonTypes();
+  },
+
+  renderActiveDeclarationSubject() {
+    const container = document.getElementById('decl-subject-editor');
+    if (!container) return;
+    const step = Controller.getActiveDeclarationStep();
+    const subjectId = step?.subjectId;
+    if (!subjectId) {
+      container.innerHTML = '<p class="muted-small">Choisissez un sujet dans le rail de gauche.</p>';
+      return;
+    }
+    const subject = Controller.ensureDeclarationSubjectEntry(subjectId);
+    const prompts = Controller.getSubjectPrompts(subjectId);
+    const suggestions = Controller.getSuggestionsForSubject(subjectId);
+    const block = (key, title, prompt) => {
+      const value = subject[key]?.freeText || '';
+      const blockSuggestions = suggestions.filter(item => item.targetBlock === key);
+      return `<section class="subject-block">
+        <div class="subject-block-title">${title}</div>
+        <p class="muted-small">${this.esc(prompt)}</p>
+        <textarea id="decl-subject-${key}" oninput="Controller.updateDeclarationSubjectBlock('${subject.id}','${key}', this.value)" placeholder="${this.esc(prompt)}">${this.esc(value)}</textarea>
+        <div class="subject-block-suggestions">
+          ${blockSuggestions.slice(0, 5).map(item => `<button class="suggestion-pill" onclick="Controller.appendSuggestionToSubject('${subject.id}','${key}','${item.id}')">+ ${this.esc(item.text.slice(0, 80))}</button>`).join('')}
+        </div>
+      </section>`;
+    };
+    container.innerHTML = `
+      <div class="studio-step-header">
+        <div class="subject-editor-header">
+          <div>
+            <div class="studio-step-title">Sujet — ${this.esc(subject.title)}</div>
+            <p class="muted-small">Clarifiez ce qui est honoré, refusé et choisi. Les champs peuvent rester courts : le texte final restera éditable.</p>
+          </div>
+          <select aria-label="Priorité du sujet" onchange="Controller.updateDeclarationSubjectPriority('${subject.id}', this.value)">
+            ${['essentiel','important','optionnel','exclu'].map(priority => `<option value="${priority}" ${subject.priority === priority ? 'selected' : ''}>${priority}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      ${block('honor', 'J’honore / je reconnais', prompts.honor)}
+      ${block('refuse', 'Je refuse / je ne consens pas', prompts.refuse)}
+      ${block('choose', 'Je choisis / j’incarne', prompts.choose)}
+      <section class="subject-block">
+        <div class="subject-block-title">Notes et actes courts</div>
+        <textarea oninput="Controller.updateDeclarationSubjectNotes('${subject.id}', this.value)" placeholder="Notes, actes concrets, points de vigilance…">${this.esc(subject.notes || '')}</textarea>
+      </section>`;
+    this.ensureButtonTypes();
   },
 
   renderDeclarationStudio() {
@@ -3314,11 +3611,14 @@ const View = {
       </button>`;
     }).join('');
     const activeIndex = statuses.findIndex(item => item.status === 'active');
+    const activeStep = steps[Math.max(0, activeIndex)] || steps[0];
     document.querySelectorAll('.studio-step-panel').forEach(panel => {
       const stepId = panel.getAttribute('data-studio-step');
+      const isSubjectPanel = stepId === 'subject-detail' && activeStep?.subjectId;
       const index = steps.findIndex(step => step.id === stepId);
-      panel.hidden = index !== Math.max(0, activeIndex);
+      panel.hidden = isSubjectPanel ? false : index !== Math.max(0, activeIndex);
     });
+    this.renderActiveDeclarationSubject();
     this.ensureButtonTypes();
   },
 
@@ -4054,13 +4354,29 @@ Ainsi est posé.`;
   },
 
   getDeclarationStudioSteps() {
+    const d = Model.data.declarationIndividuelle || {};
+    const selectedIds = d.selectedSubjectIds || [];
+    const subjectSteps = selectedIds
+      .map(id => this.ensureDeclarationSubjectEntry(id))
+      .filter(subject => subject && subject.priority !== 'exclu')
+      .map(subject => ({ id: 'subject-' + subject.id, title: subject.title, subjectId: subject.id }));
     return [
       { id: 'identity', title: 'Identité' },
-      { id: 'matter', title: 'Matière choisie' },
-      { id: 'draft', title: 'Générer' },
+      { id: 'sources', title: 'Mes données' },
+      { id: 'subjects', title: 'Sujets' },
+      ...subjectSteps,
+      { id: 'matter', title: 'Libre / guidé' },
+      { id: 'draft', title: 'Composer' },
       { id: 'final', title: 'Texte final' },
       { id: 'export', title: 'Exporter' }
     ];
+  },
+
+  getActiveDeclarationStep() {
+    const steps = this.getDeclarationStudioSteps();
+    const statuses = this.ensureDeclarationStudioState();
+    const activeIndex = statuses.findIndex(item => item.status === 'active');
+    return steps[Math.max(0, activeIndex)] || steps[0];
   },
 
   getActivePersonalDeclarationRecord() {
@@ -4102,6 +4418,21 @@ Ainsi est posé.`;
     View.renderDeclarationStudio();
   },
 
+  setDeclarationStudioStepById(stepId) {
+    const index = this.getDeclarationStudioSteps().findIndex(step => step.id === stepId);
+    if (index >= 0) this.setDeclarationStudioStep(index);
+  },
+
+  markDeclarationStepDone(stepId) {
+    const record = this.getActivePersonalDeclarationRecord();
+    const steps = this.ensureDeclarationStudioState();
+    const target = steps.find(item => item.id === stepId);
+    if (!target) return;
+    target.status = 'done';
+    record.steps = steps;
+    Model.save();
+  },
+
   previousDeclarationStep() {
     const steps = this.ensureDeclarationStudioState();
     const activeIndex = steps.findIndex(item => item.status === 'active');
@@ -4129,9 +4460,6 @@ Ainsi est posé.`;
     const activeIndex = steps.findIndex(item => item.status === 'active');
     if (activeIndex < 0) return;
     steps[activeIndex].status = 'skipped';
-    steps.forEach((item, index) => {
-      if (index > activeIndex && item.status !== 'done') item.status = 'blocked';
-    });
     const nextIndex = activeIndex + 1 < steps.length ? activeIndex + 1 : activeIndex - 1;
     if (nextIndex >= 0) steps[nextIndex].status = 'active';
     record.steps = steps;
@@ -4180,11 +4508,12 @@ Ainsi est posé.`;
       statut: individual.finalText ? 'finalisee' : (existing.statut || 'brouillon'),
       mode: ['libre','guide','sujets'].includes(individual.mode) ? individual.mode : 'libre',
       steps: Array.isArray(existing.steps) ? existing.steps : [],
-      subjects: Array.isArray(existing.subjects) ? existing.subjects : [],
       nomination: individual.nomination || '',
       lieuDate: individual.lieuDate || '',
       libre: individual.libre || { preambule: '', principes: '', refus: '', engagements: '', actes: '', autographe: '' },
       guide: individual.guide || { principes: [], refus: [], engagements: [], actes: [] },
+      selectedSubjectIds: Array.isArray(individual.selectedSubjectIds) ? individual.selectedSubjectIds : [],
+      sourceReview: individual.sourceReview || { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: Array.isArray(individual.subjects) ? individual.subjects : [],
       draftText: individual.draftText || '',
       finalText: individual.finalText || '',
@@ -4200,6 +4529,8 @@ Ainsi est posé.`;
       lieuDate: record.lieuDate || '',
       libre: record.libre || { preambule: '', principes: '', refus: '', engagements: '', actes: '', autographe: '' },
       guide: record.guide || { principes: [], refus: [], engagements: [], actes: [] },
+      selectedSubjectIds: Array.isArray(record.selectedSubjectIds) ? record.selectedSubjectIds : [],
+      sourceReview: record.sourceReview || { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: Array.isArray(record.subjects) ? record.subjects : [],
       draftText: record.draftText || '',
       finalText: record.finalText || '',
@@ -4227,6 +4558,8 @@ Ainsi est posé.`;
       lieuDate: '',
       libre: { preambule: '', principes: '', refus: '', engagements: '', actes: '', autographe: '' },
       guide: { principes: [], refus: [], engagements: [], actes: [] },
+      selectedSubjectIds: [],
+      sourceReview: { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: [],
       draftText: '',
       finalText: '',
@@ -4349,6 +4682,8 @@ Ainsi est posé.`;
         autographe: document.getElementById('decl-autographe').value.trim()
       },
       guide: current.guide || { principes: [], refus: [], engagements: [], actes: [] },
+      selectedSubjectIds: current.selectedSubjectIds || [],
+      sourceReview: current.sourceReview || { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: current.subjects || [],
       draftText: document.getElementById('decl-draft').value.trim(),
       finalText: document.getElementById('decl-final-text').value.trim(),
@@ -4371,32 +4706,195 @@ Ainsi est posé.`;
     View.renderDeclarationSubjects();
   },
 
-  updateDeclarationSubject(id, selected, textValue) {
-    const subject = DECLARATION_SUBJECTS.find(item => item.id === id);
-    if (!subject) return;
-    const list = Model.data.declarationIndividuelle.subjects || [];
-    let entry = list.find(item => item.id === id);
+  getSubjectCatalogItem(id) {
+    return DECLARATION_SUBJECTS.find(item => item.id === id);
+  },
+
+  getSubjectPrompts(id) {
+    const subject = this.getSubjectCatalogItem(id);
+    return subject?.prompts || {
+      honor: 'Ce que je reconnais, remercie ou honore sur ce sujet…',
+      refuse: 'Ce que je refuse, restitue ou ne consens plus à nourrir sur ce sujet…',
+      choose: 'Ce que je choisis d’incarner, de protéger ou de poser comme acte…'
+    };
+  },
+
+  createDeclarationSubjectEntry(id, title) {
+    const catalog = this.getSubjectCatalogItem(id);
+    return {
+      id,
+      title: title || catalog?.title || 'Sujet libre',
+      category: catalog?.category || 'libres',
+      priority: 'important',
+      status: 'todo',
+      honor: { freeText: '', guidedItems: [], sourceItems: [], actions: [] },
+      refuse: { freeText: '', guidedItems: [], sourceItems: [], actions: [] },
+      choose: { freeText: '', guidedItems: [], sourceItems: [], actions: [] },
+      notes: ''
+    };
+  },
+
+  ensureDeclarationSubjectEntry(id, title) {
+    const d = Model.data.declarationIndividuelle || {};
+    if (!Array.isArray(d.subjects)) d.subjects = [];
+    let entry = d.subjects.find(item => item.id === id);
     if (!entry) {
-      entry = { id, selected: false, text: '' };
-      list.push(entry);
+      entry = this.createDeclarationSubjectEntry(id, title);
+      d.subjects.push(entry);
     }
-    if (selected !== null) entry.selected = Boolean(selected);
-    if (textValue !== null) entry.text = String(textValue || '');
-    Model.data.declarationIndividuelle.subjects = list;
-    Model.data.declarationIndividuelle.mode = 'sujets';
+    if (!entry.honor) entry.honor = { freeText: '', guidedItems: [], sourceItems: [], actions: [] };
+    if (!entry.refuse) entry.refuse = { freeText: '', guidedItems: [], sourceItems: [], actions: [] };
+    if (!entry.choose) entry.choose = { freeText: '', guidedItems: [], sourceItems: [], actions: [] };
+    if (!entry.title) entry.title = title || this.getSubjectCatalogItem(id)?.title || 'Sujet libre';
+    return entry;
+  },
+
+  toggleDeclarationSubject(id, selected) {
+    const d = Model.data.declarationIndividuelle;
+    if (!Array.isArray(d.selectedSubjectIds)) d.selectedSubjectIds = [];
+    this.ensureDeclarationSubjectEntry(id);
+    if (selected && !d.selectedSubjectIds.includes(id)) d.selectedSubjectIds.push(id);
+    if (!selected) d.selectedSubjectIds = d.selectedSubjectIds.filter(item => item !== id);
+    d.selectedSubjectIds = [...new Set(d.selectedSubjectIds)];
+    d.mode = 'sujets';
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderDeclarationMode();
-    if (selected !== null) View.renderDeclarationSubjects();
+    View.renderDeclarationSubjects();
     View.renderDeclarationStudio();
+    View.renderDeclarationSourceReview();
+  },
+
+  updateDeclarationSubjectPriority(id, priority) {
+    const entry = this.ensureDeclarationSubjectEntry(id);
+    entry.priority = ['essentiel','important','optionnel','exclu'].includes(priority) ? priority : 'important';
+    if (entry.priority === 'exclu') {
+      Model.data.declarationIndividuelle.selectedSubjectIds = (Model.data.declarationIndividuelle.selectedSubjectIds || []).filter(item => item !== id);
+    } else if (!(Model.data.declarationIndividuelle.selectedSubjectIds || []).includes(id)) {
+      Model.data.declarationIndividuelle.selectedSubjectIds.push(id);
+    }
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderDeclarationSubjects();
+    View.renderDeclarationStudio();
+  },
+
+  addCustomDeclarationSubject() {
+    const input = document.getElementById('decl-custom-subject');
+    const title = (input?.value || '').trim();
+    if (!title) { View.showToast('Ajoutez un nom de sujet.'); return; }
+    const id = 'libre-' + title
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 42) + '-' + Date.now().toString(36);
+    if (!Array.isArray(Model.data.declarationIndividuelle.subjects)) Model.data.declarationIndividuelle.subjects = [];
+    if (!Array.isArray(Model.data.declarationIndividuelle.selectedSubjectIds)) Model.data.declarationIndividuelle.selectedSubjectIds = [];
+    Model.data.declarationIndividuelle.subjects.push(this.createDeclarationSubjectEntry(id, title));
+    Model.data.declarationIndividuelle.selectedSubjectIds.push(id);
+    Model.data.declarationIndividuelle.mode = 'sujets';
+    if (input) input.value = '';
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderDeclarationSubjects();
+    View.renderDeclarationStudio();
+    View.showToast('Sujet ajouté à la déclaration.');
+  },
+
+  updateDeclarationSubjectBlock(subjectId, blockKey, value) {
+    const entry = this.ensureDeclarationSubjectEntry(subjectId);
+    if (!['honor','refuse','choose'].includes(blockKey)) return;
+    entry[blockKey].freeText = String(value || '');
+    entry.status = 'todo';
+    this.syncActiveDeclarationRecord();
+    Model.save();
     const preview = document.getElementById('decl-individual-preview');
-    if (preview && !Model.data.declarationIndividuelle.finalText && !Model.data.declarationIndividuelle.draftText) {
+    if (preview && !Model.data.declarationIndividuelle.finalText) {
       preview.innerHTML = View.formatDeclarationText(this.composeIndividualDeclaration(Model.data.declarationIndividuelle));
     }
   },
 
+  updateDeclarationSubjectNotes(subjectId, value) {
+    const entry = this.ensureDeclarationSubjectEntry(subjectId);
+    entry.notes = String(value || '');
+    this.syncActiveDeclarationRecord();
+    Model.save();
+  },
+
+  appendSuggestionToSubject(subjectId, blockKey, suggestionId) {
+    const suggestion = this.getSuggestionsForSubject(subjectId).find(item => item.id === suggestionId);
+    if (!suggestion) return;
+    const entry = this.ensureDeclarationSubjectEntry(subjectId);
+    const current = entry[blockKey].freeText || '';
+    entry[blockKey].freeText = current ? current + '\n' + suggestion.text : suggestion.text;
+    entry[blockKey].sourceItems.push({
+      id: suggestion.id,
+      text: suggestion.text,
+      sourceType: suggestion.sourceType,
+      sourceId: suggestion.sourceId
+    });
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderActiveDeclarationSubject();
+    View.renderIndividualDeclaration();
+  },
+
+  acceptSourceSuggestion(id) {
+    const suggestion = this.getDeclarationSourceSuggestions().find(item => item.id === id);
+    if (!suggestion) return;
+    const d = Model.data.declarationIndividuelle;
+    if (!d.sourceReview) d.sourceReview = { acceptedSuggestionIds: [], ignoredSuggestionIds: [] };
+    if (!Array.isArray(d.sourceReview.acceptedSuggestionIds)) d.sourceReview.acceptedSuggestionIds = [];
+    if (!Array.isArray(d.sourceReview.ignoredSuggestionIds)) d.sourceReview.ignoredSuggestionIds = [];
+    if (!d.sourceReview.acceptedSuggestionIds.includes(id)) d.sourceReview.acceptedSuggestionIds.push(id);
+    d.sourceReview.ignoredSuggestionIds = (d.sourceReview.ignoredSuggestionIds || []).filter(item => item !== id);
+    if (!Array.isArray(d.selectedSubjectIds)) d.selectedSubjectIds = [];
+    this.ensureDeclarationSubjectEntry(suggestion.subjectId);
+    if (!d.selectedSubjectIds.includes(suggestion.subjectId)) d.selectedSubjectIds.push(suggestion.subjectId);
+    const entry = this.ensureDeclarationSubjectEntry(suggestion.subjectId);
+    const blockKey = ['honor','refuse','choose'].includes(suggestion.targetBlock) ? suggestion.targetBlock : 'honor';
+    const block = entry[blockKey];
+    const alreadyAdded = (block.sourceItems || []).some(item => item.id === suggestion.id)
+      || String(block.freeText || '').toLowerCase().includes(suggestion.text.toLowerCase());
+    if (!alreadyAdded) {
+      block.freeText = block.freeText ? block.freeText + '\n' + suggestion.text : suggestion.text;
+      block.sourceItems.push({
+        id: suggestion.id,
+        text: suggestion.text,
+        sourceType: suggestion.sourceType,
+        sourceId: suggestion.sourceId
+      });
+    }
+    d.selectedSubjectIds = [...new Set(d.selectedSubjectIds)];
+    d.mode = 'sujets';
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderDeclarationSourceReview();
+    View.renderDeclarationSubjects();
+    View.renderDeclarationStudio();
+    View.showToast('Sujet ajouté depuis vos données.');
+  },
+
+  ignoreSourceSuggestion(id) {
+    const d = Model.data.declarationIndividuelle;
+    if (!d.sourceReview) d.sourceReview = { acceptedSuggestionIds: [], ignoredSuggestionIds: [] };
+    if (!Array.isArray(d.sourceReview.ignoredSuggestionIds)) d.sourceReview.ignoredSuggestionIds = [];
+    if (!d.sourceReview.ignoredSuggestionIds.includes(id)) d.sourceReview.ignoredSuggestionIds.push(id);
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderDeclarationSourceReview();
+  },
+
+  updateDeclarationSubject(id, selected, textValue) {
+    if (selected !== null) this.toggleDeclarationSubject(id, selected);
+    if (textValue !== null) this.updateDeclarationSubjectBlock(id, 'honor', textValue);
+  },
+
   prepareDeclarationFromData() {
     const groups = this.getDeclarationSuggestions();
+    const subjectSuggestions = this.getDeclarationSourceSuggestions();
     const addMissing = (section, limit = 5) => {
       const guide = Model.data.declarationIndividuelle.guide;
       const existing = new Set((guide[section] || []).map(item => item.text.toLowerCase()));
@@ -4412,11 +4910,21 @@ Ainsi est posé.`;
       });
     };
     ['principes','refus','engagements','actes'].forEach(section => addMissing(section));
-    Model.data.declarationIndividuelle.mode = 'guide';
+    const d = Model.data.declarationIndividuelle;
+    if (!Array.isArray(d.selectedSubjectIds)) d.selectedSubjectIds = [];
+    if (!d.sourceReview) d.sourceReview = { acceptedSuggestionIds: [], ignoredSuggestionIds: [] };
+    if (!Array.isArray(d.sourceReview.acceptedSuggestionIds)) d.sourceReview.acceptedSuggestionIds = [];
+    if (!Array.isArray(d.sourceReview.ignoredSuggestionIds)) d.sourceReview.ignoredSuggestionIds = [];
+    subjectSuggestions.slice(0, 8).forEach(item => {
+      this.ensureDeclarationSubjectEntry(item.subjectId);
+      if (!d.selectedSubjectIds.includes(item.subjectId)) d.selectedSubjectIds.push(item.subjectId);
+      if (!d.sourceReview.acceptedSuggestionIds.includes(item.id)) d.sourceReview.acceptedSuggestionIds.push(item.id);
+    });
+    d.mode = 'sujets';
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderIndividualDeclaration();
-    View.showToast('✅ Suggestions préparées en mode guidé.');
+    View.showToast('✅ Suggestions et sujets préparés depuis vos données.');
   },
 
   addGuidedDeclarationItem(section, text, sourceType = 'manual', sourceId = '') {
@@ -4502,6 +5010,80 @@ Ainsi est posé.`;
     };
   },
 
+  inferDeclarationSubjectId(text, sourceType) {
+    const value = String(text || '').toLowerCase();
+    const rules = [
+      ['enfance', ['enfant', 'enfance', 'innocence']],
+      ['education', ['école', 'ecole', 'éducation', 'education', 'apprendre', 'transmission']],
+      ['argent', ['argent', 'monnaie', 'dette', 'banque', 'financ']],
+      ['administration', ['administration', 'papier', 'document', 'identité', 'identite', 'nom légal', 'legal']],
+      ['justice', ['justice', 'loi', 'droit', 'légitime', 'legitime']],
+      ['corps', ['corps', 'santé', 'sante', 'soin']],
+      ['nature', ['nature', 'vivant', 'terre', 'eau', 'animal', 'plante']],
+      ['famille', ['famille', 'lignée', 'lignee', 'parent', 'héritage', 'heritage']],
+      ['couple', ['couple', 'alliance', 'conjoint', 'relation amoureuse']],
+      ['travail', ['travail', 'œuvre', 'oeuvre', 'métier', 'metier']],
+      ['consentement', ['consentement', 'accord', 'oui', 'non']],
+      ['protection', ['protection', 'protéger', 'proteger', 'gardien']],
+      ['verite', ['vérité', 'verite', 'mensonge', 'clarté', 'clarte']],
+      ['abus-pouvoir', ['abus', 'pouvoir', 'emprise', 'autorité', 'autorite']],
+      ['manipulation', ['manipulation', 'peur', 'tromperie', 'confusion']],
+      ['captation-energie', ['énergie', 'energie', 'captation', 'prédation', 'predation']]
+    ];
+    const found = rules.find(([, words]) => words.some(word => value.includes(word)));
+    if (found) return found[0];
+    if (sourceType === 'revocation' || sourceType === 'restitution') return 'restitution';
+    if (sourceType === 'integration' || sourceType === 'revocation-action') return 'actes';
+    if (sourceType === 'mantra') return 'spiritualite';
+    return 'souverainete';
+  },
+
+  getDeclarationSourceSuggestions() {
+    const suggestions = [];
+    const add = (text, sourceType, sourceId, reason, targetBlock) => {
+      const clean = String(text || '').trim();
+      if (!clean) return;
+      const subjectId = this.inferDeclarationSubjectId(clean, sourceType);
+      const subject = this.getSubjectCatalogItem(subjectId) || { title: 'Souveraineté intérieure' };
+      suggestions.push({
+        id: sourceType + '-' + sourceId + '-' + targetBlock,
+        subjectId,
+        subjectTitle: subject.title,
+        text: clean,
+        sourceType,
+        sourceId,
+        reason,
+        targetBlock
+      });
+    };
+    Model.data.engagements.forEach(item => {
+      const target = item.effet === 'negatif' || item.consentement === 'force' || item.consentement === 'inconscient' ? 'refuse' : 'honor';
+      add(item.nom, 'engagement', item.id, 'Issu de la cartographie des engagements', target);
+      if (item.note) add(item.note, 'engagement-note', item.id, 'Note associée à un engagement', target);
+    });
+    Model.data.revocations.forEach(item => {
+      add(item.engagement || item.texte, 'revocation', item.id, 'Issu d’une révocation déjà posée', 'refuse');
+      if (item.restitution) add(item.restitution, 'restitution', item.id, 'Restitution déjà formulée', 'refuse');
+      if (item.integrationAction) add(item.integrationAction, 'revocation-action', item.id, 'Action d’intégration liée à une révocation', 'choose');
+    });
+    Model.data.reaffirmations.forEach(item => add(item.texte, 'reaffirmation', item.id, 'Réaffirmation déjà écrite', 'choose'));
+    Model.data.integrations.forEach(item => add(item.texte, 'integration', item.id, 'Action d’intégration ouverte', 'choose'));
+    const favoriteMantras = [...MANTRAS_DEFAUT, ...Model.data.customMantras].filter(m => Model.data.favoriteMantras.includes(m.id));
+    favoriteMantras.forEach(item => add(item.text, 'mantra', item.id, 'Mantra favori', item.cat === 'protection' || item.cat === 'revocation' ? 'refuse' : 'honor'));
+    Model.data.journalEntries.slice(-5).forEach(item => add(item.tags || item.texte.slice(0, 120), 'journal', item.id, 'Journal récent', 'honor'));
+    const seen = new Set();
+    return suggestions.filter(item => {
+      const key = item.subjectId + '|' + item.targetBlock + '|' + item.text.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 32);
+  },
+
+  getSuggestionsForSubject(subjectId) {
+    return this.getDeclarationSourceSuggestions().filter(item => item.subjectId === subjectId);
+  },
+
   generateDeclarationDraft() {
     this.saveIndividualDeclaration();
     const declaration = Model.data.declarationIndividuelle;
@@ -4525,7 +5107,8 @@ Ainsi est posé.`;
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderIndividualDeclaration();
-    this.setDeclarationStudioStep(3);
+    this.markDeclarationStepDone('draft');
+    this.setDeclarationStudioStepById('final');
     View.showToast('Texte final généré et prêt à être ajusté.');
   },
 
@@ -4545,7 +5128,7 @@ Ainsi est posé.`;
     }
     finalBox.value = draft;
     this.saveIndividualDeclaration();
-    this.setDeclarationStudioStep(3);
+    this.setDeclarationStudioStepById('final');
   },
 
   composeIndividualDeclaration(data) {
@@ -4557,6 +5140,7 @@ Ainsi est posé.`;
     lines.push(`Moi, ${d.nomination || 'être vivant en chemin de souveraineté'}, je prends acte de ma responsabilité intérieure et de ma liberté de conscience.`);
     if (d.lieuDate) lines.push(`Repère : ${d.lieuDate}`);
     const cleanSentence = (text) => String(text || '').trim().replace(/\s+/g, ' ').replace(/[.。]+$/g, '');
+    const cleanBlock = (text) => String(text || '').trim();
     const lowerFirst = (text) => text ? text.charAt(0).toLowerCase() + text.slice(1) : '';
     const stripLead = (text, patterns) => {
       let value = cleanSentence(text);
@@ -4576,21 +5160,34 @@ Ainsi est posé.`;
       if (actes.length) lines.push(`J'ancre cette déclaration par des actes simples et vérifiables :\n${formatBullets(actes)}`);
     } else if (d.mode === 'sujets') {
       const subjectMap = new Map(DECLARATION_SUBJECTS.map(subject => [subject.id, subject]));
+      const selectedIds = new Set(d.selectedSubjectIds || []);
       const selectedSubjects = (d.subjects || [])
-        .filter(item => item.selected || String(item.text || '').trim())
-        .map(item => ({ ...subjectMap.get(item.id), ...item }))
+        .filter(item => selectedIds.has(item.id) || item.priority === 'essentiel' || item.honor?.freeText || item.refuse?.freeText || item.choose?.freeText)
+        .filter(item => item.priority !== 'exclu')
+        .map(item => ({ ...subjectMap.get(item.id), ...item, title: item.title || subjectMap.get(item.id)?.title }))
         .filter(item => item.id && item.title);
-      const grouped = selectedSubjects.reduce((acc, item) => {
-        const section = item.section || 'engagements';
-        if (!acc[section]) acc[section] = [];
-        const content = cleanSentence(item.text) || item.prompt;
-        acc[section].push(`${item.title} : ${content}`);
-        return acc;
-      }, {});
-      if (grouped.principes?.length) lines.push(`Je reconnais comme principes vivants :\n${formatBullets(grouped.principes)}`);
-      if (grouped.refus?.length) lines.push(`Je retire mon accord et je clarifie mes limites :\n${formatBullets(grouped.refus)}`);
-      if (grouped.engagements?.length) lines.push(`Je formule mes engagements envers la Vie :\n${formatBullets(grouped.engagements)}`);
-      if (grouped.actes?.length) lines.push(`J'ancre cette déclaration par des actes simples et vérifiables :\n${formatBullets(grouped.actes)}`);
+      const honor = [];
+      const refuse = [];
+      const choose = [];
+      const notes = [];
+      selectedSubjects.forEach(item => {
+        const honorText = cleanBlock(item.honor?.freeText);
+        const refuseText = cleanBlock(item.refuse?.freeText);
+        const chooseText = cleanBlock(item.choose?.freeText);
+        if (honorText) honor.push(`${item.title} : ${honorText}`);
+        if (refuseText) refuse.push(`${item.title} : ${refuseText}`);
+        if (chooseText) choose.push(`${item.title} : ${chooseText}`);
+        if (item.notes) notes.push(`${item.title} : ${cleanBlock(item.notes)}`);
+      });
+      if (honor.length) lines.push(`J'honore et je reconnais :\n${formatBullets(honor)}`);
+      if (refuse.length) {
+        lines.push(`Je retire mon accord et je clarifie mes limites :\n${formatBullets(refuse)}\n\nJe pose ces refus comme des limites intérieures claires. Je ne les formule pas pour nourrir la peur, mais pour revenir à la vie, à la dignité et à la responsabilité.`);
+      }
+      if (choose.length) lines.push(`Je choisis désormais d'incarner :\n${formatBullets(choose)}`);
+      if (notes.length) lines.push(`J'ancre cette déclaration par des notes et actes concrets :\n${formatBullets(notes)}`);
+      if (honor.length || refuse.length || choose.length) {
+        lines.push(`En synthèse, j'honore ce qui sert la vie, la dignité, la vérité et la liberté intérieure.\n\nJe refuse de nourrir ce qui affaiblit l'être vivant, capture son consentement ou détourne son énergie de la paix.\n\nJe choisis désormais des actes simples, cohérents et vérifiables, afin que cette déclaration ne reste pas seulement une parole mais devienne une présence incarnée.`);
+      }
     } else {
       if (libre.preambule) lines.push(libre.preambule);
       if (libre.principes) lines.push(`Principes vivants :\n${libre.principes}`);
