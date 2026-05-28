@@ -508,6 +508,39 @@
       align-items: start;
       margin-top: 1rem;
     }
+    .studio-command-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      border: var(--border-accent);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--bg-card) 94%, var(--gold-light));
+      box-shadow: var(--shadow-sm);
+    }
+    .studio-command-bar .command-context {
+      min-width: 0;
+    }
+    .studio-command-bar .command-context strong {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      color: var(--text-primary);
+    }
+    .studio-command-bar .command-context span {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .studio-command-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.45rem;
+    }
     .studio-sidebar,
     .studio-preview {
       position: sticky;
@@ -987,6 +1020,15 @@
       .grid-2, .grid-3 { grid-template-columns: 1fr; }
       .declaration-workflow { grid-template-columns: 1fr; }
       .declaration-studio { grid-template-columns: 1fr; }
+      .studio-command-bar {
+        position: static;
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .studio-command-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
       .studio-sidebar,
       .studio-preview {
         position: static;
@@ -1873,6 +1915,18 @@
       <!-- Atelier de déclaration individuelle -->
       <div id="decl-panel-individuelle" class="sub-tab-panel card" hidden>
         <div class="card-title">Déclaration individuelle</div>
+        <div class="studio-command-bar">
+          <div class="command-context">
+            <strong>Commandes de l’atelier</strong>
+            <span>Sauvegarde locale, composition, impression et accès aux déclarations mémorisées.</span>
+          </div>
+          <div class="studio-command-actions">
+            <button class="btn btn-primary btn-sm" onclick="Controller.generateDeclarationFinalFromCurrent()">Générer le texte final</button>
+            <button class="btn btn-sage btn-sm" onclick="Controller.saveIndividualDeclaration()">💾 Sauvegarder l’atelier</button>
+            <button class="btn btn-secondary btn-sm" onclick="Controller.printIndividualDeclaration()">🖨 Imprimer / PDF</button>
+            <button class="btn btn-secondary btn-sm" onclick="Controller.setDeclarationSubtab('bibliotheque')">Voir mes déclarations</button>
+          </div>
+        </div>
         <div class="declaration-studio">
           <aside class="studio-sidebar">
             <div class="studio-sidebar-title">Parcours de création</div>
@@ -1888,7 +1942,7 @@
             <section class="studio-step-panel" data-studio-step="identity" id="decl-part-identity">
               <div class="studio-step-header">
                 <div class="studio-step-title">Étape 1 — Identifier la déclaration</div>
-                <p class="muted-small">Posez un repère simple, puis choisissez la forme globale dominante. Les sujets pourront ensuite combiner écriture libre, phrases guidées et données déjà saisies.</p>
+                <p class="muted-small">Posez un repère simple, choisissez la forme de déclaration, puis indiquez seulement votre préférence d’écriture. Le générateur combinera ensuite libre, sujets et phrases guidées.</p>
               </div>
               <div class="form-row" style="margin-top:0.5rem;">
                 <div class="form-group">
@@ -1900,18 +1954,30 @@
                   <input type="text" id="decl-lieu-date" placeholder="Lieu, date ou repère symbolique…">
                 </div>
               </div>
-              <div class="mode-card-grid" aria-label="Mode de rédaction de la déclaration">
-                <button class="mode-card active" id="decl-mode-libre" onclick="Controller.setDeclarationMode('libre')">
-                  <strong>Libre</strong>
-                  <span>Écrire avec vos mots, par grands blocs, sans contrainte de structure.</span>
+              <div class="form-group">
+                <label for="decl-declaration-type">Forme de déclaration</label>
+                <select id="decl-declaration-type" onchange="Controller.updateDeclarationType(this.value)">
+                  <option value="individuelle-complete">Individuelle complète</option>
+                  <option value="individuelle-simplifiee">Individuelle simplifiée</option>
+                  <option value="protection">Protection</option>
+                  <option value="restitution">Restitution</option>
+                  <option value="engagement">Engagement</option>
+                  <option value="relationnelle">Relationnelle</option>
+                  <option value="libre">Libre</option>
+                </select>
+              </div>
+              <div class="mode-card-grid" aria-label="Préférence d’écriture de la déclaration">
+                <button class="mode-card active" id="decl-style-combine" onclick="Controller.setDeclarationWritingStyle('combine')">
+                  <strong>Tout combiner</strong>
+                  <span>Assembler les sujets, les phrases guidées et les blocs libres dans une déclaration complète.</span>
                 </button>
-                <button class="mode-card" id="decl-mode-guide" onclick="Controller.setDeclarationMode('guide')">
-                  <strong>Guidé par phrases</strong>
-                  <span>Assembler des phrases courtes depuis vos données et vos choix.</span>
+                <button class="mode-card" id="decl-style-free" onclick="Controller.setDeclarationWritingStyle('free')">
+                  <strong>Plutôt libre</strong>
+                  <span>Donner plus de poids aux grands paragraphes rédigés avec vos mots.</span>
                 </button>
-                <button class="mode-card" id="decl-mode-sujets" onclick="Controller.setDeclarationMode('sujets')">
-                  <strong>Par sujets</strong>
-                  <span>Choisir les thèmes à inclure, puis rédiger sujet par sujet.</span>
+                <button class="mode-card" id="decl-style-guided" onclick="Controller.setDeclarationWritingStyle('guided')">
+                  <strong>Phrases guidées</strong>
+                  <span>Favoriser les phrases courtes ajoutées depuis vos données ou à la main.</span>
                 </button>
               </div>
               <div class="actions-row compact" style="justify-content:flex-end;margin-bottom:1rem;">
@@ -1950,8 +2016,8 @@
 
             <section class="studio-step-panel" data-studio-step="matter" id="decl-part-matter" hidden>
               <div class="studio-step-header">
-                <div class="studio-step-title">Écriture libre et phrases guidées</div>
-                <p class="muted-small">Complétez si nécessaire par de grands blocs libres ou des phrases courtes. Cette matière reste compatible avec les sujets.</p>
+                <div class="studio-step-title">Compléments libres</div>
+                <p class="muted-small">Ajoutez ce qui manque encore : un préambule, des paragraphes libres, ou quelques phrases guidées à intégrer au texte final.</p>
               </div>
               <div id="decl-free-panel" class="mode-panel">
                 <div class="form-group">
@@ -2042,6 +2108,12 @@
                 <label for="decl-autographe">Autographe symbolique</label>
                 <textarea id="decl-autographe" placeholder="Trace, phrase, marque ou autographe symbolique…"></textarea>
               </div>
+              <div class="selection-dashboard">
+                <h3>Synthèse avant composition</h3>
+                <p class="muted-small">Vérifiez rapidement la matière disponible avant de générer le texte éditable.</p>
+                <div class="selection-counters" id="decl-compose-summary"></div>
+                <div class="summary-detail" id="decl-compose-checks"></div>
+              </div>
               <div class="actions-row compact" style="margin-bottom:0.75rem;">
                 <button class="btn btn-primary" onclick="Controller.generateDeclarationFinalFromCurrent()">Générer le texte final</button>
                 <button class="btn btn-secondary" onclick="Controller.generateDeclarationDraft()">Générer seulement le brouillon</button>
@@ -2063,7 +2135,7 @@
                 <textarea id="decl-final-text" class="declaration-final" placeholder="Votre déclaration finale, éditable avant copie ou impression…"></textarea>
               </div>
               <div class="actions-row compact">
-                <button class="btn btn-sage" onclick="Controller.saveIndividualDeclaration()">💾 Sauvegarder</button>
+                <button class="btn btn-sage" onclick="Controller.saveIndividualDeclaration()">💾 Sauvegarder l’atelier</button>
                 <button class="btn btn-secondary" onclick="Controller.copyIndividualDeclaration()">📋 Copier le texte final</button>
               </div>
             </section>
@@ -2094,11 +2166,6 @@
             <div class="studio-preview-title">Aperçu vivant</div>
             <p class="muted-small">Cet aperçu suit le texte final, puis le brouillon, puis la matière disponible.</p>
             <div class="declaration-text" id="decl-individual-preview"></div>
-            <div class="studio-preview-actions">
-              <button class="btn btn-primary btn-sm" onclick="Controller.generateDeclarationFinalFromCurrent()">Générer le texte final</button>
-              <button class="btn btn-sage btn-sm" onclick="Controller.saveIndividualDeclaration()">💾 Sauvegarder</button>
-              <button class="btn btn-secondary btn-sm" onclick="Controller.printIndividualDeclaration()">🖨 Imprimer / PDF</button>
-            </div>
           </aside>
         </div>
         <article class="individual-print-sheet" id="decl-individual-print-sheet" aria-hidden="true">
@@ -2229,7 +2296,7 @@
 
   <!-- ════════════════ PIED DE PAGE ════════════════ -->
   <footer id="footer">
-    Souveraineté Intérieure — Self-Clearing System · Application locale &amp; hors-ligne · Toutes données stockées sur votre appareil
+    Souveraineté Intérieure — Self-Clearing System · <span id="footer-version-label">v0.1.alpha</span> · Application locale &amp; hors-ligne · Toutes données stockées sur votre appareil
   </footer>
 </div>
 
@@ -2535,6 +2602,8 @@ const Model = {
       activeDeclarationId: '',
       declarationIndividuelle: {
         mode: 'libre',
+        writingStyle: 'combine',
+        declarationType: 'individuelle-complete',
         nomination: '',
         lieuDate: '',
         libre: {
@@ -2702,6 +2771,7 @@ const Model = {
     const validityValues = ['oui','partiel','non',''];
     const declarationTypes = ['individuelle-complete','individuelle-simplifiee','protection','restitution','engagement','relationnelle','libre'];
     const declarationStatuses = ['brouillon','finalisee','archivee'];
+    const writingStyles = ['combine','free','guided'];
     const normalizeItems = (items) => Array.isArray(items)
       ? items
         .filter(item => item && typeof item === 'object')
@@ -2751,6 +2821,9 @@ const Model = {
       const libre = previous.libre && typeof previous.libre === 'object' && !Array.isArray(previous.libre) ? previous.libre : previous;
       const guide = previous.guide && typeof previous.guide === 'object' && !Array.isArray(previous.guide) ? previous.guide : {};
       const mode = ['libre','guide','sujets'].includes(previous.mode) ? previous.mode : 'libre';
+      const writingStyle = writingStyles.includes(previous.writingStyle)
+        ? previous.writingStyle
+        : (mode === 'guide' ? 'guided' : mode === 'libre' ? 'free' : 'combine');
       const subjects = Array.isArray(previous.subjects)
         ? previous.subjects.map(normalizeSubjectEntry).filter(Boolean)
         : [];
@@ -2762,6 +2835,8 @@ const Model = {
         : {};
       return {
         mode,
+        writingStyle,
+        declarationType: pick(previous.declarationType || previous.type, declarationTypes, 'individuelle-complete'),
         nomination: text(previous.nomination),
         lieuDate: text(previous.lieuDate),
         libre: {
@@ -2801,9 +2876,11 @@ const Model = {
     const individualToRecord = (individual, source = {}) => ({
       id: safeId(source.id),
       titre: text(source.titre) || text(source.title) || individual.nomination || 'Déclaration individuelle',
-      type: pick(source.type, declarationTypes, 'individuelle-complete'),
+      type: pick(individual.declarationType || source.type, declarationTypes, 'individuelle-complete'),
       statut: pick(source.statut || source.status, declarationStatuses, individual.finalText ? 'finalisee' : 'brouillon'),
       mode: individual.mode,
+      writingStyle: individual.writingStyle || 'combine',
+      declarationType: individual.declarationType || pick(source.type, declarationTypes, 'individuelle-complete'),
       steps: Array.isArray(source.steps) ? source.steps : [],
       nomination: individual.nomination,
       lieuDate: individual.lieuDate,
@@ -2819,6 +2896,8 @@ const Model = {
     });
     const recordToIndividual = (record) => ({
       mode: ['libre','guide','sujets'].includes(record.mode) ? record.mode : 'libre',
+      writingStyle: writingStyles.includes(record.writingStyle) ? record.writingStyle : 'combine',
+      declarationType: pick(record.declarationType || record.type, declarationTypes, 'individuelle-complete'),
       nomination: text(record.nomination),
       lieuDate: text(record.lieuDate),
       libre: record.libre && typeof record.libre === 'object' ? record.libre : defaults.declarationIndividuelle.libre,
@@ -2986,6 +3065,8 @@ const View = {
     document.getElementById('today-date').textContent = this.formatDate(new Date());
     const versionLabel = document.getElementById('app-version-label');
     if (versionLabel) versionLabel.textContent = APP_VERSION;
+    const footerVersionLabel = document.getElementById('footer-version-label');
+    if (footerVersionLabel) footerVersionLabel.textContent = APP_VERSION;
     // Badges déclarations
     document.getElementById('decl1-badge').style.display = Model.data.declarations.d1 ? 'inline' : 'none';
     document.getElementById('decl2-badge').style.display = Model.data.declarations.d2 ? 'inline' : 'none';
@@ -3347,6 +3428,7 @@ const View = {
     const fields = {
       'decl-nomination': d.nomination,
       'decl-lieu-date': d.lieuDate,
+      'decl-declaration-type': d.declarationType || 'individuelle-complete',
       'decl-preambule': libre.preambule,
       'decl-principes': libre.principes,
       'decl-refus': libre.refus,
@@ -3367,6 +3449,7 @@ const View = {
     this.renderGuidedDeclarationPreview();
     this.renderDeclarationSubjects();
     this.renderActiveDeclarationSubject();
+    this.renderDeclarationComposeSummary();
     this.renderDeclarationStudio();
     const preview = document.getElementById('decl-individual-preview');
     const declarationText = d.finalText || d.draftText || Controller.composeIndividualDeclaration(d);
@@ -3381,19 +3464,19 @@ const View = {
   },
 
   renderDeclarationMode() {
-    const mode = Model.data.declarationIndividuelle?.mode || 'libre';
+    const writingStyle = Model.data.declarationIndividuelle?.writingStyle || 'combine';
     const freePanel = document.getElementById('decl-free-panel');
     const guidedPanel = document.getElementById('decl-guided-panel');
     const subjectPanel = document.getElementById('decl-subject-panel');
-    const freeButton = document.getElementById('decl-mode-libre');
-    const guidedButton = document.getElementById('decl-mode-guide');
-    const subjectButton = document.getElementById('decl-mode-sujets');
-    if (freePanel) freePanel.hidden = mode !== 'libre';
-    if (guidedPanel) guidedPanel.hidden = mode !== 'guide';
-    if (subjectPanel) subjectPanel.hidden = mode !== 'sujets';
-    if (freeButton) freeButton.classList.toggle('active', mode === 'libre');
-    if (guidedButton) guidedButton.classList.toggle('active', mode === 'guide');
-    if (subjectButton) subjectButton.classList.toggle('active', mode === 'sujets');
+    const combineButton = document.getElementById('decl-style-combine');
+    const freeButton = document.getElementById('decl-style-free');
+    const guidedButton = document.getElementById('decl-style-guided');
+    if (freePanel) freePanel.hidden = false;
+    if (guidedPanel) guidedPanel.hidden = false;
+    if (subjectPanel) subjectPanel.hidden = true;
+    if (combineButton) combineButton.classList.toggle('active', writingStyle === 'combine');
+    if (freeButton) freeButton.classList.toggle('active', writingStyle === 'free');
+    if (guidedButton) guidedButton.classList.toggle('active', writingStyle === 'guided');
   },
 
   renderGuidedDeclarationItems() {
@@ -3465,7 +3548,7 @@ const View = {
       target.innerHTML = '<p>Aucune phrase guidée sélectionnée pour le moment.</p>';
       return;
     }
-    target.innerHTML = this.formatDeclarationText(Controller.composeIndividualDeclaration({ ...d, mode: 'guide' }));
+    target.innerHTML = this.formatDeclarationText(Controller.composeIndividualDeclaration({ ...d, writingStyle: 'guided' }));
   },
 
   renderDeclarationSubjects() {
@@ -3560,10 +3643,14 @@ const View = {
     const block = (key, title, prompt) => {
       const value = subject[key]?.freeText || '';
       const blockSuggestions = suggestions.filter(item => item.targetBlock === key);
+      const sourceItems = subject[key]?.sourceItems || [];
       return `<section class="subject-block">
         <div class="subject-block-title">${title}</div>
         <p class="muted-small">${this.esc(prompt)}</p>
         <textarea id="decl-subject-${key}" oninput="Controller.updateDeclarationSubjectBlock('${subject.id}','${key}', this.value)" placeholder="${this.esc(prompt)}">${this.esc(value)}</textarea>
+        ${sourceItems.length ? `<div class="subject-block-suggestions">
+          ${sourceItems.map(item => `<button class="suggestion-pill" title="Retirer cette suggestion du suivi" onclick="Controller.removeSubjectSourceItem('${subject.id}','${key}','${item.id}')">✓ ${this.esc(item.text.slice(0, 80))}</button>`).join('')}
+        </div>` : ''}
         <div class="subject-block-suggestions">
           ${blockSuggestions.slice(0, 5).map(item => `<button class="suggestion-pill" onclick="Controller.appendSuggestionToSubject('${subject.id}','${key}','${item.id}')">+ ${this.esc(item.text.slice(0, 80))}</button>`).join('')}
         </div>
@@ -3589,6 +3676,33 @@ const View = {
         <textarea oninput="Controller.updateDeclarationSubjectNotes('${subject.id}', this.value)" placeholder="Notes, actes concrets, points de vigilance…">${this.esc(subject.notes || '')}</textarea>
       </section>`;
     this.ensureButtonTypes();
+  },
+
+  renderDeclarationComposeSummary() {
+    const summary = document.getElementById('decl-compose-summary');
+    const checks = document.getElementById('decl-compose-checks');
+    if (!summary && !checks) return;
+    const stats = Controller.getDeclarationCompositionStats();
+    if (summary) {
+      summary.innerHTML = [
+        ['Sujets', stats.selectedSubjects],
+        ['Blocs remplis', stats.filledSubjectBlocks],
+        ['Refus', stats.refuseBlocks],
+        ['Actes', stats.actionsCount],
+        ['Phrases guidées', stats.guidedItems],
+        ['Blocs libres', stats.freeBlocks]
+      ].map(([label, value]) => `<span class="selection-counter">${label} · ${value}</span>`).join('');
+    }
+    if (checks) {
+      const notices = [];
+      if (!stats.selectedSubjects) notices.push('Aucun sujet sélectionné : le texte reposera surtout sur les compléments libres.');
+      if (stats.selectedSubjects && !stats.refuseBlocks) notices.push('Aucun bloc de refus rempli : la déclaration sera plus douce, mais moins claire sur les limites.');
+      if (!stats.actionsCount) notices.push('Aucun acte concret repéré : ajoutez une note ou une phrase d’action si vous voulez ancrer la déclaration.');
+      if (!stats.freeBlocks && !stats.guidedItems && !stats.filledSubjectBlocks) notices.push('Peu de matière disponible : ajoutez un sujet, une phrase ou un paragraphe avant de composer.');
+      checks.innerHTML = notices.length
+        ? `<div><h4>Points d’attention</h4><ul>${notices.map(item => `<li>${this.esc(item)}</li>`).join('')}</ul></div>`
+        : '<div><h4>État</h4><p class="muted-small">La matière est prête pour composer un texte cohérent.</p></div>';
+    }
   },
 
   renderDeclarationStudio() {
@@ -3721,11 +3835,40 @@ const Controller = {
     View.init();
     this.bindValidityAnalysis();
     this.bindRevocationFlow();
+    this.bindDeclarationAutosave();
     // Appliquer le thème sauvegardé
     if (Model.data.theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
       View.updateThemeIcon();
     }
+  },
+
+  bindDeclarationAutosave() {
+    [
+      'decl-nomination',
+      'decl-lieu-date',
+      'decl-declaration-type',
+      'decl-preambule',
+      'decl-principes',
+      'decl-refus',
+      'decl-engagements',
+      'decl-actes',
+      'decl-autographe',
+      'decl-draft',
+      'decl-final-text'
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const eventName = el.tagName === 'SELECT' ? 'change' : 'input';
+      el.addEventListener(eventName, () => this.scheduleDeclarationAutosave());
+    });
+  },
+
+  scheduleDeclarationAutosave() {
+    clearTimeout(this._declarationAutosaveTimer);
+    this._declarationAutosaveTimer = setTimeout(() => {
+      this.persistIndividualDeclarationFromForm();
+    }, 450);
   },
 
   bindValidityAnalysis() {
@@ -4365,7 +4508,7 @@ Ainsi est posé.`;
       { id: 'sources', title: 'Mes données' },
       { id: 'subjects', title: 'Sujets' },
       ...subjectSteps,
-      { id: 'matter', title: 'Libre / guidé' },
+      { id: 'matter', title: 'Compléments' },
       { id: 'draft', title: 'Composer' },
       { id: 'final', title: 'Texte final' },
       { id: 'export', title: 'Exporter' }
@@ -4405,6 +4548,7 @@ Ainsi est posé.`;
   },
 
   setDeclarationStudioStep(index) {
+    this.persistIndividualDeclarationFromForm();
     const record = this.getActivePersonalDeclarationRecord();
     const steps = this.ensureDeclarationStudioState();
     const target = steps[index];
@@ -4434,6 +4578,7 @@ Ainsi est posé.`;
   },
 
   previousDeclarationStep() {
+    this.persistIndividualDeclarationFromForm();
     const steps = this.ensureDeclarationStudioState();
     const activeIndex = steps.findIndex(item => item.status === 'active');
     this.setDeclarationStudioStep(Math.max(0, activeIndex - 1));
@@ -4455,6 +4600,7 @@ Ainsi est posé.`;
   },
 
   skipDeclarationStep() {
+    this.persistIndividualDeclarationFromForm();
     const record = this.getActivePersonalDeclarationRecord();
     const steps = this.ensureDeclarationStudioState();
     const activeIndex = steps.findIndex(item => item.status === 'active');
@@ -4474,6 +4620,34 @@ Ainsi est posé.`;
       refus: 'Refus',
       engagements: 'Engagements',
       actes: 'Actes'
+    };
+  },
+
+  getDeclarationCompositionStats(data = Model.data.declarationIndividuelle || {}) {
+    const libre = data.libre || {};
+    const guide = data.guide || {};
+    const selectedIds = new Set(data.selectedSubjectIds || []);
+    const subjects = (data.subjects || []).filter(item =>
+      item.priority !== 'exclu' &&
+      (selectedIds.has(item.id) || item.honor?.freeText || item.refuse?.freeText || item.choose?.freeText || item.notes)
+    );
+    const blockFilled = (subject, key) => Boolean(String(subject[key]?.freeText || '').trim());
+    const freeBlocks = ['preambule','principes','refus','engagements','actes'].filter(key => String(libre[key] || '').trim()).length;
+    const guidedItems = ['principes','refus','engagements','actes'].reduce((total, key) => total + (guide[key] || []).length, 0);
+    const filledSubjectBlocks = subjects.reduce((total, subject) =>
+      total + ['honor','refuse','choose'].filter(key => blockFilled(subject, key)).length,
+    0);
+    const refuseBlocks = subjects.filter(subject => blockFilled(subject, 'refuse')).length + (String(libre.refus || '').trim() ? 1 : 0) + (guide.refus || []).length;
+    const actionsCount = subjects.filter(subject => blockFilled(subject, 'choose') || String(subject.notes || '').trim()).length
+      + (String(libre.actes || '').trim() ? 1 : 0)
+      + (guide.actes || []).length;
+    return {
+      selectedSubjects: subjects.length,
+      filledSubjectBlocks,
+      refuseBlocks,
+      actionsCount,
+      guidedItems,
+      freeBlocks
     };
   },
 
@@ -4504,9 +4678,11 @@ Ainsi est posé.`;
     return {
       id: existing.id || Model.generateId(),
       titre: existingTitle && existingTitle !== 'Nouvelle déclaration' ? existingTitle : fallbackTitle,
-      type: existing.type || 'individuelle-complete',
+      type: individual.declarationType || existing.type || 'individuelle-complete',
       statut: individual.finalText ? 'finalisee' : (existing.statut || 'brouillon'),
       mode: ['libre','guide','sujets'].includes(individual.mode) ? individual.mode : 'libre',
+      writingStyle: ['combine','free','guided'].includes(individual.writingStyle) ? individual.writingStyle : 'combine',
+      declarationType: individual.declarationType || existing.type || 'individuelle-complete',
       steps: Array.isArray(existing.steps) ? existing.steps : [],
       nomination: individual.nomination || '',
       lieuDate: individual.lieuDate || '',
@@ -4525,6 +4701,8 @@ Ainsi est posé.`;
   recordToIndividualDeclaration(record) {
     return {
       mode: ['libre','guide','sujets'].includes(record.mode) ? record.mode : 'libre',
+      writingStyle: ['combine','free','guided'].includes(record.writingStyle) ? record.writingStyle : 'combine',
+      declarationType: record.declarationType || record.type || 'individuelle-complete',
       nomination: record.nomination || '',
       lieuDate: record.lieuDate || '',
       libre: record.libre || { preambule: '', principes: '', refus: '', engagements: '', actes: '', autographe: '' },
@@ -4554,6 +4732,8 @@ Ainsi est posé.`;
   createPersonalDeclaration() {
     const blank = {
       mode: 'libre',
+      writingStyle: 'combine',
+      declarationType: 'individuelle-complete',
       nomination: '',
       lieuDate: '',
       libre: { preambule: '', principes: '', refus: '', engagements: '', actes: '', autographe: '' },
@@ -4667,43 +4847,71 @@ Ainsi est posé.`;
     return slug + '-' + date;
   },
 
-  saveIndividualDeclaration() {
+  collectIndividualDeclarationFromForm() {
     const current = Model.data.declarationIndividuelle || {};
-    Model.data.declarationIndividuelle = {
+    const read = (id) => document.getElementById(id)?.value?.trim() || '';
+    return {
       ...current,
-      nomination: document.getElementById('decl-nomination').value.trim(),
-      lieuDate: document.getElementById('decl-lieu-date').value.trim(),
+      mode: current.mode || 'sujets',
+      writingStyle: current.writingStyle || 'combine',
+      declarationType: read('decl-declaration-type') || current.declarationType || 'individuelle-complete',
+      nomination: read('decl-nomination'),
+      lieuDate: read('decl-lieu-date'),
       libre: {
-        preambule: document.getElementById('decl-preambule').value.trim(),
-        principes: document.getElementById('decl-principes').value.trim(),
-        refus: document.getElementById('decl-refus').value.trim(),
-        engagements: document.getElementById('decl-engagements').value.trim(),
-        actes: document.getElementById('decl-actes').value.trim(),
-        autographe: document.getElementById('decl-autographe').value.trim()
+        preambule: read('decl-preambule'),
+        principes: read('decl-principes'),
+        refus: read('decl-refus'),
+        engagements: read('decl-engagements'),
+        actes: read('decl-actes'),
+        autographe: read('decl-autographe')
       },
       guide: current.guide || { principes: [], refus: [], engagements: [], actes: [] },
       selectedSubjectIds: current.selectedSubjectIds || [],
       sourceReview: current.sourceReview || { acceptedSuggestionIds: [], ignoredSuggestionIds: [] },
       subjects: current.subjects || [],
-      draftText: document.getElementById('decl-draft').value.trim(),
-      finalText: document.getElementById('decl-final-text').value.trim(),
+      draftText: read('decl-draft'),
+      finalText: read('decl-final-text'),
       updatedAt: new Date().toISOString()
     };
+  },
+
+  persistIndividualDeclarationFromForm() {
+    if (!Model.data?.declarationIndividuelle) return false;
+    Model.data.declarationIndividuelle = this.collectIndividualDeclarationFromForm();
     this.syncActiveDeclarationRecord();
-    Model.save();
+    return Model.save();
+  },
+
+  saveIndividualDeclaration() {
+    this.persistIndividualDeclarationFromForm();
     View.renderIndividualDeclaration();
     View.renderPersonalDeclarations();
     View.renderDashboardSummary();
-    View.showToast('💾 Déclaration individuelle sauvegardée.');
+    View.showToast('💾 Atelier de déclaration sauvegardé.');
   },
 
   setDeclarationMode(mode) {
-    Model.data.declarationIndividuelle.mode = ['libre','guide','sujets'].includes(mode) ? mode : 'libre';
+    const mapped = mode === 'guide' ? 'guided' : mode === 'libre' ? 'free' : 'combine';
+    this.setDeclarationWritingStyle(mapped);
+  },
+
+  setDeclarationWritingStyle(style) {
+    Model.data.declarationIndividuelle.writingStyle = ['combine','free','guided'].includes(style) ? style : 'combine';
+    Model.data.declarationIndividuelle.mode = 'sujets';
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderDeclarationMode();
     View.renderDeclarationSuggestions();
     View.renderDeclarationSubjects();
+    View.renderDeclarationComposeSummary();
+  },
+
+  updateDeclarationType(type) {
+    const allowed = Object.keys(this.getDeclarationTypeLabels());
+    Model.data.declarationIndividuelle.declarationType = allowed.includes(type) ? type : 'individuelle-complete';
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderPersonalDeclarations();
   },
 
   getSubjectCatalogItem(id) {
@@ -4763,6 +4971,7 @@ Ainsi est posé.`;
     View.renderDeclarationSubjects();
     View.renderDeclarationStudio();
     View.renderDeclarationSourceReview();
+    View.renderDeclarationComposeSummary();
   },
 
   updateDeclarationSubjectPriority(id, priority) {
@@ -4777,6 +4986,7 @@ Ainsi est posé.`;
     Model.save();
     View.renderDeclarationSubjects();
     View.renderDeclarationStudio();
+    View.renderDeclarationComposeSummary();
   },
 
   addCustomDeclarationSubject() {
@@ -4800,6 +5010,7 @@ Ainsi est posé.`;
     Model.save();
     View.renderDeclarationSubjects();
     View.renderDeclarationStudio();
+    View.renderDeclarationComposeSummary();
     View.showToast('Sujet ajouté à la déclaration.');
   },
 
@@ -4810,6 +5021,7 @@ Ainsi est posé.`;
     entry.status = 'todo';
     this.syncActiveDeclarationRecord();
     Model.save();
+    View.renderDeclarationComposeSummary();
     const preview = document.getElementById('decl-individual-preview');
     if (preview && !Model.data.declarationIndividuelle.finalText) {
       preview.innerHTML = View.formatDeclarationText(this.composeIndividualDeclaration(Model.data.declarationIndividuelle));
@@ -4821,12 +5033,15 @@ Ainsi est posé.`;
     entry.notes = String(value || '');
     this.syncActiveDeclarationRecord();
     Model.save();
+    View.renderDeclarationComposeSummary();
   },
 
   appendSuggestionToSubject(subjectId, blockKey, suggestionId) {
     const suggestion = this.getSuggestionsForSubject(subjectId).find(item => item.id === suggestionId);
     if (!suggestion) return;
     const entry = this.ensureDeclarationSubjectEntry(subjectId);
+    if (!entry[blockKey].sourceItems) entry[blockKey].sourceItems = [];
+    if ((entry[blockKey].sourceItems || []).some(item => item.id === suggestion.id)) return;
     const current = entry[blockKey].freeText || '';
     entry[blockKey].freeText = current ? current + '\n' + suggestion.text : suggestion.text;
     entry[blockKey].sourceItems.push({
@@ -4839,6 +5054,22 @@ Ainsi est posé.`;
     Model.save();
     View.renderActiveDeclarationSubject();
     View.renderIndividualDeclaration();
+    View.renderDeclarationComposeSummary();
+  },
+
+  removeSubjectSourceItem(subjectId, blockKey, itemId) {
+    const entry = this.ensureDeclarationSubjectEntry(subjectId);
+    if (!entry[blockKey]) return;
+    const item = (entry[blockKey].sourceItems || []).find(source => source.id === itemId);
+    entry[blockKey].sourceItems = (entry[blockKey].sourceItems || []).filter(source => source.id !== itemId);
+    if (item?.text) {
+      const lines = String(entry[blockKey].freeText || '').split('\n').filter(line => line.trim() !== item.text.trim());
+      entry[blockKey].freeText = lines.join('\n');
+    }
+    this.syncActiveDeclarationRecord();
+    Model.save();
+    View.renderActiveDeclarationSubject();
+    View.renderDeclarationComposeSummary();
   },
 
   acceptSourceSuggestion(id) {
@@ -4874,6 +5105,7 @@ Ainsi est posé.`;
     View.renderDeclarationSourceReview();
     View.renderDeclarationSubjects();
     View.renderDeclarationStudio();
+    View.renderDeclarationComposeSummary();
     View.showToast('Sujet ajouté depuis vos données.');
   },
 
@@ -4885,6 +5117,7 @@ Ainsi est posé.`;
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderDeclarationSourceReview();
+    View.renderDeclarationComposeSummary();
   },
 
   updateDeclarationSubject(id, selected, textValue) {
@@ -4896,6 +5129,7 @@ Ainsi est posé.`;
     const groups = this.getDeclarationSuggestions();
     const subjectSuggestions = this.getDeclarationSourceSuggestions();
     const addMissing = (section, limit = 5) => {
+      if (!Model.data.declarationIndividuelle.guide) Model.data.declarationIndividuelle.guide = { principes: [], refus: [], engagements: [], actes: [] };
       const guide = Model.data.declarationIndividuelle.guide;
       const existing = new Set((guide[section] || []).map(item => item.text.toLowerCase()));
       groups[section].slice(0, limit).forEach(item => {
@@ -4916,11 +5150,25 @@ Ainsi est posé.`;
     if (!Array.isArray(d.sourceReview.acceptedSuggestionIds)) d.sourceReview.acceptedSuggestionIds = [];
     if (!Array.isArray(d.sourceReview.ignoredSuggestionIds)) d.sourceReview.ignoredSuggestionIds = [];
     subjectSuggestions.slice(0, 8).forEach(item => {
-      this.ensureDeclarationSubjectEntry(item.subjectId);
+      const entry = this.ensureDeclarationSubjectEntry(item.subjectId);
       if (!d.selectedSubjectIds.includes(item.subjectId)) d.selectedSubjectIds.push(item.subjectId);
       if (!d.sourceReview.acceptedSuggestionIds.includes(item.id)) d.sourceReview.acceptedSuggestionIds.push(item.id);
+      const blockKey = ['honor','refuse','choose'].includes(item.targetBlock) ? item.targetBlock : 'honor';
+      if (!entry[blockKey].sourceItems) entry[blockKey].sourceItems = [];
+      const exists = entry[blockKey].sourceItems.some(source => source.id === item.id)
+        || String(entry[blockKey].freeText || '').toLowerCase().includes(item.text.toLowerCase());
+      if (!exists) {
+        entry[blockKey].freeText = entry[blockKey].freeText ? entry[blockKey].freeText + '\n' + item.text : item.text;
+        entry[blockKey].sourceItems.push({
+          id: item.id,
+          text: item.text,
+          sourceType: item.sourceType,
+          sourceId: item.sourceId
+        });
+      }
     });
     d.mode = 'sujets';
+    d.writingStyle = 'combine';
     this.syncActiveDeclarationRecord();
     Model.save();
     View.renderIndividualDeclaration();
@@ -4947,6 +5195,7 @@ Ainsi est posé.`;
     View.renderGuidedDeclarationItems();
     View.renderDeclarationSuggestions();
     View.renderGuidedDeclarationPreview();
+    View.renderDeclarationComposeSummary();
     this.scrollToGuidedSection(chosenSection);
     View.showToast('Phrase ajoutée dans “' + this.getGuidedSectionLabels()[chosenSection] + '”. Générez le brouillon pour l’intégrer au texte éditable.');
     return item;
@@ -4960,6 +5209,7 @@ Ainsi est posé.`;
     View.renderGuidedDeclarationItems();
     View.renderDeclarationSuggestions();
     View.renderGuidedDeclarationPreview();
+    View.renderDeclarationComposeSummary();
   },
 
   useDeclarationSuggestion(section, suggestionId) {
@@ -5135,8 +5385,10 @@ Ainsi est posé.`;
     const d = data || {};
     const libre = d.libre || {};
     const guide = d.guide || {};
+    const typeLabels = this.getDeclarationTypeLabels();
+    const writingStyle = d.writingStyle || 'combine';
     const lines = [];
-    lines.push('Déclaration individuelle de souveraineté');
+    lines.push(typeLabels[d.declarationType] ? `Déclaration de souveraineté — ${typeLabels[d.declarationType]}` : 'Déclaration individuelle de souveraineté');
     lines.push(`Moi, ${d.nomination || 'être vivant en chemin de souveraineté'}, je prends acte de ma responsabilité intérieure et de ma liberté de conscience.`);
     if (d.lieuDate) lines.push(`Repère : ${d.lieuDate}`);
     const cleanSentence = (text) => String(text || '').trim().replace(/\s+/g, ' ').replace(/[.。]+$/g, '');
@@ -5149,51 +5401,69 @@ Ainsi est posé.`;
     };
     const listText = (items) => (items || []).map(item => cleanSentence(item.text)).filter(Boolean);
     const formatBullets = (items) => items.map(item => '- ' + item).join('\n');
-    if (d.mode === 'guide') {
-      const principes = listText(guide.principes).map(text => stripLead(text, [/^je reconnais comme principes? vivants?\s+/i, /^je reconnais\s+/i]));
-      const refus = listText(guide.refus).map(text => stripLead(text, [/^je retire mon accord à\s+/i, /^je refuse\s+/i, /^je ne nourris plus\s+/i]));
-      const engagements = listText(guide.engagements);
-      const actes = listText(guide.actes);
-      if (principes.length) lines.push(`Je reconnais comme principes vivants :\n${formatBullets(principes)}\n\nCes principes deviennent pour moi des repères concrets, à vérifier dans mes gestes, mes relations et mes décisions quotidiennes.`);
-      if (refus.length) lines.push(`Je retire mon accord aux dynamiques suivantes :\n${formatBullets(refus)}\n\nJe ne nourris plus ce qui m'affaiblit, me divise ou m'oblige à trahir ma clarté intérieure.`);
-      if (engagements.length) lines.push(`Je formule mes engagements envers la Vie :\n${formatBullets(engagements)}\n\nJ'oriente mes pensées, mes paroles et mes actes vers ce qui sert la vie, la responsabilité et la paix.`);
-      if (actes.length) lines.push(`J'ancre cette déclaration par des actes simples et vérifiables :\n${formatBullets(actes)}`);
-    } else if (d.mode === 'sujets') {
-      const subjectMap = new Map(DECLARATION_SUBJECTS.map(subject => [subject.id, subject]));
-      const selectedIds = new Set(d.selectedSubjectIds || []);
-      const selectedSubjects = (d.subjects || [])
-        .filter(item => selectedIds.has(item.id) || item.priority === 'essentiel' || item.honor?.freeText || item.refuse?.freeText || item.choose?.freeText)
-        .filter(item => item.priority !== 'exclu')
-        .map(item => ({ ...subjectMap.get(item.id), ...item, title: item.title || subjectMap.get(item.id)?.title }))
-        .filter(item => item.id && item.title);
-      const honor = [];
-      const refuse = [];
-      const choose = [];
-      const notes = [];
-      selectedSubjects.forEach(item => {
-        const honorText = cleanBlock(item.honor?.freeText);
-        const refuseText = cleanBlock(item.refuse?.freeText);
-        const chooseText = cleanBlock(item.choose?.freeText);
-        if (honorText) honor.push(`${item.title} : ${honorText}`);
-        if (refuseText) refuse.push(`${item.title} : ${refuseText}`);
-        if (chooseText) choose.push(`${item.title} : ${chooseText}`);
-        if (item.notes) notes.push(`${item.title} : ${cleanBlock(item.notes)}`);
+    const uniqueLines = (items) => {
+      const seen = new Set();
+      return items.map(cleanBlock).filter(Boolean).filter(item => {
+        const key = item.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       });
-      if (honor.length) lines.push(`J'honore et je reconnais :\n${formatBullets(honor)}`);
-      if (refuse.length) {
-        lines.push(`Je retire mon accord et je clarifie mes limites :\n${formatBullets(refuse)}\n\nJe pose ces refus comme des limites intérieures claires. Je ne les formule pas pour nourrir la peur, mais pour revenir à la vie, à la dignité et à la responsabilité.`);
-      }
-      if (choose.length) lines.push(`Je choisis désormais d'incarner :\n${formatBullets(choose)}`);
-      if (notes.length) lines.push(`J'ancre cette déclaration par des notes et actes concrets :\n${formatBullets(notes)}`);
-      if (honor.length || refuse.length || choose.length) {
-        lines.push(`En synthèse, j'honore ce qui sert la vie, la dignité, la vérité et la liberté intérieure.\n\nJe refuse de nourrir ce qui affaiblit l'être vivant, capture son consentement ou détourne son énergie de la paix.\n\nJe choisis désormais des actes simples, cohérents et vérifiables, afin que cette déclaration ne reste pas seulement une parole mais devienne une présence incarnée.`);
-      }
-    } else {
-      if (libre.preambule) lines.push(libre.preambule);
-      if (libre.principes) lines.push(`Principes vivants :\n${libre.principes}`);
-      if (libre.refus) lines.push(`Refus conscients :\n${libre.refus}`);
-      if (libre.engagements) lines.push(`Engagements envers la Vie :\n${libre.engagements}`);
-      if (libre.actes) lines.push(`Actes concrets :\n${libre.actes}`);
+    };
+    const subjectMap = new Map(DECLARATION_SUBJECTS.map(subject => [subject.id, subject]));
+    const selectedIds = new Set(d.selectedSubjectIds || []);
+    const selectedSubjects = (d.subjects || [])
+      .filter(item => selectedIds.has(item.id) || item.priority === 'essentiel' || item.honor?.freeText || item.refuse?.freeText || item.choose?.freeText)
+      .filter(item => item.priority !== 'exclu')
+      .map(item => ({ ...subjectMap.get(item.id), ...item, title: item.title || subjectMap.get(item.id)?.title }))
+      .filter(item => item.id && item.title);
+    const subjectHonor = [];
+    const subjectRefuse = [];
+    const subjectChoose = [];
+    const subjectNotes = [];
+    selectedSubjects.forEach(item => {
+      const honorText = cleanBlock(item.honor?.freeText);
+      const refuseText = cleanBlock(item.refuse?.freeText);
+      const chooseText = cleanBlock(item.choose?.freeText);
+      if (honorText) subjectHonor.push(`${item.title} : ${honorText}`);
+      if (refuseText) subjectRefuse.push(`${item.title} : ${refuseText}`);
+      if (chooseText) subjectChoose.push(`${item.title} : ${chooseText}`);
+      if (item.notes) subjectNotes.push(`${item.title} : ${cleanBlock(item.notes)}`);
+    });
+    const guidedPrinciples = listText(guide.principes).map(text => stripLead(text, [/^je reconnais comme principes? vivants?\s+/i, /^je reconnais\s+/i]));
+    const guidedRefusals = listText(guide.refus).map(text => stripLead(text, [/^je retire mon accord à\s+/i, /^je refuse\s+/i, /^je ne nourris plus\s+/i]));
+    const guidedChoices = listText(guide.engagements);
+    const guidedActions = listText(guide.actes);
+    if (libre.preambule) lines.push(libre.preambule);
+    const honor = uniqueLines([
+      ...(writingStyle === 'guided' ? guidedPrinciples : []),
+      ...(writingStyle === 'free' ? [libre.principes] : []),
+      ...subjectHonor,
+      ...(writingStyle !== 'free' ? [libre.principes] : []),
+      ...(writingStyle !== 'guided' ? guidedPrinciples : [])
+    ]);
+    const refuse = uniqueLines([
+      ...(writingStyle === 'guided' ? guidedRefusals : []),
+      ...(writingStyle === 'free' ? [libre.refus] : []),
+      ...subjectRefuse,
+      ...(writingStyle !== 'free' ? [libre.refus] : []),
+      ...(writingStyle !== 'guided' ? guidedRefusals : [])
+    ]);
+    const choose = uniqueLines([
+      ...(writingStyle === 'free' ? [libre.engagements] : []),
+      ...subjectChoose,
+      ...(writingStyle !== 'free' ? [libre.engagements] : []),
+      ...guidedChoices
+    ]);
+    const actions = uniqueLines([...subjectNotes, libre.actes, ...guidedActions]);
+    if (honor.length) lines.push(`J'honore et je reconnais :\n${formatBullets(honor)}`);
+    if (refuse.length) {
+      lines.push(`Je retire mon accord et je clarifie mes limites :\n${formatBullets(refuse)}\n\nJe pose ces refus comme des limites intérieures claires. Je ne les formule pas pour nourrir la peur, mais pour revenir à la vie, à la dignité et à la responsabilité.`);
+    }
+    if (choose.length) lines.push(`Je choisis désormais d'incarner :\n${formatBullets(choose)}`);
+    if (actions.length) lines.push(`J'ancre cette déclaration par des actes simples et vérifiables :\n${formatBullets(actions)}`);
+    if (honor.length || refuse.length || choose.length) {
+      lines.push(`En synthèse, j'honore ce qui sert la vie, la dignité, la vérité et la liberté intérieure.\n\nJe refuse de nourrir ce qui affaiblit l'être vivant, capture son consentement ou détourne son énergie de la paix.\n\nJe choisis désormais des actes simples, cohérents et vérifiables, afin que cette déclaration ne reste pas seulement une parole mais devienne une présence incarnée.`);
     }
     lines.push('Je présente cette déclaration comme une boussole vivante, ajustable par discernement, cohérence et actes vérifiables.');
     if (libre.autographe) lines.push(`Autographe symbolique :\n${libre.autographe}`);
