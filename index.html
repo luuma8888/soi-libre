@@ -69,10 +69,17 @@
             background: var(--bg-card);
             border-radius: var(--radius);
             display: flex; /* Format horizontal */
+            flex-wrap: wrap;
+            align-items: stretch;
             overflow: hidden;
             border: 1px solid #f0f0f0;
             box-shadow: var(--shadow);
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .card,
+        .card * {
+            box-sizing: border-box;
         }
 
         .card:hover {
@@ -83,8 +90,10 @@
 
         /* Zone Image gauche */
         .card-image-side {
+            flex: 0 0 180px;
             width: 180px;
             min-width: 180px;
+            min-height: 220px;
             background-color: var(--primary-light);
             background-size: cover;
             background-position: center;
@@ -116,7 +125,87 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            flex-grow: 1;
+            flex: 1 1 calc(100% - 180px);
+            min-width: 0;
+        }
+
+        .card-audience {
+            --audience-bg: #f4f1fa;
+            --audience-ink: #5d4e8e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex: 0 0 100%;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 34px;
+            padding: 7px 12px 7px 14px;
+            background: var(--audience-bg);
+            color: var(--audience-ink);
+            border-bottom: 1px solid rgba(142, 125, 196, 0.14);
+        }
+
+        .audience-line {
+            flex: 1 1 250px;
+            min-width: 0;
+            font-size: 0.78rem;
+            line-height: 1.25;
+            font-weight: 600;
+        }
+
+        .audience-tag {
+            flex: 0 0 auto;
+            max-width: 100%;
+            border-radius: 999px;
+            padding: 4px 9px;
+            background: rgba(255, 255, 255, 0.72);
+            color: inherit;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            box-shadow: 0 1px 6px rgba(44, 62, 80, 0.04);
+        }
+
+        .card-theme-introspection .card-audience {
+            --audience-bg: #f2ecfb;
+            --audience-ink: #6d5aa0;
+        }
+
+        .card-theme-self .card-audience {
+            --audience-bg: #eef1fb;
+            --audience-ink: #59689f;
+        }
+
+        .card-theme-soothing .card-audience {
+            --audience-bg: #eaf8f4;
+            --audience-ink: #467c70;
+        }
+
+        .card-theme-spirituality .card-audience {
+            --audience-bg: #f8f1df;
+            --audience-ink: #8a6b31;
+        }
+
+        .card-theme-creation .card-audience {
+            --audience-bg: #fff0e8;
+            --audience-ink: #9a6044;
+        }
+
+        .card-theme-teaching .card-audience {
+            --audience-bg: #eef8ea;
+            --audience-ink: #557f4d;
+        }
+
+        .card-theme-autonomy .card-audience {
+            --audience-bg: #f4f1e6;
+            --audience-ink: #756845;
+        }
+
+        .card-theme-astrology .card-audience {
+            --audience-bg: #edf0fb;
+            --audience-ink: #4f5d91;
         }
 
         .card-header {
@@ -221,6 +310,7 @@
             gap: 8px;
             padding: 8px;
             cursor: default;
+            align-self: stretch;
         }
 
         .dual-captures::after {
@@ -383,12 +473,71 @@
         /* Mobile */
         @media (max-width: 600px) {
             .grid { grid-template-columns: 1fr; }
-            .card { flex-direction: column; }
+            .card {
+                display: grid;
+                grid-template-columns: 92px minmax(0, 1fr);
+                grid-template-areas:
+                    "audience audience"
+                    "preview content";
+                align-items: start;
+            }
             .card.tall-card { grid-row: auto; }
-            .card-image-side { width: 100%; height: 150px; }
-            .dual-captures { height: auto; }
-            .capture-thumb { min-height: 150px; }
+            .card-image-side {
+                grid-area: preview;
+                flex: 0 0 auto;
+                width: 72px;
+                min-width: 0;
+                min-height: 0;
+                height: 96px;
+                margin: 18px 0 0 16px;
+                border-radius: 16px;
+                border: 1px solid rgba(142, 125, 196, 0.16);
+                box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
+            }
+            .card-content {
+                grid-area: content;
+                flex: 1 1 auto;
+                width: auto;
+                padding: 22px 18px 22px 8px;
+            }
+            .card.tall-card .dual-captures {
+                flex: 0 0 auto;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+                width: 72px;
+                min-width: 0;
+                min-height: 0;
+                height: auto;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+            .card.tall-card .capture-thumb {
+                width: 72px;
+                aspect-ratio: 1 / 1;
+                min-height: 0;
+                height: auto;
+                background-size: cover;
+                background-position: center top;
+                background-color: #ffffff;
+                border-radius: 16px;
+                box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
+            }
             .container { padding: 30px 15px; }
+            .card-audience {
+                grid-area: audience;
+                align-items: flex-start;
+                flex-direction: column;
+                flex: 0 0 auto;
+                width: 100%;
+                gap: 6px;
+            }
+            .audience-line,
+            .audience-tag {
+                flex: 0 1 auto;
+            }
         }
     </style>
 </head>
@@ -415,7 +564,11 @@
 
     <main class="grid">
         
-        <article class="card">
+        <article class="card card-theme-introspection">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez avancer avec douceur dans votre chemin intérieur.</span>
+                <span class="audience-tag">Introspection</span>
+            </div>
             <div class="card-image-side" style="background-image: url('assets/eveil-preview.png');"
                 data-full="assets/eveil-full.png"
                 title="Cliquez pour agrandir">
@@ -437,7 +590,11 @@
             </div>
         </article>
 
-        <article class="card">
+        <article class="card card-theme-self">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez explorer vos mécaniques intérieures et vos potentiels symboliques.</span>
+                <span class="audience-tag">Lecture de soi</span>
+            </div>
             <div class="card-image-side" style="background-image: url('assets/design-humain-offline-preview.png');"
                 data-full="assets/design-humain-offline-full.png"
                 title="Cliquez pour agrandir">
@@ -459,7 +616,11 @@
             </div>
         </article>
 
-        <article class="card">
+        <article class="card card-theme-soothing">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez traverser un moment sensible sans vous perdre.</span>
+                <span class="audience-tag">Apaisement</span>
+            </div>
             <div class="card-image-side" style="background-image: url('assets/espace-interieur-preview.png');"
                 data-full="assets/espace-interieur-full.png"
                 title="Cliquez pour agrandir">
@@ -480,29 +641,37 @@
                 </div>
             </div>
         </article>
-        <article class="card">
-            <div class="card-image-side" style="background-image: url('assets/ucem-preview.png');"
-                data-full="assets/ucem-full.png"
+        <article class="card card-theme-spirituality">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez formuler votre loi intérieure, vos refus et vos engagements vivants.</span>
+                <span class="audience-tag">Souveraineté</span>
+            </div>
+            <div class="card-image-side" style="background-image: url('assets/souverainete-preview.png');"
+                data-full="assets/souverainete-full.png"
                 title="Cliquez pour agrandir">
                 </div>
             <div class="card-content">
                 <div>
                     <div class="card-header">
-                        <h2 class="card-title">UCEM Compagnon</h2>
-                        <span class="version-tag">v0.1-alpha</span>
+                        <h2 class="card-title">Souveraineté Intérieure</h2>
+                        <span class="version-tag">v0.1.alpha</span>
                     </div>
                     <p class="card-description">
-                        Outil pour pratiquer et lire Un Cours En Miracle avec suivi, notes, etc.
+                        Studio local pour clarifier vos engagements, révocations, affirmations et déclarations de souveraineté.
                     </p>
                 </div>
                 <div class="card-actions">
-                    <a href="creations/ucem-compagnon.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/ucem-compagnon.html" download="soi-libre-ucem-compagnon-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                    <a href="creations/souverainete-interieure.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/souverainete-interieure.html" download="souverainete-interieure-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
                 </div>
             </div>
         </article>
 
-        <article class="card compact-card">
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez créer des supports visuels utiles, imprimables et adaptés.</span>
+                <span class="audience-tag">Création</span>
+            </div>
             <div class="card-image-side"
                 style="background-image: url('assets/cardforge-preview.png'); background-position: left top;"
                 data-full="assets/cardforge-full.png"
@@ -525,15 +694,46 @@
             </div>
         </article>
 
-        <article class="card tall-card">
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez pratiquer Un Cours En Miracles avec régularité et notes personnelles.</span>
+                <span class="audience-tag">Spiritualité</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/ucem-preview.png'); background-position: center top;"
+                data-full="assets/ucem-full.png"
+                title="Cliquez pour agrandir">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">UCEM Compagnon</h2>
+                        <span class="version-tag">v0.1-alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Outil pour pratiquer et lire Un Cours En Miracle avec suivi, notes, etc.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/ucem-compagnon.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/ucem-compagnon.html" download="soi-libre-ucem-compagnon-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card tall-card card-theme-teaching">
+            <div class="card-audience">
+                <span class="audience-line">Vous accompagnez des enfants et voulez nourrir valeurs, discernement et relation.</span>
+                <span class="audience-tag">Enseignement</span>
+            </div>
             <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
                 <div class="capture-thumb zoomable-image"
-                    style="background-image: url('assets/seve-essentiel-full.png');"
+                    style="background-image: url('assets/seve-essentiel-preview.png');"
                     data-full="assets/seve-essentiel-full.png">
                     <span>Essentiel</span>
                 </div>
                 <div class="capture-thumb zoomable-image"
-                    style="background-image: url('assets/seve-full.png');"
+                    style="background-image: url('assets/seve-preview.png');"
                     data-full="assets/seve-full.png">
                     <span>Complet</span>
                 </div>
@@ -571,7 +771,11 @@
             </div>
         </article>
 
-        <article class="card compact-card">
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez transformer une idée scénique en dossier jouable.</span>
+                <span class="audience-tag">Création</span>
+            </div>
             <div class="card-image-side"
                 style="background-image: url('assets/atelier-comedie-musicale-preview.png'); background-position: center top;"
                 data-full="assets/atelier-comedie-musicale-full.png"
@@ -590,6 +794,87 @@
                 <div class="card-actions">
                     <a href="creations/atelier_comedie_musicale.html" class="btn btn-visit">Ouvrir</a>
                     <a href="creations/atelier_comedie_musicale.html" download="atelier-comedie-musicale-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card compact-card card-theme-autonomy">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez préparer un collectif avec clarté, paix et réalisme.</span>
+                <span class="audience-tag">Autonomie</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/autonomie-preview.png'); background-position: center top;"
+                data-full="assets/autonomie-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Joyeuse Autonomie Collective</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Préparez l’eau, les provisions, le matériel, les actions et la paix d’un collectif avec des calculs ajustables et une impression compacte.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/autonomie.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/autonomie.html" download="joyeuse-autonomie-collective-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card compact-card card-theme-astrology">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez lire la journée à travers les rythmes lunaires.</span>
+                <span class="audience-tag">Astrologie</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/lune-preview.png'); background-position: center top;"
+                data-full="assets/lune-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Lune du jour</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Consultez un almanach lunaire quotidien offline : phase, signe, événements du jour, notes et lecture synthétique.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/lune.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/lune.html" download="almanach-lunaire-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez organiser, tester et réutiliser vos prompts sans perdre vos variantes.</span>
+                <span class="audience-tag">Création IA</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/promptarium-preview.png'); background-position: center top;"
+                data-full="assets/promptarium-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Promptarium</h2>
+                        <span class="version-tag">v0.2.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Classez vos prompts, fragments, recettes et variables. Composez, testez, copiez et exportez votre bibliothèque IA en local.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/promptarium.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/promptarium.html" download="promptarium-v0-2-alpha.html" class="btn btn-download">Télécharger</a>
                 </div>
             </div>
         </article>

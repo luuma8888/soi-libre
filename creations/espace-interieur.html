@@ -753,7 +753,7 @@ const TD={
     {id:'gratitude',     icon:'✨',title:'Gratitude Micro-Moments',    desc:'Reconnecter avec le vivant.'},
     {id:'void-dialogue', icon:'🌒',title:'Dialogue avec le Vide',      desc:'Écriture guidée en deux voix : vous et votre vide.'},
     {id:'timeline',      icon:'📅',title:'Ligne de Vie Émotionnelle',  desc:'Cartographier vos moments clés sur un axe chronologique.'},
-    {id:'ifs-ai',        icon:'🤖',title:'Facilitateur IFS (IA)',      desc:'Un accompagnateur IA guide votre dialogue avec vos parties.'},
+    {id:'ifs-ai',        icon:'🧭',title:'Dialogue IFS guidé',          desc:'Questions locales pour dialoguer avec vos parties.'},
   ],
   eft:[
     {name:'Point de karaté',loc:'Tranche de la main',phrase:'Même si je ressens ce vide, je m\'accepte profondément.',taps:8},
@@ -1107,15 +1107,15 @@ ${Object.keys(Model.data.assessments).length>=2?`<div class="sep"></div><div cla
   renderIFSai(){
     const parts=['Le Manager 🧠','Le Pompier 🔥','L\'Exilé 🌑','Le Critique ⚖️','L\'Enfant 🧒','Laisser émerger'];
     const partsHtml=parts.map(p=>`<button class="cbtn" data-ifs-part="${p}">${p}</button>`).join('');
-    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Facilitateur IFS (IA)'}])}
-<div class="ph fb"><div><h1>🤖 Facilitateur IFS (IA)</h1><div class="psub">Un accompagnateur IA guide votre dialogue avec vos parties intérieures.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div>
-<div class="cl clg mb16"><p>L'IA pose des questions pour vous aider à rencontrer vos parties avec curiosité et douceur — sans conseils thérapeutiques directs.</p></div>
+    return`<div class="ani">${V.bc([{label:'Outils',page:'tools'},{label:'Dialogue IFS guidé'}])}
+<div class="ph fb"><div><h1>🧭 Dialogue IFS guidé</h1><div class="psub">Des questions locales guident votre dialogue avec vos parties intérieures.</div></div><button class="btn bs bsm no-print" id="fbtn">⬛ Focus</button></div>
+<div class="cl clg mb16"><p>Cet outil fonctionne hors-ligne. Il propose une question à la fois pour rencontrer vos parties avec curiosité et douceur — sans conseils thérapeutiques directs.</p></div>
 <div class="card mb16 no-print"><label>Partie à explorer</label>
 <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:6px">${partsHtml}</div>
 </div>
 <div id="ifs-ai-chat" style="min-height:280px;max-height:420px;overflow-y:auto;background:var(--bg2);border-radius:var(--r2);border:1px solid var(--bdr);padding:14px;display:flex;flex-direction:column;gap:10px" aria-live="polite">
 <div style="background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%;align-self:flex-start">
-<strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>
+<strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🧭 Guide IFS local</strong>
 Bonjour. Je suis ici pour vous accompagner dans l'exploration de votre monde intérieur. Aucune partie n'est mauvaise — chacune a une intention positive. Avec quelle partie souhaitez-vous entrer en contact, ou que ressentez-vous en ce moment ?
 </div>
 </div>
@@ -1123,7 +1123,6 @@ Bonjour. Je suis ici pour vous accompagner dans l'exploration de votre monde int
 <textarea id="ifs-ai-inp" placeholder="Répondez ici…" rows="2" style="flex:1;padding:10px 12px;border:1.5px solid var(--bdr);border-radius:var(--r2);background:var(--bgs);color:var(--tx);font-family:var(--fb);font-size:.87rem;resize:none"></textarea>
 <button class="btn bp" id="ifs-ai-send">Envoyer</button>
 </div>
-<div id="ifs-ai-loading" class="hidden tx tm mt8" style="text-align:center">⟳ L'accompagnateur réfléchit…</div>
 <div class="fc g8 mt8 no-print"><button class="btn bs bsm" id="ifs-ai-save">Sauvegarder la session</button><button class="btn bg bsm" id="ifs-ai-reset">Nouvelle session</button></div></div>`;
   },
 
@@ -1746,8 +1745,18 @@ const C={
     }));
   },
 
-  // ── IFS IA (API Anthropic) ──
+  // ── Dialogue IFS guidé local ──
   _ifsAiHistory: [], _ifsAiPart: '',
+  _ifsLocalPrompts:[
+    'Qu\'est-ce que cette partie aimerait que vous compreniez d\'elle maintenant ?',
+    'Où sentez-vous cette partie dans le corps, même très subtilement ?',
+    'Quel rôle cette partie essaie-t-elle de jouer pour vous protéger ?',
+    'Depuis quand cette partie pense-t-elle devoir porter ce rôle ?',
+    'Que craint-elle s\'elle relâche un peu son effort ?',
+    'De quoi aurait-elle besoin pour se sentir entendue, sans être forcée de changer ?',
+    'Pouvez-vous lui répondre depuis une présence calme, curieuse et respectueuse ?',
+    'Quelle petite phrase juste pourriez-vous lui offrir aujourd\'hui ?'
+  ],
 
   bindIFSai(){
     const el=document.getElementById('pc');
@@ -1758,31 +1767,17 @@ const C={
       b.classList.add('sel');this._ifsAiPart=b.dataset.ifsPart;
     }));
 
-    const sendMsg=async()=>{
+    const sendMsg=()=>{
       const inp=el.querySelector('#ifs-ai-inp');const msg=inp?.value.trim();
       if(!msg)return;inp.value='';
-      // Afficher message utilisateur
       this.addIFSaiMsg(el,'user',msg);
       this._ifsAiHistory.push({role:'user',content:msg});
-      // Loading
-      el.querySelector('#ifs-ai-loading')?.classList.remove('hidden');
-      el.querySelector('#ifs-ai-send').disabled=true;
-      try{
-        const sysPrompt=`Tu es un facilitateur IFS (Internal Family Systems) bienveillant et expérimenté. Tu guides l'utilisateur dans l'exploration de ses parties intérieures avec curiosité, douceur et sans jugement. ${this._ifsAiPart?'La partie explorée est : '+this._ifsAiPart+'.':''} Tu poses des questions ouvertes, douces, une à la fois. Tu ne donnes pas de conseils thérapeutiques directs. Tu valides les émotions et expériences. Tu rappelles régulièrement que chaque partie a une intention positive. Tes réponses sont courtes (3-5 phrases maximum). Tu parles en français, avec chaleur et respect.`;
-        const res=await fetch('https://api.anthropic.com/v1/messages',{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,
-            system:sysPrompt,messages:this._ifsAiHistory})
-        });
-        const data=await res.json();
-        const reply=data.content?.[0]?.text||'Je suis là. Pouvez-vous me dire un peu plus ?';
-        this._ifsAiHistory.push({role:'assistant',content:reply});
-        this.addIFSaiMsg(el,'ai',reply);
-      }catch(e){
-        this.addIFSaiMsg(el,'ai','(Connexion indisponible. Assurez-vous d\'être en ligne pour utiliser cet outil.)');
-      }
-      el.querySelector('#ifs-ai-loading')?.classList.add('hidden');
-      el.querySelector('#ifs-ai-send').disabled=false;
+      const step=Math.max(0,this._ifsAiHistory.filter(m=>m.role==='user').length-1);
+      const prefix=this._ifsAiPart?`Pour ${this._ifsAiPart}, `:'';
+      const prompt=this._ifsLocalPrompts[step%this._ifsLocalPrompts.length];
+      const reply=`${prefix}${prompt}`;
+      this._ifsAiHistory.push({role:'assistant',content:reply});
+      this.addIFSaiMsg(el,'ai',reply);
     };
 
     el.querySelector('#ifs-ai-send')?.addEventListener('click',sendMsg);
@@ -1790,8 +1785,8 @@ const C={
 
     el.querySelector('#ifs-ai-save')?.addEventListener('click',()=>{
       if(!this._ifsAiHistory.length){alert('Aucune conversation à sauvegarder.');return;}
-      const txt=this._ifsAiHistory.map(m=>`**${m.role==='user'?'Vous':'Facilitateur IFS'}:** ${m.content}`).join('\n\n');
-      Model.addJ({emotion:'Session IFS (IA)'+(this._ifsAiPart?' — '+this._ifsAiPart:''),type:'sentiment',origin:'internal',intensity:3,text:`🤖 [Facilitateur IFS (IA)]\n\n${txt}`});
+      const txt=this._ifsAiHistory.map(m=>`**${m.role==='user'?'Vous':'Guide IFS local'}:** ${m.content}`).join('\n\n');
+      Model.addJ({emotion:'Session IFS guidée'+(this._ifsAiPart?' — '+this._ifsAiPart:''),type:'sentiment',origin:'internal',intensity:3,text:`🧭 [Dialogue IFS guidé]\n\n${txt}`});
       Model.logT('ifs-ai');const b=el.querySelector('#ifs-ai-save');if(b){b.textContent='✓ Sauvegardée';setTimeout(()=>{b.textContent='Sauvegarder la session';},2500);}
     });
 
@@ -1800,7 +1795,7 @@ const C={
         this._ifsAiHistory=[];this._ifsAiPart='';
         el.querySelectorAll('[data-ifs-part]').forEach(x=>x.classList.remove('sel'));
         const chat=el.querySelector('#ifs-ai-chat');
-        if(chat)chat.innerHTML=`<div style="background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%;align-self:flex-start"><strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>Nouvelle session. Avec quelle partie souhaitez-vous entrer en contact aujourd'hui ?</div>`;}
+        if(chat)chat.innerHTML=`<div style="background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%;align-self:flex-start"><strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🧭 Guide IFS local</strong>Nouvelle session. Avec quelle partie souhaitez-vous entrer en contact aujourd'hui ?</div>`;}
     });
   },
 
@@ -1809,7 +1804,12 @@ const C={
     const isAI=role==='ai';
     const div=document.createElement('div');
     div.style.cssText=`${isAI?'background:rgba(107,158,151,.1);border-radius:0 var(--r2) var(--r2) var(--r2);align-self:flex-start':'background:var(--bgs);border:1px solid var(--bdr);border-radius:var(--r2) 0 var(--r2) var(--r2);align-self:flex-end'};padding:12px 14px;font-size:.88rem;color:var(--tx2);max-width:88%`;
-    div.innerHTML=`${isAI?'<strong style="display:block;font-size:.72rem;color:var(--p);margin-bottom:4px">🤖 Facilitateur IFS</strong>':'<strong style="display:block;font-size:.72rem;color:var(--tx2);margin-bottom:4px">Vous</strong>'}${text}`;
+    const label=document.createElement('strong');
+    label.style.cssText=`display:block;font-size:.72rem;color:${isAI?'var(--p)':'var(--tx2)'};margin-bottom:4px`;
+    label.textContent=isAI?'🧭 Guide IFS local':'Vous';
+    const body=document.createElement('span');
+    body.textContent=text;
+    div.append(label,body);
     chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
   },
 
@@ -1963,8 +1963,6 @@ const C={
 };
 
 // ── LANCEMENT ────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>C.init());
-
 document.addEventListener('DOMContentLoaded',()=>C.init());
 </script>
 </body>
