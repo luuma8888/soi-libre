@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio de Montage d'Art</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES & THÈMES (Pastel, vibratoire, positif)
+           ========================================================================== */
+        :root {
+            --font-main: 'Segoe UI', system-ui, sans-serif;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius: 12px;
+            --shadow: 0 8px 30px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #fdfbf7; /* Blanc chaud / ivoire */
+            --bg-panel: #ffffff;
+            --text-main: #4a4a4a;
+            --text-muted: #8c8c8c;
+            --accent: #a8d5e2; /* Bleu pastel apaisant */
+            --accent-hover: #8cbccb;
+            --secondary: #f3e8f8; /* Violet très doux */
+            --border: #f0ebe1;
+            --canvas-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #1a1b26; /* Bleu nuit profond */
+            --bg-panel: #24283b;
+            --text-main: #c0caf5;
+            --text-muted: #565f89;
+            --accent: #7aa2f7; /* Bleu lumineux */
+            --accent-hover: #8db0f9;
+            --secondary: #bb9af7;
+            --border: #414868;
+            --canvas-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* ==========================================================================
+           RESEt & BASE
+           ========================================================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-main); background: var(--bg-body); color: var(--text-main); line-height: 1.6; transition: background var(--transition), color var(--transition); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* ==========================================================================
+           LAYOUT (Sidebar & Main)
+           ========================================================================== */
+        .sidebar { width: 350px; background: var(--bg-panel); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; z-index: 10; box-shadow: var(--shadow); transition: background var(--transition); }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; background: var(--bg-body); }
+        
+        /* ==========================================================================
+           UI COMPONENTS
+           ========================================================================== */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h1 { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+        .controls-header { display: flex; gap: 10px; }
+        button.icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: color var(--transition); }
+        button.icon-btn:hover { color: var(--accent); }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row > * { flex: 1; }
+        label { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
+        
+        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-family: inherit; font-size: 0.9rem; transition: border var(--transition); }
+        input:focus, select:focus { outline: none; border-color: var(--accent); }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; background: var(--secondary); color: var(--bg-panel); font-weight: 600; cursor: pointer; transition: background var(--transition), transform 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--text-main); }
+        .btn.primary { background: var(--accent); color: #fff; }
+        .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn:active { transform: translateY(1px); }
+
+        .file-upload { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+        .file-upload input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+
+        /* ==========================================================================
+           CANVAS PREVIEW
+           ========================================================================== */
+        .preview-container { display: flex; flex-direction: column; gap: 40px; width: 100%; max-width: 1200px; padding-bottom: 50px; }
+        .page-wrapper { background: white; margin: 0 auto; box-shadow: var(--canvas-shadow); transition: transform 0.3s; position: relative; }
+        .page-wrapper::before { content: attr(data-page); position: absolute; top: -30px; left: 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+        canvas { display: block; width: 100%; height: auto; }
+
+        /* ==========================================================================
+           PRINT CSS (Magie hors-ligne pour l'export PDF)
+           ========================================================================== */
+        @media print {
+            body { background: white; display: block; height: auto; overflow: visible; }
+            .sidebar, .no-print { display: none !important; }
+            .main-content { padding: 0; display: block; }
+            .preview-container { gap: 0; padding: 0; max-width: none; }
+            .page-wrapper { box-shadow: none; margin: 0; page-break-after: always; width: 100% !important; max-width: 100% !important; }
+            .page-wrapper::before { display: none; }
+            canvas { width: 100% !important; height: auto !important; max-width: 100% !important; }
+            @page { margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar no-print">
+        <header>
+            <h1 data-i18n="appTitle">✨ Studio de Montage</h1>
+            <div class="controls-header">
+                <button class="icon-btn" id="btn-theme" title="Jour/Nuit">🌙</button>
+                <button class="icon-btn" id="btn-lang" title="Language">🇬🇧</button>
+            </div>
+        </header>
+
+        <div class="form-group">
+            <button class="btn primary" style="width:100%" onclick="document.getElementById('input-images').click()">
+                <span data-i18n="addImages">📂 Ajouter des images</span>
+            </button>
+            <input type="file" id="input-images" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label data-i18n="paperFormat">Format</label>
+                <select id="setting-paper">
+                    <option value="A4">A4 (210x297)</option>
+                    <option value="A3">A3 (297x420)</option>
+                    <option value="A5">A5 (148x210)</option>
+                    <option value="US_LETTER">Letter (215.9x279.4)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label data-i18n="orientation">Orientation</label>
+                <select id="setting-orientation">
+                    <option value="portrait" data-i18n="portrait">Portrait</option>
+                    <option value="landscape" data-i18n="landscape">Paysage</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label data-i18n="dpi">Résolution (DPI)</label>
+                <input type="number" id="setting-dpi" value="300" min="72" max="1200">
+            </div>
+            <div class="form-group">
+                <label data-i18n="perPage">Images / Page</label>
+                <input type="number" id="setting-perPage" value="4" min="1" max="100">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label data-i18n="margin">Marge externe (mm)</label>
+                <input type="number" id="setting-margin" value="5" min="0" step="1">
+            </div>
+            <div class="form-group">
+                <label data-i18n="spacing">Espacement (mm)</label>
+                <input type="number" id="setting-spacing" value="2" min="0" step="1">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label data-i18n="fitMode">Ajustement</label>
+            <select id="setting-fit">
+                <option value="crop" data-i18n="fitCrop">Remplir la case (Couper)</option>
+                <option value="pad" data-i18n="fitPad">Ajuster (Sans couper, bandes)</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label data-i18n="forceCols">Colonnes (Optionnel)</label>
+                <input type="number" id="setting-cols" placeholder="Auto" min="1">
+            </div>
+            <div class="form-group">
+                <label data-i18n="forceRows">Lignes (Optionnel)</label>
+                <input type="number" id="setting-rows" placeholder="Auto" min="1">
+            </div>
+        </div>
+
+        <div class="form-group" style="flex-direction: row; align-items: center; gap:10px;">
+            <input type="checkbox" id="setting-autoRotate" checked>
+            <label for="setting-autoRotate" data-i18n="autoRotate">Rotation intelligente (90°)</label>
+        </div>
+
+        <hr style="border:0; border-top: 1px solid var(--border); margin: 10px 0;">
+
+        <button class="btn" id="btn-print">🖨️ <span data-i18n="printPdf">Imprimer / Sauver PDF</span></button>
+        <button class="btn" id="btn-export-jpg">🖼️ <span data-i18n="exportJpg">Exporter en JPG(s)</span></button>
+        <button class="btn" id="btn-clear" style="background: transparent; border: 1px solid var(--border);"><span data-i18n="clear">Vider</span></button>
+
+    </aside>
+
+    <main class="main-content">
+        <div class="preview-container" id="canvas-container">
+            </div>
+    </main>
+
+    <script>
+        /**
+         * ==================================================================
+         * 1. DICTIONNAIRE & i18n
+         * ==================================================================
+         */
+        const Dictionary = {
+            fr: {
+                appTitle: "✨ Studio de Montage", addImages: "📂 Ajouter des images", paperFormat: "Format papier",
+                orientation: "Orientation", portrait: "Portrait", landscape: "Paysage", dpi: "Résolution (DPI)",
+                perPage: "Images / Page", margin: "Marge (mm)", spacing: "Espacement (mm)",
+                fitMode: "Ajustement de l'image", fitCrop: "Remplir (Coupe les bords)", fitPad: "Ajuster (Garde l'image entière)",
+                forceCols: "Forcer Colonnes", forceRows: "Forcer Lignes", autoRotate: "Auto-rotation intelligente",
+                printPdf: "Imprimer / Sauver en PDF", exportJpg: "Télécharger les planches JPG", clear: "Tout vider"
+            },
+            en: {
+                appTitle: "✨ Art Layout Studio", addImages: "📂 Add Images", paperFormat: "Paper Size",
+                orientation: "Orientation", portrait: "Portrait", landscape: "Landscape", dpi: "Resolution (DPI)",
+                perPage: "Images / Page", margin: "Margin (mm)", spacing: "Spacing (mm)",
+                fitMode: "Image Fit", fitCrop: "Fill (Crop edges)", fitPad: "Fit (Keep whole image, add padding)",
+                forceCols: "Force Columns", forceRows: "Force Rows", autoRotate: "Smart Auto-Rotation",
+                printPdf: "Print / Save as PDF", exportJpg: "Download JPG sheets", clear: "Clear All"
+            }
+        };
+
+        /**
+         * ==================================================================
+         * 2. MODÈLE (Données et Logique métier)
+         * ==================================================================
+         */
+        const Model = {
+            images: [], // Fichiers chargés [{file, imgElement, aspect}]
+            canvases: [], // Tableaux générés
+            
+            sizes: {
+                'A3': { w: 297, h: 420 },
+                'A4': { w: 210, h: 297 },
+                'A5': { w: 148, h: 210 },
+                'US_LETTER': { w: 215.9, h: 279.4 }
+            },
+
+            // Paramètres par défaut
+            settings: {
+                paper: 'A4', orientation: 'portrait', dpi: 300, perPage: 4,
+                margin: 5, spacing: 2, fit: 'pad', cols: '', rows: '', autoRotate: true
+            },
+
+            // Convertisseurs
+            mmToPx: (mm, dpi) => Math.floor((mm * dpi) / 25.4),
+
+            // Intelligence de Grille (Porté du script Python)
+            optimizeGrid(numImages, canvasW, canvasH, marginPx, spacingPx, avgAspect) {
+                let sCols = parseInt(Model.settings.cols);
+                let sRows = parseInt(Model.settings.rows);
+                if (sCols && sRows) return { cols: sCols, rows: sRows };
+                if (sCols) return { cols: sCols, rows: Math.ceil(numImages / sCols) };
+                if (sRows) return { cols: Math.ceil(numImages / sRows), rows: sRows };
+
+                let bestScore = -1;
+                let bestGrid = { cols: 1, rows: Math.max(1, numImages) };
+
+                for (let cols = 1; cols <= numImages; cols++) {
+                    let rows = Math.ceil(numImages / cols);
+                    let availableW = canvasW - (2 * marginPx) - ((cols - 1) * spacingPx);
+                    let availableH = canvasH - (2 * marginPx) - ((rows - 1) * spacingPx);
+                    
+                    if (availableW <= 0 || availableH <= 0) continue;
+                    
+                    let cellW = availableW / cols;
+                    let cellH = availableH / rows;
+                    let cellAspect = cellW / cellH;
+                    
+                    let imgAspect = avgAspect;
+                    if (Model.settings.autoRotate && ((cellAspect >= 1 && imgAspect < 1) || (cellAspect < 1 && imgAspect >= 1))) {
+                        imgAspect = 1 / imgAspect;
+                    }
+
+                    let score = 0;
+                    if (Model.settings.fit === 'pad') {
+                        let fitW = imgAspect > cellAspect ? cellW : cellH * imgAspect;
+                        let fitH = imgAspect > cellAspect ? cellW / imgAspect : cellH;
+                        score = fitW * fitH;
+                    } else {
+                        let ratioDiff = Math.max(cellAspect / imgAspect, imgAspect / cellAspect);
+                        score = (cellW * cellH) / Math.pow(ratioDiff, 1.5);
+                    }
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestGrid = { cols, rows };
+                    }
+                }
+                return bestGrid;
+            },
+
+            // Dessin sur Canvas
+            async generateMontage() {
+                if(this.images.length === 0) return [];
+                
+                const s = this.settings;
+                let wMm = this.sizes[s.paper].w;
+                let hMm = this.sizes[s.paper].h;
+                if (s.orientation === 'landscape') [wMm, hMm] = [hMm, wMm];
+
+                const cW = this.mmToPx(wMm, s.dpi);
+                const cH = this.mmToPx(hMm, s.dpi);
+                const mPx = this.mmToPx(s.margin, s.dpi);
+                const spPx = this.mmToPx(s.spacing, s.dpi);
+
+                let pages = [];
+                for (let i = 0; i < this.images.length; i += s.perPage) {
+                    pages.push(this.images.slice(i, i + s.perPage));
+                }
+
+                this.canvases = [];
+
+                for (let page of pages) {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = cW;
+                    canvas.height = cH;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Fond blanc (important pour PDF/JPG)
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, cW, cH);
+
+                    // Ratio moyen
+                    let sumAspect = page.reduce((acc, img) => acc + img.aspect, 0);
+                    let avgAspect = sumAspect / page.length;
+
+                    let grid = this.optimizeGrid(page.length, cW, cH, mPx, spPx, avgAspect);
+                    let availableW = cW - (2 * mPx) - ((grid.cols - 1) * spPx);
+                    let availableH = cH - (2 * mPx) - ((grid.rows - 1) * spPx);
+                    let cellW = Math.floor(availableW / grid.cols);
+                    let cellH = Math.floor(availableH / grid.rows);
+
+                    for (let idx = 0; idx < page.length; idx++) {
+                        let imgObj = page[idx];
+                        let col = idx % grid.cols;
+                        let row = Math.floor(idx / grid.cols);
+                        let x = mPx + col * (cellW + spPx);
+                        let y = mPx + row * (cellH + spPx);
+
+                        let drawW = imgObj.imgElement.width;
+                        let drawH = imgObj.imgElement.height;
+                        let imgAspect = drawW / drawH;
+                        let cellAspect = cellW / cellH;
+                        
+                        let rotated = false;
+                        if (s.autoRotate && ((cellAspect >= 1 && imgAspect < 1) || (cellAspect < 1 && imgAspect >= 1))) {
+                            rotated = true;
+                            imgAspect = 1 / imgAspect;
+                        }
+
+                        ctx.save();
+                        // Gestion du Fit/Crop
+                        let sx=0, sy=0, sw=drawW, sh=drawH; // Source
+                        let dx=x, dy=y, dw=cellW, dh=cellH; // Dest
+
+                        if (s.fit === 'crop') {
+                            if (imgAspect > cellAspect) {
+                                sh = drawH; sw = drawH * cellAspect;
+                                sx = (drawW - sw) / 2;
+                            } else {
+                                sw = drawW; sh = drawW / cellAspect;
+                                sy = (drawH - sh) / 2;
+                            }
+                        } else { // Pad
+                            if (imgAspect > cellAspect) {
+                                dw = cellW; dh = cellW / imgAspect;
+                                dy = y + (cellH - dh) / 2;
+                            } else {
+                                dh = cellH; dw = cellH * imgAspect;
+                                dx = x + (cellW - dw) / 2;
+                            }
+                        }
+
+                        // Gestion de la rotation
+                        if (rotated) {
+                            // On inverse sx,sy,sw,sh logic car l'image d'origine n'est pas tournée
+                            ctx.translate(dx + dw/2, dy + dh/2);
+                            ctx.rotate(Math.PI / 2);
+                            // On dessine l'image tournée autour de son centre
+                            let revDw = dh; let revDh = dw;
+                            ctx.drawImage(imgObj.imgElement, sx, sy, sw, sh, -revDw/2, -revDh/2, revDw, revDh);
+                        } else {
+                            ctx.drawImage(imgObj.imgElement, sx, sy, sw, sh, dx, dy, dw, dh);
+                        }
+                        ctx.restore();
+                    }
+                    this.canvases.push(canvas);
+                }
+            },
+
+            loadLocalStorage() {
+                const saved = localStorage.getItem('montage_settings');
+                if (saved) Object.assign(this.settings, JSON.parse(saved));
+            },
+            saveLocalStorage() {
+                localStorage.setItem('montage_settings', JSON.stringify(this.settings));
+            }
+        };
+
+        /**
+         * ==================================================================
+         * 3. VUE (UI et DOM)
+         * ==================================================================
+         */
+        const View = {
+            lang: 'fr',
+            theme: 'light',
+            
+            init() {
+                this.container = document.getElementById('canvas-container');
+                this.inputs = {
+                    paper: document.getElementById('setting-paper'),
+                    orientation: document.getElementById('setting-orientation'),
+                    dpi: document.getElementById('setting-dpi'),
+                    perPage: document.getElementById('setting-perPage'),
+                    margin: document.getElementById('setting-margin'),
+                    spacing: document.getElementById('setting-spacing'),
+                    fit: document.getElementById('setting-fit'),
+                    cols: document.getElementById('setting-cols'),
+                    rows: document.getElementById('setting-rows'),
+                    autoRotate: document.getElementById('setting-autoRotate')
+                };
+            },
+
+            updateFormFromModel() {
+                for (let key in this.inputs) {
+                    if (this.inputs[key].type === 'checkbox') {
+                        this.inputs[key].checked = Model.settings[key];
+                    } else {
+                        this.inputs[key].value = Model.settings[key];
+                    }
+                }
+            },
+
+            updateModelFromForm() {
+                for (let key in this.inputs) {
+                    if (this.inputs[key].type === 'checkbox') {
+                        Model.settings[key] = this.inputs[key].checked;
+                    } else if (this.inputs[key].type === 'number') {
+                        Model.settings[key] = parseFloat(this.inputs[key].value) || '';
+                    } else {
+                        Model.settings[key] = this.inputs[key].value;
+                    }
+                }
+                Model.saveLocalStorage();
+            },
+
+            renderCanvases() {
+                this.container.innerHTML = '';
+                Model.canvases.forEach((c, i) => {
+                    let wrapper = document.createElement('div');
+                    wrapper.className = 'page-wrapper';
+                    wrapper.setAttribute('data-page', `Page ${i+1}`);
+                    // Règle la taille d'affichage CSS (pour ne pas exploser l'écran avec du 300dpi)
+                    // On simule une taille physique sur l'écran. 
+                    let screenWidthStr = Model.settings.orientation === 'landscape' ? '800px' : '600px';
+                    wrapper.style.maxWidth = screenWidthStr;
+                    wrapper.appendChild(c);
+                    this.container.appendChild(wrapper);
+                });
+            },
+
+            toggleTheme() {
+                this.theme = this.theme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', this.theme);
+                document.getElementById('btn-theme').textContent = this.theme === 'light' ? '🌙' : '☀️';
+            },
+
+            toggleLang() {
+                this.lang = this.lang === 'fr' ? 'en' : 'fr';
+                document.getElementById('btn-lang').textContent = this.lang === 'fr' ? '🇬🇧' : '🇫🇷';
+                const dict = Dictionary[this.lang];
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) {
+                        if (el.tagName === 'INPUT' && el.type === 'button') el.value = dict[key];
+                        else el.textContent = dict[key];
+                    }
+                });
+            }
+        };
+
+        /**
+         * ==================================================================
+         * 4. CONTRÔLEUR (Événements)
+         * ==================================================================
+         */
+        const Controller = {
+            async init() {
+                Model.loadLocalStorage();
+                View.init();
+                View.updateFormFromModel();
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                // Changements de paramètres -> Regénération
+                for (let key in View.inputs) {
+                    View.inputs[key].addEventListener('change', async () => {
+                        View.updateModelFromForm();
+                        await Model.generateMontage();
+                        View.renderCanvases();
+                    });
+                }
+
+                // Chargement des images
+                document.getElementById('input-images').addEventListener('change', async (e) => {
+                    const files = Array.from(e.target.files);
+                    if(!files.length) return;
+                    
+                    // Chargement asynchrone des images
+                    const loadImg = (file) => new Promise((resolve) => {
+                        const url = URL.createObjectURL(file);
+                        const img = new Image();
+                        img.onload = () => {
+                            resolve({ file, imgElement: img, aspect: img.width / img.height });
+                        };
+                        img.src = url;
+                    });
+
+                    // Ajoute aux existantes
+                    let newImages = await Promise.all(files.map(loadImg));
+                    Model.images = Model.images.concat(newImages);
+                    
+                    await Model.generateMontage();
+                    View.renderCanvases();
+                    e.target.value = ''; // Reset input
+                });
+
+                // Vider
+                document.getElementById('btn-clear').addEventListener('click', () => {
+                    Model.images = [];
+                    Model.canvases = [];
+                    View.renderCanvases();
+                });
+
+                // Impression (Sert de PDF)
+                document.getElementById('btn-print').addEventListener('click', () => {
+                    if (Model.canvases.length === 0) return alert('Aucune image générée.');
+                    window.print();
+                });
+
+                // Export JPG (Télécharge chaque canvas)
+                document.getElementById('btn-export-jpg').addEventListener('click', () => {
+                    if (Model.canvases.length === 0) return;
+                    Model.canvases.forEach((canvas, i) => {
+                        let link = document.createElement('a');
+                        link.download = `Planche_Page_${i+1}.jpg`;
+                        link.href = canvas.toDataURL('image/jpeg', 1.0); // 1.0 qualité max
+                        link.click();
+                    });
+                });
+
+                // UI Toggles
+                document.getElementById('btn-theme').addEventListener('click', () => View.toggleTheme());
+                document.getElementById('btn-lang').addEventListener('click', () => View.toggleLang());
+            }
+        };
+
+        // Lancement au chargement
+        document.addEventListener('DOMContentLoaded', () => Controller.init());
+
+    </script>
+</body>
+</html>
