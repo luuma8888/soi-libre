@@ -1,566 +1,1836 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio de Montage d'Art</title>
-    <style>
-        /* ==========================================================================
-           VARIABLES & THÈMES (Pastel, vibratoire, positif)
-           ========================================================================== */
-        :root {
-            --font-main: 'Segoe UI', system-ui, sans-serif;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --radius: 12px;
-            --shadow: 0 8px 30px rgba(0,0,0,0.05);
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PrintPics - planches d'images à imprimer</title>
+  <style id="print-page-style">
+    @media print {
+      @page { size: 210mm 297mm; margin: 0; }
+    }
+  </style>
+  <style>
+    /* =========================================================
+       1. Design tokens
+       2. Reset leger
+       3. Layout general
+       4. Composants
+       5. Formulaires
+       6. Aperçu
+       7. Responsive
+       8. Mode sombre
+       9. Impression
+       ========================================================= */
+    :root {
+      --bg: #f8f4ec;
+      --panel: #fffdf8;
+      --panel-soft: #f1f8f6;
+      --text: #30343b;
+      --muted: #69727f;
+      --accent: #7fb8aa;
+      --accent-strong: #4f9286;
+      --accent-soft: #d9eee8;
+      --warning: #b6783f;
+      --danger: #b65b5b;
+      --border: #e7ded0;
+      --paper-shadow: 0 16px 42px rgba(56, 48, 37, 0.16);
+      --radius: 10px;
+      --focus: 0 0 0 3px rgba(127, 184, 170, 0.35);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light;
+    }
 
-        [data-theme="light"] {
-            --bg-body: #fdfbf7; /* Blanc chaud / ivoire */
-            --bg-panel: #ffffff;
-            --text-main: #4a4a4a;
-            --text-muted: #8c8c8c;
-            --accent: #a8d5e2; /* Bleu pastel apaisant */
-            --accent-hover: #8cbccb;
-            --secondary: #f3e8f8; /* Violet très doux */
-            --border: #f0ebe1;
-            --canvas-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
+    [data-theme="dark"] {
+      --bg: #171b22;
+      --panel: #202631;
+      --panel-soft: #1b302f;
+      --text: #edf2ef;
+      --muted: #a7b2b0;
+      --accent: #8ed0c2;
+      --accent-strong: #9fe1d4;
+      --accent-soft: #29443f;
+      --warning: #e1b274;
+      --danger: #df8989;
+      --border: #34414a;
+      --paper-shadow: 0 16px 48px rgba(0, 0, 0, 0.42);
+      color-scheme: dark;
+    }
 
-        [data-theme="dark"] {
-            --bg-body: #1a1b26; /* Bleu nuit profond */
-            --bg-panel: #24283b;
-            --text-main: #c0caf5;
-            --text-muted: #565f89;
-            --accent: #7aa2f7; /* Bleu lumineux */
-            --accent-hover: #8db0f9;
-            --secondary: #bb9af7;
-            --border: #414868;
-            --canvas-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
+    * { box-sizing: border-box; }
 
-        /* ==========================================================================
-           RESEt & BASE
-           ========================================================================== */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-main); background: var(--bg-body); color: var(--text-main); line-height: 1.6; transition: background var(--transition), color var(--transition); display: flex; height: 100vh; overflow: hidden; }
-        
-        /* ==========================================================================
-           LAYOUT (Sidebar & Main)
-           ========================================================================== */
-        .sidebar { width: 350px; background: var(--bg-panel); border-right: 1px solid var(--border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; z-index: 10; box-shadow: var(--shadow); transition: background var(--transition); }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; background: var(--bg-body); }
-        
-        /* ==========================================================================
-           UI COMPONENTS
-           ========================================================================== */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        h1 { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
-        .controls-header { display: flex; gap: 10px; }
-        button.icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: color var(--transition); }
-        button.icon-btn:hover { color: var(--accent); }
+    [hidden] {
+      display: none !important;
+    }
 
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        .form-row { display: flex; gap: 10px; }
-        .form-row > * { flex: 1; }
-        label { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
-        
-        input, select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-body); color: var(--text-main); font-family: inherit; font-size: 0.9rem; transition: border var(--transition); }
-        input:focus, select:focus { outline: none; border-color: var(--accent); }
-        
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; background: var(--secondary); color: var(--bg-panel); font-weight: 600; cursor: pointer; transition: background var(--transition), transform 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--text-main); }
-        .btn.primary { background: var(--accent); color: #fff; }
-        .btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
-        .btn:active { transform: translateY(1px); }
+    html { min-height: 100%; }
 
-        .file-upload { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-        .file-upload input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.5;
+    }
 
-        /* ==========================================================================
-           CANVAS PREVIEW
-           ========================================================================== */
-        .preview-container { display: flex; flex-direction: column; gap: 40px; width: 100%; max-width: 1200px; padding-bottom: 50px; }
-        .page-wrapper { background: white; margin: 0 auto; box-shadow: var(--canvas-shadow); transition: transform 0.3s; position: relative; }
-        .page-wrapper::before { content: attr(data-page); position: absolute; top: -30px; left: 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
-        canvas { display: block; width: 100%; height: auto; }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
-        /* ==========================================================================
-           PRINT CSS (Magie hors-ligne pour l'export PDF)
-           ========================================================================== */
-        @media print {
-            body { background: white; display: block; height: auto; overflow: visible; }
-            .sidebar, .no-print { display: none !important; }
-            .main-content { padding: 0; display: block; }
-            .preview-container { gap: 0; padding: 0; max-width: none; }
-            .page-wrapper { box-shadow: none; margin: 0; page-break-after: always; width: 100% !important; max-width: 100% !important; }
-            .page-wrapper::before { display: none; }
-            canvas { width: 100% !important; height: auto !important; max-width: 100% !important; }
-            @page { margin: 0; }
-        }
-    </style>
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: none;
+      box-shadow: var(--focus);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 20px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+    }
+
+    .workspace {
+      min-width: 0;
+      padding: 28px;
+      overflow: auto;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 1.45rem;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .app-version {
+      display: inline-flex;
+      margin-top: 8px;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .icon-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .icon-btn {
+      min-width: 42px;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel-soft);
+      color: var(--text);
+    }
+
+    .panel {
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      font-size: 0.98rem;
+      color: var(--accent-strong);
+    }
+
+    .drop-zone {
+      display: grid;
+      gap: 10px;
+      place-items: center;
+      min-height: 128px;
+      padding: 18px;
+      border: 2px dashed var(--accent);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      text-align: center;
+    }
+
+    .drop-zone.is-over {
+      background: var(--accent-soft);
+      border-color: var(--accent-strong);
+    }
+
+    .drop-zone p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--text);
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .btn.primary {
+      border-color: var(--accent-strong);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.danger {
+      border-color: color-mix(in srgb, var(--danger), var(--border) 45%);
+      color: var(--danger);
+      background: transparent;
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .button-grid .wide {
+      grid-column: 1 / -1;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label,
+    .label {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 650;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--accent-strong);
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+    }
+
+    details {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    summary {
+      color: var(--accent-strong);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .hint {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .stats {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .stat:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .stat strong {
+      color: var(--text);
+      text-align: right;
+    }
+
+    .suggestion-box {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+    }
+
+    .suggestion-box p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .suggestion-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .suggestion-actions .btn {
+      justify-content: flex-start;
+      min-height: 38px;
+      font-size: 0.9rem;
+    }
+
+    .print-help {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .message {
+      display: none;
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel-soft);
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .message.is-visible {
+      display: block;
+    }
+
+    .message.warning {
+      border-color: color-mix(in srgb, var(--warning), var(--border) 45%);
+      color: var(--warning);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(20, 24, 28, 0.42);
+    }
+
+    .modal {
+      width: min(100%, 420px);
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24);
+    }
+
+    .modal h2 {
+      margin: 0 0 8px;
+      color: var(--accent-strong);
+      font-size: 1.1rem;
+    }
+
+    .modal p {
+      margin: 0 0 16px;
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .preview-toolbar h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--accent-strong);
+    }
+
+    .preview-toolbar p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .preview-container {
+      display: grid;
+      gap: 34px;
+      justify-items: center;
+      min-height: 420px;
+    }
+
+    .empty-state {
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      width: min(100%, 720px);
+      min-height: 360px;
+      padding: 34px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      text-align: center;
+    }
+
+    .empty-state h2 {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 1.25rem;
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .empty-state.warning {
+      border-color: color-mix(in srgb, var(--warning), var(--border) 35%);
+      background: color-mix(in srgb, var(--panel-soft), var(--panel) 40%);
+    }
+
+    .page-wrapper {
+      position: relative;
+      max-width: min(100%, var(--preview-width, 620px));
+      background: #fff;
+      box-shadow: var(--paper-shadow);
+    }
+
+    .page-wrapper::before {
+      content: attr(data-page);
+      position: absolute;
+      left: 0;
+      top: -24px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        display: block;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .workspace {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .sidebar,
+      .workspace {
+        padding: 14px;
+      }
+
+      .form-grid,
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full,
+      .button-grid .wide {
+        grid-column: auto;
+      }
+
+      .preview-toolbar {
+        display: grid;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media print {
+      html,
+      body {
+        width: auto;
+        min-height: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #111 !important;
+      }
+
+      .no-print,
+      .sidebar,
+      .preview-toolbar,
+      .message,
+      .modal-backdrop,
+      .empty-state {
+        display: none !important;
+      }
+
+      .app,
+      .workspace,
+      .preview-container {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        background: #fff !important;
+      }
+
+      .page-wrapper {
+        width: var(--print-page-w) !important;
+        height: var(--print-page-h) !important;
+        max-width: none !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        break-after: page;
+        page-break-after: always;
+        overflow: hidden;
+      }
+
+      .page-wrapper:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
+
+      .page-wrapper::before {
+        display: none !important;
+      }
+
+      canvas {
+        width: var(--print-page-w) !important;
+        height: var(--print-page-h) !important;
+        max-width: none !important;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <aside class="sidebar no-print">
-        <header>
-            <h1 data-i18n="appTitle">✨ Studio de Montage</h1>
-            <div class="controls-header">
-                <button class="icon-btn" id="btn-theme" title="Jour/Nuit">🌙</button>
-                <button class="icon-btn" id="btn-lang" title="Language">🇬🇧</button>
-            </div>
-        </header>
-
-        <div class="form-group">
-            <button class="btn primary" style="width:100%" onclick="document.getElementById('input-images').click()">
-                <span data-i18n="addImages">📂 Ajouter des images</span>
-            </button>
-            <input type="file" id="input-images" multiple accept="image/*" style="display: none;">
+  <div class="app">
+    <aside class="sidebar no-print" aria-label="Paramètres de planche">
+      <header class="app-header">
+        <div>
+          <h1>PrintPics</h1>
+          <p class="subtitle">Composer des planches d'images prêtes à imprimer.</p>
+          <span class="app-version" id="app-version">v0.1.alpha</span>
         </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label data-i18n="paperFormat">Format</label>
-                <select id="setting-paper">
-                    <option value="A4">A4 (210x297)</option>
-                    <option value="A3">A3 (297x420)</option>
-                    <option value="A5">A5 (148x210)</option>
-                    <option value="US_LETTER">Letter (215.9x279.4)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label data-i18n="orientation">Orientation</label>
-                <select id="setting-orientation">
-                    <option value="portrait" data-i18n="portrait">Portrait</option>
-                    <option value="landscape" data-i18n="landscape">Paysage</option>
-                </select>
-            </div>
+        <div class="icon-actions">
+          <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le mode jour ou nuit" title="Jour / nuit">🌙</button>
         </div>
+      </header>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label data-i18n="dpi">Résolution (DPI)</label>
-                <input type="number" id="setting-dpi" value="300" min="72" max="1200">
-            </div>
-            <div class="form-group">
-                <label data-i18n="perPage">Images / Page</label>
-                <input type="number" id="setting-perPage" value="4" min="1" max="100">
-            </div>
+      <section class="panel">
+        <h2 class="panel-title">1. Images</h2>
+        <div class="drop-zone" id="drop-zone">
+          <button class="btn primary" id="pick-images" type="button">Ajouter des images</button>
+          <p>Glisser-déposer fonctionne aussi. Les images restent dans ce navigateur.</p>
+          <input class="visually-hidden" id="image-input" type="file" accept="image/*" multiple>
         </div>
+      </section>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label data-i18n="margin">Marge externe (mm)</label>
-                <input type="number" id="setting-margin" value="5" min="0" step="1">
-            </div>
-            <div class="form-group">
-                <label data-i18n="spacing">Espacement (mm)</label>
-                <input type="number" id="setting-spacing" value="2" min="0" step="1">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label data-i18n="fitMode">Ajustement</label>
-            <select id="setting-fit">
-                <option value="crop" data-i18n="fitCrop">Remplir la case (Couper)</option>
-                <option value="pad" data-i18n="fitPad">Ajuster (Sans couper, bandes)</option>
+      <section class="panel">
+        <h2 class="panel-title">2. Papier</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="paper">Format</label>
+            <select id="paper">
+              <option value="A4">A4 - 210 x 297 mm</option>
+              <option value="A3">A3 - 297 x 420 mm</option>
+              <option value="A5">A5 - 148 x 210 mm</option>
+              <option value="US_LETTER">Letter - 215.9 x 279.4 mm</option>
+              <option value="CUSTOM">Sur mesure</option>
             </select>
+          </div>
+          <div class="field">
+            <label for="orientation">Orientation</label>
+            <select id="orientation">
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Paysage</option>
+            </select>
+          </div>
+          <div class="field custom-field">
+            <label for="custom-width">Largeur mm</label>
+            <input id="custom-width" type="number" min="20" max="1000" step="0.1" value="210">
+          </div>
+          <div class="field custom-field">
+            <label for="custom-height">Hauteur mm</label>
+            <input id="custom-height" type="number" min="20" max="1000" step="0.1" value="297">
+          </div>
+          <div class="field">
+            <label for="margin">Marge externe mm</label>
+            <input id="margin" type="number" min="0" max="80" step="0.5" value="5">
+          </div>
+          <div class="field">
+            <label for="spacing">Espacement mm</label>
+            <input id="spacing" type="number" min="0" max="80" step="0.5" value="2">
+          </div>
         </div>
+      </section>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label data-i18n="forceCols">Colonnes (Optionnel)</label>
-                <input type="number" id="setting-cols" placeholder="Auto" min="1">
+      <section class="panel">
+        <h2 class="panel-title">3. Placement</h2>
+        <div class="form-grid">
+          <div class="field full">
+            <label for="layout-mode">Calcul d'integration</label>
+            <select id="layout-mode">
+              <option value="count">Auto pour ce nombre</option>
+              <option value="grid">Forcer la grille</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="per-page">Images par page</label>
+            <input id="per-page" type="number" min="1" max="120" step="1" value="4">
+            <p class="hint">Ce nombre pilote toujours la création des pages. Les suggestions ci-dessous servent seulement d'aide au choix.</p>
+          </div>
+          <div class="field grid-setting">
+            <label for="cols">Colonnes</label>
+            <input id="cols" type="number" min="1" max="40" step="1" value="2">
+          </div>
+          <div class="field grid-setting">
+            <label for="rows">Lignes</label>
+            <input id="rows" type="number" min="1" max="40" step="1" value="2">
+          </div>
+          <div class="field">
+            <label for="fit">Ajustement</label>
+            <select id="fit">
+              <option value="contain">Image entiere</option>
+              <option value="cover">Remplir la case</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dpi">Résolution export</label>
+            <input id="dpi" type="number" min="72" max="600" step="1" value="300">
+          </div>
+          <div class="field">
+            <label for="min-short-side">Lisibilite min. mm</label>
+            <input id="min-short-side" type="number" min="5" max="250" step="1" value="45">
+          </div>
+          <div class="field">
+            <label for="min-print-ppi">Netteté min. ppp</label>
+            <input id="min-print-ppi" type="number" min="72" max="600" step="1" value="180">
+          </div>
+          <div class="field full">
+            <label for="max-auto-count">Suggestion : maximum testé</label>
+            <input id="max-auto-count" type="number" min="1" max="120" step="1" value="48">
+          </div>
+          <div class="field full">
+            <div class="check-row">
+              <input id="auto-rotate" type="checkbox" checked>
+              <label for="auto-rotate">Autoriser la rotation 90 degrés quand elle économise de la place</label>
             </div>
-            <div class="form-group">
-                <label data-i18n="forceRows">Lignes (Optionnel)</label>
-                <input type="number" id="setting-rows" placeholder="Auto" min="1">
-            </div>
+          </div>
         </div>
+        <details>
+          <summary>Parametres avances</summary>
+          <p class="hint">La résolution agit sur les exports JPG et la netteté du PDF. Au-delà de 300 DPI, les fichiers deviennent vite lourds.</p>
+          <div class="check-row">
+            <input id="draw-guides" type="checkbox">
+            <label for="draw-guides">Afficher de fins repères autour des images</label>
+          </div>
+        </details>
+      </section>
 
-        <div class="form-group" style="flex-direction: row; align-items: center; gap:10px;">
-            <input type="checkbox" id="setting-autoRotate" checked>
-            <label for="setting-autoRotate" data-i18n="autoRotate">Rotation intelligente (90°)</label>
+      <section class="panel">
+        <h2 class="panel-title">4. Résultat calculé</h2>
+        <dl class="stats" id="stats"></dl>
+        <div class="suggestion-box" id="suggestion-box" hidden>
+          <p id="suggestion-text"></p>
+          <div class="suggestion-actions" id="suggestion-actions"></div>
         </div>
+      </section>
 
-        <hr style="border:0; border-top: 1px solid var(--border); margin: 10px 0;">
-
-        <button class="btn" id="btn-print">🖨️ <span data-i18n="printPdf">Imprimer / Sauver PDF</span></button>
-        <button class="btn" id="btn-export-jpg">🖼️ <span data-i18n="exportJpg">Exporter en JPG(s)</span></button>
-        <button class="btn" id="btn-clear" style="background: transparent; border: 1px solid var(--border);"><span data-i18n="clear">Vider</span></button>
-
+      <section class="panel">
+        <h2 class="panel-title">5. Actions</h2>
+        <div class="button-grid">
+          <button class="btn primary wide" id="print" type="button">Imprimer / PDF</button>
+          <button class="btn" id="export-jpg" type="button">Exporter JPG</button>
+          <button class="btn" id="export-json" type="button">Exporter réglages</button>
+          <button class="btn" id="import-json" type="button">Importer réglages</button>
+          <button class="btn danger" id="clear" type="button">Vider</button>
+          <input class="visually-hidden" id="json-input" type="file" accept="application/json,.json">
+        </div>
+        <p class="hint">Le profil JSON contient les réglages, pas les images, pour rester léger et confidentiel.</p>
+        <p class="print-help">Pour le PDF ou l'impression papier, choisir une échelle à 100 %, sans marges ajoutées par le navigateur. PrintPics place déjà les marges dans la planche.</p>
+      </section>
     </aside>
 
-    <main class="main-content">
-        <div class="preview-container" id="canvas-container">
-            </div>
+    <main class="workspace">
+      <div class="message" id="message" role="status" aria-live="polite"></div>
+      <div class="preview-toolbar no-print">
+        <div>
+          <h2>Aperçu de la planche</h2>
+          <p id="preview-note">Ajoute des images pour lancer le calcul automatique.</p>
+        </div>
+      </div>
+      <div class="preview-container" id="preview"></div>
     </main>
+  </div>
 
-    <script>
-        /**
-         * ==================================================================
-         * 1. DICTIONNAIRE & i18n
-         * ==================================================================
-         */
-        const Dictionary = {
-            fr: {
-                appTitle: "✨ Studio de Montage", addImages: "📂 Ajouter des images", paperFormat: "Format papier",
-                orientation: "Orientation", portrait: "Portrait", landscape: "Paysage", dpi: "Résolution (DPI)",
-                perPage: "Images / Page", margin: "Marge (mm)", spacing: "Espacement (mm)",
-                fitMode: "Ajustement de l'image", fitCrop: "Remplir (Coupe les bords)", fitPad: "Ajuster (Garde l'image entière)",
-                forceCols: "Forcer Colonnes", forceRows: "Forcer Lignes", autoRotate: "Auto-rotation intelligente",
-                printPdf: "Imprimer / Sauver en PDF", exportJpg: "Télécharger les planches JPG", clear: "Tout vider"
-            },
-            en: {
-                appTitle: "✨ Art Layout Studio", addImages: "📂 Add Images", paperFormat: "Paper Size",
-                orientation: "Orientation", portrait: "Portrait", landscape: "Landscape", dpi: "Resolution (DPI)",
-                perPage: "Images / Page", margin: "Margin (mm)", spacing: "Spacing (mm)",
-                fitMode: "Image Fit", fitCrop: "Fill (Crop edges)", fitPad: "Fit (Keep whole image, add padding)",
-                forceCols: "Force Columns", forceRows: "Force Rows", autoRotate: "Smart Auto-Rotation",
-                printPdf: "Print / Save as PDF", exportJpg: "Download JPG sheets", clear: "Clear All"
-            }
+  <div class="modal-backdrop no-print" id="confirm-modal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+      <h2 id="confirm-title">Confirmer l'action</h2>
+      <p id="confirm-text"></p>
+      <div class="modal-actions">
+        <button class="btn" id="confirm-cancel" type="button">Annuler</button>
+        <button class="btn danger" id="confirm-ok" type="button">Confirmer</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const App = {
+      config: {
+        appName: "printpics",
+        version: "0.1.alpha",
+        storageKey: "luuma_printpics_v1",
+        memoryWarningMegaPixels: 220,
+        memorySoftLimitMegaPixels: 420,
+        paperSizes: {
+          A3: { label: "A3", width: 297, height: 420 },
+          A4: { label: "A4", width: 210, height: 297 },
+          A5: { label: "A5", width: 148, height: 210 },
+          US_LETTER: { label: "Letter", width: 215.9, height: 279.4 }
+        }
+      },
+
+      i18n: {
+        emptyTitle: "Aucune image pour le moment",
+        emptyText: "Ajoute des images, choisis le format papier, puis indique le nombre d'images par page. PrintPics propose ensuite une grille et des suggestions ajustables.",
+        emptyPreview: "Ajoute des images pour lancer le calcul automatique.",
+        noImagePrint: "Ajoute au moins une image avant d'imprimer.",
+        noReadableImage: "Aucune image lisible n'a été trouvée dans la sélection.",
+        profileImported: "Réglages importés. Les images restent celles de la session actuelle.",
+        profileImportError: "Le fichier JSON n'a pas pu être importé.",
+        imagesCleared: "Les images ont été retirées de la session.",
+        clearConfirm: "Vider toutes les images chargées dans cette session ?",
+        localStorageUnavailable: "La sauvegarde locale est indisponible dans ce navigateur.",
+        savedSettingsUnreadable: "Les réglages sauvegardés n'ont pas pu être relus. Les valeurs par défaut sont conservées."
+      },
+
+      state: {
+        images: [],
+        canvases: [],
+        lastLayout: null,
+        recommendation: null,
+        recommendationOptions: [],
+        messageTimer: null,
+        confirmResolver: null,
+        settings: {
+          theme: "light",
+          paper: "A4",
+          orientation: "portrait",
+          customWidth: 210,
+          customHeight: 297,
+          margin: 5,
+          spacing: 2,
+          layoutMode: "count",
+          minShortSide: 45,
+          minPrintPpi: 180,
+          maxAutoCount: 48,
+          perPage: 4,
+          cols: 2,
+          rows: 2,
+          fit: "contain",
+          dpi: 300,
+          autoRotate: true,
+          drawGuides: false
+        }
+      },
+
+      els: {},
+
+      init() {
+        this.cacheDom();
+        this.store.load();
+        this.view.applySettingsToForm();
+        this.view.applyTheme();
+        this.view.updateModeVisibility();
+        this.view.renderEmpty();
+        this.view.renderStats();
+        this.view.updatePrintPageStyle();
+        this.controller.bind();
+      },
+
+      cacheDom() {
+        const byId = (id) => document.getElementById(id);
+        this.els = {
+          preview: byId("preview"),
+          message: byId("message"),
+          previewNote: byId("preview-note"),
+          themeToggle: byId("theme-toggle"),
+          pickImages: byId("pick-images"),
+          imageInput: byId("image-input"),
+          jsonInput: byId("json-input"),
+          dropZone: byId("drop-zone"),
+          stats: byId("stats"),
+          appVersion: byId("app-version"),
+          suggestionBox: byId("suggestion-box"),
+          suggestionText: byId("suggestion-text"),
+          suggestionActions: byId("suggestion-actions"),
+          confirmModal: byId("confirm-modal"),
+          confirmText: byId("confirm-text"),
+          confirmCancel: byId("confirm-cancel"),
+          confirmOk: byId("confirm-ok"),
+          printStyle: byId("print-page-style"),
+          print: byId("print"),
+          exportJpg: byId("export-jpg"),
+          exportJson: byId("export-json"),
+          importJson: byId("import-json"),
+          clear: byId("clear"),
+          fields: {
+            paper: byId("paper"),
+            orientation: byId("orientation"),
+            customWidth: byId("custom-width"),
+            customHeight: byId("custom-height"),
+            margin: byId("margin"),
+            spacing: byId("spacing"),
+            layoutMode: byId("layout-mode"),
+            minShortSide: byId("min-short-side"),
+            minPrintPpi: byId("min-print-ppi"),
+            maxAutoCount: byId("max-auto-count"),
+            perPage: byId("per-page"),
+            cols: byId("cols"),
+            rows: byId("rows"),
+            fit: byId("fit"),
+            dpi: byId("dpi"),
+            autoRotate: byId("auto-rotate"),
+            drawGuides: byId("draw-guides")
+          }
         };
+      },
 
-        /**
-         * ==================================================================
-         * 2. MODÈLE (Données et Logique métier)
-         * ==================================================================
-         */
-        const Model = {
-            images: [], // Fichiers chargés [{file, imgElement, aspect}]
-            canvases: [], // Tableaux générés
-            
-            sizes: {
-                'A3': { w: 297, h: 420 },
-                'A4': { w: 210, h: 297 },
-                'A5': { w: 148, h: 210 },
-                'US_LETTER': { w: 215.9, h: 279.4 }
-            },
+      store: {
+        load() {
+          try {
+            const raw = localStorage.getItem(App.config.storageKey);
+            if (!raw) return;
+            const parsed = JSON.parse(raw);
+            const incoming = parsed.settings || parsed;
+            App.state.settings = { ...App.state.settings, ...App.model.normalizeSettings(incoming) };
+          } catch (error) {
+            App.view.showMessage(App.i18n.savedSettingsUnreadable, "warning");
+          }
+        },
 
-            // Paramètres par défaut
-            settings: {
-                paper: 'A4', orientation: 'portrait', dpi: 300, perPage: 4,
-                margin: 5, spacing: 2, fit: 'pad', cols: '', rows: '', autoRotate: true
-            },
+        save() {
+          try {
+            localStorage.setItem(App.config.storageKey, JSON.stringify({
+              app: App.config.appName,
+              version: App.config.version,
+              updatedAt: new Date().toISOString(),
+              settings: App.state.settings
+            }));
+          } catch (error) {
+            App.view.showMessage(App.i18n.localStorageUnavailable, "warning");
+          }
+        }
+      },
 
-            // Convertisseurs
-            mmToPx: (mm, dpi) => Math.floor((mm * dpi) / 25.4),
+      model: {
+        clamp(value, min, max, fallback) {
+          const number = Number(value);
+          if (!Number.isFinite(number)) return fallback;
+          return Math.min(max, Math.max(min, number));
+        },
 
-            // Intelligence de Grille (Porté du script Python)
-            optimizeGrid(numImages, canvasW, canvasH, marginPx, spacingPx, avgAspect) {
-                let sCols = parseInt(Model.settings.cols);
-                let sRows = parseInt(Model.settings.rows);
-                if (sCols && sRows) return { cols: sCols, rows: sRows };
-                if (sCols) return { cols: sCols, rows: Math.ceil(numImages / sCols) };
-                if (sRows) return { cols: Math.ceil(numImages / sRows), rows: sRows };
+        normalizeSettings(raw) {
+          const base = App.state.settings;
+          const next = { ...base, ...raw };
+          const papers = [...Object.keys(App.config.paperSizes), "CUSTOM"];
+          next.theme = next.theme === "dark" ? "dark" : "light";
+          next.paper = papers.includes(next.paper) ? next.paper : base.paper;
+          next.orientation = next.orientation === "landscape" ? "landscape" : "portrait";
+          next.customWidth = this.clamp(next.customWidth, 20, 1000, base.customWidth);
+          next.customHeight = this.clamp(next.customHeight, 20, 1000, base.customHeight);
+          next.margin = this.clamp(next.margin, 0, 80, base.margin);
+          next.spacing = this.clamp(next.spacing, 0, 80, base.spacing);
+          next.layoutMode = next.layoutMode === "grid" ? "grid" : "count";
+          next.minShortSide = this.clamp(next.minShortSide, 5, 250, base.minShortSide);
+          next.minPrintPpi = Math.round(this.clamp(next.minPrintPpi, 72, 600, base.minPrintPpi));
+          next.maxAutoCount = Math.round(this.clamp(next.maxAutoCount, 1, 120, base.maxAutoCount));
+          next.perPage = Math.round(this.clamp(next.perPage, 1, 120, base.perPage));
+          next.cols = Math.round(this.clamp(next.cols, 1, 40, base.cols));
+          next.rows = Math.round(this.clamp(next.rows, 1, 40, base.rows));
+          next.fit = next.fit === "cover" ? "cover" : "contain";
+          next.dpi = Math.round(this.clamp(next.dpi, 72, 600, base.dpi));
+          next.autoRotate = Boolean(next.autoRotate);
+          next.drawGuides = Boolean(next.drawGuides);
+          return next;
+        },
 
-                let bestScore = -1;
-                let bestGrid = { cols: 1, rows: Math.max(1, numImages) };
+        mmToPx(mm, dpi) {
+          return Math.max(1, Math.round((mm * dpi) / 25.4));
+        },
 
-                for (let cols = 1; cols <= numImages; cols++) {
-                    let rows = Math.ceil(numImages / cols);
-                    let availableW = canvasW - (2 * marginPx) - ((cols - 1) * spacingPx);
-                    let availableH = canvasH - (2 * marginPx) - ((rows - 1) * spacingPx);
-                    
-                    if (availableW <= 0 || availableH <= 0) continue;
-                    
-                    let cellW = availableW / cols;
-                    let cellH = availableH / rows;
-                    let cellAspect = cellW / cellH;
-                    
-                    let imgAspect = avgAspect;
-                    if (Model.settings.autoRotate && ((cellAspect >= 1 && imgAspect < 1) || (cellAspect < 1 && imgAspect >= 1))) {
-                        imgAspect = 1 / imgAspect;
-                    }
+        getPaperSize() {
+          const s = App.state.settings;
+          const base = s.paper === "CUSTOM"
+            ? { width: s.customWidth, height: s.customHeight }
+            : App.config.paperSizes[s.paper];
+          let width = base.width;
+          let height = base.height;
+          if (s.orientation === "landscape") [width, height] = [height, width];
+          return { width, height };
+        },
 
-                    let score = 0;
-                    if (Model.settings.fit === 'pad') {
-                        let fitW = imgAspect > cellAspect ? cellW : cellH * imgAspect;
-                        let fitH = imgAspect > cellAspect ? cellW / imgAspect : cellH;
-                        score = fitW * fitH;
-                    } else {
-                        let ratioDiff = Math.max(cellAspect / imgAspect, imgAspect / cellAspect);
-                        score = (cellW * cellH) / Math.pow(ratioDiff, 1.5);
-                    }
+        getContentBox() {
+          const s = App.state.settings;
+          const paper = this.getPaperSize();
+          return {
+            paper,
+            width: Math.max(1, paper.width - (s.margin * 2)),
+            height: Math.max(1, paper.height - (s.margin * 2))
+          };
+        },
 
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestGrid = { cols, rows };
-                    }
-                }
-                return bestGrid;
-            },
+        getImageAspectAverage(images) {
+          if (!images.length) return 1;
+          return images.reduce((sum, image) => sum + image.aspect, 0) / images.length;
+        },
 
-            // Dessin sur Canvas
-            async generateMontage() {
-                if(this.images.length === 0) return [];
-                
-                const s = this.settings;
-                let wMm = this.sizes[s.paper].w;
-                let hMm = this.sizes[s.paper].h;
-                if (s.orientation === 'landscape') [wMm, hMm] = [hMm, wMm];
+        scoreGrid(count, cols, rows, avgAspect) {
+          const s = App.state.settings;
+          const box = this.getContentBox();
+          const availableW = box.width - ((cols - 1) * s.spacing);
+          const availableH = box.height - ((rows - 1) * s.spacing);
+          if (availableW <= 0 || availableH <= 0) return null;
 
-                const cW = this.mmToPx(wMm, s.dpi);
-                const cH = this.mmToPx(hMm, s.dpi);
-                const mPx = this.mmToPx(s.margin, s.dpi);
-                const spPx = this.mmToPx(s.spacing, s.dpi);
+          const cellW = availableW / cols;
+          const cellH = availableH / rows;
+          if (cellW <= 0 || cellH <= 0) return null;
 
-                let pages = [];
-                for (let i = 0; i < this.images.length; i += s.perPage) {
-                    pages.push(this.images.slice(i, i + s.perPage));
-                }
+          let effectiveAspect = avgAspect;
+          const cellAspect = cellW / cellH;
+          if (s.autoRotate && this.shouldRotate(avgAspect, cellAspect)) {
+            effectiveAspect = 1 / avgAspect;
+          }
 
-                this.canvases = [];
+          const containW = effectiveAspect > cellAspect ? cellW : cellH * effectiveAspect;
+          const containH = effectiveAspect > cellAspect ? cellW / effectiveAspect : cellH;
+          const usedArea = Math.max(0, containW * containH * count);
+          const totalArea = Math.max(1, box.width * box.height);
+          const emptySlots = (cols * rows) - count;
+          const shapePenalty = Math.abs(Math.log(Math.max(0.01, cellAspect / Math.max(0.01, effectiveAspect)))) * 0.18;
+          const score = (usedArea / totalArea) - (emptySlots * 0.015) - shapePenalty;
 
-                for (let page of pages) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = cW;
-                    canvas.height = cH;
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Fond blanc (important pour PDF/JPG)
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, cW, cH);
+          return {
+            cols,
+            rows,
+            count,
+            cellW,
+            cellH,
+            minSide: Math.min(cellW, cellH),
+            fillRatio: usedArea / totalArea,
+            score
+          };
+        },
 
-                    // Ratio moyen
-                    let sumAspect = page.reduce((acc, img) => acc + img.aspect, 0);
-                    let avgAspect = sumAspect / page.length;
+        optimizeGrid(count, images) {
+          const avgAspect = this.getImageAspectAverage(images);
+          let best = null;
+          for (let cols = 1; cols <= count; cols += 1) {
+            const rows = Math.ceil(count / cols);
+            const candidate = this.scoreGrid(count, cols, rows, avgAspect);
+            if (candidate && (!best || candidate.score > best.score)) best = candidate;
+          }
+          return best || this.scoreGrid(1, 1, 1, avgAspect);
+        },
 
-                    let grid = this.optimizeGrid(page.length, cW, cH, mPx, spPx, avgAspect);
-                    let availableW = cW - (2 * mPx) - ((grid.cols - 1) * spPx);
-                    let availableH = cH - (2 * mPx) - ((grid.rows - 1) * spPx);
-                    let cellW = Math.floor(availableW / grid.cols);
-                    let cellH = Math.floor(availableH / grid.rows);
+        estimateImagePpi(image, cellW, cellH) {
+          const s = App.state.settings;
+          const cellAspect = cellW / cellH;
+          const rotate = s.autoRotate && this.shouldRotate(image.aspect, cellAspect);
+          const pixelW = rotate ? image.element.naturalHeight : image.element.naturalWidth;
+          const pixelH = rotate ? image.element.naturalWidth : image.element.naturalHeight;
+          const imageAspect = pixelW / pixelH;
+          let printW;
+          let printH;
 
-                    for (let idx = 0; idx < page.length; idx++) {
-                        let imgObj = page[idx];
-                        let col = idx % grid.cols;
-                        let row = Math.floor(idx / grid.cols);
-                        let x = mPx + col * (cellW + spPx);
-                        let y = mPx + row * (cellH + spPx);
+          if (s.fit === "cover") {
+            const scale = Math.max(cellW / pixelW, cellH / pixelH);
+            printW = pixelW * scale;
+            printH = pixelH * scale;
+          } else if (imageAspect > cellAspect) {
+            printW = cellW;
+            printH = cellW / imageAspect;
+          } else {
+            printH = cellH;
+            printW = cellH * imageAspect;
+          }
 
-                        let drawW = imgObj.imgElement.width;
-                        let drawH = imgObj.imgElement.height;
-                        let imgAspect = drawW / drawH;
-                        let cellAspect = cellW / cellH;
-                        
-                        let rotated = false;
-                        if (s.autoRotate && ((cellAspect >= 1 && imgAspect < 1) || (cellAspect < 1 && imgAspect >= 1))) {
-                            rotated = true;
-                            imgAspect = 1 / imgAspect;
-                        }
+          const ppiW = pixelW / Math.max(0.01, printW / 25.4);
+          const ppiH = pixelH / Math.max(0.01, printH / 25.4);
+          return Math.min(ppiW, ppiH);
+        },
 
-                        ctx.save();
-                        // Gestion du Fit/Crop
-                        let sx=0, sy=0, sw=drawW, sh=drawH; // Source
-                        let dx=x, dy=y, dw=cellW, dh=cellH; // Dest
+        evaluateQuality(grid, images) {
+          if (!grid || !images.length) return { minPpi: 0, avgPpi: 0 };
+          const values = images.map((image) => this.estimateImagePpi(image, grid.cellW, grid.cellH));
+          return {
+            minPpi: Math.min(...values),
+            medianPpi: this.median(values),
+            avgPpi: values.reduce((sum, value) => sum + value, 0) / values.length
+          };
+        },
 
-                        if (s.fit === 'crop') {
-                            if (imgAspect > cellAspect) {
-                                sh = drawH; sw = drawH * cellAspect;
-                                sx = (drawW - sw) / 2;
-                            } else {
-                                sw = drawW; sh = drawW / cellAspect;
-                                sy = (drawH - sh) / 2;
-                            }
-                        } else { // Pad
-                            if (imgAspect > cellAspect) {
-                                dw = cellW; dh = cellW / imgAspect;
-                                dy = y + (cellH - dh) / 2;
-                            } else {
-                                dh = cellH; dw = cellH * imgAspect;
-                                dx = x + (cellW - dw) / 2;
-                            }
-                        }
+        median(values) {
+          if (!values.length) return 0;
+          const sorted = [...values].sort((a, b) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        },
 
-                        // Gestion de la rotation
-                        if (rotated) {
-                            // On inverse sx,sy,sw,sh logic car l'image d'origine n'est pas tournée
-                            ctx.translate(dx + dw/2, dy + dh/2);
-                            ctx.rotate(Math.PI / 2);
-                            // On dessine l'image tournée autour de son centre
-                            let revDw = dh; let revDh = dw;
-                            ctx.drawImage(imgObj.imgElement, sx, sy, sw, sh, -revDw/2, -revDh/2, revDw, revDh);
-                        } else {
-                            ctx.drawImage(imgObj.imgElement, sx, sy, sw, sh, dx, dy, dw, dh);
-                        }
-                        ctx.restore();
-                    }
-                    this.canvases.push(canvas);
-                }
-            },
+        getPageGrid(pageImages, forceAuto = false) {
+          const s = App.state.settings;
+          if (!forceAuto && s.layoutMode === "grid") {
+            return this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages));
+          }
+          return this.optimizeGrid(pageImages.length, pageImages);
+        },
 
-            loadLocalStorage() {
-                const saved = localStorage.getItem('montage_settings');
-                if (saved) Object.assign(this.settings, JSON.parse(saved));
-            },
-            saveLocalStorage() {
-                localStorage.setItem('montage_settings', JSON.stringify(this.settings));
+        evaluatePages(images, perPage, forcedGrid = null, forceAuto = false) {
+          const pages = this.chunkImages(images, Math.max(1, perPage));
+          const qualities = [];
+          const grids = [];
+
+          pages.forEach((pageImages) => {
+            const grid = forcedGrid || this.getPageGrid(pageImages, forceAuto);
+            if (!grid) return;
+            grids.push(grid);
+            qualities.push(this.evaluateQuality(grid, pageImages));
+          });
+
+          const minPpi = qualities.length ? Math.min(...qualities.map((quality) => quality.minPpi)) : 0;
+          const medianPpi = qualities.length ? this.median(qualities.map((quality) => quality.medianPpi)) : 0;
+          const avgPpi = qualities.length ? qualities.reduce((sum, quality) => sum + quality.avgPpi, 0) / qualities.length : 0;
+          const minSide = grids.length ? Math.min(...grids.map((grid) => grid.minSide)) : 0;
+          const fillRatio = grids.length ? grids.reduce((sum, grid) => sum + grid.fillRatio, 0) / grids.length : 0;
+          const score = grids.length ? grids.reduce((sum, grid) => sum + grid.score, 0) / grids.length : 0;
+
+          return { minPpi, medianPpi, avgPpi, minSide, fillRatio, score, pages: pages.length };
+        },
+
+        recommendPerPage(images) {
+          const s = App.state.settings;
+          const maxCount = Math.min(images.length, s.maxAutoCount);
+          const candidates = [];
+
+          for (let count = 1; count <= maxCount; count += 1) {
+            const grid = this.optimizeGrid(count, images.slice(0, count));
+            if (!grid) continue;
+            const pageQuality = this.evaluatePages(images, count, null, true);
+            const respectsSize = pageQuality.minSide >= s.minShortSide;
+            const respectsPpi = pageQuality.minPpi >= s.minPrintPpi;
+            const candidate = {
+              perPage: count,
+              grid,
+              quality: {
+                minPpi: pageQuality.minPpi,
+                medianPpi: pageQuality.medianPpi,
+                avgPpi: pageQuality.avgPpi
+              },
+              pageQuality,
+              valid: respectsSize && respectsPpi,
+              reason: !respectsSize
+                ? "les images deviendraient trop petites"
+                : (!respectsPpi ? "certaines images seraient trop agrandies" : ""),
+              variants: []
+            };
+
+            candidate.closeness = Math.min(pageQuality.minSide / s.minShortSide, pageQuality.minPpi / s.minPrintPpi) + (pageQuality.score * 0.05);
+            candidates.push(candidate);
+          }
+
+          const valid = candidates.filter((candidate) => candidate.valid);
+          const balanced = [...(valid.length ? valid : candidates)]
+            .sort((a, b) => (b.perPage - a.perPage) || (b.pageQuality.score - a.pageQuality.score))[0] || null;
+          const large = [...candidates]
+            .sort((a, b) => (b.pageQuality.minSide - a.pageQuality.minSide) || (b.quality.minPpi - a.quality.minPpi))[0] || null;
+          const dense = [...(valid.length ? valid : candidates)]
+            .sort((a, b) => (b.perPage - a.perPage) || (b.pageQuality.fillRatio - a.pageQuality.fillRatio))[0] || null;
+          const nearest = [...candidates].sort((a, b) => b.closeness - a.closeness)[0] || null;
+          const primary = balanced || nearest;
+
+          const variants = [
+            { key: "balanced", label: "Compromis", candidate: balanced },
+            { key: "large", label: "Images plus grandes", candidate: large },
+            { key: "dense", label: "Planche plus dense", candidate: dense }
+          ].filter((variant, index, list) => variant.candidate && list.findIndex((item) => item.candidate.perPage === variant.candidate.perPage) === index);
+
+          if (primary) primary.variants = variants;
+          App.state.recommendationOptions = variants;
+          return primary;
+        },
+
+        resolveLayout(images) {
+          const s = App.state.settings;
+          const imageCount = images.length;
+          if (!imageCount) return null;
+          App.state.recommendation = this.recommendPerPage(images);
+
+          if (s.layoutMode === "grid") {
+            const capacity = s.cols * s.rows;
+            const perPage = Math.min(imageCount, s.perPage, capacity);
+            const grid = this.scoreGrid(perPage, s.cols, s.rows, this.getImageAspectAverage(images.slice(0, perPage)));
+            const quality = grid ? this.evaluatePages(images, perPage, grid) : { minPpi: 0, medianPpi: 0, avgPpi: 0 };
+            const warning = s.perPage > capacity
+              ? `La grille forcée contient ${capacity} case(s), donc elle limite temporairement le choix de ${s.perPage} image(s) par page.`
+              : "";
+            return {
+              modeLabel: "Grille forcée",
+              perPage,
+              grid: grid || { cols: s.cols, rows: s.rows, cellW: 0, cellH: 0, minSide: 0, fillRatio: 0 },
+              quality,
+              warning: grid ? warning : "La grille forcée ne tient pas dans la zone imprimable."
+            };
+          }
+
+          const perPage = Math.min(imageCount, s.perPage);
+          const grid = this.optimizeGrid(perPage, images.slice(0, perPage));
+          const quality = grid ? this.evaluatePages(images, perPage) : { minPpi: 0, medianPpi: 0, avgPpi: 0 };
+          const qualityWarning = quality.minPpi && quality.minPpi < s.minPrintPpi
+            ? `Attention : au moins une image descend vers ${Math.round(quality.minPpi)} ppp imprimée.`
+            : "";
+          return {
+            modeLabel: "Nombre choisi",
+            perPage,
+            grid,
+            quality,
+            warning: qualityWarning
+          };
+        },
+
+        shouldRotate(imageAspect, cellAspect) {
+          const normalDiff = Math.abs(Math.log(Math.max(0.01, imageAspect / cellAspect)));
+          const rotatedDiff = Math.abs(Math.log(Math.max(0.01, (1 / imageAspect) / cellAspect)));
+          return rotatedDiff + 0.04 < normalDiff;
+        },
+
+        chunkImages(images, perPage) {
+          const pages = [];
+          for (let index = 0; index < images.length; index += perPage) {
+            pages.push(images.slice(index, index + perPage));
+          }
+          return pages;
+        },
+
+        validateLayout() {
+          const s = App.state.settings;
+          const paper = this.getPaperSize();
+          const minPaperSide = Math.min(paper.width, paper.height);
+          if (s.margin * 2 >= minPaperSide) {
+            return "Les marges sont trop grandes pour ce format papier.";
+          }
+          if (s.spacing > Math.max(paper.width, paper.height)) {
+            return "L'espacement est trop grand pour ce format papier.";
+          }
+          if (s.layoutMode === "grid" && s.cols * s.rows > 160) {
+            return "La grille forcée est trop lourde à calculer. Réduis lignes ou colonnes.";
+          }
+          return "";
+        },
+
+        estimateCanvasLoad(pageCount) {
+          const paper = this.getPaperSize();
+          const dpi = App.state.settings.dpi;
+          const widthPx = this.mmToPx(paper.width, dpi);
+          const heightPx = this.mmToPx(paper.height, dpi);
+          const megaPixelsPerPage = (widthPx * heightPx) / 1000000;
+          return {
+            widthPx,
+            heightPx,
+            megaPixelsPerPage,
+            totalMegaPixels: megaPixelsPerPage * pageCount
+          };
+        },
+
+        async generate() {
+          const warning = this.validateLayout();
+          if (warning) {
+            App.state.canvases = [];
+            App.state.lastLayout = { warning };
+            App.state.recommendation = null;
+            App.state.recommendationOptions = [];
+            return;
+          }
+
+          const images = App.state.images;
+          if (!images.length) {
+            App.state.canvases = [];
+            App.state.lastLayout = null;
+            App.state.recommendation = null;
+            App.state.recommendationOptions = [];
+            return;
+          }
+
+          const layout = this.resolveLayout(images);
+          App.state.lastLayout = layout;
+          if (!layout || !layout.grid || layout.grid.cellW <= 0 || layout.grid.cellH <= 0) {
+            App.state.canvases = [];
+            return;
+          }
+
+          const pages = this.chunkImages(images, Math.max(1, layout.perPage));
+          const paper = this.getPaperSize();
+          const s = App.state.settings;
+          const load = this.estimateCanvasLoad(pages.length);
+          const widthPx = load.widthPx;
+          const heightPx = load.heightPx;
+          const marginPx = this.mmToPx(s.margin, s.dpi);
+          const spacingPx = this.mmToPx(s.spacing, s.dpi);
+          const canvases = [];
+
+          layout.canvasLoad = load;
+          if (load.totalMegaPixels > App.config.memorySoftLimitMegaPixels) {
+            App.state.canvases = [];
+            App.state.lastLayout = {
+              ...layout,
+              warning: `Planche trop lourde à générer (${Math.round(load.totalMegaPixels)} mégapixels cumulés). Réduis le DPI, le nombre de pages ou les images par page.`
+            };
+            return;
+          }
+
+          for (const pageImages of pages) {
+            const grid = s.layoutMode === "grid"
+              ? this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages))
+              : this.optimizeGrid(pageImages.length, pageImages);
+            const canvas = document.createElement("canvas");
+            canvas.width = widthPx;
+            canvas.height = heightPx;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, widthPx, heightPx);
+
+            const availableW = widthPx - (2 * marginPx) - ((grid.cols - 1) * spacingPx);
+            const availableH = heightPx - (2 * marginPx) - ((grid.rows - 1) * spacingPx);
+            const cellW = availableW / grid.cols;
+            const cellH = availableH / grid.rows;
+
+            pageImages.forEach((image, index) => {
+              const col = index % grid.cols;
+              const row = Math.floor(index / grid.cols);
+              const cell = {
+                x: marginPx + (col * (cellW + spacingPx)),
+                y: marginPx + (row * (cellH + spacingPx)),
+                w: cellW,
+                h: cellH
+              };
+              this.drawImageInCell(ctx, image, cell);
+            });
+
+            canvases.push(canvas);
+          }
+
+          App.state.canvases = canvases;
+        },
+
+        drawImageInCell(ctx, image, cell) {
+          const s = App.state.settings;
+          const img = image.element;
+          const cellAspect = cell.w / cell.h;
+          const rotate = s.autoRotate && this.shouldRotate(image.aspect, cellAspect);
+          const orientedW = rotate ? img.naturalHeight : img.naturalWidth;
+          const orientedH = rotate ? img.naturalWidth : img.naturalHeight;
+
+          let drawW;
+          let drawH;
+          if (s.fit === "cover") {
+            const scale = Math.max(cell.w / orientedW, cell.h / orientedH);
+            drawW = orientedW * scale;
+            drawH = orientedH * scale;
+          } else {
+            const scale = Math.min(cell.w / orientedW, cell.h / orientedH);
+            drawW = orientedW * scale;
+            drawH = orientedH * scale;
+          }
+
+          const dx = cell.x + ((cell.w - drawW) / 2);
+          const dy = cell.y + ((cell.h - drawH) / 2);
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(cell.x, cell.y, cell.w, cell.h);
+          ctx.clip();
+
+          if (rotate) {
+            ctx.translate(dx + (drawW / 2), dy + (drawH / 2));
+            ctx.rotate(Math.PI / 2);
+            ctx.drawImage(img, -drawH / 2, -drawW / 2, drawH, drawW);
+          } else {
+            ctx.drawImage(img, dx, dy, drawW, drawH);
+          }
+
+          ctx.restore();
+
+          if (s.drawGuides) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(60, 80, 75, 0.28)";
+            ctx.lineWidth = Math.max(1, App.model.mmToPx(0.15, s.dpi));
+            ctx.strokeRect(cell.x, cell.y, cell.w, cell.h);
+            ctx.restore();
+          }
+        }
+      },
+
+      view: {
+        applySettingsToForm() {
+          const s = App.state.settings;
+          Object.entries(App.els.fields).forEach(([key, element]) => {
+            if (element.type === "checkbox") element.checked = Boolean(s[key]);
+            else element.value = s[key];
+          });
+        },
+
+        readFormToSettings() {
+          const fields = App.els.fields;
+          const raw = {
+            paper: fields.paper.value,
+            orientation: fields.orientation.value,
+            customWidth: fields.customWidth.value,
+            customHeight: fields.customHeight.value,
+            margin: fields.margin.value,
+            spacing: fields.spacing.value,
+            layoutMode: fields.layoutMode.value,
+            minShortSide: fields.minShortSide.value,
+            minPrintPpi: fields.minPrintPpi.value,
+            maxAutoCount: fields.maxAutoCount.value,
+            perPage: fields.perPage.value,
+            cols: fields.cols.value,
+            rows: fields.rows.value,
+            fit: fields.fit.value,
+            dpi: fields.dpi.value,
+            autoRotate: fields.autoRotate.checked,
+            drawGuides: fields.drawGuides.checked,
+            theme: App.state.settings.theme
+          };
+          App.state.settings = App.model.normalizeSettings(raw);
+          this.applySettingsToForm();
+          this.updateModeVisibility();
+          this.updatePrintPageStyle();
+          App.store.save();
+        },
+
+        applyTheme() {
+          document.documentElement.setAttribute("data-theme", App.state.settings.theme);
+          App.els.themeToggle.textContent = App.state.settings.theme === "dark" ? "☀️" : "🌙";
+          App.els.appVersion.textContent = `v${App.config.version}`;
+        },
+
+        updateModeVisibility() {
+          const mode = App.state.settings.layoutMode;
+          const isCustom = App.state.settings.paper === "CUSTOM";
+          document.querySelectorAll(".grid-setting").forEach((el) => { el.hidden = mode !== "grid"; });
+          document.querySelectorAll(".custom-field").forEach((el) => { el.hidden = !isCustom; });
+        },
+
+        updatePrintPageStyle() {
+          const paper = App.model.getPaperSize();
+          const orientation = App.state.settings.orientation;
+          App.els.printStyle.textContent = `@media print { @page { size: ${paper.width}mm ${paper.height}mm; margin: 0; } }`;
+          document.documentElement.style.setProperty("--print-page-w", `${paper.width}mm`);
+          document.documentElement.style.setProperty("--print-page-h", `${paper.height}mm`);
+          document.documentElement.dataset.orientation = orientation;
+        },
+
+        render() {
+          if (!App.state.images.length) {
+            this.renderEmpty();
+          } else if (!App.state.canvases.length && App.state.lastLayout?.warning) {
+            this.renderNotice(App.state.lastLayout.warning);
+          } else {
+            this.renderCanvases();
+          }
+          this.renderStats();
+          this.updateButtons();
+        },
+
+        renderNotice(message) {
+          App.els.preview.innerHTML = "";
+          const notice = document.createElement("section");
+          notice.className = "empty-state warning";
+          const title = document.createElement("h2");
+          title.textContent = "Ajustement nécessaire";
+          const text = document.createElement("p");
+          text.textContent = message;
+          notice.append(title, text);
+          App.els.preview.appendChild(notice);
+          App.els.previewNote.textContent = "La planche n'a pas été générée avec ces réglages.";
+          this.updateButtons();
+        },
+
+        renderEmpty() {
+          App.els.preview.innerHTML = "";
+          const empty = document.createElement("section");
+          empty.className = "empty-state";
+          const title = document.createElement("h2");
+          title.textContent = App.i18n.emptyTitle;
+          const text = document.createElement("p");
+          text.textContent = App.i18n.emptyText;
+          empty.append(title, text);
+          App.els.preview.appendChild(empty);
+          App.els.previewNote.textContent = App.i18n.emptyPreview;
+          this.updateButtons();
+        },
+
+        renderCanvases() {
+          const paper = App.model.getPaperSize();
+          const previewWidth = paper.width >= paper.height ? 820 : 620;
+          App.els.preview.innerHTML = "";
+          App.state.canvases.forEach((canvas, index) => {
+            const wrapper = document.createElement("section");
+            wrapper.className = "page-wrapper";
+            wrapper.dataset.page = `Page ${index + 1}`;
+            wrapper.style.setProperty("--preview-width", `${previewWidth}px`);
+            wrapper.style.setProperty("--print-page-w", `${paper.width}mm`);
+            wrapper.style.setProperty("--print-page-h", `${paper.height}mm`);
+            wrapper.appendChild(canvas);
+            App.els.preview.appendChild(wrapper);
+          });
+          App.els.previewNote.textContent = `${App.state.canvases.length} page(s) générée(s) pour ${App.state.images.length} image(s).`;
+        },
+
+        renderStats() {
+          const stats = App.els.stats;
+          stats.innerHTML = "";
+          const paper = App.model.getPaperSize();
+          const layout = App.state.lastLayout;
+          const rows = [
+            ["Images chargées", String(App.state.images.length)],
+            ["Papier", `${this.formatNumber(paper.width)} x ${this.formatNumber(paper.height)} mm`]
+          ];
+
+          if (layout && layout.grid) {
+            rows.push(["Mode", layout.modeLabel]);
+            rows.push(["Images / page", String(layout.perPage)]);
+            rows.push(["Grille", `${layout.grid.cols} x ${layout.grid.rows}`]);
+            rows.push(["Case image", `${this.formatNumber(layout.grid.cellW)} x ${this.formatNumber(layout.grid.cellH)} mm`]);
+            rows.push(["Remplissage estimé", `${Math.round(layout.grid.fillRatio * 100)} %`]);
+            if (layout.quality && layout.quality.minPpi) {
+              rows.push(["Netteté min.", `${Math.round(layout.quality.minPpi)} ppp`]);
+              rows.push(["Netteté médiane", `${Math.round(layout.quality.medianPpi || layout.quality.avgPpi)} ppp`]);
+              rows.push(["Repère netteté", this.getSharpnessGuide(layout.quality.minPpi)]);
             }
-        };
-
-        /**
-         * ==================================================================
-         * 3. VUE (UI et DOM)
-         * ==================================================================
-         */
-        const View = {
-            lang: 'fr',
-            theme: 'light',
-            
-            init() {
-                this.container = document.getElementById('canvas-container');
-                this.inputs = {
-                    paper: document.getElementById('setting-paper'),
-                    orientation: document.getElementById('setting-orientation'),
-                    dpi: document.getElementById('setting-dpi'),
-                    perPage: document.getElementById('setting-perPage'),
-                    margin: document.getElementById('setting-margin'),
-                    spacing: document.getElementById('setting-spacing'),
-                    fit: document.getElementById('setting-fit'),
-                    cols: document.getElementById('setting-cols'),
-                    rows: document.getElementById('setting-rows'),
-                    autoRotate: document.getElementById('setting-autoRotate')
-                };
-            },
-
-            updateFormFromModel() {
-                for (let key in this.inputs) {
-                    if (this.inputs[key].type === 'checkbox') {
-                        this.inputs[key].checked = Model.settings[key];
-                    } else {
-                        this.inputs[key].value = Model.settings[key];
-                    }
-                }
-            },
-
-            updateModelFromForm() {
-                for (let key in this.inputs) {
-                    if (this.inputs[key].type === 'checkbox') {
-                        Model.settings[key] = this.inputs[key].checked;
-                    } else if (this.inputs[key].type === 'number') {
-                        Model.settings[key] = parseFloat(this.inputs[key].value) || '';
-                    } else {
-                        Model.settings[key] = this.inputs[key].value;
-                    }
-                }
-                Model.saveLocalStorage();
-            },
-
-            renderCanvases() {
-                this.container.innerHTML = '';
-                Model.canvases.forEach((c, i) => {
-                    let wrapper = document.createElement('div');
-                    wrapper.className = 'page-wrapper';
-                    wrapper.setAttribute('data-page', `Page ${i+1}`);
-                    // Règle la taille d'affichage CSS (pour ne pas exploser l'écran avec du 300dpi)
-                    // On simule une taille physique sur l'écran. 
-                    let screenWidthStr = Model.settings.orientation === 'landscape' ? '800px' : '600px';
-                    wrapper.style.maxWidth = screenWidthStr;
-                    wrapper.appendChild(c);
-                    this.container.appendChild(wrapper);
-                });
-            },
-
-            toggleTheme() {
-                this.theme = this.theme === 'light' ? 'dark' : 'light';
-                document.documentElement.setAttribute('data-theme', this.theme);
-                document.getElementById('btn-theme').textContent = this.theme === 'light' ? '🌙' : '☀️';
-            },
-
-            toggleLang() {
-                this.lang = this.lang === 'fr' ? 'en' : 'fr';
-                document.getElementById('btn-lang').textContent = this.lang === 'fr' ? '🇬🇧' : '🇫🇷';
-                const dict = Dictionary[this.lang];
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.getAttribute('data-i18n');
-                    if (dict[key]) {
-                        if (el.tagName === 'INPUT' && el.type === 'button') el.value = dict[key];
-                        else el.textContent = dict[key];
-                    }
-                });
+            if (layout.canvasLoad) {
+              rows.push(["Poids de calcul", `${Math.round(layout.canvasLoad.totalMegaPixels)} MP cumulés`]);
             }
-        };
+          } else if (layout && layout.warning) {
+            rows.push(["Point d'attention", layout.warning]);
+          } else {
+            rows.push(["Mode", "En attente"]);
+          }
 
-        /**
-         * ==================================================================
-         * 4. CONTRÔLEUR (Événements)
-         * ==================================================================
-         */
-        const Controller = {
-            async init() {
-                Model.loadLocalStorage();
-                View.init();
-                View.updateFormFromModel();
-                this.bindEvents();
-            },
+          rows.forEach(([label, value]) => {
+            const item = document.createElement("div");
+            item.className = "stat";
+            const dt = document.createElement("dt");
+            dt.textContent = label;
+            const dd = document.createElement("dd");
+            dd.innerHTML = "";
+            const strong = document.createElement("strong");
+            strong.textContent = value;
+            dd.appendChild(strong);
+            item.append(dt, dd);
+            stats.appendChild(item);
+          });
 
-            bindEvents() {
-                // Changements de paramètres -> Regénération
-                for (let key in View.inputs) {
-                    View.inputs[key].addEventListener('change', async () => {
-                        View.updateModelFromForm();
-                        await Model.generateMontage();
-                        View.renderCanvases();
-                    });
-                }
+          if (layout && layout.warning) {
+            this.showMessage(layout.warning, "warning", false);
+          } else if (layout?.canvasLoad && layout.canvasLoad.totalMegaPixels > App.config.memoryWarningMegaPixels) {
+            this.showMessage(`Cette génération est lourde (${Math.round(layout.canvasLoad.totalMegaPixels)} mégapixels cumulés). Réduire le DPI peut améliorer la fluidité.`, "warning", false);
+          } else if (App.els.message.classList.contains("warning")) {
+            App.els.message.className = "message";
+            App.els.message.textContent = "";
+          }
+          this.renderSuggestion();
+        },
 
-                // Chargement des images
-                document.getElementById('input-images').addEventListener('change', async (e) => {
-                    const files = Array.from(e.target.files);
-                    if(!files.length) return;
-                    
-                    // Chargement asynchrone des images
-                    const loadImg = (file) => new Promise((resolve) => {
-                        const url = URL.createObjectURL(file);
-                        const img = new Image();
-                        img.onload = () => {
-                            resolve({ file, imgElement: img, aspect: img.width / img.height });
-                        };
-                        img.src = url;
-                    });
+        renderSuggestion() {
+          const suggestion = App.state.recommendation;
+          if (!suggestion || !App.state.images.length) {
+            App.els.suggestionBox.hidden = true;
+            App.els.suggestionText.textContent = "";
+            App.els.suggestionActions.innerHTML = "";
+            return;
+          }
 
-                    // Ajoute aux existantes
-                    let newImages = await Promise.all(files.map(loadImg));
-                    Model.images = Model.images.concat(newImages);
-                    
-                    await Model.generateMontage();
-                    View.renderCanvases();
-                    e.target.value = ''; // Reset input
-                });
+          const ppi = Math.round(suggestion.quality.minPpi);
+          const cell = `${this.formatNumber(suggestion.grid.cellW)} x ${this.formatNumber(suggestion.grid.cellH)} mm`;
+          const status = suggestion.valid
+            ? "Suggestion équilibrée"
+            : `Suggestion prudente, car ${suggestion.reason}`;
+          App.els.suggestionText.textContent = `${status} : ${suggestion.perPage} image(s) par page, grille ${suggestion.grid.cols} x ${suggestion.grid.rows}, case ${cell}, netteté min. estimée ${ppi} ppp.`;
+          App.els.suggestionActions.innerHTML = "";
+          (App.state.recommendationOptions || []).forEach((option) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn";
+            button.dataset.perPage = String(option.candidate.perPage);
+            button.textContent = `${option.label} : ${option.candidate.perPage} image(s) / page`;
+            button.disabled = option.candidate.perPage === App.state.settings.perPage;
+            App.els.suggestionActions.appendChild(button);
+          });
+          App.els.suggestionBox.hidden = false;
+        },
 
-                // Vider
-                document.getElementById('btn-clear').addEventListener('click', () => {
-                    Model.images = [];
-                    Model.canvases = [];
-                    View.renderCanvases();
-                });
+        getSharpnessGuide(ppi) {
+          if (!Number.isFinite(ppi) || ppi <= 0) return "en attente";
+          if (ppi < 120) return "faible : plutôt brouillon à l'impression";
+          if (ppi < 180) return "limite : acceptable en petite vignette ou vu de loin";
+          if (ppi < 240) return "correct : généralement lisible";
+          if (ppi < 300) return "bon : impression nette dans la plupart des cas";
+          return "excellent : marge confortable pour une impression fine";
+        },
 
-                // Impression (Sert de PDF)
-                document.getElementById('btn-print').addEventListener('click', () => {
-                    if (Model.canvases.length === 0) return alert('Aucune image générée.');
-                    window.print();
-                });
+        showConfirm(message) {
+          App.els.confirmText.textContent = message;
+          App.els.confirmModal.hidden = false;
+          App.els.confirmCancel.focus();
+          return new Promise((resolve) => {
+            App.state.confirmResolver = resolve;
+          });
+        },
 
-                // Export JPG (Télécharge chaque canvas)
-                document.getElementById('btn-export-jpg').addEventListener('click', () => {
-                    if (Model.canvases.length === 0) return;
-                    Model.canvases.forEach((canvas, i) => {
-                        let link = document.createElement('a');
-                        link.download = `Planche_Page_${i+1}.jpg`;
-                        link.href = canvas.toDataURL('image/jpeg', 1.0); // 1.0 qualité max
-                        link.click();
-                    });
-                });
+        closeConfirm(value) {
+          App.els.confirmModal.hidden = true;
+          if (App.state.confirmResolver) {
+            App.state.confirmResolver(value);
+            App.state.confirmResolver = null;
+          }
+        },
 
-                // UI Toggles
-                document.getElementById('btn-theme').addEventListener('click', () => View.toggleTheme());
-                document.getElementById('btn-lang').addEventListener('click', () => View.toggleLang());
+        updateButtons() {
+          const hasCanvases = App.state.canvases.length > 0;
+          App.els.print.disabled = !hasCanvases;
+          App.els.exportJpg.disabled = !hasCanvases;
+          App.els.clear.disabled = App.state.images.length === 0;
+        },
+
+        showMessage(text, type = "", autoHide = true) {
+          clearTimeout(App.state.messageTimer);
+          App.els.message.textContent = text;
+          App.els.message.className = `message is-visible ${type}`.trim();
+          if (autoHide) {
+            App.state.messageTimer = setTimeout(() => {
+              App.els.message.className = "message";
+              App.els.message.textContent = "";
+            }, 4200);
+          }
+        },
+
+        formatNumber(value) {
+          return Number(value).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+        }
+      },
+
+      controller: {
+        bind() {
+          App.els.themeToggle.addEventListener("click", () => {
+            App.state.settings.theme = App.state.settings.theme === "dark" ? "light" : "dark";
+            App.view.applyTheme();
+            App.store.save();
+          });
+
+          App.els.pickImages.addEventListener("click", () => App.els.imageInput.click());
+          App.els.imageInput.addEventListener("change", async (event) => {
+            await this.addFiles(Array.from(event.target.files || []));
+            event.target.value = "";
+          });
+
+          Object.values(App.els.fields).forEach((field) => {
+            field.addEventListener("input", () => this.updateFromForm());
+            field.addEventListener("change", () => this.updateFromForm());
+          });
+
+          App.els.dropZone.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            App.els.dropZone.classList.add("is-over");
+          });
+          App.els.dropZone.addEventListener("dragleave", () => App.els.dropZone.classList.remove("is-over"));
+          App.els.dropZone.addEventListener("drop", async (event) => {
+            event.preventDefault();
+            App.els.dropZone.classList.remove("is-over");
+            await this.addFiles(Array.from(event.dataTransfer.files || []));
+          });
+
+          App.els.print.addEventListener("click", () => {
+            if (!App.state.canvases.length) {
+              App.view.showMessage(App.i18n.noImagePrint, "warning");
+              return;
             }
-        };
+            App.view.updatePrintPageStyle();
+            window.print();
+          });
 
-        // Lancement au chargement
-        document.addEventListener('DOMContentLoaded', () => Controller.init());
+          App.els.exportJpg.addEventListener("click", () => this.exportJpg());
+          App.els.exportJson.addEventListener("click", () => this.exportJson());
+          App.els.importJson.addEventListener("click", () => App.els.jsonInput.click());
+          App.els.suggestionActions.addEventListener("click", async (event) => {
+            const button = event.target.closest("button[data-per-page]");
+            if (!button) return;
+            await this.applySuggestion(Number(button.dataset.perPage));
+          });
+          App.els.jsonInput.addEventListener("change", async (event) => {
+            const file = event.target.files && event.target.files[0];
+            if (file) await this.importJson(file);
+            event.target.value = "";
+          });
 
-    </script>
+          App.els.clear.addEventListener("click", () => this.clearImages());
+          App.els.confirmCancel.addEventListener("click", () => App.view.closeConfirm(false));
+          App.els.confirmOk.addEventListener("click", () => App.view.closeConfirm(true));
+          App.els.confirmModal.addEventListener("click", (event) => {
+            if (event.target === App.els.confirmModal) App.view.closeConfirm(false);
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && !App.els.confirmModal.hidden) App.view.closeConfirm(false);
+          });
+        },
+
+        async updateFromForm() {
+          App.view.readFormToSettings();
+          await App.model.generate();
+          App.view.render();
+        },
+
+        async applySuggestion(perPage) {
+          const nextPerPage = perPage || App.state.recommendation?.perPage;
+          if (!nextPerPage) return;
+          App.state.settings.perPage = nextPerPage;
+          App.state.settings.layoutMode = "count";
+          App.view.applySettingsToForm();
+          App.view.updateModeVisibility();
+          App.store.save();
+          await App.model.generate();
+          App.view.render();
+          App.view.showMessage(`Suggestion appliquée : ${nextPerPage} image(s) par page.`);
+        },
+
+        async addFiles(files) {
+          const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+          if (!imageFiles.length) {
+            App.view.showMessage(App.i18n.noReadableImage, "warning");
+            return;
+          }
+
+          const loaded = [];
+          for (const file of imageFiles) {
+            try {
+              loaded.push(await this.loadImage(file));
+            } catch (error) {
+              App.view.showMessage(`Image ignorée : ${file.name}`, "warning");
+            }
+          }
+
+          App.state.images.push(...loaded);
+          await App.model.generate();
+          App.view.render();
+          App.view.showMessage(`${loaded.length} image(s) ajoutée(s).`);
+        },
+
+        loadImage(file) {
+          return new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+              resolve({
+                id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                name: file.name,
+                url,
+                element: img,
+                aspect: img.naturalWidth / img.naturalHeight
+              });
+            };
+            img.onerror = () => {
+              URL.revokeObjectURL(url);
+              reject(new Error("Image illisible"));
+            };
+            img.src = url;
+          });
+        },
+
+        async clearImages() {
+          if (!App.state.images.length) return;
+          const ok = await App.view.showConfirm(App.i18n.clearConfirm);
+          if (!ok) return;
+          App.state.images.forEach((image) => URL.revokeObjectURL(image.url));
+          App.state.images = [];
+          App.state.canvases = [];
+          App.state.lastLayout = null;
+          App.view.render();
+          App.view.showMessage(App.i18n.imagesCleared);
+        },
+
+        exportJpg() {
+          if (!App.state.canvases.length) return;
+          App.state.canvases.forEach((canvas, index) => {
+            const link = document.createElement("a");
+            link.download = `printpics-page-${index + 1}.jpg`;
+            link.href = canvas.toDataURL("image/jpeg", 0.95);
+            link.click();
+          });
+        },
+
+        exportJson() {
+          const payload = {
+            app: App.config.appName,
+            version: App.config.version,
+            exportedAt: new Date().toISOString(),
+            settings: App.state.settings
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = "printpics-reglages.json";
+          link.click();
+          URL.revokeObjectURL(url);
+        },
+
+        async importJson(file) {
+          try {
+            const raw = await file.text();
+            const parsed = JSON.parse(raw);
+            if (parsed.app && ![App.config.appName, "printpic"].includes(parsed.app)) {
+              throw new Error("Profil incompatible");
+            }
+            const settings = parsed.settings || parsed;
+            App.state.settings = App.model.normalizeSettings({ ...App.state.settings, ...settings });
+            App.view.applySettingsToForm();
+            App.view.updateModeVisibility();
+            App.view.applyTheme();
+            App.view.updatePrintPageStyle();
+            App.store.save();
+            await App.model.generate();
+            App.view.render();
+            App.view.showMessage(App.i18n.profileImported);
+          } catch (error) {
+            App.view.showMessage(App.i18n.profileImportError, "warning");
+          }
+        }
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", () => App.init());
+  </script>
 </body>
 </html>
