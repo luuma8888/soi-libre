@@ -133,6 +133,19 @@
     }
     h1{margin:0;font-family:var(--serif);font-size:1.45rem;line-height:1.05;color:var(--brand)}
     .subtitle{margin:3px 0 0;color:var(--muted);font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .app-version{
+      display:inline-flex;
+      align-items:center;
+      width:max-content;
+      margin-top:6px;
+      padding:3px 8px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--panel);
+      color:var(--muted);
+      font-size:.72rem;
+      font-weight:800;
+    }
     .header-actions{display:flex;gap:7px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
     .data-panel{width:100%;display:none;justify-content:flex-end;gap:7px;flex-wrap:wrap}
     .data-panel.open{display:flex}
@@ -143,6 +156,22 @@
       border-radius:999px;padding:8px 12px;font-weight:750;font-size:.85rem;white-space:nowrap;
     }
     .nav button.active{background:linear-gradient(135deg,var(--brand),var(--rose),var(--brand-2));border-color:transparent;color:#fff}
+    .active-story-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:color-mix(in srgb,var(--panel) 86%, var(--sky-soft));
+      color:var(--muted);
+      font-size:.84rem;
+    }
+    .active-story-bar span{min-width:0}
+    .active-story-bar strong{color:var(--brand)}
+    .active-story-bar .btn{flex:0 0 auto}
 
     .hero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:stretch;margin-bottom:16px}
     .hero-main,.card{
@@ -200,6 +229,7 @@
     .btn.ghost{background:transparent}
     .btn.small-btn{padding:6px 10px;font-size:.8rem}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn input[type="checkbox"]{width:auto;margin:0}
     label.btn{display:inline-flex;margin:0;color:var(--text);font-size:.8rem;text-transform:none;letter-spacing:0}
     .link-card{width:100%;text-align:left;color:inherit;appearance:none}
     .link-card h3{margin-top:0}
@@ -258,6 +288,71 @@
       background:var(--panel);
     }
     .library-status{margin:0;color:var(--muted);font-size:.88rem}
+    .library-filter-card{margin-bottom:14px}
+    .story-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:12px}
+    .story-card{display:grid;gap:9px}
+    .story-card.archived{opacity:.68;background:color-mix(in srgb,var(--panel) 78%, var(--bg-soft))}
+    .story-card.active{border-color:var(--brand);box-shadow:var(--focus)}
+    .story-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .guidance-panel{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:60;
+      width:min(360px,calc(100vw - 28px));
+      max-height:min(72vh,620px);
+      overflow:auto;
+    }
+    .guidance-panel.collapsed .guidance-body{display:none}
+    .suggestion-list{display:grid;gap:7px;margin-top:8px}
+    .suggestion-btn{
+      width:100%;
+      text-align:left;
+      justify-content:flex-start;
+      border-radius:12px;
+      white-space:normal;
+      line-height:1.35;
+    }
+    .idea-modal{
+      position:fixed;
+      inset:0;
+      z-index:90;
+      display:none;
+      background:color-mix(in srgb,var(--bg) 88%, rgba(0,0,0,.22));
+      backdrop-filter:blur(18px);
+      padding:18px;
+      overflow:auto;
+    }
+    .idea-modal.open{display:block}
+    .idea-shell{
+      min-height:calc(100vh - 36px);
+      max-width:1120px;
+      margin:0 auto;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .idea-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .idea-head h2{font-family:var(--serif);color:var(--brand);margin:0 0 4px;line-height:1.12}
+    .idea-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:14px;align-items:start}
+    .idea-context{position:sticky;top:0}
+    .idea-section{margin-bottom:14px}
+    .idea-section h3{font-family:var(--serif);font-size:1.1rem;color:var(--brand);margin:0 0 8px}
+    .idea-cloud{display:flex;gap:8px;flex-wrap:wrap}
+    .idea-chip{
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--bg);
+      color:var(--text);
+      padding:8px 10px;
+      text-align:left;
+      font-weight:700;
+      line-height:1.35;
+    }
+    .idea-chip:hover{border-color:var(--brand)}
+    .idea-note{border-left:4px solid var(--leaf);padding:10px 12px;background:var(--panel-3);border-radius:12px;color:var(--muted)}
     .summary{
       white-space:pre-wrap;
       background:var(--panel);
@@ -274,6 +369,35 @@
       opacity:0;pointer-events:none;transition:.22s ease;font-weight:700;font-size:.9rem;
     }
     .toast.show{opacity:1;bottom:26px}
+    .confirm-modal{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(28,24,34,.38);
+      backdrop-filter:blur(10px);
+    }
+    .confirm-modal.open{display:flex}
+    .confirm-box{
+      width:min(100%,430px);
+      background:var(--panel);
+      color:var(--text);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .confirm-box h2{
+      margin:.1rem 0 .55rem;
+      font-family:var(--serif);
+      color:var(--brand);
+      font-size:1.25rem;
+    }
+    .confirm-box p{margin:0 0 14px;color:var(--muted)}
+    .confirm-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
     .hidden{display:none!important}
     .visually-hidden{
       position:absolute!important;
@@ -290,7 +414,8 @@
     @media(max-width:860px){
       .hero{grid-template-columns:1fr}
       .grid.two,.grid.three,.inline-fields{grid-template-columns:1fr}
-      .library-controls{grid-template-columns:1fr}
+      .library-controls,.story-tools,.idea-layout{grid-template-columns:1fr}
+      .idea-context{position:static}
       .scene-workspace{grid-template-columns:1fr}
       .scene-toc{position:static;max-height:none;display:flex;overflow:auto;padding-bottom:4px}
       .scene-toc button{min-width:210px}
@@ -300,9 +425,25 @@
     @media(max-width:620px){
       .app{padding:12px 9px 72px}
       header{margin:-12px -9px 12px;padding:10px 9px 8px}
+      .header-row{
+        display:grid;
+        grid-template-columns:minmax(0,1fr);
+        gap:8px;
+      }
+      .brand{align-items:flex-start}
       .logo{width:40px;height:40px;border-radius:14px}
       h1{font-size:1.12rem}
       .subtitle{display:none}
+      .app-version{margin-top:5px}
+      .header-actions{
+        width:100%;
+        justify-content:flex-start;
+        flex-wrap:nowrap;
+        overflow:auto;
+        padding-bottom:2px;
+        scrollbar-width:none;
+      }
+      .header-actions::-webkit-scrollbar{display:none}
       .header-actions .btn{padding:6px 9px;font-size:.78rem}
       .hero-main{padding:16px}
       .card{padding:13px;border-radius:15px}
@@ -310,10 +451,16 @@
     }
 
     @media(max-width:620px){
-      .header-actions{width:100%;justify-content:flex-start}
       .data-panel{justify-content:flex-start}
+      .active-story-bar{align-items:flex-start;border-radius:16px;flex-direction:column}
       .beat-head{display:block}
       .beat-actions .btn{flex:1 1 calc(50% - 8px)}
+      .guidance-panel{left:9px;right:9px;bottom:9px;width:auto;max-height:42vh}
+      .guidance-panel.collapsed{max-height:none}
+      .idea-modal{padding:8px}
+      .idea-shell{min-height:calc(100vh - 16px);border-radius:18px;padding:13px}
+      .idea-head{display:block}
+      .idea-head .row{margin-top:10px}
     }
 
     @media(prefers-reduced-motion:reduce){
@@ -341,7 +488,7 @@
     }
 
     @media print{
-      header,.nav,.no-print,.toast,.btn{display:none!important}
+      header,.nav,.no-print,.toast,.btn,.idea-modal,.confirm-modal{display:none!important}
       body:before{display:none!important}
       body{background:#fff!important;color:#111!important}
       .app{max-width:none;padding:0}
@@ -372,6 +519,7 @@
           <div>
             <h1>Studio d'histoires pédagogiques</h1>
             <p class="subtitle">Créer des récits qui transmettent sans écraser, avec valeurs, scènes et activité associée.</p>
+            <span class="app-version" id="appVersion">v0.1.alpha</span>
           </div>
         </div>
         <div class="header-actions no-print">
@@ -379,7 +527,8 @@
           <button class="btn small-btn" type="button" data-action="toggle-autosave" id="autosaveButton" aria-pressed="true">Sauvegarde locale</button>
           <button class="btn small-btn" type="button" data-action="toggle-data-panel" id="dataPanelButton" aria-expanded="false" aria-controls="dataPanel">Données</button>
           <div class="data-panel" id="dataPanel">
-            <button class="btn small-btn" type="button" data-action="export-json">Exporter JSON</button>
+            <button class="btn small-btn" type="button" data-action="export-json">Exporter cette histoire</button>
+            <button class="btn small-btn" type="button" data-action="export-studio">Exporter le studio</button>
             <button class="btn small-btn" type="button" data-action="export-markdown">Exporter Markdown</button>
             <button class="btn small-btn" type="button" data-action="open-import">Importer</button>
             <input class="visually-hidden" id="importFile" type="file" accept="application/json,.json" tabindex="-1">
@@ -389,12 +538,17 @@
       <nav class="nav no-print" aria-label="Navigation principale">
         <button type="button" data-tab="accueil" class="active" aria-current="page">Accueil</button>
         <button type="button" data-tab="guide">Guide</button>
+        <button type="button" data-tab="histoires">Mes histoires</button>
         <button type="button" data-tab="histoire">Histoire</button>
         <button type="button" data-tab="trame">Trame</button>
         <button type="button" data-tab="scenes">Scènes</button>
         <button type="button" data-tab="bibliotheque">Bibliothèque</button>
         <button type="button" data-tab="synthese">Synthèse</button>
       </nav>
+      <div class="active-story-bar no-print" id="activeStoryBar" aria-live="polite">
+        <span>Histoire en cours : <strong id="activeStoryTitle">Histoire sans titre</strong></span>
+        <button class="btn small-btn" type="button" data-tab="histoires">Gérer les histoires</button>
+      </div>
     </header>
 
     <main>
@@ -417,8 +571,10 @@
               <span class="chip sky">export JSON</span>
             </div>
             <div class="hr"></div>
-            <button class="btn sky no-print" type="button" data-action="continue-next" id="nextStepButton">Commencer la fiche</button>
-            <button class="btn primary no-print" type="button" data-action="load-demo">Charger l'exemple</button>
+            <div class="row no-print">
+              <button class="btn sky" type="button" data-action="continue-next" id="nextStepButton">Commencer la fiche</button>
+              <button class="btn primary" type="button" data-action="load-demo">Charger l'exemple</button>
+            </div>
             <p class="small" id="lastSavedText">Dernière sauvegarde : non enregistrée.</p>
             <p class="small" id="nextStepText">Prochaine marche : préciser l'intention du récit.</p>
           </aside>
@@ -482,6 +638,32 @@
             <div class="library-card"><strong>Bilan</strong><p class="small">Noter ce qui a nourri, ce qui était trop fort, ce qui mérite une prochaine histoire.</p></div>
           </div>
         </article>
+      </section>
+
+      <section class="section" data-section="histoires">
+        <div class="card">
+          <div class="row space">
+            <div>
+              <h2>Mes histoires</h2>
+              <p class="muted">Créer, ouvrir, dupliquer ou exporter plusieurs récits sans passer par l'import/export à chaque changement.</p>
+            </div>
+            <div class="row no-print">
+              <button class="btn primary" type="button" data-action="new-story">Nouvelle histoire</button>
+              <button class="btn" type="button" data-action="duplicate-active-story">Dupliquer l'active</button>
+            </div>
+          </div>
+          <div class="story-tools no-print">
+            <div>
+              <label for="storySearch">Rechercher dans mes histoires</label>
+              <input id="storySearch" type="search" placeholder="Titre, valeur, public, personnage...">
+            </div>
+            <label class="btn small-btn" for="showArchivedStories">
+              <input id="showArchivedStories" type="checkbox">
+              Voir les archives
+            </label>
+          </div>
+          <div class="library-grid" id="storyList" style="margin-top:14px"></div>
+        </div>
       </section>
 
       <section class="section" data-section="histoire">
@@ -583,7 +765,7 @@
       </section>
 
       <section class="section" data-section="bibliotheque">
-        <article class="card no-print">
+        <article class="card no-print library-filter-card">
           <h2>Filtrer la bibliothèque</h2>
           <p class="small">Chercher une image, une valeur, une activité ou afficher une famille de ressources.</p>
           <div class="library-controls">
@@ -670,6 +852,55 @@
     </main>
   </div>
 
+  <aside class="guidance-panel card soft no-print" id="fieldGuidance" aria-live="polite">
+    <div class="row space">
+      <h3 id="guidanceTitle">Aide du champ</h3>
+      <div class="row">
+        <button class="btn small-btn" type="button" data-action="open-guidance-ideas">+ d'idées</button>
+        <button class="btn small-btn" type="button" data-action="toggle-guidance" id="guidanceToggle" aria-expanded="true">Réduire</button>
+      </div>
+    </div>
+    <div class="guidance-body" id="guidanceBody">
+      <p class="small">Clique dans un champ pour afficher des repères, questions et propositions. Tout reste libre et modifiable.</p>
+    </div>
+  </aside>
+
+  <div class="idea-modal no-print" id="ideaModal" role="dialog" aria-modal="true" aria-labelledby="ideaModalTitle" aria-hidden="true">
+    <div class="idea-shell">
+      <div class="idea-head">
+        <div>
+          <h2 id="ideaModalTitle">Plus d'idées</h2>
+          <p class="small" id="ideaModalSubtitle">Des pistes préparées, à utiliser librement.</p>
+        </div>
+        <div class="row">
+          <button class="btn small-btn" type="button" data-action="toggle-guidance">Réduire l'aide</button>
+          <button class="btn primary small-btn" type="button" data-action="close-guidance-ideas">Fermer</button>
+        </div>
+      </div>
+      <div class="idea-layout">
+        <aside class="idea-context card soft">
+          <h3>Champ actif</h3>
+          <p class="small" id="ideaModalContext">Aucun champ sélectionné.</p>
+          <div class="idea-note">
+            Ces propositions ne calculent rien et ne décident rien. Elles relient seulement des champs prévus à l'avance pour ouvrir des pistes.
+          </div>
+        </aside>
+        <div id="ideaModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-modal no-print" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-describedby="confirmModalText" aria-hidden="true">
+    <div class="confirm-box">
+      <h2 id="confirmModalTitle">Confirmer</h2>
+      <p id="confirmModalText"></p>
+      <div class="confirm-actions">
+        <button class="btn small-btn" type="button" id="confirmCancel">Annuler</button>
+        <button class="btn danger small-btn" type="button" id="confirmOk">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -689,7 +920,7 @@
     const App = {
       config: {
         appName: "studio-histoires-pedagogiques",
-        version: "0.1.0-alpha",
+        version: "0.1.alpha",
         storageKey: "luuma_studio_histoires_pedagogiques_v1"
       },
 
@@ -824,13 +1055,235 @@
           { title: "Relier", text: "Est-ce qu'un petit morceau de cette histoire te rappelle quelque chose ?" },
           { title: "Protéger", text: "Tu peux passer ton tour si la question est trop forte aujourd'hui." },
           { title: "Clôturer", text: "Qu'est-ce qu'on peut garder de doux ou d'utile pour la suite ?" }
-        ]
+        ],
+        fieldGuidance: {
+          "story.title": {
+            title: "Titre provisoire",
+            intention: "Donner un repère simple, même temporaire. Le titre peut être changé plus tard.",
+            questions: ["Quelle image revient quand tu penses à cette histoire ?", "Quel objet, lieu ou geste pourrait porter le récit ?"],
+            suggestions: ["La graine qui attendait son printemps", "Le pont des deux villages", "La lanterne qui disait vrai"],
+            mode: "replace"
+          },
+          "story.audience": {
+            title: "Public",
+            intention: "Préciser pour qui l'histoire est racontée afin d'ajuster la longueur, les images et l'intensité émotionnelle.",
+            questions: ["Quel âge ou quel groupe vas-tu accompagner ?", "Le groupe est-il calme, mélangé, fatigué, curieux, sensible ?"],
+            suggestions: ["3-6 ans, petit groupe", "6-9 ans, classe multi-âge", "Pré-ados, atelier de discussion", "Groupe familial ou intergénérationnel"],
+            mode: "replace"
+          },
+          "story.duration": {
+            title: "Durée visée",
+            intention: "Définir un cadre réaliste pour le récit et l'activité.",
+            questions: ["Combien de temps pour raconter sans presser ?", "Faut-il garder un temps de silence ou de dessin ?"],
+            suggestions: ["8 minutes de récit + 10 minutes d'échange", "15 minutes de récit + 25 minutes d'activité", "Une scène courte de 5 minutes avant un atelier"],
+            mode: "replace"
+          },
+          "story.humanValue": {
+            title: "Valeur humaine",
+            intention: "Choisir une qualité à rendre visible par des gestes, pas une morale à imposer.",
+            questions: ["Quelle ressource l'enfant peut reconnaître sans se sentir jugé ?", "Quelle valeur peut devenir une action concrète ?"],
+            suggestions: ["coopération", "patience", "courage doux", "vérité douce", "réparation", "écoute du rythme"],
+            mode: "replace"
+          },
+          "story.intention": {
+            title: "Intention pédagogique",
+            intention: "Dire quelle graine l'histoire souhaite déposer. Une phrase simple suffit.",
+            questions: ["Qu'aimerais-tu que l'enfant puisse observer ?", "Quelle transformation légère pourrait apparaître à la fin ?"],
+            suggestions: ["Aider le groupe à voir que chacun peut contribuer à son rythme.", "Explorer comment une parole vraie peut rester douce.", "Montrer qu'une erreur peut devenir une information utile."],
+            mode: "append"
+          },
+          "story.avoid": {
+            title: "À éviter",
+            intention: "Protéger le récit des morales fermées, de la honte et des étiquettes.",
+            questions: ["Quelle pression faut-il éviter ?", "Quel message pourrait être mal reçu par un enfant sensible ?"],
+            suggestions: ["Éviter de désigner un personnage comme le problème.", "Ne pas conclure qu'il existe une seule bonne réponse.", "Éviter de confondre transformation et obéissance."],
+            mode: "append"
+          },
+          "story.openingQuestion": {
+            title: "Question d'ouverture",
+            intention: "Ouvrir une discussion sans chercher la bonne réponse.",
+            questions: ["Quelle question permet plusieurs réponses ?", "Comment inviter sans forcer le partage intime ?"],
+            suggestions: ["Qu'as-tu remarqué dans cette histoire ?", "Est-ce qu'un petit morceau de cette histoire te rappelle quelque chose ?", "Quel choix du personnage t'a surpris ou touché ?"],
+            mode: "replace"
+          },
+          "story.activity": {
+            title: "Activité associée",
+            intention: "Prolonger l'histoire par le corps, le dessin, le jeu, l'écriture ou un geste simple.",
+            questions: ["Quelle activité peut se faire sans compétition ?", "Comment laisser plusieurs niveaux de participation ?"],
+            suggestions: ["Dessiner deux chemins possibles et inventer une passerelle.", "Créer un objet symbolique lié à la ressource du personnage.", "Jouer une courte scène avec une fin alternative."],
+            mode: "append"
+          },
+          "story.protagonist": {
+            title: "Personnage principal",
+            intention: "Choisir un être ou une image que l'enfant peut suivre avec tendresse.",
+            questions: ["Qui porte la question du récit ?", "Quel personnage rend la valeur visible sans discours ?"],
+            suggestions: ["une enfant qui observe les détails", "une graine impatiente", "une rivière qui cherche son chemin", "un petit robot sensible"],
+            mode: "replace"
+          },
+          "story.need": {
+            title: "Besoin profond",
+            intention: "Clarifier ce que le personnage cherche vraiment, derrière son action visible.",
+            questions: ["De quoi a-t-il besoin pour avancer ?", "Quel besoin pourrait être compris par un enfant ?"],
+            suggestions: ["être écouté à son rythme", "oser demander de l'aide", "réparer sans se sentir réduit à son erreur", "trouver sa place dans le groupe"],
+            mode: "append"
+          },
+          "story.resource": {
+            title: "Ressource déjà présente",
+            intention: "Identifier une force qui existe déjà chez le personnage ou autour de lui.",
+            questions: ["Quelle qualité est déjà là, même discrète ?", "Qui ou quoi peut soutenir cette ressource ?"],
+            suggestions: ["une grande capacité d'observation", "un ami patient", "un objet qui rappelle la confiance", "une phrase douce entendue autrefois"],
+            mode: "append"
+          },
+          "story.obstacle": {
+            title: "Obstacle ou tension",
+            intention: "Créer une difficulté assez claire pour faire avancer l'histoire, sans durcir le récit.",
+            questions: ["Qu'est-ce qui bloque sans humilier ?", "Quelle tension reste adaptée à l'âge du groupe ?"],
+            suggestions: ["un malentendu", "un chemin qui se divise", "une promesse oubliée", "la peur de ralentir les autres"],
+            mode: "append"
+          },
+          "story.helper": {
+            title: "Rencontre ou aide",
+            intention: "Ouvrir une possibilité nouvelle par une présence, un lieu, une phrase ou un objet.",
+            questions: ["Quelle aide respecte la liberté du personnage ?", "Quel signe peut ouvrir un autre chemin ?"],
+            suggestions: ["un vieux panneau couvert de mousse", "une amie qui pose une question simple", "une lanterne fragile", "un silence où quelque chose devient clair"],
+            mode: "append"
+          },
+          "story.choice": {
+            title: "Choix transformateur",
+            intention: "Montrer un petit choix concret qui change la direction du récit.",
+            questions: ["Quel geste reste crédible et imitable ?", "Quel choix ouvre sans tout résoudre ?"],
+            suggestions: ["demander une pause", "dire la vérité avec douceur", "donner un rôle à chacun", "réparer l'objet au lieu de le cacher"],
+            mode: "append"
+          },
+          "story.transformation": {
+            title: "Transformation",
+            intention: "Décrire un changement visible, ouvert et non définitif.",
+            questions: ["Qu'est-ce qui devient plus respirable ?", "Quelle relation ou ressource est un peu plus vivante ?"],
+            suggestions: ["Le personnage n'est plus celui qui ralentit : il devient celui qui aide à ne perdre personne.", "Le groupe découvre qu'une erreur peut indiquer la prochaine marche.", "La parole vraie ne ferme pas le lien, elle le rend plus clair."],
+            mode: "append"
+          },
+          "scene.title": {
+            title: "Titre de scène",
+            intention: "Nommer le moment de récit pour s'y repérer.",
+            questions: ["Quel est le geste principal de cette scène ?", "Quel lieu ou événement la rend reconnaissable ?"],
+            suggestions: ["Le départ", "Le chemin se divise", "La rencontre", "Le choix du groupe", "La lumière revient"],
+            mode: "replace"
+          },
+          "scene.purpose": {
+            title: "Rôle de la scène",
+            intention: "Dire à quoi sert cette scène dans la traversée.",
+            questions: ["Cette scène installe, trouble, aide, transforme ou clôture ?", "Quelle information émotionnelle apporte-t-elle ?"],
+            suggestions: ["Installer le monde et l'envie commune.", "Faire apparaître la tension sans désigner de coupable.", "Montrer une ressource déjà présente.", "Faire naître un choix concret."],
+            mode: "append"
+          },
+          "scene.text": {
+            title: "Texte ou notes de scène",
+            intention: "Écrire librement le moment, même sous forme de fragments.",
+            questions: ["Où sommes-nous ?", "Que fait le personnage ?", "Qu'est-ce qui change à la fin de cette scène ?"],
+            suggestions: ["Dans ce moment, le personnage remarque un détail que les autres n'avaient pas vu.", "Le groupe hésite, puis quelqu'un propose une manière plus douce d'avancer.", "Un objet simple devient le signe d'une ressource oubliée."],
+            mode: "append"
+          }
+        },
+        ideaBanks: {
+          values: ["coopération", "patience", "courage doux", "vérité douce", "réparation", "écoute", "entraide", "respect du rythme", "confiance", "gratitude", "responsabilité partagée", "joie simple"],
+          titleImages: ["la graine", "le pont", "la lanterne", "le jardin", "la rivière", "le carnet", "la boussole", "le cercle", "le sac trop plein", "la porte entrouverte", "le fil doré", "la clairière"],
+          protagonists: ["un enfant observateur", "une graine pressée", "une rivière hésitante", "un petit robot sensible", "une classe de lucioles", "un village qui parle trop vite", "une tortue inventrice", "une étoile qui écoute"],
+          needs: ["trouver sa place", "être écouté à son rythme", "oser demander de l'aide", "apprendre à réparer", "dire vrai sans blesser", "se reposer sans culpabilité", "coopérer sans s'oublier", "choisir une prochaine marche"],
+          obstacles: ["un malentendu", "une consigne trop rapide", "un chemin qui se divise", "une promesse oubliée", "un objet cassé", "une peur de ralentir le groupe", "une parole gardée trop longtemps", "un bruit qui couvre les petites voix"],
+          helpers: ["une question simple", "un objet transmis", "un silence accueillant", "une amie patiente", "un panneau couvert de mousse", "une chanson connue", "un dessin retrouvé", "un geste de réparation"],
+          choices: ["demander une pause", "partager un rôle", "dire une vérité avec douceur", "revenir réparer", "écouter avant de répondre", "faire moins mais mieux", "laisser quelqu'un essayer autrement", "transformer l'erreur en indice"],
+          questions: ["Qu'as-tu remarqué ?", "Quel petit choix change la suite ?", "Qui aide sans décider à la place du personnage ?", "Quelle autre fin serait possible ?", "Quel geste pourrait être essayé dans la vraie vie ?", "Qu'est-ce qui était trop fort ou trop rapide ?"],
+          activities: ["dessiner deux chemins possibles", "inventer un objet-ressource", "jouer une scène avec une autre fin", "fabriquer une carte de prochaine marche", "écrire une phrase que le personnage garde", "créer un cercle de rôles pour le groupe"],
+          phrases: ["On peut essayer autrement.", "Je peux prendre le temps de comprendre.", "Une erreur peut devenir une information.", "Je peux dire vrai avec douceur.", "Chacun peut contribuer à sa manière.", "On garde ce qui aide et on ajuste le reste."],
+          sceneStarts: ["Au début, tout semble simple.", "Le groupe avance vite, mais un détail reste de côté.", "Quelqu'un remarque ce que personne n'avait vu.", "Un silence permet à une idée d'apparaître.", "Le personnage fait un petit choix qui change l'ambiance.", "La fin ne ferme pas tout : elle ouvre une prochaine marche."]
+        },
+        fieldLinks: {
+          "story.title": ["story.humanValue", "story.protagonist", "story.transformation"],
+          "story.humanValue": ["story.title", "story.intention", "story.choice", "story.activity"],
+          "story.audience": ["story.duration", "story.openingQuestion", "story.activity"],
+          "story.duration": ["story.audience", "story.activity"],
+          "story.intention": ["story.humanValue", "story.transformation", "story.openingQuestion"],
+          "story.openingQuestion": ["story.humanValue", "story.activity", "story.transformation"],
+          "story.activity": ["story.humanValue", "story.openingQuestion", "story.choice"],
+          "story.protagonist": ["story.need", "story.resource", "story.obstacle"],
+          "story.need": ["story.protagonist", "story.resource", "story.choice"],
+          "story.resource": ["story.need", "story.helper", "story.transformation"],
+          "story.obstacle": ["story.need", "story.helper", "story.choice"],
+          "story.helper": ["story.resource", "story.choice"],
+          "story.choice": ["story.humanValue", "story.obstacle", "story.transformation"],
+          "story.transformation": ["story.humanValue", "story.choice", "story.openingQuestion"],
+          "scene.title": ["scene.purpose", "story.humanValue", "story.protagonist"],
+          "scene.purpose": ["scene.title", "story.obstacle", "story.choice"],
+          "scene.text": ["scene.purpose", "story.protagonist", "story.transformation"]
+        }
       },
 
       state: {},
       storageAvailable: true,
 
+      blankStory() {
+        return {
+          title: "",
+          audience: "",
+          duration: "",
+          humanValue: "",
+          intention: "",
+          avoid: "",
+          openingQuestion: "",
+          activity: "",
+          protagonist: "",
+          need: "",
+          resource: "",
+          obstacle: "",
+          helper: "",
+          choice: "",
+          transformation: ""
+        };
+      },
+
+      defaultScenes() {
+        return [
+          {
+            id: this.uid(),
+            title: "Ouverture",
+            purpose: "Présenter le personnage, son monde et la valeur en germe.",
+            text: ""
+          },
+          {
+            id: this.uid(),
+            title: "Tension",
+            purpose: "Faire apparaître le besoin, l'obstacle ou la question.",
+            text: ""
+          },
+          {
+            id: this.uid(),
+            title: "Choix",
+            purpose: "Montrer une action simple qui transforme la situation.",
+            text: ""
+          }
+        ];
+      },
+
+      storyRecord(story = null, scenes = null, meta = {}) {
+        const now = new Date().toISOString();
+        const safeStory = { ...this.blankStory(), ...(story || {}) };
+        return {
+          id: this.safeId(meta.id || this.uid()),
+          createdAt: meta.createdAt || now,
+          updatedAt: meta.updatedAt || now,
+          archived: meta.archived === true,
+          story: safeStory,
+          scenes: Array.isArray(scenes) && scenes.length ? scenes.map(scene => ({
+            id: this.safeId(scene.id),
+            title: typeof scene.title === "string" ? scene.title : "",
+            purpose: typeof scene.purpose === "string" ? scene.purpose : "",
+            text: typeof scene.text === "string" ? scene.text : ""
+          })) : this.defaultScenes()
+        };
+      },
+
       defaults() {
+        const first = this.storyRecord();
         return {
           app: this.config.appName,
           version: this.config.version,
@@ -839,47 +1292,18 @@
             theme: "light",
             activeTab: "accueil",
             autosave: true,
+            activeStoryId: first.id,
             librarySearch: "",
             libraryCategory: "all",
-            dataPanelOpen: false
+            storySearch: "",
+            showArchivedStories: false,
+            dataPanelOpen: false,
+            guidanceOpen: true
           },
-          story: {
-            title: "",
-            audience: "",
-            duration: "",
-            humanValue: "",
-            intention: "",
-            avoid: "",
-            openingQuestion: "",
-            activity: "",
-            protagonist: "",
-            need: "",
-            resource: "",
-            obstacle: "",
-            helper: "",
-            choice: "",
-            transformation: ""
-          },
-          scenes: [
-            {
-              id: this.uid(),
-              title: "Ouverture",
-              purpose: "Présenter le personnage, son monde et la valeur en germe.",
-              text: ""
-            },
-            {
-              id: this.uid(),
-              title: "Tension",
-              purpose: "Faire apparaître le besoin, l'obstacle ou la question.",
-              text: ""
-            },
-            {
-              id: this.uid(),
-              title: "Choix",
-              purpose: "Montrer une action simple qui transforme la situation.",
-              text: ""
-            }
-          ]
+          activeField: "",
+          story: first.story,
+          scenes: first.scenes,
+          stories: [first]
         };
       },
 
@@ -913,6 +1337,7 @@
         },
         save() {
           try {
+            App.model.touchActiveStory();
             App.state.updatedAt = new Date().toISOString();
             if (App.state.settings && App.state.settings.autosave === false) {
               localStorage.removeItem(App.config.storageKey);
@@ -933,22 +1358,53 @@
         normalize(input) {
           const base = App.defaults();
           const safe = input && typeof input === "object" ? input : {};
-          const story = { ...base.story };
-          Object.keys(story).forEach(key => {
-            if (safe.story && typeof safe.story[key] === "string") story[key] = safe.story[key];
-          });
-          return {
+          const cleanStory = source => {
+            const story = { ...App.blankStory() };
+            Object.keys(story).forEach(key => {
+              if (source && typeof source[key] === "string") story[key] = source[key];
+            });
+            return story;
+          };
+          let stories = [];
+          if (Array.isArray(safe.stories) && safe.stories.length) {
+            stories = safe.stories
+              .filter(item => item && typeof item === "object")
+              .map(item => App.storyRecord(cleanStory(item.story), item.scenes, item));
+          }
+          if (!stories.length && safe.story && Array.isArray(safe.scenes)) {
+            stories = [App.storyRecord(cleanStory(safe.story), safe.scenes, { id: safe.settings && safe.settings.activeStoryId })];
+          }
+          if (!stories.length) stories = base.stories;
+          const settings = { ...base.settings, ...(safe.settings || {}) };
+          if (!stories.some(story => story.id === settings.activeStoryId)) settings.activeStoryId = stories[0].id;
+          const normalized = {
             ...base,
             ...safe,
-            settings: { ...base.settings, ...(safe.settings || {}) },
-            story,
-            scenes: Array.isArray(safe.scenes) && safe.scenes.length ? safe.scenes.map(scene => ({
-              id: App.safeId(scene.id),
-              title: scene.title || "",
-              purpose: scene.purpose || "",
-              text: scene.text || ""
-            })) : base.scenes
+            settings,
+            activeField: "",
+            stories
           };
+          return App.model.syncActiveAliases(normalized);
+        },
+
+        syncActiveAliases(state = App.state) {
+          const active = state.stories.find(story => story.id === state.settings.activeStoryId) || state.stories[0];
+          state.settings.activeStoryId = active.id;
+          state.story = active.story;
+          state.scenes = active.scenes;
+          return state;
+        },
+
+        activeStory() {
+          return App.state.stories.find(story => story.id === App.state.settings.activeStoryId) || App.state.stories[0];
+        },
+
+        touchActiveStory() {
+          const active = this.activeStory();
+          if (!active) return;
+          active.updatedAt = new Date().toISOString();
+          active.story = App.state.story;
+          active.scenes = App.state.scenes;
         },
 
         setByPath(path, value) {
@@ -956,6 +1412,7 @@
           let target = App.state;
           for (let i = 0; i < parts.length - 1; i += 1) target = target[parts[i]];
           target[parts[parts.length - 1]] = value;
+          this.touchActiveStory();
           App.store.save();
           App.view.refreshDerived();
         },
@@ -1105,10 +1562,14 @@
         init() {
           document.documentElement.dataset.theme = App.state.settings.theme || "light";
           this.bindFields();
+          this.renderStories();
+          this.renderActiveStoryBar();
           this.renderScenes();
           this.renderLibrary();
           this.bindLibraryFilters();
+          this.bindStoryFilters();
           this.syncDataPanel();
+          this.syncGuidancePanel();
           this.activateTab(App.state.settings.activeTab || "accueil", false);
           this.refreshDerived();
         },
@@ -1145,6 +1606,90 @@
             App.state.settings.activeTab = tab;
             App.store.save();
           }
+          this.syncGuidancePanel();
+        },
+
+        renderStories() {
+          const target = document.getElementById("storyList");
+          if (!target) return;
+          target.innerHTML = "";
+          const query = String(App.state.settings.storySearch || "").trim().toLocaleLowerCase("fr-FR");
+          const showArchived = App.state.settings.showArchivedStories === true;
+          const stories = App.state.stories.filter(item => {
+            if (item.archived && !showArchived) return false;
+            if (!query) return true;
+            const story = item.story || {};
+            const text = [
+              story.title,
+              story.humanValue,
+              story.audience,
+              story.protagonist,
+              story.intention,
+              story.need
+            ].filter(Boolean).join(" ").toLocaleLowerCase("fr-FR");
+            return text.includes(query);
+          });
+          if (!stories.length) {
+            const empty = document.createElement("p");
+            empty.className = "library-empty";
+            empty.textContent = query || showArchived ? "Aucune histoire ne correspond à ce filtre." : "Aucune histoire visible pour le moment.";
+            target.appendChild(empty);
+            return;
+          }
+          stories.forEach(item => {
+            const card = document.createElement("article");
+            const isActive = item.id === App.state.settings.activeStoryId;
+            const story = item.story || {};
+            card.className = `library-card story-card${isActive ? " active" : ""}${item.archived ? " archived" : ""}`;
+            const title = document.createElement("strong");
+            title.textContent = `${story.title || "Histoire sans titre"}${item.archived ? " · archivée" : ""}`;
+            const meta = document.createElement("div");
+            meta.className = "story-meta";
+            [
+              story.humanValue || "valeur à préciser",
+              story.audience || "public à préciser",
+              `${(item.scenes || []).length} scène${(item.scenes || []).length > 1 ? "s" : ""}`
+            ].forEach(text => {
+              const chip = document.createElement("span");
+              chip.className = "chip";
+              chip.textContent = text;
+              meta.appendChild(chip);
+            });
+            const updated = document.createElement("p");
+            updated.className = "small";
+            updated.textContent = `Dernière modification : ${item.updatedAt ? new Date(item.updatedAt).toLocaleString("fr-FR") : "non enregistrée"}.`;
+            const actions = document.createElement("div");
+            actions.className = "row no-print";
+            actions.innerHTML = `
+              <button class="btn small-btn ${isActive ? "primary" : ""}" type="button" data-open-story="${item.id}">${isActive ? "Ouverte" : "Ouvrir"}</button>
+              <button class="btn small-btn" type="button" data-duplicate-story="${item.id}">Dupliquer</button>
+              <button class="btn small-btn" type="button" data-export-story="${item.id}">Exporter</button>
+              <button class="btn small-btn" type="button" data-archive-story="${item.id}">${item.archived ? "Restaurer" : "Archiver"}</button>
+              <button class="btn danger small-btn" type="button" data-delete-story="${item.id}" ${App.state.stories.length <= 1 ? "disabled" : ""}>Supprimer</button>
+            `;
+            card.append(title, meta, updated, actions);
+            target.appendChild(card);
+          });
+        },
+
+        bindStoryFilters() {
+          const search = document.getElementById("storySearch");
+          const archived = document.getElementById("showArchivedStories");
+          if (search) search.value = App.state.settings.storySearch || "";
+          if (archived) archived.checked = App.state.settings.showArchivedStories === true;
+        },
+
+        renderActiveStoryBar() {
+          const title = document.getElementById("activeStoryTitle");
+          if (!title) return;
+          const active = App.model.activeStory();
+          const story = active && active.story ? active.story : {};
+          const value = story.title || "Histoire sans titre";
+          const detail = [
+            story.humanValue || "valeur à préciser",
+            story.audience || "public à préciser"
+          ].join(" · ");
+          title.textContent = `${value} (${detail})`;
         },
 
         renderScenes() {
@@ -1372,6 +1917,198 @@
           button.setAttribute("aria-expanded", String(open));
         },
 
+        syncGuidancePanel() {
+          const panel = document.getElementById("fieldGuidance");
+          const toggle = document.getElementById("guidanceToggle");
+          if (!panel || !toggle) return;
+          const guidanceTabs = ["histoire", "trame", "scenes"];
+          const visibleInContext = guidanceTabs.includes(App.state.settings.activeTab || "accueil");
+          const open = App.state.settings.guidanceOpen !== false;
+          panel.classList.toggle("hidden", !visibleInContext);
+          panel.classList.toggle("collapsed", !open);
+          toggle.textContent = open ? "Réduire" : "Afficher";
+          toggle.setAttribute("aria-expanded", String(open));
+        },
+
+        fieldLabel(path) {
+          const guide = App.data.fieldGuidance[path];
+          return guide ? guide.title : "Champ libre";
+        },
+
+        valueForField(path) {
+          if (!path) return "";
+          if (path.startsWith("scene.")) {
+            const field = path.split(".")[1];
+            const scene = App.state.scenes.find(item => item.id === App.state.activeSceneId) || App.state.scenes[0];
+            return scene && field ? String(scene[field] || "") : "";
+          }
+          return String(path.split(".").reduce((obj, key) => obj && obj[key], App.state) || "");
+        },
+
+        guidanceFor(path) {
+          const base = App.data.fieldGuidance[path] || {
+            title: "Aide du champ",
+            intention: "Ce champ peut être rempli librement, même avec une note provisoire.",
+            questions: ["Quelle est la prochaine petite précision utile ?"],
+            suggestions: [],
+            mode: "append"
+          };
+          const value = String(App.state.story.humanValue || "").toLowerCase();
+          const audience = String(App.state.story.audience || "").toLowerCase();
+          const suggestions = [...(base.suggestions || [])];
+          if (path !== "story.humanValue") {
+            if (value.includes("coop")) suggestions.push("Donner à chaque personnage une manière différente de contribuer.");
+            if (value.includes("patience")) suggestions.push("Montrer un rythme lent qui prépare quelque chose de précieux.");
+            if (value.includes("vérité") || value.includes("verite")) suggestions.push("Faire apparaître une parole vraie qui reste douce pour le lien.");
+            if (value.includes("réparation") || value.includes("reparation")) suggestions.push("Transformer l'erreur en geste de réparation simple.");
+          }
+          if (audience.includes("3-6") || audience.includes("petit")) suggestions.push("Garder une image très concrète, répétée deux ou trois fois.");
+          if (audience.includes("pré") || audience.includes("ado")) suggestions.push("Ajouter un dilemme relationnel nuancé plutôt qu'une morale directe.");
+          return { ...base, suggestions: [...new Set(suggestions)].slice(0, 7) };
+        },
+
+        ideasFor(path) {
+          const guide = this.guidanceFor(path || App.state.activeField || "story.title");
+          const banks = App.data.ideaBanks;
+          const activeValue = this.valueForField(path);
+          const linkedPaths = App.data.fieldLinks[path] || [];
+          const linked = linkedPaths
+            .map(linkPath => ({
+              path: linkPath,
+              label: this.fieldLabel(linkPath),
+              value: this.valueForField(linkPath),
+              suggestions: (this.guidanceFor(linkPath).suggestions || []).slice(0, 5)
+            }));
+          const seeded = [];
+          const value = String(App.state.story.humanValue || "").toLocaleLowerCase("fr-FR");
+          const protagonist = String(App.state.story.protagonist || "").trim();
+          if (value) seeded.push(`Un titre qui laisse sentir ${App.state.story.humanValue}, sans l'expliquer directement.`);
+          if (protagonist) seeded.push(`Une scène où ${protagonist} montre une ressource par un geste plutôt que par un discours.`);
+          linked.forEach(item => {
+            if (item.value) seeded.push(`${item.label} déjà saisi : ${item.value}`);
+          });
+          return {
+            guide,
+            activeValue,
+            linked,
+            sections: [
+              { title: "Pistes proches du champ", items: [...guide.suggestions, ...seeded].filter(Boolean) },
+              { title: "Images et titres possibles", items: banks.titleImages.map(image => `${image} de ${App.state.story.humanValue || "la prochaine marche"}`) },
+              { title: "Valeurs et ressources", items: banks.values },
+              { title: "Personnages", items: banks.protagonists },
+              { title: "Besoins", items: banks.needs },
+              { title: "Obstacles doux", items: banks.obstacles },
+              { title: "Aides et rencontres", items: banks.helpers },
+              { title: "Choix transformateurs", items: banks.choices },
+              { title: "Questions d'ouverture", items: banks.questions },
+              { title: "Activités", items: banks.activities },
+              { title: "Phrases à garder", items: banks.phrases },
+              { title: "Départs de scène", items: banks.sceneStarts }
+            ]
+          };
+        },
+
+        renderGuidance(path) {
+          const title = document.getElementById("guidanceTitle");
+          const body = document.getElementById("guidanceBody");
+          if (!title || !body) return;
+          const guide = this.guidanceFor(path);
+          title.textContent = guide.title;
+          body.innerHTML = "";
+          const p = document.createElement("p");
+          p.className = "small";
+          p.textContent = guide.intention;
+          body.appendChild(p);
+          if (guide.questions && guide.questions.length) {
+            const qTitle = document.createElement("strong");
+            qTitle.textContent = "Questions utiles";
+            const list = document.createElement("ul");
+            list.className = "step-list";
+            guide.questions.forEach(question => {
+              const li = document.createElement("li");
+              li.textContent = question;
+              list.appendChild(li);
+            });
+            body.append(qTitle, list);
+          }
+          if (guide.suggestions && guide.suggestions.length) {
+            const sTitle = document.createElement("strong");
+            sTitle.textContent = "Propositions libres";
+            const wrap = document.createElement("div");
+            wrap.className = "suggestion-list";
+            guide.suggestions.forEach(suggestion => {
+              const button = document.createElement("button");
+              button.className = "btn suggestion-btn";
+              button.type = "button";
+              button.dataset.insertSuggestion = suggestion;
+              button.dataset.insertMode = guide.mode || "append";
+              button.textContent = suggestion;
+              wrap.appendChild(button);
+            });
+            body.append(sTitle, wrap);
+          }
+          const note = document.createElement("p");
+          note.className = "small";
+          note.textContent = "Ces pistes sont seulement des appuis : tu peux écrire autrement, ajuster ou ignorer.";
+          body.appendChild(note);
+        },
+
+        renderIdeaModal() {
+          const modal = document.getElementById("ideaModal");
+          const modalTitle = document.getElementById("ideaModalTitle");
+          const subtitle = document.getElementById("ideaModalSubtitle");
+          const context = document.getElementById("ideaModalContext");
+          const body = document.getElementById("ideaModalBody");
+          if (!modal || !modalTitle || !subtitle || !context || !body) return;
+          const path = App.state.activeField || "story.title";
+          const data = this.ideasFor(path);
+          modalTitle.textContent = `Plus d'idées · ${data.guide.title}`;
+          subtitle.textContent = data.guide.intention;
+          context.textContent = data.activeValue
+            ? `Contenu actuel : ${data.activeValue}`
+            : "Ce champ est encore libre. Les pistes ci-dessous peuvent aider sans imposer de direction.";
+          body.innerHTML = "";
+          if (data.linked.length) {
+            const linkedSection = document.createElement("section");
+            linkedSection.className = "idea-section";
+            const title = document.createElement("h3");
+            title.textContent = "Champs reliés";
+            const cloud = document.createElement("div");
+            cloud.className = "idea-cloud";
+            data.linked.forEach(item => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "idea-chip";
+              button.dataset.focusLinkedField = item.path;
+              button.textContent = item.value ? `${item.label} : ${item.value}` : `${item.label} : à nourrir`;
+              cloud.appendChild(button);
+            });
+            linkedSection.append(title, cloud);
+            body.appendChild(linkedSection);
+          }
+          data.sections.forEach(section => {
+            const unique = [...new Set(section.items.filter(Boolean))].slice(0, 18);
+            if (!unique.length) return;
+            const block = document.createElement("section");
+            block.className = "idea-section";
+            const h = document.createElement("h3");
+            h.textContent = section.title;
+            const cloud = document.createElement("div");
+            cloud.className = "idea-cloud";
+            unique.forEach(text => {
+              const button = document.createElement("button");
+              button.type = "button";
+              button.className = "idea-chip";
+              button.dataset.insertSuggestion = text;
+              button.dataset.insertMode = data.guide.mode || "append";
+              button.textContent = text;
+              cloud.appendChild(button);
+            });
+            block.append(h, cloud);
+            body.appendChild(block);
+          });
+        },
+
         refreshDerived() {
           const completion = App.model.completion();
           document.getElementById("progressBar").style.width = completion.percent + "%";
@@ -1390,6 +2127,8 @@
           document.getElementById("nextStepButton").textContent = next.button;
           document.getElementById("nextStepText").textContent = next.text;
           document.getElementById("storageNotice").classList.toggle("hidden", App.storageAvailable);
+          this.renderActiveStoryBar();
+          this.renderStories();
         },
 
         toast(message) {
@@ -1398,22 +2137,62 @@
           toast.classList.add("show");
           clearTimeout(this.toastTimer);
           this.toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+        },
+
+        confirm(message, options = {}) {
+          const modal = document.getElementById("confirmModal");
+          const text = document.getElementById("confirmModalText");
+          const title = document.getElementById("confirmModalTitle");
+          const ok = document.getElementById("confirmOk");
+          const cancel = document.getElementById("confirmCancel");
+          if (!modal || !text || !title || !ok || !cancel) return Promise.resolve(false);
+          title.textContent = options.title || "Confirmer";
+          text.textContent = message;
+          ok.textContent = options.okText || "Confirmer";
+          cancel.textContent = options.cancelText || "Annuler";
+          modal.classList.add("open");
+          modal.setAttribute("aria-hidden", "false");
+          cancel.focus();
+
+          return new Promise(resolve => {
+            const cleanup = result => {
+              modal.classList.remove("open");
+              modal.setAttribute("aria-hidden", "true");
+              ok.removeEventListener("click", onOk);
+              cancel.removeEventListener("click", onCancel);
+              modal.removeEventListener("click", onBackdrop);
+              document.removeEventListener("keydown", onKey);
+              resolve(result);
+            };
+            const onOk = () => cleanup(true);
+            const onCancel = () => cleanup(false);
+            const onBackdrop = event => {
+              if (event.target === modal) cleanup(false);
+            };
+            const onKey = event => {
+              if (event.key === "Escape") cleanup(false);
+            };
+            ok.addEventListener("click", onOk);
+            cancel.addEventListener("click", onCancel);
+            modal.addEventListener("click", onBackdrop);
+            document.addEventListener("keydown", onKey);
+          });
         }
       },
 
       controller: {
         init() {
-          document.addEventListener("click", event => {
+          document.addEventListener("click", async event => {
             const tabButton = event.target.closest("[data-tab]");
             if (tabButton) App.view.activateTab(tabButton.dataset.tab);
 
             const actionButton = event.target.closest("[data-action]");
-            if (actionButton) this.handleAction(actionButton.dataset.action);
+            if (actionButton) await this.handleAction(actionButton.dataset.action);
 
             const removeButton = event.target.closest("[data-remove-scene]");
             if (removeButton) {
               event.preventDefault();
-              this.removeScene(removeButton.dataset.removeScene);
+              await this.removeScene(removeButton.dataset.removeScene);
             }
 
             const duplicateButton = event.target.closest("[data-duplicate-scene]");
@@ -1430,6 +2209,44 @@
 
             const focusButton = event.target.closest("[data-focus-scene]");
             if (focusButton) this.focusScene(focusButton.dataset.focusScene);
+
+            const openStory = event.target.closest("[data-open-story]");
+            if (openStory) this.openStory(openStory.dataset.openStory);
+
+            const duplicateStory = event.target.closest("[data-duplicate-story]");
+            if (duplicateStory) this.duplicateStory(duplicateStory.dataset.duplicateStory);
+
+            const archiveStory = event.target.closest("[data-archive-story]");
+            if (archiveStory) this.archiveStory(archiveStory.dataset.archiveStory);
+
+            const deleteStory = event.target.closest("[data-delete-story]");
+            if (deleteStory) await this.deleteStory(deleteStory.dataset.deleteStory);
+
+            const exportStory = event.target.closest("[data-export-story]");
+            if (exportStory) App.importExport.exportStory(exportStory.dataset.exportStory);
+
+            const suggestion = event.target.closest("[data-insert-suggestion]");
+            if (suggestion) await this.insertSuggestion(suggestion.dataset.insertSuggestion, suggestion.dataset.insertMode);
+
+            const linkedField = event.target.closest("[data-focus-linked-field]");
+            if (linkedField) this.focusLinkedField(linkedField.dataset.focusLinkedField);
+          });
+
+          document.addEventListener("focusin", event => {
+            const bound = event.target.closest("[data-bind]");
+            if (bound) {
+              App.state.activeField = bound.dataset.bind;
+              App.view.renderGuidance(App.state.activeField);
+              App.view.syncGuidancePanel();
+              return;
+            }
+            const sceneField = event.target.closest("[data-scene-field]");
+            if (sceneField) {
+              App.state.activeField = `scene.${sceneField.dataset.sceneField}`;
+              App.state.activeSceneId = sceneField.dataset.sceneId;
+              App.view.renderGuidance(App.state.activeField);
+              App.view.syncGuidancePanel();
+            }
           });
 
           document.addEventListener("input", event => {
@@ -1440,12 +2257,19 @@
               App.view.bindLibraryFilters();
               return;
             }
+            if (event.target.id === "storySearch") {
+              App.state.settings.storySearch = event.target.value;
+              App.store.save();
+              App.view.renderStories();
+              return;
+            }
 
             const field = event.target.closest("[data-scene-field]");
             if (!field) return;
             const scene = App.state.scenes.find(item => item.id === field.dataset.sceneId);
             if (!scene) return;
             scene[field.dataset.sceneField] = field.value;
+            App.model.touchActiveStory();
             App.store.save();
             const card = field.closest(".beat-card");
             const title = card && card.querySelector(".beat-title");
@@ -1466,19 +2290,35 @@
             App.view.renderLibrary();
             App.view.bindLibraryFilters();
           });
+
+          document.getElementById("showArchivedStories").addEventListener("change", event => {
+            App.state.settings.showArchivedStories = event.target.checked;
+            App.store.save();
+            App.view.renderStories();
+          });
+
+          document.addEventListener("keydown", event => {
+            if (event.key === "Escape") this.closeIdeaModal();
+          });
         },
 
-        handleAction(action) {
+        async handleAction(action) {
           const actions = {
             "toggle-theme": () => this.toggleTheme(),
             "toggle-autosave": () => this.toggleAutosave(),
             "toggle-data-panel": () => this.toggleDataPanel(),
+            "toggle-guidance": () => this.toggleGuidance(),
+            "open-guidance-ideas": () => this.openIdeaModal(),
+            "close-guidance-ideas": () => this.closeIdeaModal(),
             "open-import": () => this.openImport(),
             "export-json": () => App.importExport.export(),
+            "export-studio": () => App.importExport.exportStudio(),
             "export-markdown": () => App.importExport.exportMarkdown(),
             "clear-library-filters": () => this.clearLibraryFilters(),
             "continue-next": () => this.continueNext(),
             "load-demo": () => this.loadDemo(),
+            "new-story": () => this.newStory(),
+            "duplicate-active-story": () => this.duplicateStory(App.state.settings.activeStoryId),
             "add-scene": () => this.addScene(),
             "expand-scenes": () => this.setAllScenesOpen(true),
             "collapse-scenes": () => this.setAllScenesOpen(false),
@@ -1488,7 +2328,7 @@
             "print-child": () => App.print.child(),
             "reset": () => this.reset()
           };
-          if (actions[action]) actions[action]();
+          if (actions[action]) await actions[action]();
         },
 
         toggleDataPanel() {
@@ -1497,8 +2337,177 @@
           App.view.syncDataPanel();
         },
 
+        toggleGuidance() {
+          App.state.settings.guidanceOpen = App.state.settings.guidanceOpen === false;
+          App.store.save();
+          App.view.syncGuidancePanel();
+        },
+
+        openIdeaModal() {
+          if (!App.state.activeField) App.state.activeField = "story.title";
+          App.view.renderIdeaModal();
+          const modal = document.getElementById("ideaModal");
+          if (!modal) return;
+          modal.classList.add("open");
+          modal.setAttribute("aria-hidden", "false");
+          const close = modal.querySelector('[data-action="close-guidance-ideas"]');
+          if (close) close.focus();
+        },
+
+        closeIdeaModal() {
+          const modal = document.getElementById("ideaModal");
+          if (!modal || !modal.classList.contains("open")) return;
+          modal.classList.remove("open");
+          modal.setAttribute("aria-hidden", "true");
+        },
+
+        focusLinkedField(path) {
+          this.closeIdeaModal();
+          if (path.startsWith("scene.")) {
+            App.view.activateTab("scenes");
+            const sceneId = App.state.activeSceneId || (App.state.scenes[0] && App.state.scenes[0].id);
+            const field = path.split(".")[1];
+            setTimeout(() => {
+              const input = document.querySelector(`[data-scene-id="${sceneId}"][data-scene-field="${field}"]`);
+              if (input) input.focus();
+            }, 60);
+            return;
+          }
+          const input = document.querySelector(`[data-bind="${path}"]`);
+          const tab = input && input.closest("[data-section]") ? input.closest("[data-section]").dataset.section : "histoire";
+          App.view.activateTab(tab || "histoire");
+          setTimeout(() => {
+            const target = document.querySelector(`[data-bind="${path}"]`);
+            if (target) target.focus();
+          }, 60);
+        },
+
         openImport() {
           document.getElementById("importFile").click();
+        },
+
+        openStory(id) {
+          if (!App.state.stories.some(story => story.id === id)) return;
+          App.model.touchActiveStory();
+          App.state.settings.activeStoryId = id;
+          App.model.syncActiveAliases();
+          App.store.save();
+          App.view.syncFields();
+          App.view.renderScenes();
+          App.view.refreshDerived();
+          App.view.activateTab("histoire");
+          App.view.toast(`Histoire ouverte : ${App.state.story.title || "histoire sans titre"}.`);
+        },
+
+        newStory() {
+          App.model.touchActiveStory();
+          const record = App.storyRecord(null, null, {});
+          record.story.title = "Nouvelle histoire";
+          App.state.stories.unshift(record);
+          App.state.settings.activeStoryId = record.id;
+          App.model.syncActiveAliases();
+          App.store.save();
+          App.view.init();
+          App.view.activateTab("histoire");
+          App.view.toast("Nouvelle histoire créée et ouverte.");
+        },
+
+        duplicateStory(id) {
+          const source = App.state.stories.find(story => story.id === id);
+          if (!source) return;
+          App.model.touchActiveStory();
+          const copy = App.storyRecord(App.clone(source.story), App.clone(source.scenes), {});
+          copy.story.title = `${copy.story.title || "Histoire"} - copie`;
+          App.state.stories.unshift(copy);
+          App.state.settings.activeStoryId = copy.id;
+          App.model.syncActiveAliases();
+          App.store.save();
+          App.view.init();
+          App.view.activateTab("histoire");
+          App.view.toast(`Copie ouverte : ${copy.story.title || "histoire sans titre"}.`);
+        },
+
+        archiveStory(id) {
+          const story = App.state.stories.find(item => item.id === id);
+          if (!story) return;
+          const visibleCount = App.state.stories.filter(item => item.archived !== true).length;
+          if (story.archived !== true && visibleCount <= 1) {
+            App.view.toast("Garder au moins une histoire active dans le studio.");
+            return;
+          }
+          story.archived = story.archived !== true;
+          story.updatedAt = new Date().toISOString();
+          if (story.archived && App.state.settings.activeStoryId === id) {
+            const next = App.state.stories.find(item => item.id !== id && item.archived !== true) || App.state.stories.find(item => item.id !== id);
+            if (next) {
+              App.state.settings.activeStoryId = next.id;
+              App.model.syncActiveAliases();
+              App.view.syncFields();
+              App.view.renderScenes();
+            }
+          }
+          if (!story.archived) App.state.settings.showArchivedStories = true;
+          App.store.save();
+          App.view.bindStoryFilters();
+          App.view.refreshDerived();
+          App.view.toast(story.archived ? "Histoire archivée." : "Histoire restaurée.");
+        },
+
+        async deleteStory(id) {
+          if (App.state.stories.length <= 1) {
+            App.view.toast("Garder au moins une histoire dans le studio.");
+            return;
+          }
+          const story = App.state.stories.find(item => item.id === id);
+          const title = story && story.story && story.story.title ? story.story.title : "cette histoire";
+          const ok = await App.view.confirm(`Supprimer ${title} ? Cette action retire l'histoire du studio local.`, {
+            title: "Supprimer l'histoire",
+            okText: "Supprimer"
+          });
+          if (!ok) return;
+          App.state.stories = App.state.stories.filter(item => item.id !== id);
+          if (App.state.settings.activeStoryId === id) App.state.settings.activeStoryId = App.state.stories[0].id;
+          App.model.syncActiveAliases();
+          App.store.save();
+          App.view.init();
+          App.view.toast("Histoire supprimée.");
+        },
+
+        async insertSuggestion(text, mode) {
+          const active = App.state.activeField || "";
+          if (!active) return;
+          if (active.startsWith("scene.")) {
+            const field = active.split(".")[1];
+            const scene = App.state.scenes.find(item => item.id === App.state.activeSceneId);
+            if (!scene || !field) return;
+            const current = scene[field] || "";
+            if (current.trim() && mode === "replace") {
+              const ok = await App.view.confirm("Remplacer le contenu actuel de ce champ ?", {
+                title: "Remplacer le champ",
+                okText: "Remplacer"
+              });
+              if (!ok) return;
+            }
+            scene[field] = current.trim() && mode !== "replace" ? `${current.trim()}\n${text}` : text;
+            App.model.touchActiveStory();
+            App.store.save();
+            App.view.renderScenes();
+            App.view.refreshDerived();
+            App.view.toast("Proposition ajoutée.");
+            return;
+          }
+          const current = active.split(".").reduce((obj, key) => obj && obj[key], App.state) || "";
+          if (String(current).trim() && mode === "replace") {
+            const ok = await App.view.confirm("Remplacer le contenu actuel de ce champ ?", {
+              title: "Remplacer le champ",
+              okText: "Remplacer"
+            });
+            if (!ok) return;
+          }
+          const next = String(current).trim() && mode !== "replace" ? `${String(current).trim()}\n${text}` : text;
+          App.model.setByPath(active, next);
+          App.view.syncFields();
+          App.view.toast("Proposition ajoutée.");
         },
 
         clearLibraryFilters() {
@@ -1521,10 +2530,13 @@
           App.view.refreshDerived();
         },
 
-        toggleAutosave() {
+        async toggleAutosave() {
           const next = App.state.settings.autosave === false;
           if (!next) {
-            const ok = confirm("Désactiver la sauvegarde locale ? Les données resteront dans la page ouverte, mais seront retirées du navigateur. Pense à exporter manuellement si besoin.");
+            const ok = await App.view.confirm("Désactiver la sauvegarde locale ? Les données resteront dans la page ouverte, mais seront retirées du navigateur. Pense à exporter manuellement si besoin.", {
+              title: "Désactiver la sauvegarde locale",
+              okText: "Désactiver"
+            });
             if (!ok) return;
           }
           App.state.settings.autosave = next;
@@ -1547,17 +2559,21 @@
           this.focusScene(scene.id);
         },
 
-        loadDemo() {
-          const ok = confirm("Charger l'exemple complet ? Cela remplacera la fiche en cours.");
+        async loadDemo() {
+          const ok = await App.view.confirm("Charger l'exemple complet dans une nouvelle histoire ?", {
+            title: "Charger l'exemple",
+            okText: "Charger"
+          });
           if (!ok) return;
-          App.state.story = App.clone(App.data.demo.story);
-          App.state.scenes = App.data.demo.scenes.map(scene => ({ ...scene, id: App.uid() }));
+          App.model.touchActiveStory();
+          const record = App.storyRecord(App.clone(App.data.demo.story), App.data.demo.scenes.map(scene => ({ ...scene, id: App.uid() })), {});
+          App.state.stories.unshift(record);
+          App.state.settings.activeStoryId = record.id;
+          App.model.syncActiveAliases();
           App.store.save();
-          App.view.syncFields();
-          App.view.renderScenes();
-          App.view.refreshDerived();
+          App.view.init();
           App.view.activateTab("synthese");
-          App.view.toast("Exemple complet chargé.");
+          App.view.toast("Exemple complet chargé dans une nouvelle histoire.");
         },
 
         focusScene(id) {
@@ -1573,14 +2589,20 @@
           App.view.refreshSceneToc();
         },
 
-        removeScene(id) {
+        async removeScene(id) {
           if (App.state.scenes.length <= 1) {
             App.view.toast("Garder au moins une scène dans le récit.");
             return;
           }
           const scene = App.state.scenes.find(item => item.id === id);
           const hasText = scene && [scene.title, scene.purpose, scene.text].some(value => String(value || "").trim());
-          if (hasText && !confirm("Supprimer cette scène et son contenu ?")) return;
+          if (hasText) {
+            const ok = await App.view.confirm("Supprimer cette scène et son contenu ?", {
+              title: "Supprimer la scène",
+              okText: "Supprimer"
+            });
+            if (!ok) return;
+          }
           App.state.scenes = App.state.scenes.filter(scene => scene.id !== id);
           App.store.save();
           App.view.renderScenes();
@@ -1612,10 +2634,17 @@
           this.focusScene(id);
         },
 
-        reset() {
-          const ok = confirm("Réinitialiser la fiche en cours ? Les données locales seront remplacées par une fiche vide.");
+        async reset() {
+          const ok = await App.view.confirm("Réinitialiser l'histoire active ? Les autres histoires du studio seront conservées.", {
+            title: "Réinitialiser l'histoire",
+            okText: "Réinitialiser"
+          });
           if (!ok) return;
-          App.state = App.defaults();
+          const active = App.model.activeStory();
+          active.story = App.blankStory();
+          active.scenes = App.defaultScenes();
+          active.updatedAt = new Date().toISOString();
+          App.model.syncActiveAliases();
           App.store.save();
           App.view.init();
           App.view.toast(App.i18n.fr.reset);
@@ -1624,9 +2653,38 @@
 
       importExport: {
         export() {
+          const active = App.model.activeStory();
+          const payload = JSON.stringify({
+            app: App.config.appName,
+            version: App.config.version,
+            updatedAt: new Date().toISOString(),
+            story: active.story,
+            scenes: active.scenes
+          }, null, 2);
+          const date = new Date().toISOString().slice(0, 10);
+          this.download(`histoire-pedagogique-${date}.json`, payload, "application/json");
+        },
+
+        exportStudio() {
+          App.model.touchActiveStory();
           const payload = JSON.stringify(App.state, null, 2);
           const date = new Date().toISOString().slice(0, 10);
-          this.download(`studio-histoires-pedagogiques-${date}.json`, payload, "application/json");
+          this.download(`studio-histoires-pedagogiques-complet-${date}.json`, payload, "application/json");
+        },
+
+        exportStory(id) {
+          const item = App.state.stories.find(story => story.id === id);
+          if (!item) return;
+          const payload = JSON.stringify({
+            app: App.config.appName,
+            version: App.config.version,
+            updatedAt: new Date().toISOString(),
+            story: item.story,
+            scenes: item.scenes
+          }, null, 2);
+          const date = new Date().toISOString().slice(0, 10);
+          const slug = (item.story.title || "histoire").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "histoire";
+          this.download(`${slug}-${date}.json`, payload, "application/json");
         },
 
         exportMarkdown() {
@@ -1649,22 +2707,45 @@
         validateImport(parsed) {
           if (!parsed || typeof parsed !== "object") return false;
           if (parsed.app !== App.config.appName) return false;
+          if (Array.isArray(parsed.stories)) {
+            return parsed.stories.every(item => item && typeof item === "object" && item.story && typeof item.story === "object" && this.validateStoryShape(item.story) && Array.isArray(item.scenes) && item.scenes.every(scene => this.validateSceneShape(scene)));
+          }
           if (!parsed.story || typeof parsed.story !== "object") return false;
-          if (!Object.keys(parsed.story).every(key => parsed.story[key] === undefined || typeof parsed.story[key] === "string")) return false;
+          if (!this.validateStoryShape(parsed.story)) return false;
           if (!Array.isArray(parsed.scenes)) return false;
-          return parsed.scenes.every(scene => {
+          return parsed.scenes.every(scene => this.validateSceneShape(scene));
+        },
+
+        validateStoryShape(story) {
+          return Object.keys(story).every(key => story[key] === undefined || typeof story[key] === "string");
+        },
+
+        validateSceneShape(scene) {
             if (!scene || typeof scene !== "object") return false;
             return ["title", "purpose", "text", "id"].every(key => scene[key] === undefined || typeof scene[key] === "string");
-          });
         },
 
         import(file) {
           const reader = new FileReader();
-          reader.onload = () => {
+          reader.onload = async () => {
             try {
               const parsed = JSON.parse(String(reader.result || "{}"));
               if (!this.validateImport(parsed)) throw new Error("Format invalide");
-              App.state = App.model.normalize(parsed);
+              const incoming = App.model.normalize(parsed);
+              const isStudio = Array.isArray(parsed.stories);
+              const replace = isStudio && await App.view.confirm("Ce fichier contient un studio complet. Remplacer le studio actuel ? Annuler ajoutera les histoires importées au studio actuel.", {
+                title: "Importer un studio complet",
+                okText: "Remplacer"
+              });
+              if (replace) {
+                App.state = incoming;
+              } else {
+                App.model.touchActiveStory();
+                const importedStories = incoming.stories.map(item => App.storyRecord(item.story, item.scenes, {}));
+                App.state.stories = [...importedStories, ...App.state.stories];
+                App.state.settings.activeStoryId = importedStories[0].id;
+                App.model.syncActiveAliases();
+              }
               App.store.save();
               App.view.init();
               App.view.toast(App.i18n.fr.imported);
