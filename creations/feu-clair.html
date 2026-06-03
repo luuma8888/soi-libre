@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.13.0</title>
+  <title>Feu Clair — v2.13.1</title>
 
   <style>
     :root {
@@ -528,7 +528,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.13.0</h1>
+        <h1>Feu Clair — v2.13.1</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -544,7 +544,7 @@
 
 <script>
 /*
-  Feu Clair — v2.13.0
+  Feu Clair — v2.13.1
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -561,7 +561,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.13.0";
+  const APP_VERSION = "2.13.1";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -894,18 +894,38 @@
   }
 
   function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      console.warn("Sauvegarde locale impossible.", error);
+      data.lastNotice = {
+        text: "Sauvegarde locale indisponible sur ce navigateur. Exporte un JSON si tu veux conserver cette session.",
+        tone: "danger",
+        createdAt: nowISO()
+      };
+      return false;
+    }
   }
 
   function localVeilUnlocked() {
-    return sessionStorage.getItem(VEIL_SESSION_KEY) === "1";
+    try {
+      return sessionStorage.getItem(VEIL_SESSION_KEY) === "1";
+    } catch (error) {
+      console.warn("Voile de session indisponible.", error);
+      return false;
+    }
   }
 
   function setLocalVeilUnlocked(value) {
-    if (value) {
-      sessionStorage.setItem(VEIL_SESSION_KEY, "1");
-    } else {
-      sessionStorage.removeItem(VEIL_SESSION_KEY);
+    try {
+      if (value) {
+        sessionStorage.setItem(VEIL_SESSION_KEY, "1");
+      } else {
+        sessionStorage.removeItem(VEIL_SESSION_KEY);
+      }
+    } catch (error) {
+      console.warn("Voile de session impossible à modifier.", error);
     }
   }
 
@@ -1115,7 +1135,8 @@
       ...(item.egregores || [])
     ].join(" ").toLowerCase();
 
-    if (!settings.veryDirectWords && (item.intensity === "très direct" || item.mode === "intensif")) return false;
+    const isVeryDirectWord = key === "boldWords" || (item.tags || []).includes("mots qui osent");
+    if (!settings.veryDirectWords && isVeryDirectWord && (item.intensity === "très direct" || item.mode === "intensif")) return false;
     if (!settings.inversions && [
       "inversion",
       "addiction",
@@ -1342,46 +1363,48 @@
   }
 
   function anonymizedExportData() {
-    const copy = cloneData(data);
-    copy.exportMode = "anonymisé";
-    copy.cycles = (copy.cycles || []).map((cycle, index) => ({
-      ...cycle,
-      title: `Cycle anonymisé ${index + 1}`,
-      notes: "",
-      answers: anonymizeAnswers(cycle.answers || {})
-    }));
-    copy.microSessions = [];
-    copy.bodyScans = (copy.bodyScans || []).map(scan => ({
-      id: scan.id,
-      status: scan.status,
-      createdAt: scan.createdAt,
-      intensity: scan.intensity ?? null,
-      family: scan.family || "",
-      flags: scan.flags || []
-    }));
-    copy.bodyMemorySessions = (copy.bodyMemorySessions || []).map(memory => ({
-      id: memory.id,
-      status: memory.status,
-      createdAt: memory.createdAt,
-      level: memory.level || "",
-      kind: memory.kind || "",
-      intensity: memory.intensity ?? null,
-      guards: memory.guards || [],
-      qualities: memory.qualities || [],
-      afterState: memory.afterState || ""
-    }));
-    copy.authoritySessions = (copy.authoritySessions || []).map(session => ({
-      id: session.id,
-      status: session.status,
-      createdAt: session.createdAt,
-      intensity: session.intensity ?? null,
-      targetType: session.targetType || "",
-      guards: session.guards || [],
-      qualities: session.qualities || []
-    }));
-    copy.library = cloneData(DEFAULT_DATA.library);
-    copy.lastNotice = null;
-    return copy;
+    return {
+      app: "feu-clair",
+      version: APP_VERSION,
+      exportMode: "anonymisé",
+      exportedAt: nowISO(),
+      cycles: (data.cycles || []).map((cycle, index) => ({
+        id: `cycle_${index + 1}`,
+        title: `Cycle anonymisé ${index + 1}`,
+        status: cycle.status || "",
+        currentStep: Number.isFinite(cycle.currentStep) ? cycle.currentStep : 0,
+        createdAt: cycle.createdAt || "",
+        updatedAt: cycle.updatedAt || "",
+        notes: "",
+        answers: anonymizeAnswers(cycle.answers || {})
+      })),
+      microSessions: [],
+      bodyScans: (data.bodyScans || []).map(scan => ({
+        status: scan.status || "",
+        createdAt: scan.createdAt || "",
+        intensity: scan.intensity ?? null,
+        family: scan.family || "",
+        flags: scan.flags || []
+      })),
+      bodyMemorySessions: (data.bodyMemorySessions || []).map(memory => ({
+        status: memory.status || "",
+        createdAt: memory.createdAt || "",
+        level: memory.level || "",
+        kind: memory.kind || "",
+        intensity: memory.intensity ?? null,
+        guards: memory.guards || [],
+        qualities: memory.qualities || [],
+        afterState: memory.afterState || ""
+      })),
+      authoritySessions: (data.authoritySessions || []).map(session => ({
+        status: session.status || "",
+        createdAt: session.createdAt || "",
+        intensity: session.intensity ?? null,
+        targetType: session.targetType || "",
+        guards: session.guards || [],
+        qualities: session.qualities || []
+      }))
+    };
   }
 
   function cycleExportData(cycle, options = {}) {
@@ -1562,7 +1585,6 @@
           <input id="local-veil-input" placeholder="Tape OUVRIR" autocomplete="off" />
           <div class="actions">
             <button class="primary" data-action="unlock-local-veil">Ouvrir cette session</button>
-            <button class="ghost" data-action="disable-local-veil">Désactiver le voile local</button>
           </div>
         </div>
       </section>
@@ -2374,7 +2396,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
               </label>
               <label class="choice">
                 <input type="checkbox" data-advanced-setting="veryDirectWords" ${data.settings.advancedContent?.veryDirectWords ? "checked" : ""}>
-                Afficher les mots très directs
+                Afficher les “mots qui osent” très directs
               </label>
               <label class="choice">
                 <input type="checkbox" data-advanced-setting="childhoodDeep" ${data.settings.advancedContent?.childhoodDeep ? "checked" : ""}>
@@ -3279,14 +3301,54 @@ Assez pour aujourd’hui si le corps le demande.</p>
     reader.onload = () => {
       try {
         const imported = JSON.parse(reader.result);
+        if (imported?.app === "feu-clair" && imported?.cycle) {
+          if (!confirm("Importer ce Cycle dans le Carnet actuel ? Les données existantes seront conservées.")) return;
+          const cycle = normalizeImportedCycle(imported.cycle);
+          data.cycles.unshift(cycle);
+          data.activeCycleId = cycle.id;
+          data.activeTab = "carnet";
+          setNotice("Cycle importé dans le Carnet.");
+          saveData();
+          render();
+          return;
+        }
+
+        const looksLikeFullExport = imported?.app === "feu-clair"
+          || Array.isArray(imported?.cycles)
+          || imported?.settings
+          || imported?.version;
+        if (!looksLikeFullExport) {
+          alert("Import impossible : ce JSON ne ressemble pas à un export Feu Clair.");
+          return;
+        }
+        if (imported.exportMode === "anonymisé") {
+          alert("Import impossible : un export anonymisé sert à partager ou archiver, pas à restaurer les données complètes.");
+          return;
+        }
+        if (!confirm("Remplacer les données locales actuelles par ce fichier JSON ? Cette action écrase la session actuelle.")) return;
         data = normalizeData(imported);
         saveData();
         render();
       } catch (error) {
         alert("Import impossible : fichier JSON invalide.");
+      } finally {
+        event.target.value = "";
       }
     };
     reader.readAsText(file);
+  }
+
+  function normalizeImportedCycle(cycle) {
+    const imported = cloneData(cycle || {});
+    imported.id = uid("cycle");
+    imported.title = imported.title || "Cycle importé";
+    imported.status = imported.status || "ouvert";
+    imported.currentStep = Number.isFinite(imported.currentStep) ? Math.max(0, Math.min(STEPS.length - 1, imported.currentStep)) : 0;
+    imported.createdAt = imported.createdAt || nowISO();
+    imported.updatedAt = nowISO();
+    imported.answers = imported.answers && typeof imported.answers === "object" ? imported.answers : {};
+    imported.notes = imported.notes || "";
+    return imported;
   }
 
   function option(value, label, current) {
