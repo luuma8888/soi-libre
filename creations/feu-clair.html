@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.12.0</title>
+  <title>Feu Clair — v2.13.0</title>
 
   <style>
     :root {
@@ -528,7 +528,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.12.0</h1>
+        <h1>Feu Clair — v2.13.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -544,7 +544,7 @@
 
 <script>
 /*
-  Feu Clair — v2.12.0
+  Feu Clair — v2.13.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -560,7 +560,8 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "2.12.0";
+  const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
+  const APP_VERSION = "2.13.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -584,7 +585,14 @@
       languageMode: "poétique sobre",
       archetypeMode: "Terre / Soleil",
       privacy: {
-        maskSensitiveTitles: false
+        maskSensitiveTitles: false,
+        localVeilEnabled: false
+      },
+      advancedContent: {
+        inversions: false,
+        veryDirectWords: false,
+        childhoodDeep: false,
+        bodyMemory: true
       },
       libraryEnabled: {
         resonance: true,
@@ -889,6 +897,18 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }
 
+  function localVeilUnlocked() {
+    return sessionStorage.getItem(VEIL_SESSION_KEY) === "1";
+  }
+
+  function setLocalVeilUnlocked(value) {
+    if (value) {
+      sessionStorage.setItem(VEIL_SESSION_KEY, "1");
+    } else {
+      sessionStorage.removeItem(VEIL_SESSION_KEY);
+    }
+  }
+
   function uid(prefix = "id") {
     return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
   }
@@ -951,6 +971,7 @@
     const normalized = mergeDefaults(DEFAULT_DATA, input || {});
     normalized.version = APP_VERSION;
     normalized.settings = mergeDefaults(DEFAULT_DATA.settings, normalized.settings || {});
+    normalized.settings.advancedContent = mergeDefaults(DEFAULT_DATA.settings.advancedContent, normalized.settings.advancedContent || {});
     normalized.cycles ||= [];
     normalized.microSessions ||= [];
     normalized.bodyScans ||= [];
@@ -1021,13 +1042,25 @@
   function libraryItems(key, options = {}) {
     const source = data.library?.[key] ?? DEFAULT_DATA.library[key] ?? [];
     if (Array.isArray(source)) {
-      return source
+      return dedupeLibraryItems(source
         .map(item => normalizeLibraryItem(item, key))
         .filter(item => item.active)
         .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled(key))
-        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, key));
+        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, key))
+        .filter(item => options.includeSensitive || itemAllowedByAdvancedContent(item, key)));
     }
     return [];
+  }
+
+  function dedupeLibraryItems(items) {
+    const seen = new Set();
+    return items.filter(item => {
+      const signature = slugify(item.text || item.label || item.id);
+      if (!signature) return true;
+      if (seen.has(signature)) return false;
+      seen.add(signature);
+      return true;
+    });
   }
 
   function libraryCategoryEnabled(key) {
@@ -1064,6 +1097,49 @@
       ...(item.egregores || [])
     ].join(" ").toLowerCase();
     return !sensitiveWords.some(word => haystack.includes(word));
+  }
+
+  function itemAllowedByAdvancedContent(item, key) {
+    const settings = data.settings.advancedContent || DEFAULT_DATA.settings.advancedContent;
+    const haystack = [
+      key,
+      item.id,
+      item.label,
+      item.text,
+      item.family,
+      item.intensity,
+      item.mode,
+      item.element,
+      ...(item.tags || []),
+      ...(item.masks || []),
+      ...(item.egregores || [])
+    ].join(" ").toLowerCase();
+
+    if (!settings.veryDirectWords && (item.intensity === "très direct" || item.mode === "intensif")) return false;
+    if (!settings.inversions && [
+      "inversion",
+      "addiction",
+      "jouissance",
+      "perversion",
+      "fascination-sombre",
+      "sexualite",
+      "sexualité",
+      "emprise"
+    ].some(word => haystack.includes(word))) return false;
+    if (!settings.childhoodDeep && [
+      "enfant",
+      "enfance",
+      "mémoire",
+      "memoire",
+      "innocence"
+    ].some(word => haystack.includes(word))) return false;
+    if (!settings.bodyMemory && [
+      "mémoire corporelle",
+      "memoire corporelle",
+      "toucher-non-respecte",
+      "corps-utilise"
+    ].some(word => haystack.includes(word))) return false;
+    return true;
   }
 
   function libraryLabels(key) {
@@ -1131,11 +1207,12 @@
   function resonanceItems(options = {}) {
     const source = data.library?.resonance ?? DEFAULT_DATA.library.resonance;
     if (Array.isArray(source)) {
-      return source
+      return dedupeLibraryItems(source
         .map(item => normalizeLibraryItem(item, "resonance"))
         .filter(item => item.active)
         .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled("resonance"))
-        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"));
+        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"))
+        .filter(item => options.includeSensitive || itemAllowedByAdvancedContent(item, "resonance")));
     }
 
     // Compatibilité avec les anciens exports où resonance était un objet par famille.
@@ -1152,7 +1229,8 @@
       }, "resonance"));
     }).filter(item => item.active)
       .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled("resonance"))
-      .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"));
+      .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"))
+      .filter(item => options.includeSensitive || itemAllowedByAdvancedContent(item, "resonance"));
   }
 
   function selectedFamilyIds(selectedLabels = []) {
@@ -1199,6 +1277,17 @@
           <div class="pill-list">
             ${libraryItems("numbPrompts").map(item => `<span class="choice">${escapeHtml(item.label)}</span>`).join("")}
           </div>
+          <details>
+            <summary>Détecteur de verrouillage</summary>
+            <p class="mini"><strong>Vrai calme :</strong> ouvert, stable, respirant, libre.</p>
+            <p class="mini"><strong>Verrou possible :</strong> vide, coupé, confus, somnolent, absent, irrité, ou envie soudaine de quitter.</p>
+            <ul class="mini">
+              <li>Qu’est-ce qui pourrait arriver si cette colère sortait ?</li>
+              <li>Quelle loyauté serait menacée par ma vérité ?</li>
+              <li>Quelle punition ancienne mon corps anticipe peut-être ?</li>
+              <li>Quelle image de moi tomberait si je reconnaissais ce feu ?</li>
+            </ul>
+          </details>
         </div>
       `;
     }
@@ -1428,6 +1517,12 @@
 
   function render() {
     document.querySelector("#app").dataset.theme = data.settings.theme;
+    if (data.settings.privacy?.localVeilEnabled && !localVeilUnlocked()) {
+      renderTabs({ locked: true });
+      document.querySelector("#view").innerHTML = renderLocalVeil();
+      bindDynamicEvents();
+      return;
+    }
     renderTabs();
 
     const view = document.querySelector("#view");
@@ -1441,13 +1536,37 @@
     bindDynamicEvents();
   }
 
-  function renderTabs() {
+  function renderTabs(options = {}) {
     const el = document.querySelector("#tabs");
+    if (options.locked) {
+      el.innerHTML = "";
+      return;
+    }
     el.innerHTML = tabs.map(tab => `
       <button class="tab ${data.activeTab === tab.id ? "active" : ""}" data-tab="${tab.id}">
         ${tab.label}
       </button>
     `).join("");
+  }
+
+  function renderLocalVeil() {
+    return `
+      <section class="grid">
+        <div class="card">
+          <h2>Voile local actif</h2>
+          <p class="muted">
+            L’affichage de Feu Clair est masqué pour cette session. Ce voile protège seulement contre un regard rapide :
+            il ne chiffre pas les données et ne remplace pas la sécurité de l’appareil.
+          </p>
+          <label>Phrase d’ouverture</label>
+          <input id="local-veil-input" placeholder="Tape OUVRIR" autocomplete="off" />
+          <div class="actions">
+            <button class="primary" data-action="unlock-local-veil">Ouvrir cette session</button>
+            <button class="ghost" data-action="disable-local-veil">Désactiver le voile local</button>
+          </div>
+        </div>
+      </section>
+    `;
   }
 
   function renderBoussole() {
@@ -2246,6 +2365,27 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <div class="notice mini">
               En mode neutre, les signatures subtiles sensibles restent masquées dans les suggestions. L’alternative Terre / Soleil reste le repère symbolique simple.
             </div>
+
+            <label>Activation progressive des contenus sensibles</label>
+            <div class="pill-list">
+              <label class="choice">
+                <input type="checkbox" data-advanced-setting="inversions" ${data.settings.advancedContent?.inversions ? "checked" : ""}>
+                Explorer les inversions
+              </label>
+              <label class="choice">
+                <input type="checkbox" data-advanced-setting="veryDirectWords" ${data.settings.advancedContent?.veryDirectWords ? "checked" : ""}>
+                Afficher les mots très directs
+              </label>
+              <label class="choice">
+                <input type="checkbox" data-advanced-setting="childhoodDeep" ${data.settings.advancedContent?.childhoodDeep ? "checked" : ""}>
+                Mémoire d’enfance profonde
+              </label>
+              <label class="choice">
+                <input type="checkbox" data-advanced-setting="bodyMemory" ${data.settings.advancedContent?.bodyMemory ? "checked" : ""}>
+                Mémoire corporelle
+              </label>
+            </div>
+            <p class="muted mini">Ces filtres agissent sur les suggestions et la recherche. Ils ne suppriment aucune donnée.</p>
           </div>
         </div>
 
@@ -2361,7 +2501,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <input type="checkbox" data-privacy-setting="maskSensitiveTitles" ${data.settings.privacy?.maskSensitiveTitles ? "checked" : ""}>
               Masquer les titres sensibles dans le Carnet
             </label>
-            <p class="muted mini">Le masquage protège seulement l’affichage. Les données complètes restent disponibles localement et dans l’export complet.</p>
+            <label class="choice">
+              <input type="checkbox" data-privacy-setting="localVeilEnabled" ${data.settings.privacy?.localVeilEnabled ? "checked" : ""}>
+              Activer le voile local d’affichage
+            </label>
+            <p class="muted mini">
+              Le masquage et le voile local protègent seulement l’affichage. Les données complètes restent disponibles localement et dans l’export complet.
+              Le voile n’est pas un chiffrement : il sert à éviter une lecture immédiate sur l’écran.
+            </p>
             <div class="actions">
               <button class="primary" data-action="export-json">Exporter JSON</button>
               <button class="ghost" data-action="export-anonymized-json">Exporter anonymisé</button>
@@ -2520,12 +2667,29 @@ Assez pour aujourd’hui si le corps le demande.</p>
       });
     });
 
+    document.querySelectorAll("[data-advanced-setting]").forEach(el => {
+      if (el.dataset.boundAdvancedSetting === "1") return;
+      el.dataset.boundAdvancedSetting = "1";
+      el.addEventListener("change", () => {
+        data.settings.advancedContent ||= cloneData(DEFAULT_DATA.settings.advancedContent);
+        data.settings.advancedContent[el.dataset.advancedSetting] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
     document.querySelectorAll("[data-privacy-setting]").forEach(el => {
       if (el.dataset.boundPrivacySetting === "1") return;
       el.dataset.boundPrivacySetting = "1";
       el.addEventListener("change", () => {
         data.settings.privacy ||= cloneData(DEFAULT_DATA.settings.privacy);
         data.settings.privacy[el.dataset.privacySetting] = el.checked;
+        if (el.dataset.privacySetting === "localVeilEnabled" && el.checked) {
+          setLocalVeilUnlocked(true);
+        }
+        if (el.dataset.privacySetting === "localVeilEnabled" && !el.checked) {
+          setLocalVeilUnlocked(false);
+        }
         saveData();
         render();
       });
@@ -2555,6 +2719,24 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "toggle-theme") {
       data.settings.theme = data.settings.theme === "dark" ? "light" : "dark";
+      saveData();
+      render();
+    }
+
+    if (action === "unlock-local-veil") {
+      const value = (document.querySelector("#local-veil-input")?.value || "").trim().toUpperCase();
+      if (value !== "OUVRIR") {
+        alert("Tape OUVRIR pour lever le voile de cette session.");
+        return;
+      }
+      setLocalVeilUnlocked(true);
+      render();
+    }
+
+    if (action === "disable-local-veil") {
+      data.settings.privacy ||= cloneData(DEFAULT_DATA.settings.privacy);
+      data.settings.privacy.localVeilEnabled = false;
+      setLocalVeilUnlocked(false);
       saveData();
       render();
     }
@@ -2985,6 +3167,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
     }
 
     data.library[key] ||= [];
+    const signature = slugify(text);
+    if (data.library[key].some(item => slugify(normalizeLibraryItem(item, key).text || normalizeLibraryItem(item, key).label) === signature)) {
+      setNotice("Cette entrée existe déjà dans cette bibliothèque. Aucun doublon n’a été ajouté.");
+      render();
+      return;
+    }
     const entry = normalizeLibraryItem({
       id: `custom_${key}_${slugify(text).slice(0, 36) || Date.now()}`,
       label: text,
