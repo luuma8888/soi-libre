@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v1.1.0</title>
+  <title>Feu Clair — v2.3.1</title>
 
   <style>
     :root {
@@ -228,6 +228,18 @@
       margin-top: 1rem;
     }
 
+    .library-panel .actions + .notice,
+    .library-panel .actions + .grid,
+    .library-panel .notice + details,
+    .library-panel .grid + details,
+    .library-panel details + details {
+      margin-top: .85rem;
+    }
+
+    .library-panel details {
+      padding-top: .15rem;
+    }
+
     .pill-list {
       display: flex;
       flex-wrap: wrap;
@@ -318,6 +330,28 @@
       color: var(--text);
     }
 
+    .body-map {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .55rem;
+      margin-top: .7rem;
+    }
+
+    .body-zone {
+      width: 100%;
+      text-align: left;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      padding: .72rem .8rem;
+    }
+
+    .body-zone small {
+      display: block;
+      margin-top: .18rem;
+    }
+
     .toolbar {
       display: flex;
       justify-content: space-between;
@@ -346,6 +380,7 @@
       .topbar { align-items: flex-start; }
       .actions button { flex: 1 1 auto; }
       .brand p { display: none; }
+      .body-map { grid-template-columns: 1fr; }
     }
 
     @media print {
@@ -437,7 +472,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v1.1.0</h1>
+        <h1>Feu Clair — v2.3.1</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -453,7 +488,7 @@
 
 <script>
 /*
-  Feu Clair — v1.1.0
+  Feu Clair — v2.3.1
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -469,7 +504,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "1.1.0";
+  const APP_VERSION = "2.3.1";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -491,13 +526,24 @@
       theme: "light",
       depth: "doux",
       languageMode: "poétique sobre",
-      archetypeMode: "Terre / Soleil"
+      archetypeMode: "Terre / Soleil",
+      libraryEnabled: {
+        resonance: true,
+        boldWords: true,
+        egregores: true,
+        masks: true,
+        permissionPhrases: true,
+        positioningPhrases: true,
+        actionOptions: true,
+        qualities: true
+      }
     },
     activeTab: "boussole",
     activeCycleId: null,
     lastNotice: null,
     cycles: [],
     microSessions: [],
+    bodyScans: [],
     library: {
       families: [
         { id: "limite", label: "Limite violée", mode: "doux", tags: ["limite", "corps", "consentement"], active: true },
@@ -556,17 +602,39 @@
         { id: "jouissance-vide", label: "Jouissance vide", family: "masquee", intensity: "direct", mode: "profond", tags: ["compulsion"], active: true },
         { id: "fascination-sombre", label: "Fascination sombre", family: "absorbee", intensity: "direct", mode: "intensif", tags: ["champ"], active: true }
       ],
+      egregores: [
+        { id: "peur", label: "Égrégore de peur", family: "absorbee", intensity: "moyen", mode: "doux", zones: ["ventre", "plexus"], element: "terre", tags: ["sécurité", "champ"], active: true },
+        { id: "honte", label: "Égrégore de honte", family: "humiliation", intensity: "direct", mode: "profond", zones: ["visage", "poitrine"], element: "eau", tags: ["dignité"], active: true },
+        { id: "culpabilite", label: "Égrégore de culpabilité", family: "soi", intensity: "moyen", mode: "doux", zones: ["poitrine", "ventre"], element: "eau", tags: ["pardon"], active: true },
+        { id: "soumission", label: "Égrégore de soumission", family: "limite", intensity: "direct", mode: "profond", zones: ["dos", "gorge"], element: "terre", tags: ["limite", "consentement"], active: true },
+        { id: "silence", label: "Égrégore de silence", family: "parole", intensity: "moyen", mode: "doux", zones: ["gorge"], element: "air", tags: ["parole"], active: true },
+        { id: "fausse-paix", label: "Égrégore de fausse paix", family: "spirituelle", intensity: "direct", mode: "profond", zones: ["poitrine"], element: "soleil", tags: ["pardon prématuré"], active: true },
+        { id: "pardon-obligatoire", label: "Égrégore du pardon obligatoire", family: "spirituelle", intensity: "direct", mode: "profond", zones: ["gorge", "poitrine"], element: "air", tags: ["fausse lumière"], active: true },
+        { id: "enfant-invisible", label: "Égrégore de l’enfant invisible", family: "enfant", intensity: "direct", mode: "profond", zones: ["ventre", "poitrine"], element: "eau", tags: ["enfance"], active: true },
+        { id: "loyaute-toxique", label: "Égrégore de loyauté toxique", family: "trahison", intensity: "direct", mode: "profond", zones: ["dos", "poitrine"], element: "terre", tags: ["lien"], active: true },
+        { id: "controle", label: "Égrégore de contrôle", family: "masquee", intensity: "moyen", mode: "doux", zones: ["mâchoire", "mains"], element: "air", tags: ["peur"], active: true },
+        { id: "desespoir-collectif", label: "Égrégore de désespoir collectif", family: "collective", intensity: "moyen", mode: "doux", zones: ["épaules", "dos"], element: "terre", tags: ["collectif"], active: true },
+        { id: "signature-etrangere", label: "Signature perçue comme étrangère / parasite / programmée / non alignée", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["plexus", "tête"], element: "éther", tags: ["discernement", "non verdict"], active: true }
+      ],
+      boldWords: [
+        { id: "non-consentement", text: "Je n’ai pas consenti.", family: "limite", intensity: "direct", mode: "profond", zones: ["gorge", "ventre"], element: "air", tags: ["mots qui osent"], active: true },
+        { id: "pas-normal", text: "Ce n’était pas normal.", family: "injustice", intensity: "direct", mode: "profond", zones: ["plexus"], element: "soleil", tags: ["inversion"], active: true },
+        { id: "pas-ma-faute", text: "Ce n’était pas ma faute.", family: "soi", intensity: "direct", mode: "doux", zones: ["poitrine"], element: "eau", tags: ["réparation"], active: true },
+        { id: "trop-porte", text: "J’ai porté trop grand pour moi.", family: "enfant", intensity: "direct", mode: "profond", zones: ["dos", "ventre"], element: "terre", tags: ["enfance"], active: true },
+        { id: "paix-effacement", text: "J’ai appelé paix ce qui était parfois effacement.", family: "limite", intensity: "direct", mode: "profond", zones: ["poitrine"], element: "soleil", tags: ["discernement"], active: true },
+        { id: "rendre-collectif", text: "Je rends le collectif au collectif.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules"], element: "terre", tags: ["restitution"], active: true }
+      ],
       zones: [
-        { id: "gorge", label: "Gorge", tags: ["parole"], active: true },
-        { id: "machoire", label: "Mâchoire", tags: ["retenue"], active: true },
-        { id: "poitrine", label: "Poitrine", tags: ["cœur"], active: true },
-        { id: "plexus", label: "Plexus", tags: ["pouvoir"], active: true },
-        { id: "ventre", label: "Ventre", tags: ["peur", "intuition"], active: true },
-        { id: "dos", label: "Dos / épaules", tags: ["charge"], active: true },
-        { id: "mains", label: "Mains", tags: ["action"], active: true },
-        { id: "jambes", label: "Jambes / pieds", tags: ["ancrage"], active: true },
-        { id: "tout", label: "Tout le corps", tags: ["activation"], active: true },
-        { id: "rien", label: "Je ne ressens rien", tags: ["dissociation", "verrou"], active: true }
+        { id: "gorge", label: "Gorge", cue: "parole retenue, vérité avalée, cri étouffé", tags: ["parole"], active: true },
+        { id: "machoire", label: "Mâchoire", cue: "contrôle, morsure retenue, colère serrée", tags: ["retenue"], active: true },
+        { id: "poitrine", label: "Poitrine", cue: "cœur, trahison, tristesse sous le feu", tags: ["cœur"], active: true },
+        { id: "plexus", label: "Plexus", cue: "pouvoir, injustice, impuissance, confusion", tags: ["pouvoir"], active: true },
+        { id: "ventre", label: "Ventre", cue: "peur, consentement, mémoire corporelle douce", tags: ["peur", "intuition"], active: true },
+        { id: "dos", label: "Dos / épaules", cue: "charge portée, loyauté, collectif", tags: ["charge"], active: true },
+        { id: "mains", label: "Mains", cue: "action, coupure, restitution, limite", tags: ["action"], active: true },
+        { id: "jambes", label: "Jambes / pieds", cue: "ancrage, fuite, prochaine marche", tags: ["ancrage"], active: true },
+        { id: "tout", label: "Tout le corps", cue: "activation globale, secousse, fermeture forte", tags: ["activation"], active: true },
+        { id: "rien", label: "Je ne ressens rien", cue: "vide, verrou, fatigue, accès protégé", tags: ["dissociation", "verrou"], active: true }
       ],
       exits: [
         { id: "cri-muet", label: "Cri muet", intensity: "direct", mode: "profond", zones: ["gorge"], element: "air", tags: ["voix"], active: true },
@@ -659,6 +727,7 @@
     { id: "boussole", label: "Boussole" },
     { id: "soin", label: "Soin guidé" },
     { id: "micro", label: "Micro-soin" },
+    { id: "outils", label: "Outils ponctuels" },
     { id: "carnet", label: "Carnet" },
     { id: "sanctuaire", label: "Sanctuaire" }
   ];
@@ -735,12 +804,38 @@
   function normalizeData(input) {
     const normalized = mergeDefaults(DEFAULT_DATA, input || {});
     normalized.version = APP_VERSION;
-    normalized.settings ||= cloneData(DEFAULT_DATA.settings);
+    normalized.settings = mergeDefaults(DEFAULT_DATA.settings, normalized.settings || {});
     normalized.cycles ||= [];
     normalized.microSessions ||= [];
-    normalized.library ||= cloneData(DEFAULT_DATA.library);
+    normalized.bodyScans ||= [];
+    normalized.library = mergeLibraryDefaults(normalized.library || {});
     normalized.lastNotice ||= null;
     return normalized;
+  }
+
+  function mergeLibraryDefaults(savedLibrary) {
+    const merged = {};
+    Object.entries(DEFAULT_DATA.library).forEach(([key, defaultItems]) => {
+      const savedItems = Array.isArray(savedLibrary?.[key]) ? savedLibrary[key] : [];
+      const byId = new Map(savedItems.map(item => {
+        const normalized = normalizeLibraryItem(item, key);
+        return [normalized.id, normalized];
+      }));
+      merged[key] = defaultItems.map(item => {
+        const normalizedDefault = normalizeLibraryItem(item, key);
+        return byId.get(normalizedDefault.id) || normalizedDefault;
+      });
+      savedItems.forEach(item => {
+        const normalized = normalizeLibraryItem(item, key);
+        if (!merged[key].some(existing => existing.id === normalized.id)) merged[key].push(normalized);
+      });
+    });
+    Object.keys(savedLibrary || {}).forEach(key => {
+      if (!merged[key] && Array.isArray(savedLibrary[key])) {
+        merged[key] = savedLibrary[key].map(item => normalizeLibraryItem(item, key));
+      }
+    });
+    return merged;
   }
 
   function normalizeLibraryItem(item, fallbackPrefix = "item") {
@@ -752,7 +847,8 @@
         mode: "doux",
         intensity: "doux",
         tags: [],
-        active: true
+        active: true,
+        custom: false
       };
     }
     return {
@@ -766,24 +862,133 @@
       masks: item?.masks || [],
       egregores: item?.egregores || [],
       element: item?.element || "",
+      cue: item?.cue || "",
       tags: item?.tags || [],
-      active: item?.active !== false
+      active: item?.active !== false,
+      custom: item?.custom === true,
+      createdAt: item?.createdAt || ""
     };
   }
 
-  function libraryItems(key) {
+  function libraryItems(key, options = {}) {
     const source = data.library?.[key] ?? DEFAULT_DATA.library[key] ?? [];
-    if (Array.isArray(source)) return source.map(item => normalizeLibraryItem(item, key)).filter(item => item.active);
+    if (Array.isArray(source)) {
+      return source
+        .map(item => normalizeLibraryItem(item, key))
+        .filter(item => item.active)
+        .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled(key))
+        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, key));
+    }
     return [];
+  }
+
+  function libraryCategoryEnabled(key) {
+    if (!Object.prototype.hasOwnProperty.call(data.settings.libraryEnabled || {}, key)) return true;
+    return data.settings.libraryEnabled[key] !== false;
+  }
+
+  function itemAllowedByArchetype(item, key) {
+    if (data.settings.archetypeMode !== "neutre") return true;
+    const sensitiveWords = [
+      "spirituel",
+      "subtil",
+      "éther",
+      "ether",
+      "signature-etrangere",
+      "signature étrangère",
+      "parasite",
+      "programmée",
+      "non alignée",
+      "mikaël",
+      "dragon",
+      "source",
+      "fausse lumière"
+    ];
+    const haystack = [
+      key,
+      item.id,
+      item.label,
+      item.text,
+      item.family,
+      item.element,
+      item.mode,
+      ...(item.tags || []),
+      ...(item.egregores || [])
+    ].join(" ").toLowerCase();
+    return !sensitiveWords.some(word => haystack.includes(word));
   }
 
   function libraryLabels(key) {
     return libraryItems(key).map(item => item.label || item.text).filter(Boolean);
   }
 
-  function resonanceItems() {
+  function librarySearchResults(query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (q.length < 2) return [];
+    const groups = [
+      ["Famille", libraryItems("families")],
+      ["Résonance", resonanceItems()],
+      ["Mot qui ose", libraryItems("boldWords")],
+      ["Égrégore", libraryItems("egregores")],
+      ["Masque", libraryItems("masks")],
+      ["Zone", libraryItems("zones")],
+      ["Sortie", libraryItems("exits")],
+      ["Qualité", libraryItems("qualities")],
+      ["Permission", libraryItems("permissionPhrases")],
+      ["Positionnement", libraryItems("positioningPhrases")],
+      ["Action / non-action", libraryItems("actionOptions")]
+    ];
+    return groups.flatMap(([type, items]) => items.map(item => {
+      const text = item.text || item.label || "";
+      const haystack = [
+        text,
+        item.family,
+        item.intensity,
+        item.mode,
+        item.element,
+        ...(item.tags || []),
+        ...(item.zones || []),
+        ...(item.masks || []),
+        ...(item.egregores || [])
+      ].join(" ").toLowerCase();
+      return haystack.includes(q) ? { type, text, item } : null;
+    }).filter(Boolean)).slice(0, 12);
+  }
+
+  function editableLibraryGroups() {
+    return [
+      { key: "resonance", label: "Phrases de résonance" },
+      { key: "boldWords", label: "Mots qui osent" },
+      { key: "egregores", label: "Égrégores / champs perçus" },
+      { key: "masks", label: "Masques du feu retourné" },
+      { key: "permissionPhrases", label: "Phrases de permission" },
+      { key: "positioningPhrases", label: "Phrases de positionnement" },
+      { key: "actionOptions", label: "Actions / non-actions" },
+      { key: "qualities", label: "Qualités récupérées" }
+    ];
+  }
+
+  function libraryGroupLabel(key) {
+    return editableLibraryGroups().find(group => group.key === key)?.label || key;
+  }
+
+  function customLibraryItems() {
+    return Object.entries(data.library || {}).flatMap(([key, items]) => (
+      Array.isArray(items)
+        ? items.map(item => normalizeLibraryItem(item, key)).filter(item => item.custom).map(item => ({ key, item }))
+        : []
+    ));
+  }
+
+  function resonanceItems(options = {}) {
     const source = data.library?.resonance ?? DEFAULT_DATA.library.resonance;
-    if (Array.isArray(source)) return source.map(item => normalizeLibraryItem(item, "resonance")).filter(item => item.active);
+    if (Array.isArray(source)) {
+      return source
+        .map(item => normalizeLibraryItem(item, "resonance"))
+        .filter(item => item.active)
+        .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled("resonance"))
+        .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"));
+    }
 
     // Compatibilité avec les anciens exports où resonance était un objet par famille.
     return Object.entries(source || {}).flatMap(([familyLabel, phrases]) => {
@@ -797,7 +1002,9 @@
         tags: [familyLabel],
         active: true
       }, "resonance"));
-    });
+    }).filter(item => item.active)
+      .filter(item => options.ignoreCategoryToggle || libraryCategoryEnabled("resonance"))
+      .filter(item => options.includeSensitive || itemAllowedByArchetype(item, "resonance"));
   }
 
   function selectedFamilyIds(selectedLabels = []) {
@@ -953,6 +1160,7 @@
     if (data.activeTab === "boussole") view.innerHTML = renderBoussole();
     if (data.activeTab === "soin") view.innerHTML = renderSoin();
     if (data.activeTab === "micro") view.innerHTML = renderMicroSoin();
+    if (data.activeTab === "outils") view.innerHTML = renderOutils();
     if (data.activeTab === "carnet") view.innerHTML = renderCarnet();
     if (data.activeTab === "sanctuaire") view.innerHTML = renderSanctuaire();
 
@@ -981,6 +1189,7 @@
           <div class="actions">
             <button class="primary" data-action="new-cycle">Commencer un Cycle de Feu</button>
             <button data-tab="micro">Faire un micro-soin</button>
+            <button data-tab="outils">Scanner une zone du corps</button>
             <button data-tab="carnet">Voir le Carnet</button>
           </div>
         </div>
@@ -1422,6 +1631,71 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
+  function renderOutils() {
+    return `
+      <section class="grid">
+        ${renderLastNotice()}
+
+        <div class="card">
+          <h2>Outils ponctuels</h2>
+          <p class="muted">Un scan court, hors Cycle de Feu. Il aide à écouter le corps sans ouvrir trop vite.</p>
+        </div>
+
+        <div class="card">
+          <h3>Carte corporelle — scan autonome</h3>
+          <p class="notice">
+            Cette zone est une porte d’entrée, pas une preuve.
+            Tu peux créer un Cycle de Feu à partir d’elle, mais le soin commencera par vérifier ton état actuel pour ne pas ouvrir trop vite.
+          </p>
+
+          <label>Zone corporelle</label>
+          <select id="body-scan-zone">
+            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}">${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
+          </select>
+
+          <label>Sensation</label>
+          <textarea id="body-scan-sensation" placeholder="Ex : serré, vide, chaud, froid, pression, picotement, rien de clair..."></textarea>
+
+          <label>Intensité ressentie</label>
+          <select id="body-scan-intensity">
+            <option value="">Je ne sais pas</option>
+            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+          </select>
+
+          <label>Signal ou phrase éventuelle</label>
+          <textarea id="body-scan-signal" placeholder="Ex : je n’ai pas consenti, je dois dire non, je ne ressens rien, pas plus aujourd’hui..."></textarea>
+
+          <label>Famille possible</label>
+          <select id="body-scan-family">
+            <option value="">Je ne sais pas</option>
+            ${libraryLabels("families").map(label => `<option value="${escapeAttr(label)}">${escapeHtml(label)}</option>`).join("")}
+          </select>
+
+          <label>État actuel</label>
+          ${checksStatic("body-scan-flags", [
+            "Je me sens assez stable pour identifier doucement",
+            "Confusion",
+            "Envie de fuir",
+            "Vide inquiétant",
+            "Trop activé",
+            "Je préfère fermer proprement"
+          ])}
+
+          <div class="actions">
+            <button class="ghost" data-action="body-scan-close">Fermer proprement</button>
+            <button class="primary" data-action="body-scan-to-cycle">Créer un Cycle de Feu depuis cette zone</button>
+            ${data.cycles.length ? `
+              <select id="body-scan-cycle-target" aria-label="Cycle existant">
+                ${data.cycles.map(c => `<option value="${escapeAttr(c.id)}">${escapeHtml(c.title)}</option>`).join("")}
+              </select>
+              <button class="ghost" data-action="body-scan-add-cycle">Ajouter à un Cycle existant</button>
+            ` : ""}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   function renderCarnet() {
     const cycles = data.cycles;
     return `
@@ -1467,11 +1741,21 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function renderSanctuaire() {
+    const search = data.settings.librarySearch || "";
+    const results = librarySearchResults(search);
     return `
       <section class="grid">
         <div class="card">
           <h2>Sanctuaire</h2>
           <p class="muted">Comprendre, personnaliser, sauvegarder. Rien ici n’est nécessaire pendant une traversée active.</p>
+        </div>
+
+        <div class="card">
+          <h3>Carte corporelle</h3>
+          <p class="muted">La carte corporelle est maintenant un scan autonome dans Outils ponctuels. Elle ne renvoie vers un Cycle qu’après un sas de sécurité.</p>
+          <div class="actions">
+            <button class="primary" data-tab="outils">Ouvrir le scan corporel</button>
+          </div>
         </div>
 
         <div class="grid two">
@@ -1498,21 +1782,50 @@ Assez pour aujourd’hui si le corps le demande.</p>
               ${option("poétique sobre", "Poétique sobre", data.settings.languageMode)}
               ${option("direct", "Direct", data.settings.languageMode)}
               ${option("spirituel", "Spirituel", data.settings.languageMode)}
+              ${option("galactique / dragon / Mikaël / Source", "Galactique / dragon / Mikaël / Source", data.settings.languageMode)}
             </select>
 
             <label>Archétypes</label>
             <select data-setting="archetypeMode">
-              ${option("neutre", "Neutre", data.settings.archetypeMode)}
+              ${option("neutre", "Neutre — masquer les contenus subtils sensibles", data.settings.archetypeMode)}
               ${option("Terre / Soleil", "Terre / Soleil", data.settings.archetypeMode)}
               ${option("Dragon / Mikaël / Source", "Dragon / Mikaël / Source", data.settings.archetypeMode)}
             </select>
+
+            <div class="notice mini">
+              En mode neutre, les signatures subtiles sensibles restent masquées dans les suggestions. L’alternative Terre / Soleil reste le repère symbolique simple.
+            </div>
           </div>
         </div>
 
         <div class="grid two">
-          <div class="card">
+          <div class="card library-panel">
             <h3>Bibliothèques internes</h3>
             <p class="muted">Les listes visibles restent courtes. Les entrées internes sont structurées avec tags pour enrichir progressivement le soin sans surcharger l’écran.</p>
+            <label>Rechercher une porte de résonance</label>
+            <input id="library-search" value="${escapeAttr(search)}" placeholder="Ex : honte, gorge, limite, collectif, enfant..." />
+            <p class="muted mini">Tape au moins 2 lettres. Les résultats sont limités pour éviter l’effet catalogue.</p>
+            <div class="actions">
+              <button class="primary" data-action="library-search">Rechercher</button>
+              ${search ? `<button class="ghost" data-action="library-search-clear">Effacer</button>` : ""}
+            </div>
+            ${search.trim().length < 2 ? `
+              <div class="notice">La recherche reste volontairement sobre. Pendant un soin, les vagues restent filtrées à 10 phrases maximum.</div>
+            ` : results.length ? `
+              <div class="grid">
+                ${results.map(result => `
+                  <div class="notice">
+                    <strong>${escapeHtml(result.type)}</strong><br />
+                    ${escapeHtml(result.text)}
+                    <div class="actions">
+                      <button class="ghost" data-action="start-from-library" data-library-text="${escapeAttr(result.text)}" data-library-type="${escapeAttr(result.type)}">Commencer depuis cette résonance</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            ` : `
+              <div class="notice">Aucune entrée trouvée. Essaie un mot plus simple ou une zone du corps.</div>
+            `}
             <details>
               <summary>Familles</summary>
               <div class="pill-list">${libraryLabels("families").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
@@ -1522,11 +1835,71 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <div class="pill-list">${libraryLabels("masks").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
             <details>
+              <summary>Égrégores de base</summary>
+              <div class="pill-list">${libraryLabels("egregores").slice(0, 12).map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
+            </details>
+            <details>
               <summary>Structure interne</summary>
               <p class="muted mini">
                 Les entrées contiennent maintenant id, famille, intensité, mode, zones, masques, égrégores, élément conseillé, tags et activation.
                 Pendant un soin, seules les phrases utiles à la vague courante apparaissent.
               </p>
+            </details>
+            <details>
+              <summary>Personnaliser les bibliothèques</summary>
+              <p class="muted mini">Ces réglages agissent sur les suggestions. Les contenus restent locaux et exportables en JSON.</p>
+
+              <label>Catégories actives</label>
+              <div class="pill-list">
+                ${editableLibraryGroups().map(group => `
+                  <label class="choice">
+                    <input type="checkbox" data-library-toggle="${escapeAttr(group.key)}" ${libraryCategoryEnabled(group.key) ? "checked" : ""}>
+                    ${escapeHtml(group.label)}
+                  </label>
+                `).join("")}
+              </div>
+
+              <label>Ajouter une entrée personnalisée</label>
+              <select id="custom-library-key">
+                ${editableLibraryGroups().map(group => `<option value="${escapeAttr(group.key)}">${escapeHtml(group.label)}</option>`).join("")}
+              </select>
+
+              <label>Texte ou libellé</label>
+              <textarea id="custom-library-text" placeholder="Ex : Je peux poser une limite sans expliquer toute mon histoire."></textarea>
+
+              <label>Famille associée</label>
+              <select id="custom-library-family">
+                <option value="">Non précisée</option>
+                ${libraryItems("families", { ignoreCategoryToggle: true, includeSensitive: true }).map(item => `<option value="${escapeAttr(item.id)}">${escapeHtml(item.label)}</option>`).join("")}
+              </select>
+
+              <label>Mode recommandé</label>
+              <select id="custom-library-mode">
+                ${option("doux", "Doux", "doux")}
+                ${option("profond", "Profond", "doux")}
+                ${option("intensif", "Intensif", "doux")}
+              </select>
+
+              <div class="actions">
+                <button class="primary" data-action="add-custom-library-entry">Ajouter cette entrée</button>
+              </div>
+
+              ${customLibraryItems().length ? `
+                <label>Entrées personnalisées</label>
+                <div class="grid">
+                  ${customLibraryItems().slice(0, 12).map(({ key, item }) => `
+                    <div class="notice mini">
+                      <strong>${escapeHtml(libraryGroupLabel(key))}</strong><br />
+                      ${escapeHtml(item.text || item.label)}
+                      <div class="actions">
+                        <button class="ghost" data-action="remove-custom-library-entry" data-library-key="${escapeAttr(key)}" data-library-id="${escapeAttr(item.id)}">Retirer</button>
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>
+              ` : `
+                <div class="notice mini">Aucune entrée personnalisée pour l’instant.</div>
+              `}
             </details>
           </div>
 
@@ -1653,6 +2026,18 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.addEventListener("change", () => {
         data.settings[el.dataset.setting] = el.value;
         saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-library-toggle]").forEach(el => {
+      if (el.dataset.boundLibraryToggle === "1") return;
+      el.dataset.boundLibraryToggle = "1";
+      el.addEventListener("change", () => {
+        data.settings.libraryEnabled ||= cloneData(DEFAULT_DATA.settings.libraryEnabled);
+        data.settings.libraryEnabled[el.dataset.libraryToggle] = el.checked;
+        saveData();
+        render();
       });
     });
 
@@ -1772,6 +2157,120 @@ Assez pour aujourd’hui si le corps le demande.</p>
       render();
     }
 
+    if (action === "library-search") {
+      data.settings.librarySearch = document.querySelector("#library-search")?.value || "";
+      saveData();
+      render();
+    }
+
+    if (action === "library-search-clear") {
+      data.settings.librarySearch = "";
+      saveData();
+      render();
+    }
+
+    if (action === "add-custom-library-entry") {
+      addCustomLibraryEntry();
+    }
+
+    if (action === "remove-custom-library-entry") {
+      removeCustomLibraryEntry(el.dataset.libraryKey, el.dataset.libraryId);
+    }
+
+    if (action === "start-from-library") {
+      const text = el.dataset.libraryText || "";
+      const type = el.dataset.libraryType || "Résonance";
+      const cycle = {
+        id: uid("cycle"),
+        title: `${type} : ${text.slice(0, 48)}`,
+        status: "ouvert",
+        currentStep: 2,
+        createdAt: nowISO(),
+        updatedAt: nowISO(),
+        answers: {
+          0: {
+            intention: "Explorer cette résonance comme une porte, sans en faire une preuve.",
+            depth: data.settings.depth,
+            regulationMode: "normal"
+          },
+          2: {
+            trigger: text,
+            forWhat: "Comprendre ce que cette phrase ou ce mot cherche à protéger.",
+            families: []
+          },
+          3: {
+            resonancePhrases: [text]
+          }
+        }
+      };
+      data.cycles.unshift(cycle);
+      data.activeCycleId = cycle.id;
+      data.activeTab = "soin";
+      data.lastNotice = {
+        text: "Cycle créé depuis une résonance. Cette phrase est une porte d’exploration, pas une preuve.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      render();
+    }
+
+    if (action === "body-scan-close") {
+      const scan = readBodyScan();
+      data.bodyScans.unshift({ ...scan, id: uid("scan"), status: "fermé proprement", createdAt: nowISO() });
+      data.lastNotice = {
+        text: "Scan corporel fermé proprement. Rien n’est perdu : tu peux revenir plus tard sans ouvrir un Cycle maintenant.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("boussole");
+    }
+
+    if (action === "body-scan-to-cycle") {
+      const scan = readBodyScan();
+      const cycle = createCycleFromBodyScan(scan);
+      data.bodyScans.unshift({ ...scan, id: uid("scan"), status: "transformé en cycle", cycleId: cycle.id, createdAt: nowISO() });
+      data.cycles.unshift(cycle);
+      data.activeCycleId = cycle.id;
+      data.activeTab = "soin";
+      data.lastNotice = {
+        text: cycle.currentStep === 1
+          ? "Cycle créé depuis la carte corporelle. Avant de continuer, vérifions si ton feu est traversable maintenant."
+          : "Cycle créé depuis la carte corporelle. La stabilité est notée, mais tu peux revenir à Stabiliser si besoin.",
+        tone: cycle.currentStep === 1 ? "danger" : "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      render();
+    }
+
+    if (action === "body-scan-add-cycle") {
+      const scan = readBodyScan();
+      const targetId = document.querySelector("#body-scan-cycle-target")?.value;
+      const cycle = data.cycles.find(c => c.id === targetId);
+      if (!cycle) return;
+      cycle.answers[2] ||= {};
+      cycle.answers[2].bodyScanNotes = [
+        cycle.answers[2].bodyScanNotes || "",
+        bodyScanSummary(scan)
+      ].filter(Boolean).join("\n\n");
+      cycle.answers[3] ||= {};
+      cycle.answers[3].bodySignals ||= [];
+      if (scan.zone && !cycle.answers[3].bodySignals.includes(scan.zone)) {
+        cycle.answers[3].bodySignals.push(scan.zone);
+      }
+      cycle.updatedAt = nowISO();
+      data.bodyScans.unshift({ ...scan, id: uid("scan"), status: "ajouté à un cycle", cycleId: cycle.id, createdAt: nowISO() });
+      data.lastNotice = {
+        text: "Scan corporel ajouté au Cycle existant. Il reste une information, pas une preuve.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("carnet");
+    }
+
     if (action === "duplicate-cycle") {
       const source = data.cycles.find(c => c.id === el.dataset.id);
       if (!source) return;
@@ -1879,6 +2378,49 @@ Assez pour aujourd’hui si le corps le demande.</p>
     render();
   }
 
+  function addCustomLibraryEntry() {
+    const key = document.querySelector("#custom-library-key")?.value || "resonance";
+    const text = (document.querySelector("#custom-library-text")?.value || "").trim();
+    const family = document.querySelector("#custom-library-family")?.value || "";
+    const mode = document.querySelector("#custom-library-mode")?.value || "doux";
+
+    if (!text) {
+      alert("Ajout impossible : écris d’abord un texte ou un libellé.");
+      return;
+    }
+
+    data.library[key] ||= [];
+    const entry = normalizeLibraryItem({
+      id: `custom_${key}_${slugify(text).slice(0, 36) || Date.now()}`,
+      label: text,
+      text,
+      family,
+      mode,
+      intensity: mode === "intensif" ? "direct" : "doux",
+      tags: ["personnalisé"],
+      active: true,
+      custom: true,
+      createdAt: nowISO()
+    }, key);
+
+    if (data.library[key].some(item => normalizeLibraryItem(item, key).id === entry.id)) {
+      entry.id = `${entry.id}_${Math.random().toString(16).slice(2, 6)}`;
+    }
+
+    data.library[key].push(entry);
+    setNotice("Entrée personnalisée ajoutée au Sanctuaire. Elle reste locale et sera incluse dans l’export JSON.");
+    saveData();
+    render();
+  }
+
+  function removeCustomLibraryEntry(key, id) {
+    if (!key || !id || !Array.isArray(data.library?.[key])) return;
+    data.library[key] = data.library[key].filter(item => normalizeLibraryItem(item, key).id !== id);
+    setNotice("Entrée personnalisée retirée.");
+    saveData();
+    render();
+  }
+
   function exportJson() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1927,6 +2469,19 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
+  function checksStatic(name, values) {
+    return `
+      <div class="pill-list" data-static-check-group="${escapeAttr(name)}">
+        ${values.map(v => `
+          <label class="choice">
+            <input type="checkbox" value="${escapeAttr(v)}">
+            ${escapeHtml(v)}
+          </label>
+        `).join("")}
+      </div>
+    `;
+  }
+
   function radios(name, values, selected = "") {
     return `
       <div class="pill-list" data-radio-group="${escapeAttr(name)}">
@@ -1951,6 +2506,70 @@ Assez pour aujourd’hui si le corps le demande.</p>
   function cloneData(value) {
     if (typeof structuredClone === "function") return structuredClone(value);
     return JSON.parse(JSON.stringify(value));
+  }
+
+  function readBodyScan() {
+    const flags = [...document.querySelectorAll("[data-static-check-group='body-scan-flags'] input:checked")].map(input => input.value);
+    const intensityRaw = document.querySelector("#body-scan-intensity")?.value || "";
+    return {
+      zone: document.querySelector("#body-scan-zone")?.value || "",
+      sensation: document.querySelector("#body-scan-sensation")?.value || "",
+      intensity: intensityRaw === "" ? null : Number(intensityRaw),
+      signal: document.querySelector("#body-scan-signal")?.value || "",
+      family: document.querySelector("#body-scan-family")?.value || "",
+      flags
+    };
+  }
+
+  function bodyScanNeedsStabilizing(scan) {
+    const alertFlags = ["Confusion", "Envie de fuir", "Vide inquiétant", "Trop activé", "Je préfère fermer proprement"];
+    if (scan.intensity === null) return true;
+    if (scan.intensity >= 7) return true;
+    if (scan.flags.some(flag => alertFlags.includes(flag))) return true;
+    return !scan.flags.includes("Je me sens assez stable pour identifier doucement");
+  }
+
+  function createCycleFromBodyScan(scan) {
+    const needsStabilizing = bodyScanNeedsStabilizing(scan);
+    return {
+      id: uid("cycle"),
+      title: `Zone : ${scan.zone || "corps"}`,
+      status: "ouvert",
+      currentStep: needsStabilizing ? 1 : 2,
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+      answers: {
+        0: {
+          intention: "Explorer une zone du corps sans forcer l’histoire.",
+          depth: "doux",
+          regulationMode: needsStabilizing ? "tooActivated" : "normal"
+        },
+        1: {
+          intensity: scan.intensity ?? "",
+          regulationMode: needsStabilizing ? "tooActivated" : "normal"
+        },
+        2: {
+          trigger: scan.zone,
+          forWhat: scan.signal || "Écouter ce que cette zone cherche à protéger.",
+          families: scan.family ? [scan.family] : [],
+          bodyScanNotes: bodyScanSummary(scan)
+        },
+        3: {
+          bodySignals: scan.zone ? [scan.zone] : []
+        }
+      }
+    };
+  }
+
+  function bodyScanSummary(scan) {
+    return [
+      `Zone : ${scan.zone || "—"}`,
+      `Sensation : ${scan.sensation || "—"}`,
+      `Intensité : ${scan.intensity === null ? "inconnue" : `${scan.intensity}/10`}`,
+      `Signal : ${scan.signal || "—"}`,
+      `Famille possible : ${scan.family || "—"}`,
+      `État : ${scan.flags.join(", ") || "—"}`
+    ].join("\n");
   }
 
   function escapeHtml(str) {
