@@ -1,0 +1,1796 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Feu Clair — v0.2</title>
+
+  <style>
+    :root {
+      --bg: #fbf7ef;
+      --surface: #fffdf8;
+      --surface-2: #f4eadf;
+      --text: #2f2923;
+      --muted: #756b61;
+      --line: #e5d7c8;
+      --accent: #c76f47;
+      --accent-2: #e8b86d;
+      --good: #679b78;
+      --danger: #b15b5b;
+      --shadow: 0 10px 28px rgba(70, 45, 25, 0.10);
+      --radius: 18px;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    [data-theme="dark"] {
+      --bg: #161412;
+      --surface: #211d1a;
+      --surface-2: #2c2621;
+      --text: #f5eadc;
+      --muted: #c9b7a2;
+      --line: #44382f;
+      --accent: #e08a5f;
+      --accent-2: #f0c77a;
+      --good: #8bc99c;
+      --danger: #d07171;
+      --shadow: 0 10px 28px rgba(0,0,0,0.28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at top left, rgba(232,184,109,.22), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(199,111,71,.16), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: .72rem 1rem;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #25150d;
+      font-weight: 700;
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    button.danger {
+      background: rgba(177,91,91,.15);
+      color: var(--danger);
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 14px;
+      padding: .75rem .85rem;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 7rem;
+      resize: vertical;
+    }
+
+    label {
+      display: block;
+      font-weight: 650;
+      margin: 1rem 0 .4rem;
+    }
+
+    small {
+      color: var(--muted);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+    }
+
+    header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 88%, transparent);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .topbar {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      justify-content: space-between;
+    }
+
+    .brand h1 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .brand p {
+      margin: .1rem 0 0;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    nav {
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 78%, transparent);
+      overflow-x: auto;
+    }
+
+    .tabs {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      gap: .45rem;
+      padding: .6rem 1rem;
+    }
+
+    .tab {
+      white-space: nowrap;
+      padding: .62rem .85rem;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+    }
+
+    .tab.active {
+      color: var(--text);
+      border-color: var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 .6rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin-top: 1rem;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      margin: .5rem 0;
+    }
+
+    .choice {
+      display: inline-flex;
+      align-items: center;
+      gap: .42rem;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 999px;
+      padding: .55rem .7rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .choice input {
+      width: auto;
+    }
+
+    .step-shell {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .progress {
+      display: flex;
+      gap: .35rem;
+      overflow-x: auto;
+      padding-bottom: .25rem;
+    }
+
+    .dot {
+      min-width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-size: .8rem;
+    }
+
+    .dot.active {
+      color: #25150d;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-weight: 800;
+    }
+
+    .dot.done {
+      border-color: var(--good);
+      color: var(--good);
+    }
+
+    .notice {
+      border-left: 4px solid var(--accent);
+      background: color-mix(in srgb, var(--accent-2) 18%, var(--surface));
+      border-radius: 14px;
+      padding: .85rem;
+      color: var(--text);
+    }
+
+    .notice h3 {
+      margin: 0 0 .35rem;
+      font-size: 1rem;
+    }
+
+    .dangerBox {
+      border-left-color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 16%, var(--surface));
+    }
+
+    .softBox {
+      border-left-color: var(--good);
+      background: color-mix(in srgb, var(--good) 14%, var(--surface));
+    }
+
+    .summary {
+      white-space: pre-wrap;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .mini {
+      font-size: .88rem;
+    }
+
+    @media (max-width: 760px) {
+      header { padding: .8rem; }
+      main { padding: .8rem; }
+      .grid.two { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; }
+      .actions button { flex: 1 1 auto; }
+      .brand p { display: none; }
+    }
+
+    @media print {
+      @page {
+        margin: 14mm;
+      }
+
+      header, nav, .actions, .toolbar, button, input[type="file"] {
+        display: none !important;
+      }
+
+      html, body, .app {
+        min-height: auto !important;
+        height: auto !important;
+      }
+
+      body {
+        margin: 0 !important;
+        background: white !important;
+        color: black !important;
+      }
+
+      .app {
+        display: block !important;
+      }
+
+      main {
+        display: block !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .grid,
+      .grid.two,
+      .step-shell {
+        display: block !important;
+      }
+
+      .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+        margin: 0 0 10mm;
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+
+      .summary,
+      .notice {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<div class="app" id="app" data-theme="light">
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <h1>Feu Clair — v0.2</h1>
+        <p>Traverser une colère, rendre la charge, garder la force.</p>
+      </div>
+      <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
+    </div>
+  </header>
+
+  <nav>
+    <div class="tabs" id="tabs"></div>
+  </nav>
+
+  <main id="view"></main>
+</div>
+
+<script>
+/*
+  Feu Clair — v0.2
+  Application offline, sans CDN, sauvegarde locale.
+  Objectif : garder un soin guidé simple, avec des bibliothèques internes
+  structurées mais révélées par petites vagues.
+
+  Prochaines extensions naturelles :
+  - bibliothèques éditables
+  - carte corporelle visuelle
+  - moteur de filtrage par tags
+  - outils corporels détaillés
+  - exports imprimables plus beaux
+  - chiffrement local optionnel
+*/
+
+(() => {
+  const STORAGE_KEY = "feu_clair_v01_data";
+  const APP_VERSION = "0.2.0";
+  const RESONANCE_WAVE_LIMIT = 10;
+
+  const STEPS = [
+    "Préparer",
+    "Stabiliser",
+    "Identifier",
+    "Éveiller",
+    "Discerner",
+    "Nommer",
+    "Sortir",
+    "Purifier",
+    "Positionner",
+    "Sceller"
+  ];
+
+  const DEFAULT_DATA = {
+    version: APP_VERSION,
+    settings: {
+      theme: "light",
+      depth: "doux",
+      languageMode: "poétique sobre",
+      archetypeMode: "Terre / Soleil"
+    },
+    activeTab: "boussole",
+    activeCycleId: null,
+    lastNotice: null,
+    cycles: [],
+    microSessions: [],
+    library: {
+      families: [
+        { id: "limite", label: "Limite violée", mode: "doux", tags: ["limite", "corps", "consentement"], active: true },
+        { id: "injustice", label: "Injustice", mode: "profond", tags: ["vérité", "cohérence", "vivant"], active: true },
+        { id: "trahison", label: "Trahison", mode: "profond", tags: ["confiance", "lien", "cœur"], active: true },
+        { id: "humiliation", label: "Humiliation", mode: "profond", tags: ["honte", "exposition", "dignité"], active: true },
+        { id: "impuissance", label: "Impuissance", mode: "doux", tags: ["action", "surcharge", "lucidité"], active: true },
+        { id: "parole", label: "Parole bloquée", mode: "doux", tags: ["gorge", "vérité", "silence"], active: true },
+        { id: "soi", label: "Colère contre soi", mode: "doux", tags: ["pardon", "survie", "jugement"], active: true },
+        { id: "enfant", label: "Enfant intérieur", mode: "profond", tags: ["enfance", "besoin", "protection"], active: true },
+        { id: "absorbee", label: "Colère absorbée", mode: "doux", tags: ["collectif", "lignée", "champ"], active: true },
+        { id: "masquee", label: "Colère déguisée", mode: "profond", tags: ["masque", "fuite", "compulsion"], active: true },
+        { id: "spirituelle", label: "Colère spirituelle", mode: "intensif", tags: ["subtil", "discernement", "axe"], active: true },
+        { id: "collective", label: "Colère collective", mode: "profond", tags: ["monde", "système", "restitution"], active: true }
+      ],
+      resonance: [
+        { id: "r_limite_1", text: "On a pris mon calme pour un consentement.", family: "limite", intensity: "moyen", mode: "doux", zones: ["gorge", "plexus"], masks: ["gentillesse-forcee"], egregores: ["soumission"], element: "terre", tags: ["consentement"], active: true },
+        { id: "r_limite_2", text: "On a dépassé une limite que je n’avais pas encore osé poser.", family: "limite", intensity: "moyen", mode: "doux", zones: ["poitrine", "mains"], masks: ["pardon-premature"], egregores: ["fausse-paix"], element: "air", tags: ["limite"], active: true },
+        { id: "r_limite_3", text: "J’ai confondu paix et effacement.", family: "limite", intensity: "direct", mode: "profond", zones: ["poitrine"], masks: ["spiritualisation"], egregores: ["fausse-lumiere"], element: "soleil", tags: ["effacement"], active: true },
+        { id: "r_limite_4", text: "On a exigé de moi ce que je n’avais jamais consenti à donner.", family: "limite", intensity: "direct", mode: "profond", zones: ["ventre", "dos"], masks: ["controle"], egregores: ["consentement-presume"], element: "terre", tags: ["consentement", "territoire"], active: true },
+        { id: "r_injustice_1", text: "Je suis en colère contre l’inversion du vrai et du faux.", family: "injustice", intensity: "direct", mode: "profond", zones: ["plexus", "mâchoire"], masks: ["cynisme"], egregores: ["confusion"], element: "soleil", tags: ["vérité"], active: true },
+        { id: "r_injustice_2", text: "Je vois quelque chose de faux et mon corps refuse de se taire.", family: "injustice", intensity: "direct", mode: "profond", zones: ["gorge", "poitrine"], masks: ["fuite"], egregores: ["mensonge-normalise"], element: "air", tags: ["corps", "vérité"], active: true },
+        { id: "r_injustice_3", text: "Je suis en colère de voir l’innocence s’adapter à ce qui l’abîme.", family: "injustice", intensity: "très direct", mode: "intensif", zones: ["poitrine", "ventre"], masks: ["spiritualisation"], egregores: ["abus-normalise"], element: "soleil", tags: ["innocence"], active: true },
+        { id: "r_trahison_1", text: "Je suis en colère d’avoir été loyal envers ce qui ne me protégeait pas.", family: "trahison", intensity: "direct", mode: "profond", zones: ["cœur", "dos"], masks: ["gentillesse-forcee"], egregores: ["loyaute-toxique"], element: "eau", tags: ["confiance"], active: true },
+        { id: "r_trahison_2", text: "Je suis en colère d’avoir donné mon cœur à un espace qui ne le méritait pas.", family: "trahison", intensity: "direct", mode: "profond", zones: ["poitrine"], masks: ["sauveur"], egregores: ["dette-affective"], element: "eau", tags: ["cœur"], active: true },
+        { id: "r_humiliation_1", text: "Je suis en colère d’avoir dû sourire alors que j’étais blessé.", family: "humiliation", intensity: "moyen", mode: "doux", zones: ["visage", "gorge"], masks: ["gentillesse-forcee"], egregores: ["honte"], element: "eau", tags: ["honte"], active: true },
+        { id: "r_humiliation_2", text: "Je suis en colère qu’on ait traité ma vérité comme une folie.", family: "humiliation", intensity: "direct", mode: "profond", zones: ["gorge", "tête"], masks: ["cynisme"], egregores: ["moquerie"], element: "air", tags: ["vérité"], active: true },
+        { id: "r_impuissance_1", text: "Je suis en colère de voir et de ne pas savoir comment agir.", family: "impuissance", intensity: "moyen", mode: "doux", zones: ["plexus"], masks: ["inertie"], egregores: ["impuissance"], element: "terre", tags: ["action"], active: true },
+        { id: "r_impuissance_2", text: "Je suis en colère de devoir choisir entre ma paix et mon courage.", family: "impuissance", intensity: "direct", mode: "profond", zones: ["poitrine", "jambes"], masks: ["fuite"], egregores: ["résignation"], element: "soleil", tags: ["courage"], active: true },
+        { id: "r_parole_1", text: "J’ai avalé une phrase qui aurait dû sortir.", family: "parole", intensity: "moyen", mode: "doux", zones: ["gorge"], masks: ["silence"], egregores: ["parole-punie"], element: "air", tags: ["gorge"], active: true },
+        { id: "r_parole_2", text: "Je n’ai pas besoin d’être cru par tous pour reconnaître ce que je sais.", family: "parole", intensity: "doux", mode: "doux", zones: ["gorge", "poitrine"], masks: ["peur-rejet"], egregores: ["témoignage-interdit"], element: "air", tags: ["parole"], active: true },
+        { id: "r_soi_1", text: "Je suis en colère contre moi d’avoir survécu comme je pouvais.", family: "soi", intensity: "moyen", mode: "doux", zones: ["poitrine", "ventre"], masks: ["auto-sabotage"], egregores: ["jugement"], element: "eau", tags: ["pardon"], active: true },
+        { id: "r_soi_2", text: "Je transforme la colère contre moi en reconnaissance des ressources qui me manquaient.", family: "soi", intensity: "doux", mode: "doux", zones: ["poitrine"], masks: ["culpabilité"], egregores: ["dégoût-de-soi"], element: "eau", tags: ["réparation"], active: true },
+        { id: "r_enfant_1", text: "J’ai dû être sage alors que j’étais blessé.", family: "enfant", intensity: "direct", mode: "profond", zones: ["ventre", "poitrine"], masks: ["enfant-adapte"], egregores: ["enfant-trop-sage"], element: "eau", tags: ["enfance"], active: true },
+        { id: "r_enfant_2", text: "J’ai protégé les adultes au lieu d’être protégé.", family: "enfant", intensity: "très direct", mode: "intensif", zones: ["dos", "ventre"], masks: ["sauveur"], egregores: ["enfant-parentifie"], element: "terre", tags: ["enfance"], active: true },
+        { id: "r_absorbee_1", text: "Ce feu ne semble pas entièrement à moi.", family: "absorbee", intensity: "doux", mode: "doux", zones: ["tout le corps"], masks: ["fascination-sombre"], egregores: ["collectif"], element: "terre", tags: ["restitution"], active: true },
+        { id: "r_absorbee_2", text: "Je peux rendre la charge sans perdre l’information utile.", family: "absorbee", intensity: "doux", mode: "doux", zones: ["mains", "pieds"], masks: ["contrôle"], egregores: ["absorption"], element: "terre", tags: ["restitution"], active: true },
+        { id: "r_masquee_1", text: "Cette colère se cache peut-être derrière une fuite, une compulsion ou une inertie.", family: "masquee", intensity: "moyen", mode: "profond", zones: ["ventre", "mains"], masks: ["fuite", "inertie"], egregores: ["auto-sabotage"], element: "air", tags: ["masque"], active: true },
+        { id: "r_masquee_2", text: "Cette colère semble être une porte : dessous, une peur ou une tristesse demande peut-être à être reconnue.", family: "masquee", intensity: "doux", mode: "doux", zones: ["poitrine"], masks: ["contrôle"], egregores: ["honte"], element: "eau", tags: ["émotion cachée"], active: true },
+        { id: "r_spirituelle_1", text: "Signature perçue comme étrangère, parasite, programmée ou non alignée : je discerne sans conclure trop vite.", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["tête", "plexus"], masks: ["guerre-spirituelle"], egregores: ["confusion-subtile"], element: "éther", tags: ["discernement"], active: true },
+        { id: "r_spirituelle_2", text: "Je ne dirige pas ce feu contre un être vivant présent ; je le dirige contre la charge, le lien, l’inversion ou l’emprise perçue.", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["mains", "pieds"], masks: ["vengeance"], egregores: ["emprise"], element: "feu", tags: ["sécurité"], active: true },
+        { id: "r_collective_1", text: "Je rends le collectif au collectif : je garde mon action juste, pas toute la charge du monde.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules", "dos"], masks: ["sauveur"], egregores: ["désespoir-collectif"], element: "terre", tags: ["collectif"], active: true },
+        { id: "r_collective_2", text: "Je réduis l’immensité à une prochaine marche possible.", family: "collective", intensity: "doux", mode: "doux", zones: ["jambes", "pieds"], masks: ["impuissance"], egregores: ["effondrement"], element: "terre", tags: ["action"], active: true }
+      ],
+      masks: [
+        { id: "addiction", label: "Addiction", family: "masquee", intensity: "moyen", mode: "profond", tags: ["fuite"], active: true },
+        { id: "jalousie", label: "Jalousie", family: "masquee", intensity: "moyen", mode: "profond", tags: ["comparaison"], active: true },
+        { id: "controle", label: "Contrôle", family: "masquee", intensity: "moyen", mode: "doux", tags: ["peur"], active: true },
+        { id: "auto-sabotage", label: "Auto-sabotage", family: "soi", intensity: "moyen", mode: "doux", tags: ["retournement"], active: true },
+        { id: "inertie", label: "Inertie", family: "impuissance", intensity: "doux", mode: "doux", tags: ["figement"], active: true },
+        { id: "gentillesse-forcee", label: "Gentillesse forcée", family: "limite", intensity: "direct", mode: "doux", tags: ["limite"], active: true },
+        { id: "pardon-premature", label: "Pardon prématuré", family: "spirituelle", intensity: "direct", mode: "profond", tags: ["fausse paix"], active: true },
+        { id: "spiritualisation", label: "Spiritualisation de l’inacceptable", family: "spirituelle", intensity: "direct", mode: "profond", tags: ["fausse lumière"], active: true },
+        { id: "fuite", label: "Fuite", family: "impuissance", intensity: "doux", mode: "doux", tags: ["protection"], active: true },
+        { id: "cynisme", label: "Cynisme", family: "injustice", intensity: "moyen", mode: "profond", tags: ["défense"], active: true },
+        { id: "jouissance-vide", label: "Jouissance vide", family: "masquee", intensity: "direct", mode: "profond", tags: ["compulsion"], active: true },
+        { id: "fascination-sombre", label: "Fascination sombre", family: "absorbee", intensity: "direct", mode: "intensif", tags: ["champ"], active: true }
+      ],
+      zones: [
+        { id: "gorge", label: "Gorge", tags: ["parole"], active: true },
+        { id: "machoire", label: "Mâchoire", tags: ["retenue"], active: true },
+        { id: "poitrine", label: "Poitrine", tags: ["cœur"], active: true },
+        { id: "plexus", label: "Plexus", tags: ["pouvoir"], active: true },
+        { id: "ventre", label: "Ventre", tags: ["peur", "intuition"], active: true },
+        { id: "dos", label: "Dos / épaules", tags: ["charge"], active: true },
+        { id: "mains", label: "Mains", tags: ["action"], active: true },
+        { id: "jambes", label: "Jambes / pieds", tags: ["ancrage"], active: true },
+        { id: "tout", label: "Tout le corps", tags: ["activation"], active: true },
+        { id: "rien", label: "Je ne ressens rien", tags: ["dissociation", "verrou"], active: true }
+      ],
+      exits: [
+        { id: "cri-muet", label: "Cri muet", intensity: "direct", mode: "profond", zones: ["gorge"], element: "air", tags: ["voix"], active: true },
+        { id: "souffle", label: "Souffle de feu", intensity: "moyen", mode: "doux", zones: ["poitrine"], element: "air", tags: ["respiration"], active: true },
+        { id: "ecriture", label: "Écriture brute", intensity: "doux", mode: "doux", zones: ["mains"], element: "air", tags: ["quarantaine"], active: true },
+        { id: "marche", label: "Marche de feu", intensity: "moyen", mode: "doux", zones: ["jambes"], element: "terre", tags: ["mouvement"], active: true },
+        { id: "coupe", label: "Geste de coupe", intensity: "direct", mode: "profond", zones: ["mains"], element: "feu", tags: ["limite"], active: true },
+        { id: "restitution", label: "Geste de restitution", intensity: "doux", mode: "doux", zones: ["mains"], element: "terre", tags: ["rendre"], active: true },
+        { id: "coussin", label: "Frappe contrôlée sur coussin", intensity: "direct", mode: "intensif", zones: ["mains", "bras"], element: "terre", tags: ["décharge"], active: true },
+        { id: "larmes", label: "Larmes conscientes", intensity: "doux", mode: "doux", zones: ["poitrine"], element: "eau", tags: ["adoucir"], active: true }
+      ],
+      elements: [
+        { id: "terre", label: "Terre — composter la lourdeur", tags: ["ancrage"], active: true },
+        { id: "soleil", label: "Soleil — transmuter le feu", tags: ["clarté"], active: true },
+        { id: "eau", label: "Eau — laver et adoucir", tags: ["cœur"], active: true },
+        { id: "air", label: "Air — libérer la parole", tags: ["gorge"], active: true },
+        { id: "feu", label: "Feu clair — clarifier", tags: ["positionnement"], active: true },
+        { id: "ether", label: "Éther — rendre les charges subtiles", tags: ["subtil"], active: true }
+      ],
+      qualities: [
+        { id: "dignite", label: "Dignité", tags: ["axe"], active: true },
+        { id: "clarte", label: "Clarté", tags: ["discernement"], active: true },
+        { id: "repos", label: "Repos", tags: ["intégration"], active: true },
+        { id: "courage", label: "Courage", tags: ["action"], active: true },
+        { id: "parole", label: "Parole", tags: ["expression"], active: true },
+        { id: "limite", label: "Limite", tags: ["protection"], active: true },
+        { id: "douceur", label: "Douceur", tags: ["réparation"], active: true },
+        { id: "force-calme", label: "Force calme", tags: ["stabilité"], active: true },
+        { id: "presence", label: "Présence dans le corps", tags: ["ancrage"], active: true },
+        { id: "souverainete", label: "Souveraineté", tags: ["axe"], active: true },
+        { id: "integrite", label: "Intégrité", tags: ["corps"], active: true },
+        { id: "innocence", label: "Innocence retrouvée", tags: ["enfance"], active: true },
+        { id: "autorite", label: "Autorité intérieure", tags: ["feu"], active: true },
+        { id: "connexion", label: "Connexion corps / âme / esprit", tags: ["réintégration"], active: true }
+      ],
+      closingPhrases: [
+        { id: "close_signal", text: "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.", mode: "doux", tags: ["clôture"], active: true },
+        { id: "close_today", text: "Pas plus aujourd’hui. Je ferme proprement, je garde la force, je laisse le corps intégrer.", mode: "doux", tags: ["sécurité"], active: true },
+        { id: "close_guardian", text: "Même si une influence, une mémoire ou un champ agit en moi, je reste gardien de mes actes.", mode: "profond", tags: ["responsabilité"], active: true }
+      ],
+      permissionPhrases: [
+        { id: "permission_no_force", text: "Je peux reconnaître une porte sans forcer l’histoire.", mode: "doux", tags: ["sécurité"], active: true },
+        { id: "permission_numb", text: "Si je ne ressens rien, je peux avancer par petites résonances.", mode: "doux", tags: ["dissociation"], active: true },
+        { id: "permission_stop", text: "J’ai le droit d’arrêter ici et de garder la suite pour plus tard.", mode: "doux", tags: ["fermeture"], active: true },
+        { id: "permission_truth", text: "Je n’ai pas besoin de prouver tout maintenant pour respecter ce que mon corps signale.", mode: "profond", tags: ["discernement"], active: true },
+        { id: "permission_responsibility", text: "Je peux sentir une charge forte sans lui donner le volant de mes actes.", mode: "profond", tags: ["responsabilité"], active: true }
+      ],
+      positioningPhrases: [
+        { id: "position_clear_no", label: "Dire non clairement", text: "Je ne souhaite pas continuer dans ces conditions.", mode: "doux", tags: ["limite"], active: true },
+        { id: "position_pause", label: "Différer la réponse", text: "Je ne réponds pas dans le pic de feu. Je reprends demain avec plus de clarté.", mode: "doux", tags: ["non-action"], active: true },
+        { id: "position_distance", label: "Mettre de la distance", text: "Je prends de la distance avec ce champ pour protéger mon axe.", mode: "doux", tags: ["protection"], active: true },
+        { id: "position_repair", label: "Réparer sans s’effacer", text: "Je peux réparer ma part sans renier la limite qui s’est révélée.", mode: "profond", tags: ["réparation"], active: true },
+        { id: "position_quarantine", label: "Garder le message en quarantaine", text: "Ce message reste en quarantaine tant que mon corps est activé.", mode: "doux", tags: ["quarantaine"], active: true }
+      ],
+      actionOptions: [
+        { id: "action_rest", label: "Ne rien décider aujourd’hui", text: "Repos, eau, marche douce, puis réévaluation.", mode: "doux", tags: ["non-action"], active: true },
+        { id: "action_write", label: "Écrire sans envoyer", text: "Écrire la version brute, puis attendre avant toute transmission.", mode: "doux", tags: ["quarantaine"], active: true },
+        { id: "action_boundary", label: "Poser une limite courte", text: "Une phrase simple, sans justification excessive.", mode: "doux", tags: ["limite"], active: true },
+        { id: "action_support", label: "Demander soutien", text: "Demander un regard fiable avant d’agir.", mode: "profond", tags: ["soutien"], active: true },
+        { id: "action_leave", label: "Quitter un champ", text: "Sortir d’un échange, d’un lieu ou d’une dynamique qui réactive trop.", mode: "profond", tags: ["protection"], active: true }
+      ]
+    }
+  };
+
+  let data = normalizeData(loadData());
+
+  const tabs = [
+    { id: "boussole", label: "Boussole" },
+    { id: "soin", label: "Soin guidé" },
+    { id: "micro", label: "Micro-soin" },
+    { id: "carnet", label: "Carnet" },
+    { id: "sanctuaire", label: "Sanctuaire" }
+  ];
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return cloneData(DEFAULT_DATA);
+      const parsed = JSON.parse(raw);
+      return mergeDefaults(DEFAULT_DATA, parsed);
+    } catch (error) {
+      console.warn("Données locales illisibles, retour aux données par défaut.", error);
+      return cloneData(DEFAULT_DATA);
+    }
+  }
+
+  function mergeDefaults(base, saved) {
+    if (Array.isArray(base)) return Array.isArray(saved) ? saved : base;
+    if (typeof base !== "object" || base === null) return saved ?? base;
+    const out = { ...base, ...(saved || {}) };
+    for (const key of Object.keys(base)) {
+      out[key] = mergeDefaults(base[key], saved?.[key]);
+    }
+    return out;
+  }
+
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function uid(prefix = "id") {
+    return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+
+  function nowISO() {
+    return new Date().toISOString();
+  }
+
+  function activeCycle() {
+    return data.cycles.find(c => c.id === data.activeCycleId) || null;
+  }
+
+  function setTab(tabId) {
+    data.activeTab = tabId;
+    saveData();
+    render();
+  }
+
+  function createCycle() {
+    const cycle = {
+      id: uid("cycle"),
+      title: "Nouveau Cycle de Feu",
+      status: "ouvert",
+      currentStep: 0,
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+      answers: {},
+      notes: ""
+    };
+    data.cycles.unshift(cycle);
+    data.activeCycleId = cycle.id;
+    data.activeTab = "soin";
+    saveData();
+    render();
+  }
+
+  function updateCycle(patch) {
+    const c = activeCycle();
+    if (!c) return;
+    Object.assign(c, patch, { updatedAt: nowISO() });
+    saveData();
+  }
+
+  function normalizeData(input) {
+    const normalized = mergeDefaults(DEFAULT_DATA, input || {});
+    normalized.version = APP_VERSION;
+    normalized.settings ||= cloneData(DEFAULT_DATA.settings);
+    normalized.cycles ||= [];
+    normalized.microSessions ||= [];
+    normalized.library ||= cloneData(DEFAULT_DATA.library);
+    normalized.lastNotice ||= null;
+    return normalized;
+  }
+
+  function normalizeLibraryItem(item, fallbackPrefix = "item") {
+    if (typeof item === "string") {
+      return {
+        id: slugify(item) || uid(fallbackPrefix),
+        label: item,
+        text: item,
+        mode: "doux",
+        intensity: "doux",
+        tags: [],
+        active: true
+      };
+    }
+    return {
+      id: item?.id || slugify(item?.label || item?.text || fallbackPrefix) || uid(fallbackPrefix),
+      label: item?.label || item?.text || "",
+      text: item?.text || item?.label || "",
+      family: item?.family || "",
+      intensity: item?.intensity || "doux",
+      mode: item?.mode || "doux",
+      zones: item?.zones || [],
+      masks: item?.masks || [],
+      egregores: item?.egregores || [],
+      element: item?.element || "",
+      tags: item?.tags || [],
+      active: item?.active !== false
+    };
+  }
+
+  function libraryItems(key) {
+    const source = data.library?.[key] ?? DEFAULT_DATA.library[key] ?? [];
+    if (Array.isArray(source)) return source.map(item => normalizeLibraryItem(item, key)).filter(item => item.active);
+    return [];
+  }
+
+  function libraryLabels(key) {
+    return libraryItems(key).map(item => item.label || item.text).filter(Boolean);
+  }
+
+  function resonanceItems() {
+    const source = data.library?.resonance ?? DEFAULT_DATA.library.resonance;
+    if (Array.isArray(source)) return source.map(item => normalizeLibraryItem(item, "resonance")).filter(item => item.active);
+
+    // Compatibilité avec les anciens exports où resonance était un objet par famille.
+    return Object.entries(source || {}).flatMap(([familyLabel, phrases]) => {
+      const family = libraryItems("families").find(item => item.label === familyLabel || item.id === familyLabel);
+      return (Array.isArray(phrases) ? phrases : []).map(text => normalizeLibraryItem({
+        id: `${family?.id || slugify(familyLabel)}_${slugify(text).slice(0, 24)}`,
+        text,
+        family: family?.id || familyLabel,
+        mode: "doux",
+        intensity: "moyen",
+        tags: [familyLabel],
+        active: true
+      }, "resonance"));
+    });
+  }
+
+  function selectedFamilyIds(selectedLabels = []) {
+    const families = libraryItems("families");
+    return selectedLabels.map(value => {
+      const found = families.find(item => item.id === value || item.label === value);
+      return found?.id || value;
+    });
+  }
+
+  function currentDepth(cycle) {
+    return getStepAnswers(0).depth || cycle?.settings?.depth || data.settings.depth || "doux";
+  }
+
+  function currentRegulation(cycle) {
+    return cycle?.regulationMode || getStepAnswers(1).regulationMode || getStepAnswers(0).regulationMode || "normal";
+  }
+
+  function depthAllows(itemMode, depth) {
+    const rank = { doux: 1, profond: 2, intensif: 3 };
+    return (rank[itemMode] || 1) <= (rank[depth] || 1);
+  }
+
+  function resonanceWave(cycle) {
+    const selected = selectedFamilyIds(getStepAnswers(2).families || []);
+    const depth = currentDepth(cycle);
+    const regulation = currentRegulation(cycle);
+    const items = resonanceItems().filter(item => {
+      const familyMatch = !selected.length || selected.includes(item.family) || selected.includes(item.label);
+      const depthMatch = depthAllows(item.mode, depth);
+      const regulationMatch = regulation === "tooActivated" ? item.intensity !== "très direct" : true;
+      return familyMatch && depthMatch && regulationMatch;
+    });
+    return items.slice(0, RESONANCE_WAVE_LIMIT).map(item => item.text || item.label);
+  }
+
+  function renderRegulationNotice(cycle) {
+    const mode = currentRegulation(cycle);
+    if (mode === "numb") {
+      return `
+        <div class="notice softBox">
+          <h3>Mode “je ne ressens rien”</h3>
+          Rien à forcer. Lis par résonance, coche même une phrase lointaine si elle semble importante, puis reviens au corps.
+        </div>
+      `;
+    }
+    if (mode === "tooActivated") {
+      return `
+        <div class="notice dangerBox">
+          <h3>Mode “je suis trop activé”</h3>
+          Corps d’abord. Aucune décision extérieure maintenant. Tu peux fermer proprement à tout moment.
+          <div class="actions">
+            <button class="danger" data-action="strong-close">Trop fort — je ferme maintenant</button>
+          </div>
+        </div>
+      `;
+    }
+    return "";
+  }
+
+  function defaultClosingPhrase() {
+    return libraryItems("closingPhrases")[0]?.text || "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.";
+  }
+
+  function cycleCompletionHints(cycle) {
+    const s = cycle.answers || {};
+    const missing = [];
+    if (!s[5]?.trueName && !s[5]?.rootName) missing.push("un nom du feu");
+    if (!s[7]?.whatIReturn) missing.push("ce qui est rendu");
+    if (!Array.isArray(s[7]?.qualities) || !s[7].qualities.length) missing.push("une qualité récupérée");
+    if (!s[8]?.innerBoundary && !s[8]?.action) missing.push("une limite, action ou non-action");
+    if (!s[9]?.closingPhrase && !s[9]?.closingPreset) missing.push("une phrase de clôture");
+    return missing;
+  }
+
+  function slugify(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function setNotice(text, tone = "soft") {
+    data.lastNotice = {
+      text,
+      tone,
+      createdAt: nowISO()
+    };
+    saveData();
+  }
+
+  function renderLastNotice() {
+    if (!data.lastNotice?.text) return "";
+    const toneClass = data.lastNotice.tone === "danger" ? "dangerBox" : "softBox";
+    return `
+      <div class="notice ${toneClass}">
+        ${escapeHtml(data.lastNotice.text)}
+      </div>
+    `;
+  }
+
+  function setStep(stepIndex) {
+    const c = activeCycle();
+    if (!c) return;
+    c.currentStep = Math.max(0, Math.min(STEPS.length - 1, stepIndex));
+    c.updatedAt = nowISO();
+    saveData();
+    render();
+  }
+
+  function getStepAnswers(stepIndex = activeCycle()?.currentStep ?? 0) {
+    const c = activeCycle();
+    if (!c) return {};
+    c.answers[stepIndex] ||= {};
+    return c.answers[stepIndex];
+  }
+
+  function setAnswer(stepIndex, key, value) {
+    const c = activeCycle();
+    if (!c) return;
+    c.answers[stepIndex] ||= {};
+    c.answers[stepIndex][key] = value;
+    c.updatedAt = nowISO();
+    saveData();
+  }
+
+  function render() {
+    document.querySelector("#app").dataset.theme = data.settings.theme;
+    renderTabs();
+
+    const view = document.querySelector("#view");
+    if (data.activeTab === "boussole") view.innerHTML = renderBoussole();
+    if (data.activeTab === "soin") view.innerHTML = renderSoin();
+    if (data.activeTab === "micro") view.innerHTML = renderMicroSoin();
+    if (data.activeTab === "carnet") view.innerHTML = renderCarnet();
+    if (data.activeTab === "sanctuaire") view.innerHTML = renderSanctuaire();
+
+    bindDynamicEvents();
+  }
+
+  function renderTabs() {
+    const el = document.querySelector("#tabs");
+    el.innerHTML = tabs.map(tab => `
+      <button class="tab ${data.activeTab === tab.id ? "active" : ""}" data-tab="${tab.id}">
+        ${tab.label}
+      </button>
+    `).join("");
+  }
+
+  function renderBoussole() {
+    const c = activeCycle();
+    return `
+      <section class="grid">
+        ${renderLastNotice()}
+
+        <div class="card">
+          <h2>Où en est ton feu maintenant ?</h2>
+          <p class="muted">Choisis une seule porte. L’application te montrera ensuite seulement la prochaine marche.</p>
+
+          <div class="actions">
+            <button class="primary" data-action="new-cycle">Commencer un Cycle de Feu</button>
+            <button data-tab="micro">Faire un micro-soin</button>
+            <button data-tab="carnet">Voir le Carnet</button>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="card">
+            <h3>Soin actif</h3>
+            ${
+              c ? `
+                <p><strong>${escapeHtml(c.title)}</strong></p>
+                <p class="muted mini">Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}</p>
+                <div class="actions">
+                  <button class="primary" data-tab="soin">Reprendre exactement ici</button>
+                  <button class="ghost" data-action="close-cycle-soft">Fermer proprement pour aujourd’hui</button>
+                </div>
+              ` : `
+                <p class="muted">Aucun Cycle de Feu actif pour l’instant.</p>
+              `
+            }
+          </div>
+
+          <div class="card">
+            <h3>Règle de clarté</h3>
+            <p>Une seule colère suffit pour cette traversée. Les autres peuvent attendre dans le Carnet, sans être perdues.</p>
+            <p class="muted mini">La richesse est dans le chemin, pas dans le nombre de portes ouvertes en même temps.</p>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderSoin() {
+    const c = activeCycle();
+    if (!c) {
+      return `
+        <div class="card">
+          <h2>Soin guidé</h2>
+          <p class="muted">Aucun Cycle de Feu actif.</p>
+          <button class="primary" data-action="new-cycle">Créer un Cycle de Feu</button>
+        </div>
+      `;
+    }
+
+    return `
+      <section class="step-shell">
+        <div class="toolbar">
+          <div>
+            <strong>${escapeHtml(c.title)}</strong><br />
+            <small>${STEPS[c.currentStep]} — étape ${c.currentStep + 1}/${STEPS.length}</small>
+          </div>
+          <div class="actions" style="margin:0">
+            <button class="ghost" data-action="body-return">Retour au corps</button>
+            <button class="ghost" data-action="set-numb-mode">Je ne ressens rien</button>
+            <button class="danger" data-action="strong-close">Trop fort — fermer</button>
+            <button class="ghost" data-tab="boussole">Quitter</button>
+          </div>
+        </div>
+
+        <div class="progress">
+          ${STEPS.map((s, i) => `
+            <button class="dot ${i === c.currentStep ? "active" : ""} ${i < c.currentStep ? "done" : ""}" data-step="${i}" title="${s}">
+              ${i + 1}
+            </button>
+          `).join("")}
+        </div>
+
+        <div class="card">
+          ${renderStep(c)}
+        </div>
+
+        <div class="actions">
+          <button ${c.currentStep === 0 ? "disabled" : ""} data-action="prev-step">Retour</button>
+          <button class="ghost" data-action="save-and-close">Sauvegarder et quitter</button>
+          <button class="ghost" data-action="close-cycle-soft">Fermer proprement</button>
+          <button class="primary" ${c.currentStep === STEPS.length - 1 ? "disabled" : ""} data-action="next-step">Continuer</button>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderStep(cycle) {
+    const step = cycle.currentStep;
+    const a = getStepAnswers(step);
+
+    if (step === 0) {
+      return `
+        <h2>Préparer le cadre</h2>
+        <p class="muted">On ouvre un contenant simple : un nom, une intention, une profondeur.</p>
+
+        <label>Nom du Cycle de Feu</label>
+        <input data-cycle-title value="${escapeAttr(cycle.title)}" placeholder="Ex : Colère dans la gorge face à l’autorité" />
+
+        <label>Intention du soin</label>
+        <textarea data-field="intention" placeholder="Je veux reconnaître ce feu, libérer la charge, garder la force...">${escapeHtml(a.intention || "")}</textarea>
+
+        <label>Profondeur pour cette session</label>
+        <select data-field="depth">
+          ${option("doux", "Doux — peu de phrases, fermeture rapide", a.depth)}
+          ${option("profond", "Profond — exploration complète", a.depth)}
+          ${option("intensif", "Intensif — direct, corporel, rituel", a.depth)}
+        </select>
+
+        <label>État de régulation</label>
+        <select data-field="regulationMode">
+          ${option("normal", "Je peux explorer doucement", a.regulationMode)}
+          ${option("numb", "Je ne ressens rien — avancer par résonance", a.regulationMode)}
+          ${option("tooActivated", "Je suis trop activé — fermer reste disponible", a.regulationMode)}
+        </select>
+
+        <div class="notice">
+          Je n’entre pas ici pour nourrir la colère. J’entre ici pour l’entendre, l’exprimer, rendre la charge, et revenir plus libre.
+        </div>
+      `;
+    }
+
+    if (step === 1) {
+      const intensity = Number(a.intensity || 0);
+      return `
+        <h2>Stabiliser le feu</h2>
+        <p class="muted">Avant de creuser, on vérifie si le corps peut traverser maintenant.</p>
+
+        <label>Intensité actuelle : <strong>${intensity}/10</strong></label>
+        <input type="range" min="0" max="10" data-field="intensity" value="${intensity}" />
+
+        ${intensity >= 8 ? `
+          <div class="notice dangerBox">
+            Intensité haute. Corps d’abord, analyse ensuite. Ne prends aucune décision, n’envoie aucun message, ne cherche pas encore les grandes causes.
+          </div>
+        ` : `
+          <div class="notice">
+            Intensité traversable. Tu peux continuer doucement.
+          </div>
+        `}
+
+        <label>Mini-ancrage effectué ?</label>
+        ${checks("grounding", [
+          "Pieds au sol",
+          "Respiration lente",
+          "Eau bue",
+          "Regard autour de moi",
+          "Mains sur cœur / ventre",
+          "Je choisis de ne blesser personne"
+        ], a.grounding)}
+
+        <label>Si le corps parle difficilement</label>
+        ${radios("regulationMode", [
+          "normal|Je peux explorer doucement",
+          "numb|Je ne ressens rien",
+          "tooActivated|Je suis trop activé"
+        ], a.regulationMode || "normal", true)}
+
+        ${renderRegulationNotice(cycle)}
+      `;
+    }
+
+    if (step === 2) {
+      return `
+        <h2>Identifier la colère visible</h2>
+        <p class="muted">On nomme ce qui est déjà accessible, sans forcer la mémoire.</p>
+
+        <label>Déclencheur apparent</label>
+        <textarea data-field="trigger" placeholder="Ce qui a déclenché le feu...">${escapeHtml(a.trigger || "")}</textarea>
+
+        <label>Contre quoi va ce feu ?</label>
+        <textarea data-field="against" placeholder="Contre une situation, une parole, une injustice, un être, un système...">${escapeHtml(a.against || "")}</textarea>
+
+        <label>Pour quoi se lève-t-il ?</label>
+        <textarea data-field="forWhat" placeholder="Pour une limite, une dignité, une vérité, une protection...">${escapeHtml(a.forWhat || "")}</textarea>
+
+        <label>Familles qui résonnent</label>
+        ${checks("families", libraryLabels("families"), a.families)}
+
+        <label>Colères secondaires à laisser au parking</label>
+        <textarea data-field="secondaryAngers" placeholder="Autres feux aperçus, à ne pas ouvrir maintenant.">${escapeHtml(a.secondaryAngers || "")}</textarea>
+
+        <div class="notice">
+          Une seule colère suffit pour cette session. Les autres sont notées, pas perdues, pas ouvertes maintenant.
+        </div>
+      `;
+    }
+
+    if (step === 3) {
+      const phrases = resonanceWave(cycle);
+      const shown = phrases.length ? phrases : [
+        "Je ne sais pas encore ce qui est là, mais mon corps peut répondre doucement.",
+        "Je peux explorer par résonance sans forcer.",
+        "Si rien ne bouge, cela peut être un calme, une fatigue ou un verrou."
+      ];
+
+      return `
+        <h2>Éveiller la colère cachée</h2>
+        <p class="muted">Lis lentement. Une phrase qui touche est une porte, pas une preuve. Vague limitée à ${RESONANCE_WAVE_LIMIT} phrases.</p>
+
+        ${renderRegulationNotice(cycle)}
+
+        <label>Phrases qui résonnent</label>
+        ${checks("resonancePhrases", shown, a.resonancePhrases)}
+
+        <label>Masques possibles du feu retourné</label>
+        ${checks("masks", libraryLabels("masks"), a.masks)}
+
+        <label>Ce que le corps répond</label>
+        ${checks("bodySignals", [
+          ...libraryLabels("zones"),
+          "Larmes",
+          "Froid",
+          "Chaleur",
+          "Vide",
+          "Envie de fuir",
+          "Envie de crier"
+        ], a.bodySignals)}
+      `;
+    }
+
+    if (step === 4) {
+      return `
+        <h2>Discerner ce qui m’appartient</h2>
+        <p class="muted">On sépare la vérité utile de la charge inutile ou étrangère.</p>
+
+        <label>Appartenance ressentie</label>
+        ${checks("ownership", [
+          "Personnel",
+          "Ancien",
+          "Enfant intérieur",
+          "Familial / lignée",
+          "Collectif",
+          "Absorbé d’un autre être",
+          "Spirituel / subtil",
+          "Mélangé",
+          "Je ne sais pas"
+        ], a.ownership)}
+
+        <label>Questions de clarté</label>
+        <textarea data-field="discernmentNotes" placeholder="Est-ce proportionné ? Est-ce ancien ? Est-ce que cela me rend plus clair ou plus confus ?">${escapeHtml(a.discernmentNotes || "")}</textarea>
+
+        <label>Permission utile maintenant</label>
+        ${radios("permissionPhrase", libraryItems("permissionPhrases").map(item => item.text), a.permissionPhrase || "")}
+
+        <div class="notice">
+          Même si une influence, une mémoire ou un champ agit en moi, je reste gardien de mes actes.
+        </div>
+      `;
+    }
+
+    if (step === 5) {
+      return `
+        <h2>Trouver le vrai nom</h2>
+        <p class="muted">Nommer juste permet souvent au feu de cesser de tourner en rond.</p>
+
+        <label>Faux nom possible</label>
+        <input data-field="falseName" value="${escapeAttr(a.falseName || "")}" placeholder="Ex : fatigue, jalousie, addiction, paresse, agacement..." />
+
+        <label>Nom plus vrai</label>
+        <input data-field="trueName" value="${escapeAttr(a.trueName || "")}" placeholder="Ex : colère d’avoir dû me taire..." />
+
+        <label>Nom racine</label>
+        <textarea data-field="rootName" placeholder="Ex : refus de continuer à porter ce qui n’est pas à moi...">${escapeHtml(a.rootName || "")}</textarea>
+      `;
+    }
+
+    if (step === 6) {
+      const exit = a.exit || "";
+      return `
+        <h2>Faire sortir le feu</h2>
+        <p class="muted">Ce qui sort ici n’est pas encore ce qui doit être envoyé, dit ou fait.</p>
+
+        <label>Porte de sortie choisie</label>
+        ${radios("exit", libraryLabels("exits"), exit)}
+
+        ${exit ? `
+          <div class="notice">
+            Porte choisie : <strong>${escapeHtml(exit)}</strong><br />
+            Fais une vague simple. Puis reviens ici noter ce qui a changé.
+          </div>
+        ` : ""}
+
+        <label>Phrase courte à faire sortir</label>
+        <input data-field="exitPhrase" value="${escapeAttr(a.exitPhrase || "")}" placeholder="Ex : Non. Stop. Je rends. Je reprends. Ce n’était pas juste." />
+
+        <label>Intensité après sortie : <strong>${Number(a.intensityAfter || 0)}/10</strong></label>
+        <input type="range" min="0" max="10" data-field="intensityAfter" value="${Number(a.intensityAfter || 0)}" />
+      `;
+    }
+
+    if (step === 7) {
+      return `
+        <h2>Purifier et rendre la charge</h2>
+        <p class="muted">On ne garde pas le poison. On garde l’information, la limite et la force.</p>
+
+        <label>Élément de restitution</label>
+        ${radios("element", libraryLabels("elements"), a.element || "")}
+
+        <label>Ce que je rends</label>
+        <textarea data-field="whatIReturn" placeholder="Honte, culpabilité, colère étrangère, obsession, charge collective...">${escapeHtml(a.whatIReturn || "")}</textarea>
+
+        <label>Qualité récupérée</label>
+        ${checks("qualities", libraryLabels("qualities"), a.qualities)}
+
+        <div class="notice">
+          Je rends la charge. Je garde la force. Je rends la rage. Je garde le courage.
+        </div>
+      `;
+    }
+
+    if (step === 8) {
+      return `
+        <h2>Se positionner dans la matière</h2>
+        <p class="muted">Une colère traversée demande souvent une limite, une action ou une non-action claire.</p>
+
+        <label>Limite intérieure</label>
+        <textarea data-field="innerBoundary" placeholder="Ex : Je ne confonds plus paix et silence forcé.">${escapeHtml(a.innerBoundary || "")}</textarea>
+
+        <label>Parole possible</label>
+        <textarea data-field="spokenBoundary" placeholder="Ex : Je ne souhaite pas continuer cet échange dans ces conditions.">${escapeHtml(a.spokenBoundary || "")}</textarea>
+
+        <label>Phrase de positionnement proposée</label>
+        ${radios("positioningPhrase", libraryItems("positioningPhrases").map(item => item.text), a.positioningPhrase || "")}
+
+        <label>Action concrète ou non-action juste</label>
+        <textarea data-field="action" placeholder="Ex : ne pas répondre aujourd’hui, écrire demain, marcher, demander soutien, quitter un champ...">${escapeHtml(a.action || "")}</textarea>
+
+        <label>Piste d’action / non-action</label>
+        ${radios("actionOption", libraryItems("actionOptions").map(item => `${item.text}|${item.label}`), a.actionOption || "")}
+
+        <label>Message en quarantaine, si besoin</label>
+        <textarea data-field="quarantineMessage" placeholder="Brouillon à ne pas envoyer dans le feu.">${escapeHtml(a.quarantineMessage || "")}</textarea>
+      `;
+    }
+
+    if (step === 9) {
+      const summary = buildCycleSummary(cycle);
+      const missing = cycleCompletionHints(cycle);
+      return `
+        <h2>Sceller et archiver</h2>
+        <p class="muted">On ferme la session. Le feu peut revenir comme signal, non comme prison.</p>
+
+        <div class="summary">${escapeHtml(summary)}</div>
+
+        ${missing.length ? `
+          <div class="notice">
+            <strong>À compléter si possible, sans forcer :</strong> ${escapeHtml(missing.join(", "))}.<br />
+            Tu peux quand même fermer proprement si le corps demande l’arrêt.
+          </div>
+        ` : `
+          <div class="notice softBox">
+            Les éléments essentiels sont présents pour une clôture claire.
+          </div>
+        `}
+
+        <label>Phrase de clôture personnelle</label>
+        <textarea data-field="closingPhrase" placeholder="Si cette énergie revient, elle revient comme signal. Je refuse l’ancien circuit.">${escapeHtml(a.closingPhrase || "")}</textarea>
+
+        <label>Phrase de clôture proposée</label>
+        ${radios("closingPreset", libraryItems("closingPhrases").map(item => item.text), a.closingPreset || "")}
+
+        <div class="actions">
+          <button class="primary" data-action="archive-cycle">Clôturer ce Cycle</button>
+          <button class="ghost" data-action="print">Imprimer / PDF</button>
+        </div>
+      `;
+    }
+  }
+
+  function renderMicroSoin() {
+    return `
+      <section class="grid">
+        ${renderLastNotice()}
+
+        <div class="card">
+          <h2>Micro-soin</h2>
+          <p class="muted">Pour une traversée rapide : un mot, une zone, un souffle, une restitution, une phrase.</p>
+
+          <label>Un mot</label>
+          <input id="micro-word" placeholder="Ex : injustice, honte, silence, envahissement..." />
+
+          <label>Une zone du corps</label>
+          <select id="micro-body">
+            ${libraryLabels("zones").map(v => `<option>${escapeHtml(v)}</option>`).join("")}
+          </select>
+
+          <label>Une restitution</label>
+          <select id="micro-element">
+            ${libraryLabels("elements").map(v => `<option>${escapeHtml(v)}</option>`).join("")}
+          </select>
+
+          <label>Phrase de positionnement</label>
+          <input id="micro-phrase" placeholder="Ex : Je rends la charge, je garde ma force." />
+
+          <label>Clôture rapide</label>
+          <select id="micro-closing">
+            ${libraryItems("closingPhrases").map(item => `<option>${escapeHtml(item.text)}</option>`).join("")}
+          </select>
+
+          <div class="actions">
+            <button class="primary" data-action="save-micro">Enregistrer ce micro-soin</button>
+            <button class="ghost" data-action="micro-to-cycle">Créer un Cycle depuis ce micro-soin</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Rappel court</h3>
+          <p class="summary">1 mot.
+1 zone.
+1 souffle.
+1 restitution.
+1 phrase.
+Assez pour aujourd’hui si le corps le demande.</p>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderCarnet() {
+    const cycles = data.cycles;
+    return `
+      <section class="grid">
+        <div class="card">
+          <h2>Carnet des Feux</h2>
+          <p class="muted">Cycles ouverts, en pause ou clôturés. Aucun échec : seulement des traversées à leur rythme.</p>
+          <div class="actions">
+            <button class="primary" data-action="new-cycle">Nouveau Cycle</button>
+            <button class="ghost" data-action="print">Imprimer</button>
+          </div>
+        </div>
+
+        ${cycles.length ? cycles.map(c => `
+          <div class="card">
+            <h3>${escapeHtml(c.title)}</h3>
+            <p class="muted mini">
+              Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}<br />
+              Dernière mise à jour : ${new Date(c.updatedAt).toLocaleString("fr-FR")}
+            </p>
+            <div class="actions">
+              <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
+              <button class="ghost" data-action="duplicate-cycle" data-id="${c.id}">Dupliquer</button>
+              <button class="danger" data-action="delete-cycle" data-id="${c.id}">Supprimer</button>
+            </div>
+          </div>
+        `).join("") : `
+          <div class="card">
+            <p class="muted">Aucun Cycle de Feu enregistré.</p>
+          </div>
+        `}
+      </section>
+    `;
+  }
+
+  function renderSanctuaire() {
+    return `
+      <section class="grid">
+        <div class="card">
+          <h2>Sanctuaire</h2>
+          <p class="muted">Comprendre, personnaliser, sauvegarder. Rien ici n’est nécessaire pendant une traversée active.</p>
+        </div>
+
+        <div class="grid two">
+          <div class="card">
+            <h3>Comprendre</h3>
+            <p><strong>Feu clair :</strong> une colère traversée sans être niée, projetée ou retournée contre soi.</p>
+            <p><strong>Colère-masque :</strong> une colère cachée derrière une fuite, une compulsion, une jalousie, une inertie ou un autre masque.</p>
+            <p><strong>Restitution :</strong> rendre la charge à la Terre, au Soleil, à l’Eau, à l’Air, au Feu clair ou à plus grand que soi, tout en gardant l’information utile.</p>
+          </div>
+
+          <div class="card">
+            <h3>Paramètres</h3>
+
+            <label>Profondeur par défaut</label>
+            <select data-setting="depth">
+              ${option("doux", "Doux", data.settings.depth)}
+              ${option("profond", "Profond", data.settings.depth)}
+              ${option("intensif", "Intensif", data.settings.depth)}
+            </select>
+
+            <label>Mode de langage</label>
+            <select data-setting="languageMode">
+              ${option("sobre", "Sobre", data.settings.languageMode)}
+              ${option("poétique sobre", "Poétique sobre", data.settings.languageMode)}
+              ${option("direct", "Direct", data.settings.languageMode)}
+              ${option("spirituel", "Spirituel", data.settings.languageMode)}
+            </select>
+
+            <label>Archétypes</label>
+            <select data-setting="archetypeMode">
+              ${option("neutre", "Neutre", data.settings.archetypeMode)}
+              ${option("Terre / Soleil", "Terre / Soleil", data.settings.archetypeMode)}
+              ${option("Dragon / Mikaël / Source", "Dragon / Mikaël / Source", data.settings.archetypeMode)}
+            </select>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="card">
+            <h3>Bibliothèques internes</h3>
+            <p class="muted">Les listes visibles restent courtes. Les entrées internes sont structurées avec tags pour enrichir progressivement le soin sans surcharger l’écran.</p>
+            <details>
+              <summary>Familles</summary>
+              <div class="pill-list">${libraryLabels("families").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
+            </details>
+            <details>
+              <summary>Masques</summary>
+              <div class="pill-list">${libraryLabels("masks").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
+            </details>
+            <details>
+              <summary>Structure interne</summary>
+              <p class="muted mini">
+                Les entrées contiennent maintenant id, famille, intensité, mode, zones, masques, égrégores, élément conseillé, tags et activation.
+                Pendant un soin, seules les phrases utiles à la vague courante apparaissent.
+              </p>
+            </details>
+          </div>
+
+          <div class="card">
+            <h3>Données locales</h3>
+            <p class="muted">Les données restent dans ce navigateur, via localStorage.</p>
+            <div class="actions">
+              <button class="primary" data-action="export-json">Exporter JSON</button>
+              <label class="choice">
+                Importer JSON
+                <input type="file" accept="application/json" data-action="import-json" style="display:none">
+              </label>
+              <button class="danger" data-action="reset-data">Tout effacer</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function buildCycleSummary(c) {
+    const s = c.answers;
+    const a2 = s[2] || {};
+    const a3 = s[3] || {};
+    const a4 = s[4] || {};
+    const a5 = s[5] || {};
+    const a6 = s[6] || {};
+    const a7 = s[7] || {};
+    const a8 = s[8] || {};
+    const a9 = s[9] || {};
+
+    return [
+      `Cycle : ${c.title}`,
+      ``,
+      `Déclencheur : ${a2.trigger || "—"}`,
+      `Contre quoi : ${a2.against || "—"}`,
+      `Pour quoi : ${a2.forWhat || "—"}`,
+      `Parking : ${a2.secondaryAngers || "—"}`,
+      ``,
+      `Familles : ${(a2.families || []).join(", ") || "—"}`,
+      `Résonances : ${(a3.resonancePhrases || []).join(" / ") || "—"}`,
+      `Masques : ${(a3.masks || []).join(", ") || "—"}`,
+      `Appartenance : ${(a4.ownership || []).join(", ") || "—"}`,
+      `Permission : ${a4.permissionPhrase || "—"}`,
+      ``,
+      `Vrai nom : ${a5.trueName || "—"}`,
+      `Nom racine : ${a5.rootName || "—"}`,
+      ``,
+      `Sortie : ${a6.exit || "—"}`,
+      `Phrase sortie : ${a6.exitPhrase || "—"}`,
+      `Intensité après sortie : ${a6.intensityAfter || "—"}/10`,
+      ``,
+      `Élément : ${a7.element || "—"}`,
+      `Ce que je rends : ${a7.whatIReturn || "—"}`,
+      `Qualités récupérées : ${(a7.qualities || []).join(", ") || "—"}`,
+      ``,
+      `Limite intérieure : ${a8.innerBoundary || "—"}`,
+      `Parole possible : ${a8.spokenBoundary || "—"}`,
+      `Positionnement : ${a8.positioningPhrase || "—"}`,
+      `Action / non-action : ${a8.action || a8.actionOption || "—"}`,
+      ``,
+      `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`
+    ].join("\n");
+  }
+
+  function bindDynamicEvents() {
+    document.querySelectorAll("[data-tab]").forEach(el => {
+      el.addEventListener("click", () => setTab(el.dataset.tab));
+    });
+
+    document.querySelectorAll("[data-step]").forEach(el => {
+      el.addEventListener("click", () => setStep(Number(el.dataset.step)));
+    });
+
+    document.querySelectorAll("[data-field]").forEach(el => {
+      el.addEventListener("input", () => {
+        const step = activeCycle()?.currentStep ?? 0;
+        if (el.type === "checkbox") return;
+        setAnswer(step, el.dataset.field, el.value);
+        if (el.type === "range") render();
+      });
+      el.addEventListener("change", () => {
+        const step = activeCycle()?.currentStep ?? 0;
+        setAnswer(step, el.dataset.field, el.value);
+        if (el.tagName === "SELECT" || el.type === "range") render();
+      });
+    });
+
+    document.querySelectorAll("[data-check-group]").forEach(box => {
+      box.addEventListener("change", () => {
+        const step = activeCycle()?.currentStep ?? 0;
+        const key = box.dataset.checkGroup;
+        const values = [...box.querySelectorAll("input:checked")].map(i => i.value);
+        setAnswer(step, key, values);
+      });
+    });
+
+    document.querySelectorAll("[data-radio-group]").forEach(box => {
+      box.addEventListener("change", () => {
+        const step = activeCycle()?.currentStep ?? 0;
+        const key = box.dataset.radioGroup;
+        const selected = box.querySelector("input:checked");
+        setAnswer(step, key, selected ? selected.value : "");
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-setting]").forEach(el => {
+      el.addEventListener("change", () => {
+        data.settings[el.dataset.setting] = el.value;
+        saveData();
+      });
+    });
+
+    document.querySelectorAll("[data-cycle-title]").forEach(el => {
+      el.addEventListener("input", () => updateCycle({ title: el.value || "Cycle sans titre" }));
+    });
+
+    document.querySelectorAll("[data-action]").forEach(el => {
+      const action = el.dataset.action;
+
+      if (action === "import-json") {
+        el.addEventListener("change", importJson);
+      } else {
+        el.addEventListener("click", () => handleAction(el));
+      }
+    });
+  }
+
+  function handleAction(el) {
+    const action = el.dataset.action;
+
+    if (action === "toggle-theme") {
+      data.settings.theme = data.settings.theme === "dark" ? "light" : "dark";
+      saveData();
+      render();
+    }
+
+    if (action === "new-cycle") createCycle();
+
+    if (action === "prev-step") setStep((activeCycle()?.currentStep || 0) - 1);
+
+    if (action === "next-step") setStep((activeCycle()?.currentStep || 0) + 1);
+
+    if (action === "save-and-close") {
+      updateCycle({ status: "en pause" });
+      setTab("boussole");
+    }
+
+    if (action === "close-cycle-soft") {
+      updateCycle({ status: "fermé pour aujourd’hui" });
+      setTab("boussole");
+    }
+
+    if (action === "set-numb-mode") {
+      const c = activeCycle();
+      if (!c) return;
+      c.regulationMode = "numb";
+      c.answers[1] ||= {};
+      c.answers[1].regulationMode = "numb";
+      c.updatedAt = nowISO();
+      saveData();
+      render();
+    }
+
+    if (action === "strong-close") {
+      const c = activeCycle();
+      if (!c) return;
+      const step = c.currentStep;
+      c.status = "à revisiter doucement";
+      c.regulationMode = "tooActivated";
+      c.answers[step] ||= {};
+      c.answers[step].closedBecauseTooActivated = true;
+      c.answers[9] ||= {};
+      c.answers[9].closingPreset ||= "Pas plus aujourd’hui. Je ferme proprement, je garde la force, je laisse le corps intégrer.";
+      c.updatedAt = nowISO();
+      data.lastNotice = {
+        text: "Cycle fermé proprement. Pas plus aujourd’hui : le corps peut intégrer, et ce feu pourra être revisité doucement.",
+        tone: "danger",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("boussole");
+    }
+
+    if (action === "body-return") {
+      alert("Retour au corps : pieds au sol, regarde autour de toi, nomme 3 objets visibles, respire lentement, bois de l’eau si possible.");
+    }
+
+    if (action === "archive-cycle") {
+      const c = activeCycle();
+      if (c) {
+        c.answers[9] ||= {};
+        c.answers[9].closingPreset ||= c.answers[9].closingPhrase || defaultClosingPhrase();
+      }
+      updateCycle({ status: "clôturé" });
+      setNotice("Cycle clôturé. Cette charge est libérée maintenant ; si ce feu revient, il revient comme signal, non comme prison.");
+      setTab("carnet");
+    }
+
+    if (action === "open-cycle") {
+      data.activeCycleId = el.dataset.id;
+      data.activeTab = "soin";
+      saveData();
+      render();
+    }
+
+    if (action === "duplicate-cycle") {
+      const source = data.cycles.find(c => c.id === el.dataset.id);
+      if (!source) return;
+      const copy = cloneData(source);
+      copy.id = uid("cycle");
+      copy.title = `${source.title} — copie`;
+      copy.status = "ouvert";
+      copy.createdAt = nowISO();
+      copy.updatedAt = nowISO();
+      data.cycles.unshift(copy);
+      data.activeCycleId = copy.id;
+      saveData();
+      render();
+    }
+
+    if (action === "delete-cycle") {
+      if (!confirm("Supprimer ce Cycle de Feu ?")) return;
+      data.cycles = data.cycles.filter(c => c.id !== el.dataset.id);
+      if (data.activeCycleId === el.dataset.id) data.activeCycleId = data.cycles[0]?.id || null;
+      saveData();
+      render();
+    }
+
+    if (action === "save-micro") {
+      saveMicro(false);
+    }
+
+    if (action === "micro-to-cycle") {
+      saveMicro(true);
+    }
+
+    if (action === "export-json") exportJson();
+
+    if (action === "reset-data") {
+      if (!confirm("Tout effacer localement ? Cette action est définitive.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      data = normalizeData(cloneData(DEFAULT_DATA));
+      render();
+    }
+
+    if (action === "print") window.print();
+  }
+
+  function saveMicro(createAsCycle) {
+    const word = document.querySelector("#micro-word")?.value || "";
+    const body = document.querySelector("#micro-body")?.value || "";
+    const element = document.querySelector("#micro-element")?.value || "";
+    const phrase = document.querySelector("#micro-phrase")?.value || "";
+    const closing = document.querySelector("#micro-closing")?.value || defaultClosingPhrase();
+
+    const micro = {
+      id: uid("micro"),
+      createdAt: nowISO(),
+      word,
+      body,
+      element,
+      phrase,
+      closing
+    };
+
+    data.microSessions.unshift(micro);
+
+    if (createAsCycle) {
+      const cycle = {
+        id: uid("cycle"),
+        title: word ? `Micro-feu : ${word}` : "Cycle depuis micro-soin",
+        status: "ouvert",
+        currentStep: 5,
+        createdAt: nowISO(),
+        updatedAt: nowISO(),
+        answers: {
+          5: {
+            trueName: word,
+            rootName: `Charge ressentie dans : ${body}`
+          },
+          7: {
+            element,
+            whatIReturn: "Charge active du micro-soin",
+            qualities: []
+          },
+          8: {
+            innerBoundary: phrase
+          },
+          9: {
+            closingPreset: closing
+          }
+        }
+      };
+      data.cycles.unshift(cycle);
+      data.activeCycleId = cycle.id;
+      data.activeTab = "soin";
+    }
+
+    saveData();
+    render();
+  }
+
+  function exportJson() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `feu-clair-export-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importJson(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        data = normalizeData(imported);
+        saveData();
+        render();
+      } catch (error) {
+        alert("Import impossible : fichier JSON invalide.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function option(value, label, current) {
+    const selected = value === current ? "selected" : "";
+    return `<option value="${escapeAttr(value)}" ${selected}>${escapeHtml(label)}</option>`;
+  }
+
+  function checks(name, values, selected = []) {
+    const current = Array.isArray(selected) ? selected : [];
+    return `
+      <div class="pill-list" data-check-group="${escapeAttr(name)}">
+        ${values.map(v => `
+          <label class="choice">
+            <input type="checkbox" value="${escapeAttr(v)}" ${current.includes(v) ? "checked" : ""}>
+            ${escapeHtml(v)}
+          </label>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function radios(name, values, selected = "") {
+    return `
+      <div class="pill-list" data-radio-group="${escapeAttr(name)}">
+        ${values.map(v => {
+          const parsed = parseChoice(v);
+          return `
+          <label class="choice">
+            <input type="radio" name="${escapeAttr(name)}" value="${escapeAttr(parsed.value)}" ${selected === parsed.value || selected === parsed.label ? "checked" : ""}>
+            ${escapeHtml(parsed.label)}
+          </label>
+        `}).join("")}
+      </div>
+    `;
+  }
+
+  function parseChoice(value) {
+    if (typeof value !== "string") return { value: String(value ?? ""), label: String(value ?? "") };
+    const parts = value.split("|");
+    return parts.length > 1 ? { value: parts[0], label: parts.slice(1).join("|") } : { value, label: value };
+  }
+
+  function cloneData(value) {
+    if (typeof structuredClone === "function") return structuredClone(value);
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
