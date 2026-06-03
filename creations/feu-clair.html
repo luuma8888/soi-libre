@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.5.0</title>
+  <title>Feu Clair — v2.7.0</title>
 
   <style>
     :root {
@@ -472,7 +472,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.5.0</h1>
+        <h1>Feu Clair — v2.7.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -488,7 +488,7 @@
 
 <script>
 /*
-  Feu Clair — v2.5.0
+  Feu Clair — v2.7.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -504,7 +504,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "2.5.0";
+  const APP_VERSION = "2.7.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -548,6 +548,7 @@
     microSessions: [],
     bodyScans: [],
     bodyMemorySessions: [],
+    authoritySessions: [],
     library: {
       families: [
         { id: "limite", label: "Limite violée", mode: "doux", tags: ["limite", "corps", "consentement"], active: true },
@@ -813,6 +814,7 @@
     normalized.microSessions ||= [];
     normalized.bodyScans ||= [];
     normalized.bodyMemorySessions ||= [];
+    normalized.authoritySessions ||= [];
     normalized.library = mergeLibraryDefaults(normalized.library || {});
     normalized.lastNotice ||= null;
     return normalized;
@@ -1134,7 +1136,18 @@
       level: memory.level || "",
       kind: memory.kind || "",
       intensity: memory.intensity ?? null,
-      guards: memory.guards || []
+      guards: memory.guards || [],
+      qualities: memory.qualities || [],
+      afterState: memory.afterState || ""
+    }));
+    copy.authoritySessions = (copy.authoritySessions || []).map(session => ({
+      id: session.id,
+      status: session.status,
+      createdAt: session.createdAt,
+      intensity: session.intensity ?? null,
+      targetType: session.targetType || "",
+      guards: session.guards || [],
+      qualities: session.qualities || []
     }));
     copy.library = cloneData(DEFAULT_DATA.library);
     copy.lastNotice = null;
@@ -1831,6 +1844,21 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <label>Note courte, sans interprétation forcée</label>
           <textarea id="memory-note" placeholder="Ex : image vague, froid dans le dos, sensation ancienne, rien de certain..."></textarea>
 
+          <label>Ce qui peut être rendu maintenant</label>
+          <textarea id="memory-release" placeholder="Ex : honte, peur, sidération, charge étrangère, lien, rien de clair encore..."></textarea>
+
+          <label>Qualité ou part qui revient</label>
+          ${checksStatic("memory-qualities", libraryLabels("qualities").slice(0, 10))}
+
+          <label>État après ce sas</label>
+          <select id="memory-after-state">
+            <option value="à intégrer doucement">À intégrer doucement</option>
+            <option value="plus clair">Plus clair</option>
+            <option value="plus fatigué">Plus fatigué</option>
+            <option value="encore chargé">Encore chargé</option>
+            <option value="à revisiter doucement">À revisiter doucement</option>
+          </select>
+
           <label>Garde-fou de présence</label>
           ${checksStatic("memory-guards", [
             "Pieds au sol",
@@ -1845,8 +1873,61 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
           <div class="actions">
             <button class="ghost" data-action="memory-close">Fermer proprement</button>
+            <button class="danger" data-action="memory-strong-close">Trop fort — je ferme maintenant</button>
             <button class="primary" data-action="memory-to-cycle">Créer un Cycle depuis ce sas</button>
           </div>
+        </div>
+
+        <div class="card">
+          <h3>Feu d’Autorité — sas symbolique</h3>
+          ${data.settings.archetypeMode === "neutre" ? `
+            <p class="notice mini">
+              Ce sas reste fermé en mode neutre. Pour l’utiliser, active un mode d’archétype dans le Sanctuaire.
+              L’alternative neutre reste disponible avec “Geste de coupe”, “Geste de restitution” et “Retour au corps”.
+            </p>
+          ` : `
+            <p class="notice">
+              Ce feu ne vise jamais un être vivant présent. Il vise symboliquement la charge, le lien, l’emprise perçue,
+              l’inversion ou ce qui n’a plus droit d’habiter ton champ.
+            </p>
+
+            <label>Ce que je vise symboliquement</label>
+            <select id="authority-target-type">
+              <option value="charge">Une charge</option>
+              <option value="lien">Un lien</option>
+              <option value="emprise perçue">Une emprise perçue</option>
+              <option value="inversion">Une inversion</option>
+              <option value="présence perçue">Une présence perçue, sans verdict</option>
+            </select>
+
+            <label>Formulation courte</label>
+            <textarea id="authority-note" placeholder="Ex : je rends ce qui n’est pas à moi ; je coupe l’emprise, pas un être ; je récupère mon corps..."></textarea>
+
+            <label>Intensité actuelle</label>
+            <select id="authority-intensity">
+              ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+            </select>
+
+            <label>Garde-fous avant d’ouvrir</label>
+            ${checksStatic("authority-guards", [
+              "Je ne dirige pas ce feu contre un être vivant présent",
+              "Je reste gardien de mes actes",
+              "Je peux fermer maintenant",
+              "Je garde une part de moi reliée au corps"
+            ])}
+
+            <label>Qualité à récupérer</label>
+            ${checksStatic("authority-qualities", libraryLabels("qualities").slice(0, 10))}
+
+            <div class="notice mini">
+              Phrase de repère : “Je ne détruis pas depuis la haine. Je tranche depuis l’autorité de mon être.”
+            </div>
+
+            <div class="actions">
+              <button class="ghost" data-action="authority-close">Fermer proprement</button>
+              <button class="primary" data-action="authority-to-cycle">Créer un Cycle depuis ce sas</button>
+            </div>
+          `}
         </div>
       </section>
     `;
@@ -2457,6 +2538,18 @@ Assez pour aujourd’hui si le corps le demande.</p>
       setTab("boussole");
     }
 
+    if (action === "memory-strong-close") {
+      const memory = readBodyMemory();
+      data.bodyMemorySessions.unshift({ ...memory, id: uid("memory"), status: "à revisiter doucement", createdAt: nowISO() });
+      data.lastNotice = {
+        text: "Mémoire du Corps fermée maintenant. Pas plus aujourd’hui : ouvrir les yeux, sentir les pieds, laisser le corps intégrer.",
+        tone: "danger",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("boussole");
+    }
+
     if (action === "memory-to-cycle") {
       const memory = readBodyMemory();
       const cycle = createCycleFromBodyMemory(memory);
@@ -2467,6 +2560,36 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.lastNotice = {
         text: "Cycle créé depuis le sas Mémoire du Corps. Il commence par Stabiliser pour ne pas ouvrir trop vite.",
         tone: memory.intensity >= 7 ? "danger" : "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      render();
+    }
+
+    if (action === "authority-close") {
+      const session = readAuthoritySession();
+      data.authoritySessions ||= [];
+      data.authoritySessions.unshift({ ...session, id: uid("authority"), status: "fermé proprement", createdAt: nowISO() });
+      data.lastNotice = {
+        text: "Sas Feu d’Autorité fermé proprement. Le feu reste symbolique, le corps peut redescendre.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("boussole");
+    }
+
+    if (action === "authority-to-cycle") {
+      const session = readAuthoritySession();
+      const cycle = createCycleFromAuthority(session);
+      data.authoritySessions ||= [];
+      data.authoritySessions.unshift({ ...session, id: uid("authority"), status: "transformé en cycle", cycleId: cycle.id, createdAt: nowISO() });
+      data.cycles.unshift(cycle);
+      data.activeCycleId = cycle.id;
+      data.activeTab = "soin";
+      data.lastNotice = {
+        text: "Cycle créé depuis le Feu d’Autorité. Il commence par Stabiliser pour garder le feu symbolique et responsable.",
+        tone: session.intensity >= 7 ? "danger" : "soft",
         createdAt: nowISO()
       };
       saveData();
@@ -2738,13 +2861,29 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
   function readBodyMemory() {
     const guards = [...document.querySelectorAll("[data-static-check-group='memory-guards'] input:checked")].map(input => input.value);
+    const qualities = [...document.querySelectorAll("[data-static-check-group='memory-qualities'] input:checked")].map(input => input.value);
     return {
       level: document.querySelector("#memory-level")?.value || "effleurer",
       kind: document.querySelector("#memory-kind")?.value || "mémoire corporelle",
       zone: document.querySelector("#memory-zone")?.value || "",
       intensity: Number(document.querySelector("#memory-intensity")?.value || 0),
       note: document.querySelector("#memory-note")?.value || "",
+      release: document.querySelector("#memory-release")?.value || "",
+      qualities,
+      afterState: document.querySelector("#memory-after-state")?.value || "à intégrer doucement",
       guards
+    };
+  }
+
+  function readAuthoritySession() {
+    const guards = [...document.querySelectorAll("[data-static-check-group='authority-guards'] input:checked")].map(input => input.value);
+    const qualities = [...document.querySelectorAll("[data-static-check-group='authority-qualities'] input:checked")].map(input => input.value);
+    return {
+      targetType: document.querySelector("#authority-target-type")?.value || "charge",
+      note: document.querySelector("#authority-note")?.value || "",
+      intensity: Number(document.querySelector("#authority-intensity")?.value || 0),
+      guards,
+      qualities
     };
   }
 
@@ -2776,6 +2915,16 @@ Assez pour aujourd’hui si le corps le demande.</p>
         4: {
           ownership: [memory.kind],
           discernmentNotes: "Sas Mémoire du Corps : perception à discerner, pas une preuve littérale."
+        },
+        7: {
+          whatIReturn: memory.release,
+          qualities: memory.qualities || []
+        },
+        9: {
+          integrationDone: memory.afterState ? [memory.afterState] : [],
+          closingPreset: memory.intensity >= 7
+            ? "Pas plus aujourd’hui. Je ferme proprement, je garde la force, je laisse le corps intégrer."
+            : defaultClosingPhrase()
         }
       }
     };
@@ -2788,7 +2937,63 @@ Assez pour aujourd’hui si le corps le demande.</p>
       `Zone : ${memory.zone || "—"}`,
       `Intensité : ${memory.intensity}/10`,
       `Note : ${memory.note || "—"}`,
+      `Rendu possible : ${memory.release || "—"}`,
+      `Qualités / parts qui reviennent : ${(memory.qualities || []).join(", ") || "—"}`,
+      `État après : ${memory.afterState || "—"}`,
       `Garde-fous : ${memory.guards.join(", ") || "—"}`
+    ].join("\n");
+  }
+
+  function createCycleFromAuthority(session) {
+    const guarded = session.guards.includes("Je ne dirige pas ce feu contre un être vivant présent")
+      && session.guards.includes("Je reste gardien de mes actes")
+      && session.guards.includes("Je peux fermer maintenant");
+    const needsStabilizing = session.intensity >= 7 || !guarded;
+    return {
+      id: uid("cycle"),
+      title: `Feu d’Autorité : ${session.targetType || "charge"}`,
+      status: "ouvert",
+      currentStep: 1,
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+      answers: {
+        0: {
+          intention: "Diriger le feu symboliquement contre une charge, jamais contre un être vivant présent.",
+          depth: "profond",
+          regulationMode: needsStabilizing ? "tooActivated" : "normal"
+        },
+        1: {
+          intensity: session.intensity,
+          regulationMode: needsStabilizing ? "tooActivated" : "normal",
+          grounding: session.guards
+        },
+        2: {
+          trigger: `Sas Feu d’Autorité : ${session.targetType}`,
+          forWhat: "Discerner ce qui doit être rendu, coupé ou transmuté sans perdre la responsabilité des actes.",
+          families: ["Colère spirituelle"],
+          authorityNotes: authoritySummary(session)
+        },
+        4: {
+          ownership: ["Signature à discerner"],
+          discernmentNotes: "Feu d’Autorité : expression intérieure symbolique. Ne pas conclure à une cause unique."
+        },
+        7: {
+          qualities: session.qualities || []
+        },
+        9: {
+          closingPreset: "Même si une influence, une mémoire ou un champ agit en moi, je reste gardien de mes actes."
+        }
+      }
+    };
+  }
+
+  function authoritySummary(session) {
+    return [
+      `Cible symbolique : ${session.targetType || "—"}`,
+      `Intensité : ${session.intensity}/10`,
+      `Formulation : ${session.note || "—"}`,
+      `Garde-fous : ${session.guards.join(", ") || "—"}`,
+      `Qualités à récupérer : ${(session.qualities || []).join(", ") || "—"}`
     ].join("\n");
   }
 
