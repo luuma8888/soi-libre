@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.3.1</title>
+  <title>Feu Clair — v2.5.0</title>
 
   <style>
     :root {
@@ -472,7 +472,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.3.1</h1>
+        <h1>Feu Clair — v2.5.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -488,7 +488,7 @@
 
 <script>
 /*
-  Feu Clair — v2.3.1
+  Feu Clair — v2.5.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -504,7 +504,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "2.3.1";
+  const APP_VERSION = "2.5.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -527,6 +527,9 @@
       depth: "doux",
       languageMode: "poétique sobre",
       archetypeMode: "Terre / Soleil",
+      privacy: {
+        maskSensitiveTitles: false
+      },
       libraryEnabled: {
         resonance: true,
         boldWords: true,
@@ -544,6 +547,7 @@
     cycles: [],
     microSessions: [],
     bodyScans: [],
+    bodyMemorySessions: [],
     library: {
       families: [
         { id: "limite", label: "Limite violée", mode: "doux", tags: ["limite", "corps", "consentement"], active: true },
@@ -808,6 +812,7 @@
     normalized.cycles ||= [];
     normalized.microSessions ||= [];
     normalized.bodyScans ||= [];
+    normalized.bodyMemorySessions ||= [];
     normalized.library = mergeLibraryDefaults(normalized.library || {});
     normalized.lastNotice ||= null;
     return normalized;
@@ -1099,6 +1104,104 @@
     ].filter(Boolean).join("\n");
   }
 
+  function visibleCycleTitle(cycle, index = 0) {
+    if (!data.settings.privacy?.maskSensitiveTitles) return cycle.title || "Cycle sans titre";
+    return `Cycle masqué ${index + 1}`;
+  }
+
+  function anonymizedExportData() {
+    const copy = cloneData(data);
+    copy.exportMode = "anonymisé";
+    copy.cycles = (copy.cycles || []).map((cycle, index) => ({
+      ...cycle,
+      title: `Cycle anonymisé ${index + 1}`,
+      notes: "",
+      answers: anonymizeAnswers(cycle.answers || {})
+    }));
+    copy.microSessions = [];
+    copy.bodyScans = (copy.bodyScans || []).map(scan => ({
+      id: scan.id,
+      status: scan.status,
+      createdAt: scan.createdAt,
+      intensity: scan.intensity ?? null,
+      family: scan.family || "",
+      flags: scan.flags || []
+    }));
+    copy.bodyMemorySessions = (copy.bodyMemorySessions || []).map(memory => ({
+      id: memory.id,
+      status: memory.status,
+      createdAt: memory.createdAt,
+      level: memory.level || "",
+      kind: memory.kind || "",
+      intensity: memory.intensity ?? null,
+      guards: memory.guards || []
+    }));
+    copy.library = cloneData(DEFAULT_DATA.library);
+    copy.lastNotice = null;
+    return copy;
+  }
+
+  function anonymizeAnswers(answers) {
+    const keepKeys = new Set([
+      "depth",
+      "regulationMode",
+      "intensity",
+      "grounding",
+      "families",
+      "resonancePhrases",
+      "masks",
+      "bodySignals",
+      "ownership",
+      "permissionPhrase",
+      "namingPermission",
+      "exit",
+      "intensityAfter",
+      "element",
+      "qualities",
+      "positioningPhrase",
+      "actionOption",
+      "closingPreset",
+      "integrationDone"
+    ]);
+    return Object.fromEntries(Object.entries(answers || {}).map(([step, values]) => [
+      step,
+      Object.fromEntries(Object.entries(values || {}).filter(([key]) => keepKeys.has(key)))
+    ]));
+  }
+
+  function redactCycleRawTexts(cycle) {
+    const textKeys = [
+      "intention",
+      "trigger",
+      "against",
+      "forWhat",
+      "secondaryAngers",
+      "discernmentNotes",
+      "falseName",
+      "trueName",
+      "rootName",
+      "exitPhrase",
+      "whatIReturn",
+      "innerBoundary",
+      "spokenBoundary",
+      "action",
+      "quarantineMessage",
+      "closingPhrase",
+      "nextGentleStep",
+      "bodyScanNotes",
+      "bodyMemoryNotes"
+    ];
+    Object.values(cycle.answers || {}).forEach(stepAnswers => {
+      textKeys.forEach(key => {
+        if (typeof stepAnswers[key] === "string" && stepAnswers[key].trim()) {
+          stepAnswers[key] = "[texte effacé]";
+        }
+      });
+    });
+    cycle.notes = "";
+    cycle.updatedAt = nowISO();
+  }
+
   function slugify(value) {
     return String(value || "")
       .normalize("NFD")
@@ -1199,7 +1302,7 @@
             <h3>Soin actif</h3>
             ${
               c ? `
-                <p><strong>${escapeHtml(c.title)}</strong></p>
+                <p><strong>${escapeHtml(visibleCycleTitle(c))}</strong></p>
                 <p class="muted mini">Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}</p>
                 ${c.status === "à revisiter doucement" ? `
                   <div class="notice dangerBox mini">
@@ -1247,7 +1350,7 @@
       <section class="step-shell">
         <div class="toolbar">
           <div>
-            <strong>${escapeHtml(c.title)}</strong><br />
+            <strong>${escapeHtml(visibleCycleTitle(c))}</strong><br />
             <small>${STEPS[c.currentStep]} — étape ${c.currentStep + 1}/${STEPS.length}</small>
           </div>
           <div class="actions" style="margin:0">
@@ -1692,6 +1795,59 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ` : ""}
           </div>
         </div>
+
+        <div class="card">
+          <h3>Mémoire du Corps — sas prudent</h3>
+          <p class="muted">
+            Outil désactivé par défaut dans le sens où rien ne s’ouvre automatiquement : tu notes seulement une perception, sans conclure à une preuve ni forcer une mémoire.
+          </p>
+
+          <label>Niveau d’approche</label>
+          <select id="memory-level">
+            <option value="effleurer">Effleurer — noter sans creuser</option>
+            <option value="toucher">Toucher — rester proche du corps</option>
+            <option value="traverser">Traverser — seulement si très stable</option>
+          </select>
+
+          <label>Forme perçue</label>
+          <select id="memory-kind">
+            <option value="mémoire corporelle">Mémoire corporelle</option>
+            <option value="souvenir clair">Souvenir clair</option>
+            <option value="image symbolique">Image / sensation symbolique</option>
+            <option value="perception subtile">Perception subtile à discerner</option>
+            <option value="je ne sais pas">Je ne sais pas</option>
+          </select>
+
+          <label>Zone ou signal corporel</label>
+          <select id="memory-zone">
+            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}">${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
+          </select>
+
+          <label>Intensité actuelle</label>
+          <select id="memory-intensity">
+            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+          </select>
+
+          <label>Note courte, sans interprétation forcée</label>
+          <textarea id="memory-note" placeholder="Ex : image vague, froid dans le dos, sensation ancienne, rien de certain..."></textarea>
+
+          <label>Garde-fou de présence</label>
+          ${checksStatic("memory-guards", [
+            "Pieds au sol",
+            "Je peux fermer maintenant",
+            "Je ne cherche pas une preuve",
+            "Je reste gardien de mes actes"
+          ])}
+
+          <div class="notice mini">
+            Si l’intensité monte, fermeture maintenant. Si un Cycle est créé, il commencera par Stabiliser.
+          </div>
+
+          <div class="actions">
+            <button class="ghost" data-action="memory-close">Fermer proprement</button>
+            <button class="primary" data-action="memory-to-cycle">Créer un Cycle depuis ce sas</button>
+          </div>
+        </div>
       </section>
     `;
   }
@@ -1709,9 +1865,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </div>
         </div>
 
-        ${cycles.length ? cycles.map(c => `
+        ${cycles.length ? cycles.map((c, index) => `
           <div class="card">
-            <h3>${escapeHtml(c.title)}</h3>
+            <h3>${escapeHtml(visibleCycleTitle(c, index))}</h3>
             <p class="muted mini">
               Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}<br />
               Dernière mise à jour : ${new Date(c.updatedAt).toLocaleString("fr-FR")}
@@ -1728,6 +1884,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <button class="ghost" data-action="review-cycle" data-id="${c.id}">Relire la synthèse</button>
               ${c.status === "à intégrer" ? `<button class="ghost" data-action="mark-complete" data-id="${c.id}">Marquer clôturé</button>` : ""}
               <button class="ghost" data-action="duplicate-cycle" data-id="${c.id}">Dupliquer</button>
+              <button class="ghost" data-action="redact-cycle" data-id="${c.id}">Effacer les textes bruts</button>
               <button class="danger" data-action="delete-cycle" data-id="${c.id}">Supprimer</button>
             </div>
           </div>
@@ -1906,8 +2063,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <div class="card">
             <h3>Données locales</h3>
             <p class="muted">Les données restent dans ce navigateur, via localStorage.</p>
+            <label class="choice">
+              <input type="checkbox" data-privacy-setting="maskSensitiveTitles" ${data.settings.privacy?.maskSensitiveTitles ? "checked" : ""}>
+              Masquer les titres sensibles dans le Carnet
+            </label>
+            <p class="muted mini">Le masquage protège seulement l’affichage. Les données complètes restent disponibles localement et dans l’export complet.</p>
             <div class="actions">
               <button class="primary" data-action="export-json">Exporter JSON</button>
+              <button class="ghost" data-action="export-anonymized-json">Exporter anonymisé</button>
               <label class="choice">
                 Importer JSON
                 <input type="file" accept="application/json" data-action="import-json" style="display:none">
@@ -2036,6 +2199,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.addEventListener("change", () => {
         data.settings.libraryEnabled ||= cloneData(DEFAULT_DATA.settings.libraryEnabled);
         data.settings.libraryEnabled[el.dataset.libraryToggle] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-privacy-setting]").forEach(el => {
+      if (el.dataset.boundPrivacySetting === "1") return;
+      el.dataset.boundPrivacySetting = "1";
+      el.addEventListener("change", () => {
+        data.settings.privacy ||= cloneData(DEFAULT_DATA.settings.privacy);
+        data.settings.privacy[el.dataset.privacySetting] = el.checked;
         saveData();
         render();
       });
@@ -2271,6 +2445,34 @@ Assez pour aujourd’hui si le corps le demande.</p>
       setTab("carnet");
     }
 
+    if (action === "memory-close") {
+      const memory = readBodyMemory();
+      data.bodyMemorySessions.unshift({ ...memory, id: uid("memory"), status: "fermé proprement", createdAt: nowISO() });
+      data.lastNotice = {
+        text: "Sas Mémoire du Corps fermé proprement. Rien n’est forcé, rien n’est conclu comme preuve.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      setTab("boussole");
+    }
+
+    if (action === "memory-to-cycle") {
+      const memory = readBodyMemory();
+      const cycle = createCycleFromBodyMemory(memory);
+      data.bodyMemorySessions.unshift({ ...memory, id: uid("memory"), status: "transformé en cycle", cycleId: cycle.id, createdAt: nowISO() });
+      data.cycles.unshift(cycle);
+      data.activeCycleId = cycle.id;
+      data.activeTab = "soin";
+      data.lastNotice = {
+        text: "Cycle créé depuis le sas Mémoire du Corps. Il commence par Stabiliser pour ne pas ouvrir trop vite.",
+        tone: memory.intensity >= 7 ? "danger" : "soft",
+        createdAt: nowISO()
+      };
+      saveData();
+      render();
+    }
+
     if (action === "duplicate-cycle") {
       const source = data.cycles.find(c => c.id === el.dataset.id);
       if (!source) return;
@@ -2294,6 +2496,16 @@ Assez pour aujourd’hui si le corps le demande.</p>
       render();
     }
 
+    if (action === "redact-cycle") {
+      const cycle = data.cycles.find(c => c.id === el.dataset.id);
+      if (!cycle) return;
+      if (!confirm("Effacer les textes libres de ce Cycle ? Les choix structurés et la synthèse minimale resteront, mais les phrases écrites seront remplacées.")) return;
+      redactCycleRawTexts(cycle);
+      setNotice("Textes bruts effacés pour ce Cycle. Les choix structurés restent disponibles.");
+      saveData();
+      render();
+    }
+
     if (action === "save-micro") {
       saveMicro(false);
     }
@@ -2303,6 +2515,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     }
 
     if (action === "export-json") exportJson();
+
+    if (action === "export-anonymized-json") exportJson({ anonymized: true });
 
     if (action === "reset-data") {
       if (!confirm("Tout effacer localement ? Cette action est définitive.")) return;
@@ -2421,13 +2635,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
     render();
   }
 
-  function exportJson() {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  function exportJson(options = {}) {
+    const payload = options.anonymized ? anonymizedExportData() : data;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = `feu-clair-export-${date}.json`;
+    a.download = options.anonymized ? `feu-clair-export-anonymise-${date}.json` : `feu-clair-export-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -2519,6 +2734,62 @@ Assez pour aujourd’hui si le corps le demande.</p>
       family: document.querySelector("#body-scan-family")?.value || "",
       flags
     };
+  }
+
+  function readBodyMemory() {
+    const guards = [...document.querySelectorAll("[data-static-check-group='memory-guards'] input:checked")].map(input => input.value);
+    return {
+      level: document.querySelector("#memory-level")?.value || "effleurer",
+      kind: document.querySelector("#memory-kind")?.value || "mémoire corporelle",
+      zone: document.querySelector("#memory-zone")?.value || "",
+      intensity: Number(document.querySelector("#memory-intensity")?.value || 0),
+      note: document.querySelector("#memory-note")?.value || "",
+      guards
+    };
+  }
+
+  function createCycleFromBodyMemory(memory) {
+    return {
+      id: uid("cycle"),
+      title: `Mémoire du Corps : ${memory.zone || "sas"}`,
+      status: "ouvert",
+      currentStep: 1,
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+      answers: {
+        0: {
+          intention: "Explorer une perception corporelle sans forcer une mémoire ni conclure à une preuve.",
+          depth: memory.level === "traverser" ? "profond" : "doux",
+          regulationMode: memory.intensity >= 7 ? "tooActivated" : "normal"
+        },
+        1: {
+          intensity: memory.intensity,
+          regulationMode: memory.intensity >= 7 ? "tooActivated" : "normal",
+          grounding: memory.guards
+        },
+        2: {
+          trigger: memory.zone,
+          forWhat: "Discerner ce que ce signal corporel demande maintenant, sans forcer l’histoire.",
+          bodyMemoryNotes: bodyMemorySummary(memory),
+          families: []
+        },
+        4: {
+          ownership: [memory.kind],
+          discernmentNotes: "Sas Mémoire du Corps : perception à discerner, pas une preuve littérale."
+        }
+      }
+    };
+  }
+
+  function bodyMemorySummary(memory) {
+    return [
+      `Niveau : ${memory.level}`,
+      `Forme : ${memory.kind}`,
+      `Zone : ${memory.zone || "—"}`,
+      `Intensité : ${memory.intensity}/10`,
+      `Note : ${memory.note || "—"}`,
+      `Garde-fous : ${memory.guards.join(", ") || "—"}`
+    ].join("\n");
   }
 
   function bodyScanNeedsStabilizing(scan) {
