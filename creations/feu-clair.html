@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v0.2</title>
+  <title>Feu Clair — v1.1.0</title>
 
   <style>
     :root {
@@ -71,6 +71,10 @@
     button.ghost {
       background: transparent;
       border: 1px solid var(--line);
+    }
+
+    button.ghost:hover {
+      background: color-mix(in srgb, var(--surface-2) 72%, transparent);
     }
 
     button.danger {
@@ -200,6 +204,17 @@
 
     .card h2, .card h3 {
       margin: 0 0 .6rem;
+      color: var(--text);
+    }
+
+    h1, h2, h3, h4,
+    label,
+    summary,
+    .choice,
+    .summary,
+    .notice,
+    .brand h1 {
+      color: var(--text);
     }
 
     .muted {
@@ -300,6 +315,7 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 1rem;
+      color: var(--text);
     }
 
     .toolbar {
@@ -313,6 +329,10 @@
 
     .hidden {
       display: none !important;
+    }
+
+    .print-only {
+      display: none;
     }
 
     .mini {
@@ -378,6 +398,36 @@
         break-inside: avoid;
         page-break-inside: avoid;
       }
+
+      .print-only {
+        display: block !important;
+      }
+    }
+
+    [data-theme="dark"] button.ghost {
+      background: color-mix(in srgb, var(--surface) 68%, #000 32%);
+      border-color: color-mix(in srgb, var(--line) 82%, #000 18%);
+      color: var(--muted);
+    }
+
+    [data-theme="dark"] button.ghost:hover {
+      background: color-mix(in srgb, var(--surface-2) 78%, #000 22%);
+      color: var(--text);
+    }
+
+    [data-theme="dark"] input,
+    [data-theme="dark"] textarea,
+    [data-theme="dark"] select,
+    [data-theme="dark"] .choice,
+    [data-theme="dark"] .summary,
+    [data-theme="dark"] .notice {
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    [data-theme="dark"] input::placeholder,
+    [data-theme="dark"] textarea::placeholder {
+      color: color-mix(in srgb, var(--muted) 78%, transparent);
     }
   </style>
 </head>
@@ -387,7 +437,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v0.2</h1>
+        <h1>Feu Clair — v1.1.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -403,7 +453,7 @@
 
 <script>
 /*
-  Feu Clair — v0.2
+  Feu Clair — v1.1.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -419,7 +469,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "0.2.0";
+  const APP_VERSION = "1.1.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -557,6 +607,21 @@
         { id: "close_today", text: "Pas plus aujourd’hui. Je ferme proprement, je garde la force, je laisse le corps intégrer.", mode: "doux", tags: ["sécurité"], active: true },
         { id: "close_guardian", text: "Même si une influence, une mémoire ou un champ agit en moi, je reste gardien de mes actes.", mode: "profond", tags: ["responsabilité"], active: true }
       ],
+      strongCloseSteps: [
+        { id: "close_eyes", label: "Ouvrir les yeux et regarder la pièce.", active: true },
+        { id: "close_objects", label: "Nommer 3 objets visibles.", active: true },
+        { id: "close_feet", label: "Sentir les pieds, le sol, le poids du corps.", active: true },
+        { id: "close_hands", label: "Poser une main sur le cœur ou le ventre.", active: true },
+        { id: "close_breath", label: "Respirer lentement, sans chercher à comprendre plus.", active: true },
+        { id: "close_phrase", label: "Dire : pas plus aujourd’hui.", active: true }
+      ],
+      numbPrompts: [
+        { id: "numb_far", label: "Cela semble lointain mais important.", active: true },
+        { id: "numb_blank", label: "Je sens surtout du vide ou du blanc.", active: true },
+        { id: "numb_tired", label: "Je suis peut-être trop fatigué pour sentir.", active: true },
+        { id: "numb_protected", label: "Une part de moi protège peut-être l’accès.", active: true },
+        { id: "numb_body", label: "Je peux revenir à une zone du corps sans forcer l’histoire.", active: true }
+      ],
       permissionPhrases: [
         { id: "permission_no_force", text: "Je peux reconnaître une porte sans forcer l’histoire.", mode: "doux", tags: ["sécurité"], active: true },
         { id: "permission_numb", text: "Si je ne ressens rien, je peux avancer par petites résonances.", mode: "doux", tags: ["dissociation"], active: true },
@@ -577,6 +642,13 @@
         { id: "action_boundary", label: "Poser une limite courte", text: "Une phrase simple, sans justification excessive.", mode: "doux", tags: ["limite"], active: true },
         { id: "action_support", label: "Demander soutien", text: "Demander un regard fiable avant d’agir.", mode: "profond", tags: ["soutien"], active: true },
         { id: "action_leave", label: "Quitter un champ", text: "Sortir d’un échange, d’un lieu ou d’une dynamique qui réactive trop.", mode: "profond", tags: ["protection"], active: true }
+      ],
+      integrationSteps: [
+        { id: "integrate_water", label: "Boire de l’eau et laisser le corps redescendre.", active: true },
+        { id: "integrate_no_reopen", label: "Ne pas rouvrir une autre couche aujourd’hui.", active: true },
+        { id: "integrate_walk", label: "Marcher doucement ou aérer la pièce.", active: true },
+        { id: "integrate_note", label: "Noter seulement la prochaine marche utile.", active: true },
+        { id: "integrate_sleep", label: "Dormir ou se reposer si le corps le demande.", active: true }
       ]
     }
   };
@@ -769,6 +841,9 @@
         <div class="notice softBox">
           <h3>Mode “je ne ressens rien”</h3>
           Rien à forcer. Lis par résonance, coche même une phrase lointaine si elle semble importante, puis reviens au corps.
+          <div class="pill-list">
+            ${libraryItems("numbPrompts").map(item => `<span class="choice">${escapeHtml(item.label)}</span>`).join("")}
+          </div>
         </div>
       `;
     }
@@ -777,6 +852,9 @@
         <div class="notice dangerBox">
           <h3>Mode “je suis trop activé”</h3>
           Corps d’abord. Aucune décision extérieure maintenant. Tu peux fermer proprement à tout moment.
+          <ol class="mini">
+            ${libraryItems("strongCloseSteps").map(item => `<li>${escapeHtml(item.label)}</li>`).join("")}
+          </ol>
           <div class="actions">
             <button class="danger" data-action="strong-close">Trop fort — je ferme maintenant</button>
           </div>
@@ -799,6 +877,19 @@
     if (!s[8]?.innerBoundary && !s[8]?.action) missing.push("une limite, action ou non-action");
     if (!s[9]?.closingPhrase && !s[9]?.closingPreset) missing.push("une phrase de clôture");
     return missing;
+  }
+
+  function cycleMiniSummary(c) {
+    const s = c.answers || {};
+    const a5 = s[5] || {};
+    const a7 = s[7] || {};
+    const a8 = s[8] || {};
+    return [
+      a5.trueName || a5.rootName ? `Feu : ${a5.trueName || a5.rootName}` : "",
+      a7.whatIReturn ? `Rendu : ${a7.whatIReturn}` : "",
+      Array.isArray(a7.qualities) && a7.qualities.length ? `Récupéré : ${a7.qualities.join(", ")}` : "",
+      a8.action || a8.actionOption ? `Prochaine marche : ${a8.action || a8.actionOption}` : ""
+    ].filter(Boolean).join("\n");
   }
 
   function slugify(value) {
@@ -900,7 +991,17 @@
             ${
               c ? `
                 <p><strong>${escapeHtml(c.title)}</strong></p>
-                <p class="muted mini">Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}</p>
+                <p class="muted mini">Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}</p>
+                ${c.status === "à revisiter doucement" ? `
+                  <div class="notice dangerBox mini">
+                    Ce cycle a été fermé pendant une activation forte. Reprise douce recommandée : stabiliser avant de rouvrir.
+                  </div>
+                ` : ""}
+                ${c.status === "à intégrer" ? `
+                  <div class="notice softBox mini">
+                    Cycle à intégrer : relire la synthèse, imprimer si utile, puis laisser le corps faire sa part.
+                  </div>
+                ` : ""}
                 <div class="actions">
                   <button class="primary" data-tab="soin">Reprendre exactement ici</button>
                   <button class="ghost" data-action="close-cycle-soft">Fermer proprement pour aujourd’hui</button>
@@ -1042,6 +1143,11 @@
         ], a.regulationMode || "normal", true)}
 
         ${renderRegulationNotice(cycle)}
+
+        ${currentRegulation(cycle) === "tooActivated" ? `
+          <label>Fermeture forte effectuée</label>
+          ${checks("strongCloseDone", libraryItems("strongCloseSteps").map(item => item.label), a.strongCloseDone)}
+        ` : ""}
       `;
     }
 
@@ -1147,6 +1253,9 @@
 
         <label>Nom racine</label>
         <textarea data-field="rootName" placeholder="Ex : refus de continuer à porter ce qui n’est pas à moi...">${escapeHtml(a.rootName || "")}</textarea>
+
+        <label>Permission pour nommer sans forcer</label>
+        ${radios("namingPermission", libraryItems("permissionPhrases").map(item => item.text), a.namingPermission || "")}
       `;
     }
 
@@ -1226,6 +1335,11 @@
         <h2>Sceller et archiver</h2>
         <p class="muted">On ferme la session. Le feu peut revenir comme signal, non comme prison.</p>
 
+        <div class="print-only">
+          <h1>${escapeHtml(cycle.title)}</h1>
+          <p>Feu Clair — synthèse de cycle · ${new Date(cycle.updatedAt).toLocaleDateString("fr-FR")}</p>
+        </div>
+
         <div class="summary">${escapeHtml(summary)}</div>
 
         ${missing.length ? `
@@ -1244,6 +1358,12 @@
 
         <label>Phrase de clôture proposée</label>
         ${radios("closingPreset", libraryItems("closingPhrases").map(item => item.text), a.closingPreset || "")}
+
+        <label>Intégration après clôture</label>
+        ${checks("integrationDone", libraryItems("integrationSteps").map(item => item.label), a.integrationDone)}
+
+        <label>Prochaine marche douce</label>
+        <textarea data-field="nextGentleStep" placeholder="Ex : ne rien rouvrir aujourd’hui, dormir, imprimer la synthèse, demander soutien demain.">${escapeHtml(a.nextGentleStep || "")}</textarea>
 
         <div class="actions">
           <button class="primary" data-action="archive-cycle">Clôturer ce Cycle</button>
@@ -1322,8 +1442,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
               Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}<br />
               Dernière mise à jour : ${new Date(c.updatedAt).toLocaleString("fr-FR")}
             </p>
+            ${c.status === "à intégrer" ? `
+              <div class="notice softBox mini">Relire, imprimer ou laisser reposer : ce cycle n’a pas besoin d’être rouvert maintenant.</div>
+            ` : ""}
+            ${c.status === "à revisiter doucement" ? `
+              <div class="notice dangerBox mini">Reprise douce : commencer par Stabiliser, sans ouvrir une nouvelle couche trop vite.</div>
+            ` : ""}
+            ${cycleMiniSummary(c) ? `<pre class="summary mini">${escapeHtml(cycleMiniSummary(c))}</pre>` : ""}
             <div class="actions">
               <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
+              <button class="ghost" data-action="review-cycle" data-id="${c.id}">Relire la synthèse</button>
+              ${c.status === "à intégrer" ? `<button class="ghost" data-action="mark-complete" data-id="${c.id}">Marquer clôturé</button>` : ""}
               <button class="ghost" data-action="duplicate-cycle" data-id="${c.id}">Dupliquer</button>
               <button class="danger" data-action="delete-cycle" data-id="${c.id}">Supprimer</button>
             </div>
@@ -1445,6 +1574,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       ``,
       `Vrai nom : ${a5.trueName || "—"}`,
       `Nom racine : ${a5.rootName || "—"}`,
+      `Permission de nommage : ${a5.namingPermission || "—"}`,
       ``,
       `Sortie : ${a6.exit || "—"}`,
       `Phrase sortie : ${a6.exitPhrase || "—"}`,
@@ -1459,20 +1589,28 @@ Assez pour aujourd’hui si le corps le demande.</p>
       `Positionnement : ${a8.positioningPhrase || "—"}`,
       `Action / non-action : ${a8.action || a8.actionOption || "—"}`,
       ``,
-      `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`
+      `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`,
+      `Intégration : ${(a9.integrationDone || []).join(", ") || "—"}`,
+      `Prochaine marche douce : ${a9.nextGentleStep || "—"}`
     ].join("\n");
   }
 
   function bindDynamicEvents() {
     document.querySelectorAll("[data-tab]").forEach(el => {
+      if (el.dataset.boundTab === "1") return;
+      el.dataset.boundTab = "1";
       el.addEventListener("click", () => setTab(el.dataset.tab));
     });
 
     document.querySelectorAll("[data-step]").forEach(el => {
+      if (el.dataset.boundStep === "1") return;
+      el.dataset.boundStep = "1";
       el.addEventListener("click", () => setStep(Number(el.dataset.step)));
     });
 
     document.querySelectorAll("[data-field]").forEach(el => {
+      if (el.dataset.boundField === "1") return;
+      el.dataset.boundField = "1";
       el.addEventListener("input", () => {
         const step = activeCycle()?.currentStep ?? 0;
         if (el.type === "checkbox") return;
@@ -1487,6 +1625,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     });
 
     document.querySelectorAll("[data-check-group]").forEach(box => {
+      if (box.dataset.boundCheckGroup === "1") return;
+      box.dataset.boundCheckGroup = "1";
       box.addEventListener("change", () => {
         const step = activeCycle()?.currentStep ?? 0;
         const key = box.dataset.checkGroup;
@@ -1496,6 +1636,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     });
 
     document.querySelectorAll("[data-radio-group]").forEach(box => {
+      if (box.dataset.boundRadioGroup === "1") return;
+      box.dataset.boundRadioGroup = "1";
       box.addEventListener("change", () => {
         const step = activeCycle()?.currentStep ?? 0;
         const key = box.dataset.radioGroup;
@@ -1506,6 +1648,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     });
 
     document.querySelectorAll("[data-setting]").forEach(el => {
+      if (el.dataset.boundSetting === "1") return;
+      el.dataset.boundSetting = "1";
       el.addEventListener("change", () => {
         data.settings[el.dataset.setting] = el.value;
         saveData();
@@ -1513,10 +1657,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
     });
 
     document.querySelectorAll("[data-cycle-title]").forEach(el => {
+      if (el.dataset.boundCycleTitle === "1") return;
+      el.dataset.boundCycleTitle = "1";
       el.addEventListener("input", () => updateCycle({ title: el.value || "Cycle sans titre" }));
     });
 
     document.querySelectorAll("[data-action]").forEach(el => {
+      if (el.dataset.boundAction === "1") return;
+      el.dataset.boundAction = "1";
       const action = el.dataset.action;
 
       if (action === "import-json") {
@@ -1593,7 +1741,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
         c.answers[9] ||= {};
         c.answers[9].closingPreset ||= c.answers[9].closingPhrase || defaultClosingPhrase();
       }
-      updateCycle({ status: "clôturé" });
+      updateCycle({ status: "à intégrer" });
       setNotice("Cycle clôturé. Cette charge est libérée maintenant ; si ce feu revient, il revient comme signal, non comme prison.");
       setTab("carnet");
     }
@@ -1601,6 +1749,25 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (action === "open-cycle") {
       data.activeCycleId = el.dataset.id;
       data.activeTab = "soin";
+      saveData();
+      render();
+    }
+
+    if (action === "review-cycle") {
+      data.activeCycleId = el.dataset.id;
+      const c = activeCycle();
+      if (c) c.currentStep = STEPS.length - 1;
+      data.activeTab = "soin";
+      saveData();
+      render();
+    }
+
+    if (action === "mark-complete") {
+      const c = data.cycles.find(cycle => cycle.id === el.dataset.id);
+      if (!c) return;
+      c.status = "clôturé";
+      c.updatedAt = nowISO();
+      setNotice("Cycle marqué comme clôturé. La synthèse reste disponible dans le Carnet.");
       saveData();
       render();
     }
@@ -1672,10 +1839,20 @@ Assez pour aujourd’hui si le corps le demande.</p>
         id: uid("cycle"),
         title: word ? `Micro-feu : ${word}` : "Cycle depuis micro-soin",
         status: "ouvert",
-        currentStep: 5,
+        currentStep: 8,
         createdAt: nowISO(),
         updatedAt: nowISO(),
         answers: {
+          0: {
+            intention: "Transformer ce micro-soin en Cycle de Feu sans rouvrir trop grand.",
+            depth: "doux",
+            regulationMode: "normal"
+          },
+          2: {
+            trigger: word,
+            forWhat: phrase,
+            families: []
+          },
           5: {
             trueName: word,
             rootName: `Charge ressentie dans : ${body}`
