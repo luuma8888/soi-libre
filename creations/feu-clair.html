@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.7.0</title>
+  <title>Feu Clair — v2.9.0</title>
 
   <style>
     :root {
@@ -352,6 +352,61 @@
       margin-top: .18rem;
     }
 
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .85rem;
+    }
+
+    .tool-card {
+      min-height: 10.5rem;
+      width: 100%;
+      display: grid;
+      align-content: start;
+      gap: .45rem;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+
+    .tool-card strong {
+      display: block;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    .tool-card span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .tool-card small {
+      display: inline-block;
+      width: fit-content;
+      margin-top: .25rem;
+      border-radius: 999px;
+      padding: .28rem .55rem;
+      background: color-mix(in srgb, var(--accent-2) 22%, var(--surface));
+      color: var(--text);
+    }
+
+    .tool-card.body {
+      background: color-mix(in srgb, #e6f2df 48%, var(--surface));
+    }
+
+    .tool-card.memory {
+      background: color-mix(in srgb, #e8edf7 50%, var(--surface));
+    }
+
+    .tool-card.authority {
+      background: color-mix(in srgb, #f7e3d5 52%, var(--surface));
+    }
+
     .toolbar {
       display: flex;
       justify-content: space-between;
@@ -381,6 +436,7 @@
       .actions button { flex: 1 1 auto; }
       .brand p { display: none; }
       .body-map { grid-template-columns: 1fr; }
+      .tool-grid { grid-template-columns: 1fr; }
     }
 
     @media print {
@@ -472,7 +528,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.7.0</h1>
+        <h1>Feu Clair — v2.9.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -488,7 +544,7 @@
 
 <script>
 /*
-  Feu Clair — v2.7.0
+  Feu Clair — v2.9.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -504,7 +560,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "2.7.0";
+  const APP_VERSION = "2.9.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -542,6 +598,8 @@
       }
     },
     activeTab: "boussole",
+    activeTool: null,
+    toolDraft: {},
     activeCycleId: null,
     lastNotice: null,
     cycles: [],
@@ -775,10 +833,25 @@
     return data.cycles.find(c => c.id === data.activeCycleId) || null;
   }
 
-  function setTab(tabId) {
+  function setTab(tabId, toolId = null, draft = null) {
     data.activeTab = tabId;
+    data.activeTool = tabId === "outils" ? toolId : null;
+    if (tabId === "outils" && toolId === "body-scan") {
+      data.toolDraft ||= {};
+      data.toolDraft.bodyScan = draft ? { ...(data.toolDraft.bodyScan || {}), ...draft } : {};
+    }
     saveData();
     render();
+  }
+
+  function toolDraftFromDataset(el) {
+    const draft = {};
+    if (el.dataset.zone) draft.zone = el.dataset.zone;
+    if (el.dataset.sensation) draft.sensation = el.dataset.sensation;
+    if (el.dataset.intensity) draft.intensity = el.dataset.intensity;
+    if (el.dataset.signal) draft.signal = el.dataset.signal;
+    if (el.dataset.family) draft.family = el.dataset.family;
+    return Object.keys(draft).length ? draft : null;
   }
 
   function createCycle() {
@@ -1154,6 +1227,23 @@
     return copy;
   }
 
+  function cycleExportData(cycle, options = {}) {
+    const anonymized = options.anonymized === true;
+    const copy = cloneData(cycle);
+    if (anonymized) {
+      copy.title = "Cycle anonymisé";
+      copy.notes = "";
+      copy.answers = anonymizeAnswers(copy.answers || {});
+    }
+    return {
+      app: "feu-clair",
+      version: APP_VERSION,
+      exportMode: anonymized ? "cycle anonymisé" : "cycle complet",
+      exportedAt: nowISO(),
+      cycle: copy
+    };
+  }
+
   function anonymizeAnswers(answers) {
     const keepKeys = new Set([
       "depth",
@@ -1305,7 +1395,7 @@
           <div class="actions">
             <button class="primary" data-action="new-cycle">Commencer un Cycle de Feu</button>
             <button data-tab="micro">Faire un micro-soin</button>
-            <button data-tab="outils">Scanner une zone du corps</button>
+            <button data-tab="outils" data-tool="body-scan">Scanner une zone du corps</button>
             <button data-tab="carnet">Voir le Carnet</button>
           </div>
         </div>
@@ -1748,17 +1838,65 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function renderOutils() {
+    const tool = data.activeTool || "";
+    if (tool === "body-scan") return renderOutilShell("Carte corporelle — scan autonome", renderBodyScanTool());
+    if (tool === "memory") return renderOutilShell("Mémoire du Corps — sas prudent", renderMemoryTool());
+    if (tool === "authority") return renderOutilShell("Feu d’Autorité — sas symbolique", renderAuthorityTool());
+
     return `
       <section class="grid">
         ${renderLastNotice()}
 
         <div class="card">
           <h2>Outils ponctuels</h2>
-          <p class="muted">Un scan court, hors Cycle de Feu. Il aide à écouter le corps sans ouvrir trop vite.</p>
+          <p class="muted">Choisis un seul outil. Chaque sas reste court, local, et peut se fermer proprement.</p>
         </div>
 
+        <div class="tool-grid">
+          <button class="tool-card body" data-tool="body-scan">
+            <strong>Carte corporelle</strong>
+            <span>Scanner une zone, une sensation, une intensité, puis fermer ou créer un Cycle.</span>
+            <small>Corps · 2 minutes</small>
+          </button>
+
+          <button class="tool-card memory" data-tool="memory">
+            <strong>Mémoire du Corps</strong>
+            <span>Noter une perception corporelle sans forcer une histoire ni conclure trop vite.</span>
+            <small>Sas prudent</small>
+          </button>
+
+          <button class="tool-card authority" data-tool="authority">
+            <strong>Feu d’Autorité</strong>
+            <span>Diriger symboliquement le feu vers une charge, avec garde-fous de responsabilité.</span>
+            <small>${data.settings.archetypeMode === "neutre" ? "Fermé en mode neutre" : "Symbolique"}</small>
+          </button>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderOutilShell(title, content) {
+    return `
+      <section class="grid">
+        ${renderLastNotice()}
         <div class="card">
-          <h3>Carte corporelle — scan autonome</h3>
+          <div class="toolbar">
+            <div>
+              <h2>${escapeHtml(title)}</h2>
+              <p class="muted">Un seul outil est ouvert. Tu peux revenir à la liste sans perdre les données déjà enregistrées.</p>
+            </div>
+            <button class="ghost" data-action="tools-list">Liste des outils</button>
+          </div>
+        </div>
+        ${content}
+      </section>
+    `;
+  }
+
+  function renderBodyScanTool() {
+    const preset = data.toolDraft?.bodyScan || {};
+    return `
+        <div class="card">
           <p class="notice">
             Cette zone est une porte d’entrée, pas une preuve.
             Tu peux créer un Cycle de Feu à partir d’elle, mais le soin commencera par vérifier ton état actuel pour ne pas ouvrir trop vite.
@@ -1766,25 +1904,25 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
           <label>Zone corporelle</label>
           <select id="body-scan-zone">
-            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}">${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
+            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}" ${preset.zone === zone.label ? "selected" : ""}>${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
           </select>
 
           <label>Sensation</label>
-          <textarea id="body-scan-sensation" placeholder="Ex : serré, vide, chaud, froid, pression, picotement, rien de clair..."></textarea>
+          <textarea id="body-scan-sensation" placeholder="Ex : serré, vide, chaud, froid, pression, picotement, rien de clair...">${escapeHtml(preset.sensation || "")}</textarea>
 
           <label>Intensité ressentie</label>
           <select id="body-scan-intensity">
-            <option value="">Je ne sais pas</option>
-            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+            <option value="" ${preset.intensity === "" || preset.intensity == null ? "selected" : ""}>Je ne sais pas</option>
+            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${String(preset.intensity) === String(i) ? "selected" : ""}>${i}/10</option>`).join("")}
           </select>
 
           <label>Signal ou phrase éventuelle</label>
-          <textarea id="body-scan-signal" placeholder="Ex : je n’ai pas consenti, je dois dire non, je ne ressens rien, pas plus aujourd’hui..."></textarea>
+          <textarea id="body-scan-signal" placeholder="Ex : je n’ai pas consenti, je dois dire non, je ne ressens rien, pas plus aujourd’hui...">${escapeHtml(preset.signal || "")}</textarea>
 
           <label>Famille possible</label>
           <select id="body-scan-family">
-            <option value="">Je ne sais pas</option>
-            ${libraryLabels("families").map(label => `<option value="${escapeAttr(label)}">${escapeHtml(label)}</option>`).join("")}
+            <option value="" ${!preset.family ? "selected" : ""}>Je ne sais pas</option>
+            ${libraryLabels("families").map(label => `<option value="${escapeAttr(label)}" ${preset.family === label ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
           </select>
 
           <label>État actuel</label>
@@ -1808,9 +1946,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ` : ""}
           </div>
         </div>
+    `;
+  }
 
+  function renderMemoryTool() {
+    return `
         <div class="card">
-          <h3>Mémoire du Corps — sas prudent</h3>
           <p class="muted">
             Outil désactivé par défaut dans le sens où rien ne s’ouvre automatiquement : tu notes seulement une perception, sans conclure à une preuve ni forcer une mémoire.
           </p>
@@ -1877,9 +2018,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <button class="primary" data-action="memory-to-cycle">Créer un Cycle depuis ce sas</button>
           </div>
         </div>
+    `;
+  }
 
+  function renderAuthorityTool() {
+    return `
         <div class="card">
-          <h3>Feu d’Autorité — sas symbolique</h3>
           ${data.settings.archetypeMode === "neutre" ? `
             <p class="notice mini">
               Ce sas reste fermé en mode neutre. Pour l’utiliser, active un mode d’archétype dans le Sanctuaire.
@@ -1929,7 +2073,6 @@ Assez pour aujourd’hui si le corps le demande.</p>
             </div>
           `}
         </div>
-      </section>
     `;
   }
 
@@ -1964,6 +2107,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
               <button class="ghost" data-action="review-cycle" data-id="${c.id}">Relire la synthèse</button>
               ${c.status === "à intégrer" ? `<button class="ghost" data-action="mark-complete" data-id="${c.id}">Marquer clôturé</button>` : ""}
+              <button class="ghost" data-action="export-cycle-json" data-id="${c.id}">Exporter ce Cycle</button>
+              <button class="ghost" data-action="export-cycle-anonymized-json" data-id="${c.id}">Exporter anonymisé</button>
               <button class="ghost" data-action="duplicate-cycle" data-id="${c.id}">Dupliquer</button>
               <button class="ghost" data-action="redact-cycle" data-id="${c.id}">Effacer les textes bruts</button>
               <button class="danger" data-action="delete-cycle" data-id="${c.id}">Supprimer</button>
@@ -1992,7 +2137,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <h3>Carte corporelle</h3>
           <p class="muted">La carte corporelle est maintenant un scan autonome dans Outils ponctuels. Elle ne renvoie vers un Cycle qu’après un sas de sécurité.</p>
           <div class="actions">
-            <button class="primary" data-tab="outils">Ouvrir le scan corporel</button>
+            <button class="primary" data-tab="outils" data-tool="body-scan">Ouvrir le scan corporel</button>
           </div>
         </div>
 
@@ -2216,7 +2361,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
     document.querySelectorAll("[data-tab]").forEach(el => {
       if (el.dataset.boundTab === "1") return;
       el.dataset.boundTab = "1";
-      el.addEventListener("click", () => setTab(el.dataset.tab));
+      el.addEventListener("click", () => setTab(el.dataset.tab, el.dataset.tool || null, toolDraftFromDataset(el)));
+    });
+
+    document.querySelectorAll("[data-tool]").forEach(el => {
+      if (el.dataset.tab) return;
+      if (el.dataset.boundTool === "1") return;
+      el.dataset.boundTool = "1";
+      el.addEventListener("click", () => setTab("outils", el.dataset.tool, toolDraftFromDataset(el)));
     });
 
     document.querySelectorAll("[data-step]").forEach(el => {
@@ -2326,6 +2478,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "new-cycle") createCycle();
 
+    if (action === "tools-list") {
+      data.activeTab = "outils";
+      data.activeTool = null;
+      saveData();
+      render();
+    }
+
     if (action === "prev-step") setStep((activeCycle()?.currentStep || 0) - 1);
 
     if (action === "next-step") setStep((activeCycle()?.currentStep || 0) + 1);
@@ -2410,6 +2569,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
       setNotice("Cycle marqué comme clôturé. La synthèse reste disponible dans le Carnet.");
       saveData();
       render();
+    }
+
+    if (action === "export-cycle-json") {
+      exportCycleJson(el.dataset.id);
+    }
+
+    if (action === "export-cycle-anonymized-json") {
+      exportCycleJson(el.dataset.id, { anonymized: true });
     }
 
     if (action === "library-search") {
@@ -2766,6 +2933,23 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const date = new Date().toISOString().slice(0, 10);
     a.href = url;
     a.download = options.anonymized ? `feu-clair-export-anonymise-${date}.json` : `feu-clair-export-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCycleJson(cycleId, options = {}) {
+    const cycle = data.cycles.find(c => c.id === cycleId);
+    if (!cycle) return;
+    const payload = cycleExportData(cycle, options);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+    const name = slugify(cycle.title || "cycle");
+    a.href = url;
+    a.download = options.anonymized
+      ? `feu-clair-cycle-anonymise-${date}.json`
+      : `feu-clair-cycle-${name || "cycle"}-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
