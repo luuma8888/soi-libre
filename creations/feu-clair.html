@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.9.0</title>
+  <title>Feu Clair — v2.12.0</title>
 
   <style>
     :root {
@@ -528,7 +528,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.9.0</h1>
+        <h1>Feu Clair — v2.12.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -544,7 +544,7 @@
 
 <script>
 /*
-  Feu Clair — v2.9.0
+  Feu Clair — v2.12.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -560,7 +560,7 @@
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
-  const APP_VERSION = "2.9.0";
+  const APP_VERSION = "2.12.0";
   const RESONANCE_WAVE_LIMIT = 10;
 
   const STEPS = [
@@ -649,7 +649,19 @@
         { id: "r_spirituelle_1", text: "Signature perçue comme étrangère, parasite, programmée ou non alignée : je discerne sans conclure trop vite.", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["tête", "plexus"], masks: ["guerre-spirituelle"], egregores: ["confusion-subtile"], element: "éther", tags: ["discernement"], active: true },
         { id: "r_spirituelle_2", text: "Je ne dirige pas ce feu contre un être vivant présent ; je le dirige contre la charge, le lien, l’inversion ou l’emprise perçue.", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["mains", "pieds"], masks: ["vengeance"], egregores: ["emprise"], element: "feu", tags: ["sécurité"], active: true },
         { id: "r_collective_1", text: "Je rends le collectif au collectif : je garde mon action juste, pas toute la charge du monde.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules", "dos"], masks: ["sauveur"], egregores: ["désespoir-collectif"], element: "terre", tags: ["collectif"], active: true },
-        { id: "r_collective_2", text: "Je réduis l’immensité à une prochaine marche possible.", family: "collective", intensity: "doux", mode: "doux", zones: ["jambes", "pieds"], masks: ["impuissance"], egregores: ["effondrement"], element: "terre", tags: ["action"], active: true }
+        { id: "r_collective_2", text: "Je réduis l’immensité à une prochaine marche possible.", family: "collective", intensity: "doux", mode: "doux", zones: ["jambes", "pieds"], masks: ["impuissance"], egregores: ["effondrement"], element: "terre", tags: ["action"], active: true },
+        { id: "r_relationnel_1", text: "J’ai peut-être laissé le lien décider à la place de ma limite.", family: "limite", intensity: "moyen", mode: "doux", zones: ["poitrine", "gorge"], masks: ["gentillesse-forcee"], egregores: ["dependance-affective", "dette-affective"], element: "air", tags: ["lien", "limite"], active: true },
+        { id: "r_relationnel_2", text: "Une fragilité autour de moi a peut-être été utilisée pour m’empêcher de dire non.", family: "limite", intensity: "direct", mode: "profond", zones: ["gorge", "dos"], masks: ["sauveur"], egregores: ["culpabilisation-fragilite"], element: "terre", tags: ["chantage émotionnel", "discernement"], active: true },
+        { id: "r_fausse_lumiere_1", text: "La vraie paix ne me demande pas de nier ce qui a été blessé.", family: "spirituelle", intensity: "direct", mode: "profond", zones: ["poitrine", "plexus"], masks: ["pardon-premature"], egregores: ["paix-sans-verite"], element: "soleil", tags: ["fausse lumière", "vérité"], active: true },
+        { id: "r_fausse_lumiere_2", text: "La douceur juste n’interdit pas la limite ; elle l’éclaire.", family: "spirituelle", intensity: "moyen", mode: "profond", zones: ["poitrine", "mains"], masks: ["spiritualisation"], egregores: ["douceur-interdit-limite"], element: "soleil", tags: ["limite", "spirituel"], active: true },
+        { id: "r_corps_1", text: "Mon corps a peut-être dit non avant que ma tête ose comprendre.", family: "absorbee", intensity: "moyen", mode: "doux", zones: ["ventre", "mâchoire"], masks: ["inertie"], egregores: ["corps-controle", "gorge-verrouillee"], element: "terre", tags: ["corps", "consentement"], active: true },
+        { id: "r_parole_3", text: "Ma parole n’a pas besoin d’être violente pour être ferme.", family: "parole", intensity: "doux", mode: "doux", zones: ["gorge"], masks: ["peur-rejet"], egregores: ["peur-blesser", "parole-confisquee"], element: "air", tags: ["parole", "fermeté"], active: true },
+        { id: "r_addiction_1", text: "Ce comportement est peut-être une fausse porte pour un feu qui veut sortir.", family: "masquee", intensity: "direct", mode: "profond", zones: ["ventre", "mains"], masks: ["addiction"], egregores: ["anesthesie", "vide-interieur"], element: "terre", tags: ["inversion", "addiction"], active: true },
+        { id: "r_jouissance_1", text: "Je distingue le plaisir vivant de l’intensité qui me vide après.", family: "masquee", intensity: "direct", mode: "profond", zones: ["ventre", "poitrine"], masks: ["jouissance-vide"], egregores: ["corps-utilise", "sexualite-blessee"], element: "eau", tags: ["discernement", "désir"], active: true },
+        { id: "r_perversion_1", text: "Je ne confonds pas mon essence avec une inversion : je cherche la force saine capturée dessous.", family: "masquee", intensity: "très direct", mode: "intensif", zones: ["ventre", "plexus"], masks: ["fascination-sombre"], egregores: ["honte-corporelle", "emprise"], element: "feu", tags: ["inversion", "prudence"], active: true },
+        { id: "r_enfant_3", text: "Avant les mots forts, je vérifie que la part enfant en moi est en sécurité pour entendre cela.", family: "enfant", intensity: "doux", mode: "profond", zones: ["ventre", "poitrine"], masks: ["enfant-adapte"], egregores: ["enfant-invisible"], element: "eau", tags: ["enfance", "sécurité"], active: true },
+        { id: "r_collective_3", text: "Je peux voir le monde sans porter tout le monde dans mon système nerveux.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules", "dos"], masks: ["sauveur"], egregores: ["peur-mediatique", "scandale-permanent"], element: "terre", tags: ["collectif", "ancrage"], active: true },
+        { id: "r_autorite_1", text: "Je rends la charge, je garde l’épée : mon autorité reste gardienne de mes actes.", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["mains", "plexus"], masks: ["vengeance"], egregores: ["guerre-spirituelle-permanente"], element: "feu", tags: ["autorité", "responsabilité"], active: true }
       ],
       masks: [
         { id: "addiction", label: "Addiction", family: "masquee", intensity: "moyen", mode: "profond", tags: ["fuite"], active: true },
@@ -663,7 +675,14 @@
         { id: "fuite", label: "Fuite", family: "impuissance", intensity: "doux", mode: "doux", tags: ["protection"], active: true },
         { id: "cynisme", label: "Cynisme", family: "injustice", intensity: "moyen", mode: "profond", tags: ["défense"], active: true },
         { id: "jouissance-vide", label: "Jouissance vide", family: "masquee", intensity: "direct", mode: "profond", tags: ["compulsion"], active: true },
-        { id: "fascination-sombre", label: "Fascination sombre", family: "absorbee", intensity: "direct", mode: "intensif", tags: ["champ"], active: true }
+        { id: "fascination-sombre", label: "Fascination sombre", family: "absorbee", intensity: "direct", mode: "intensif", tags: ["champ"], active: true },
+        { id: "sauveur", label: "Sauveur épuisé", family: "trahison", intensity: "moyen", mode: "profond", tags: ["lien", "responsabilité"], active: true },
+        { id: "peur-rejet", label: "Peur du rejet", family: "parole", intensity: "doux", mode: "doux", tags: ["lien", "parole"], active: true },
+        { id: "enfant-adapte", label: "Enfant adapté", family: "enfant", intensity: "moyen", mode: "profond", tags: ["enfance", "survie"], active: true },
+        { id: "vengeance", label: "Vengeance intérieure", family: "spirituelle", intensity: "très direct", mode: "intensif", tags: ["feu", "responsabilité"], active: true },
+        { id: "haine-froide", label: "Haine froide", family: "injustice", intensity: "très direct", mode: "intensif", tags: ["figement", "vérité"], active: true },
+        { id: "anesthesie", label: "Anesthésie", family: "masquee", intensity: "moyen", mode: "profond", tags: ["fuite", "vide"], active: true },
+        { id: "douceur-inhibitrice", label: "Douceur qui interdit la limite", family: "spirituelle", intensity: "direct", mode: "profond", tags: ["fausse paix", "limite"], active: true }
       ],
       egregores: [
         { id: "peur", label: "Égrégore de peur", family: "absorbee", intensity: "moyen", mode: "doux", zones: ["ventre", "plexus"], element: "terre", tags: ["sécurité", "champ"], active: true },
@@ -677,7 +696,26 @@
         { id: "loyaute-toxique", label: "Égrégore de loyauté toxique", family: "trahison", intensity: "direct", mode: "profond", zones: ["dos", "poitrine"], element: "terre", tags: ["lien"], active: true },
         { id: "controle", label: "Égrégore de contrôle", family: "masquee", intensity: "moyen", mode: "doux", zones: ["mâchoire", "mains"], element: "air", tags: ["peur"], active: true },
         { id: "desespoir-collectif", label: "Égrégore de désespoir collectif", family: "collective", intensity: "moyen", mode: "doux", zones: ["épaules", "dos"], element: "terre", tags: ["collectif"], active: true },
-        { id: "signature-etrangere", label: "Signature perçue comme étrangère / parasite / programmée / non alignée", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["plexus", "tête"], element: "éther", tags: ["discernement", "non verdict"], active: true }
+        { id: "signature-etrangere", label: "Signature perçue comme étrangère / parasite / programmée / non alignée", family: "spirituelle", intensity: "direct", mode: "intensif", zones: ["plexus", "tête"], element: "éther", tags: ["discernement", "non verdict"], active: true },
+        { id: "dependance-affective", label: "Égrégore de dépendance affective", family: "trahison", intensity: "moyen", mode: "doux", zones: ["poitrine", "ventre"], element: "eau", tags: ["lien", "attachement"], active: true },
+        { id: "dette-affective", label: "Égrégore de dette affective", family: "trahison", intensity: "direct", mode: "profond", zones: ["dos", "poitrine"], element: "terre", tags: ["lien", "culpabilité"], active: true },
+        { id: "culpabilisation-fragilite", label: "Égrégore de culpabilisation par la fragilité de l’autre", family: "limite", intensity: "direct", mode: "profond", zones: ["gorge", "dos"], element: "air", tags: ["chantage émotionnel", "limite"], active: true },
+        { id: "tu-exageres", label: "Égrégore du “tu exagères”", family: "humiliation", intensity: "moyen", mode: "doux", zones: ["gorge", "visage"], element: "air", tags: ["minimisation", "vérité"], active: true },
+        { id: "paix-sans-verite", label: "Égrégore de paix sans vérité", family: "spirituelle", intensity: "direct", mode: "profond", zones: ["poitrine"], element: "soleil", tags: ["fausse lumière", "vérité"], active: true },
+        { id: "douceur-interdit-limite", label: "Égrégore de douceur qui interdit la limite", family: "spirituelle", intensity: "direct", mode: "profond", zones: ["poitrine", "mains"], element: "soleil", tags: ["fausse paix", "limite"], active: true },
+        { id: "tout-est-amour-abus", label: "Égrégore du “tout est amour” utilisé pour nier l’abus", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["plexus", "gorge"], element: "soleil", tags: ["fausse lumière", "abus"], active: true },
+        { id: "mission-epuise", label: "Égrégore de mission qui épuise l’être", family: "collective", intensity: "moyen", mode: "profond", zones: ["épaules", "dos"], element: "terre", tags: ["service", "épuisement"], active: true },
+        { id: "peur-mediatique", label: "Égrégore de peur médiatique", family: "collective", intensity: "moyen", mode: "doux", zones: ["plexus", "tête"], element: "terre", tags: ["collectif", "peur"], active: true },
+        { id: "scandale-permanent", label: "Égrégore de scandale permanent", family: "collective", intensity: "moyen", mode: "doux", zones: ["tête", "mâchoire"], element: "air", tags: ["surcharge", "collectif"], active: true },
+        { id: "mensonge-normalise", label: "Égrégore de mensonge normalisé", family: "injustice", intensity: "direct", mode: "profond", zones: ["plexus", "gorge"], element: "soleil", tags: ["vérité", "collectif"], active: true },
+        { id: "division-organisee", label: "Égrégore de division organisée", family: "collective", intensity: "direct", mode: "profond", zones: ["poitrine", "mâchoire"], element: "terre", tags: ["collectif", "camp"], active: true },
+        { id: "corps-controle", label: "Égrégore de corps contrôlé", family: "absorbee", intensity: "direct", mode: "profond", zones: ["ventre", "mâchoire"], element: "terre", tags: ["corps", "contrôle"], active: true },
+        { id: "gorge-verrouillee", label: "Égrégore de gorge verrouillée", family: "parole", intensity: "moyen", mode: "doux", zones: ["gorge"], element: "air", tags: ["parole", "verrou"], active: true },
+        { id: "sexualite-blessee", label: "Égrégore de sexualité blessée", family: "masquee", intensity: "très direct", mode: "intensif", zones: ["ventre", "poitrine"], element: "eau", tags: ["corps", "désir", "prudence"], active: true },
+        { id: "toucher-non-respecte", label: "Égrégore de toucher non respecté", family: "limite", intensity: "très direct", mode: "intensif", zones: ["ventre", "mains"], element: "terre", tags: ["corps", "consentement"], active: true },
+        { id: "parole-confisquee", label: "Égrégore de parole confisquée", family: "parole", intensity: "direct", mode: "profond", zones: ["gorge"], element: "air", tags: ["parole", "autorité"], active: true },
+        { id: "personne-ne-croira", label: "Égrégore de “personne ne me croira”", family: "parole", intensity: "direct", mode: "profond", zones: ["gorge", "poitrine"], element: "air", tags: ["témoignage", "mémoire"], active: true },
+        { id: "guerre-spirituelle-permanente", label: "Égrégore de guerre spirituelle permanente", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["tête", "plexus"], element: "éther", tags: ["subtil", "responsabilité"], active: true }
       ],
       boldWords: [
         { id: "non-consentement", text: "Je n’ai pas consenti.", family: "limite", intensity: "direct", mode: "profond", zones: ["gorge", "ventre"], element: "air", tags: ["mots qui osent"], active: true },
@@ -685,7 +723,17 @@
         { id: "pas-ma-faute", text: "Ce n’était pas ma faute.", family: "soi", intensity: "direct", mode: "doux", zones: ["poitrine"], element: "eau", tags: ["réparation"], active: true },
         { id: "trop-porte", text: "J’ai porté trop grand pour moi.", family: "enfant", intensity: "direct", mode: "profond", zones: ["dos", "ventre"], element: "terre", tags: ["enfance"], active: true },
         { id: "paix-effacement", text: "J’ai appelé paix ce qui était parfois effacement.", family: "limite", intensity: "direct", mode: "profond", zones: ["poitrine"], element: "soleil", tags: ["discernement"], active: true },
-        { id: "rendre-collectif", text: "Je rends le collectif au collectif.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules"], element: "terre", tags: ["restitution"], active: true }
+        { id: "rendre-collectif", text: "Je rends le collectif au collectif.", family: "collective", intensity: "doux", mode: "doux", zones: ["épaules"], element: "terre", tags: ["restitution"], active: true },
+        { id: "abus", text: "Abus.", family: "injustice", intensity: "très direct", mode: "intensif", zones: ["plexus", "gorge"], element: "soleil", tags: ["mots qui osent", "prudence"], active: true },
+        { id: "emprise", text: "Emprise.", family: "limite", intensity: "très direct", mode: "intensif", zones: ["gorge", "ventre"], element: "feu", tags: ["mots qui osent", "liberté"], active: true },
+        { id: "inversion", text: "Inversion.", family: "masquee", intensity: "direct", mode: "profond", zones: ["plexus"], element: "soleil", tags: ["mots qui osent", "discernement"], active: true },
+        { id: "soumission-forcee", text: "Soumission forcée.", family: "limite", intensity: "direct", mode: "profond", zones: ["dos", "gorge"], element: "terre", tags: ["mots qui osent", "limite"], active: true },
+        { id: "silence-force", text: "Silence forcé.", family: "parole", intensity: "direct", mode: "profond", zones: ["gorge"], element: "air", tags: ["mots qui osent", "parole"], active: true },
+        { id: "culpabilite-injectee", text: "Culpabilité injectée.", family: "soi", intensity: "direct", mode: "profond", zones: ["poitrine", "ventre"], element: "eau", tags: ["mots qui osent", "restitution"], active: true },
+        { id: "consentement-arrache", text: "Consentement arraché.", family: "limite", intensity: "très direct", mode: "intensif", zones: ["ventre", "gorge"], element: "terre", tags: ["mots qui osent", "consentement"], active: true },
+        { id: "verite-ridiculisee", text: "Vérité ridiculisée.", family: "humiliation", intensity: "direct", mode: "profond", zones: ["gorge", "visage"], element: "air", tags: ["mots qui osent", "vérité"], active: true },
+        { id: "memoire-verrouillee", text: "Mémoire verrouillée.", family: "enfant", intensity: "direct", mode: "profond", zones: ["ventre", "tête"], element: "eau", tags: ["mots qui osent", "mémoire"], active: true },
+        { id: "pardon-museliere", text: "Pardon utilisé comme muselière.", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["gorge", "poitrine"], element: "soleil", tags: ["mots qui osent", "fausse lumière"], active: true }
       ],
       zones: [
         { id: "gorge", label: "Gorge", cue: "parole retenue, vérité avalée, cri étouffé", tags: ["parole"], active: true },
@@ -731,7 +779,15 @@
         { id: "integrite", label: "Intégrité", tags: ["corps"], active: true },
         { id: "innocence", label: "Innocence retrouvée", tags: ["enfance"], active: true },
         { id: "autorite", label: "Autorité intérieure", tags: ["feu"], active: true },
-        { id: "connexion", label: "Connexion corps / âme / esprit", tags: ["réintégration"], active: true }
+        { id: "connexion", label: "Connexion corps / âme / esprit", tags: ["réintégration"], active: true },
+        { id: "consentement", label: "Consentement retrouvé", tags: ["limite", "corps"], active: true },
+        { id: "discernement", label: "Discernement", tags: ["vérité", "axe"], active: true },
+        { id: "protection", label: "Protection juste", tags: ["limite", "sécurité"], active: true },
+        { id: "desir-vivant", label: "Désir vivant", tags: ["corps", "joie"], active: true },
+        { id: "liberte", label: "Liberté intérieure", tags: ["emprise", "axe"], active: true },
+        { id: "tendresse", label: "Tendresse saine", tags: ["corps", "réparation"], active: true },
+        { id: "verite-simple", label: "Vérité simple", tags: ["parole", "clarté"], active: true },
+        { id: "responsabilite", label: "Responsabilité de mes actes", tags: ["feu", "sécurité"], active: true }
       ],
       closingPhrases: [
         { id: "close_signal", text: "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.", mode: "doux", tags: ["clôture"], active: true },
@@ -758,21 +814,33 @@
         { id: "permission_numb", text: "Si je ne ressens rien, je peux avancer par petites résonances.", mode: "doux", tags: ["dissociation"], active: true },
         { id: "permission_stop", text: "J’ai le droit d’arrêter ici et de garder la suite pour plus tard.", mode: "doux", tags: ["fermeture"], active: true },
         { id: "permission_truth", text: "Je n’ai pas besoin de prouver tout maintenant pour respecter ce que mon corps signale.", mode: "profond", tags: ["discernement"], active: true },
-        { id: "permission_responsibility", text: "Je peux sentir une charge forte sans lui donner le volant de mes actes.", mode: "profond", tags: ["responsabilité"], active: true }
+        { id: "permission_responsibility", text: "Je peux sentir une charge forte sans lui donner le volant de mes actes.", mode: "profond", tags: ["responsabilité"], active: true },
+        { id: "permission_mask", text: "Je peux regarder le masque sans m’y identifier.", mode: "profond", tags: ["inversion", "sécurité"], active: true },
+        { id: "permission_child_safe", text: "La part enfant en moi n’a pas besoin d’entendre plus que ce qu’elle peut porter aujourd’hui.", mode: "profond", tags: ["enfance", "dosage"], active: true },
+        { id: "permission_desire", text: "Je ne rejette pas mon désir ; je le ramène vers le respect, le cœur et la présence.", mode: "profond", tags: ["désir", "corps"], active: true },
+        { id: "permission_collective", text: "Je peux voir le collectif sans absorber tout son poids.", mode: "doux", tags: ["collectif", "ancrage"], active: true }
       ],
       positioningPhrases: [
         { id: "position_clear_no", label: "Dire non clairement", text: "Je ne souhaite pas continuer dans ces conditions.", mode: "doux", tags: ["limite"], active: true },
         { id: "position_pause", label: "Différer la réponse", text: "Je ne réponds pas dans le pic de feu. Je reprends demain avec plus de clarté.", mode: "doux", tags: ["non-action"], active: true },
         { id: "position_distance", label: "Mettre de la distance", text: "Je prends de la distance avec ce champ pour protéger mon axe.", mode: "doux", tags: ["protection"], active: true },
         { id: "position_repair", label: "Réparer sans s’effacer", text: "Je peux réparer ma part sans renier la limite qui s’est révélée.", mode: "profond", tags: ["réparation"], active: true },
-        { id: "position_quarantine", label: "Garder le message en quarantaine", text: "Ce message reste en quarantaine tant que mon corps est activé.", mode: "doux", tags: ["quarantaine"], active: true }
+        { id: "position_quarantine", label: "Garder le message en quarantaine", text: "Ce message reste en quarantaine tant que mon corps est activé.", mode: "doux", tags: ["quarantaine"], active: true },
+        { id: "position_collective", label: "Rendre le collectif", text: "Je rends le collectif au collectif et je garde seulement ma prochaine action juste.", mode: "doux", tags: ["collectif", "restitution"], active: true },
+        { id: "position_body_no", label: "Respecter le non du corps", text: "Mon corps a dit non ; je ralentis, je protège mon espace et je vérifie avant de continuer.", mode: "profond", tags: ["corps", "consentement"], active: true },
+        { id: "position_mask_exit", label: "Sortir du masque", text: "Je ne nourris pas l’inversion. Je cherche la force saine dessous et je lui donne une sortie juste.", mode: "profond", tags: ["inversion", "sortie"], active: true },
+        { id: "position_firm_word", label: "Parole ferme", text: "Je dis la vérité nécessaire en peu de mots, sans attaquer, sans m’effacer.", mode: "doux", tags: ["parole", "limite"], active: true }
       ],
       actionOptions: [
         { id: "action_rest", label: "Ne rien décider aujourd’hui", text: "Repos, eau, marche douce, puis réévaluation.", mode: "doux", tags: ["non-action"], active: true },
         { id: "action_write", label: "Écrire sans envoyer", text: "Écrire la version brute, puis attendre avant toute transmission.", mode: "doux", tags: ["quarantaine"], active: true },
         { id: "action_boundary", label: "Poser une limite courte", text: "Une phrase simple, sans justification excessive.", mode: "doux", tags: ["limite"], active: true },
         { id: "action_support", label: "Demander soutien", text: "Demander un regard fiable avant d’agir.", mode: "profond", tags: ["soutien"], active: true },
-        { id: "action_leave", label: "Quitter un champ", text: "Sortir d’un échange, d’un lieu ou d’une dynamique qui réactive trop.", mode: "profond", tags: ["protection"], active: true }
+        { id: "action_leave", label: "Quitter un champ", text: "Sortir d’un échange, d’un lieu ou d’une dynamique qui réactive trop.", mode: "profond", tags: ["protection"], active: true },
+        { id: "action_body_scan", label: "Revenir au scan corporel", text: "Identifier la zone qui porte la charge avant de décider quoi que ce soit.", mode: "doux", tags: ["corps", "ancrage"], active: true },
+        { id: "action_collective_return", label: "Rituel de restitution simple", text: "Nommer la charge collective, poser les pieds, puis dire : je rends ce qui n’est pas à moi.", mode: "doux", tags: ["collectif", "restitution"], active: true },
+        { id: "action_safe_witness", label: "Témoin fiable", text: "Partager seulement avec un être capable d’entendre sans amplifier ni décider à ta place.", mode: "profond", tags: ["soutien", "parole"], active: true },
+        { id: "action_desire_pause", label: "Pause désir / compulsion", text: "Attendre que le corps redescende avant de nourrir une intensité qui pourrait vider après.", mode: "profond", tags: ["désir", "non-action"], active: true }
       ],
       integrationSteps: [
         { id: "integrate_water", label: "Boire de l’eau et laisser le corps redescendre.", active: true },
@@ -2218,7 +2286,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <div class="pill-list">${libraryLabels("masks").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
             <details>
-              <summary>Égrégores de base</summary>
+              <summary>Égrégores / champs perçus — aperçu</summary>
               <div class="pill-list">${libraryLabels("egregores").slice(0, 12).map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
             <details>
@@ -2303,6 +2371,21 @@ Assez pour aujourd’hui si le corps le demande.</p>
               </label>
               <button class="danger" data-action="reset-data">Tout effacer</button>
             </div>
+
+            <details>
+              <summary>Suppression sélective des traces ponctuelles</summary>
+              <p class="muted mini">
+                Ces actions effacent seulement les traces enregistrées par les outils ponctuels.
+                Les Cycles de Feu restent conservés.
+              </p>
+              <div class="actions">
+                <button class="ghost" data-action="clear-local-trace" data-trace-key="microSessions">Effacer micro-soins (${data.microSessions.length})</button>
+                <button class="ghost" data-action="clear-local-trace" data-trace-key="bodyScans">Effacer scans corporels (${data.bodyScans.length})</button>
+                <button class="ghost" data-action="clear-local-trace" data-trace-key="bodyMemorySessions">Effacer sas Mémoire (${data.bodyMemorySessions.length})</button>
+                <button class="ghost" data-action="clear-local-trace" data-trace-key="authoritySessions">Effacer sas Autorité (${data.authoritySessions.length})</button>
+                <button class="danger" data-action="clear-all-local-traces">Effacer toutes les traces ponctuelles</button>
+              </div>
+            </details>
           </div>
         </div>
       </section>
@@ -2808,6 +2891,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "export-anonymized-json") exportJson({ anonymized: true });
 
+    if (action === "clear-local-trace") {
+      clearLocalTrace(el.dataset.traceKey);
+    }
+
+    if (action === "clear-all-local-traces") {
+      clearAllLocalTraces();
+    }
+
     if (action === "reset-data") {
       if (!confirm("Tout effacer localement ? Cette action est définitive.")) return;
       localStorage.removeItem(STORAGE_KEY);
@@ -2921,6 +3012,44 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (!key || !id || !Array.isArray(data.library?.[key])) return;
     data.library[key] = data.library[key].filter(item => normalizeLibraryItem(item, key).id !== id);
     setNotice("Entrée personnalisée retirée.");
+    saveData();
+    render();
+  }
+
+  function clearLocalTrace(key) {
+    const labels = {
+      microSessions: "les micro-soins",
+      bodyScans: "les scans corporels",
+      bodyMemorySessions: "les sas Mémoire du Corps",
+      authoritySessions: "les sas Feu d’Autorité"
+    };
+    if (!Object.prototype.hasOwnProperty.call(labels, key) || !Array.isArray(data[key])) return;
+    const count = data[key].length;
+    if (!count) {
+      setNotice(`Aucune trace à effacer pour ${labels[key]}.`);
+      render();
+      return;
+    }
+    if (!confirm(`Effacer ${labels[key]} enregistrés localement ? Les Cycles de Feu ne seront pas supprimés.`)) return;
+    data[key] = [];
+    setNotice(`${count} trace${count > 1 ? "s" : ""} effacée${count > 1 ? "s" : ""} pour ${labels[key]}.`);
+    saveData();
+    render();
+  }
+
+  function clearAllLocalTraces() {
+    const keys = ["microSessions", "bodyScans", "bodyMemorySessions", "authoritySessions"];
+    const count = keys.reduce((sum, key) => sum + (Array.isArray(data[key]) ? data[key].length : 0), 0);
+    if (!count) {
+      setNotice("Aucune trace ponctuelle à effacer.");
+      render();
+      return;
+    }
+    if (!confirm("Effacer toutes les traces ponctuelles enregistrées localement ? Les Cycles de Feu seront conservés.")) return;
+    keys.forEach(key => {
+      data[key] = [];
+    });
+    setNotice(`${count} trace${count > 1 ? "s" : ""} ponctuelle${count > 1 ? "s" : ""} effacée${count > 1 ? "s" : ""}. Les Cycles restent conservés.`);
     saveData();
     render();
   }
