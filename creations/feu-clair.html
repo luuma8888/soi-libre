@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.16.0</title>
+  <title>Feu Clair — v2.17.0</title>
 
   <style>
     :root {
@@ -238,6 +238,57 @@
 
     .library-panel details {
       padding-top: .15rem;
+    }
+
+    .understand-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .75rem;
+      margin-top: .85rem;
+    }
+
+    .understand-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: .85rem;
+      background: var(--surface);
+    }
+
+    .understand-card h4,
+    .understand-card p {
+      margin: 0;
+    }
+
+    .understand-card p + p {
+      margin-top: .55rem;
+    }
+
+    .understand-details {
+      display: grid;
+      gap: .65rem;
+      margin-top: .85rem;
+    }
+
+    .understand-details details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: .75rem .85rem;
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+    }
+
+    .understand-details summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .understand-details details[open] summary {
+      margin-bottom: .65rem;
+    }
+
+    .understand-details p,
+    .understand-details ul {
+      margin-top: .5rem;
+      margin-bottom: .5rem;
     }
 
     .pill-list {
@@ -483,6 +534,7 @@
       .brand p { display: none; }
       .body-map { grid-template-columns: 1fr; }
       .tool-grid { grid-template-columns: 1fr; }
+      .understand-grid { grid-template-columns: 1fr; }
     }
 
     @media print {
@@ -536,6 +588,10 @@
         page-break-inside: avoid;
       }
 
+      .understand-details details > * {
+        display: block !important;
+      }
+
       .print-only {
         display: block !important;
       }
@@ -574,7 +630,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.16.0</h1>
+        <h1>Feu Clair — v2.17.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -590,7 +646,7 @@
 
 <script>
 /*
-  Feu Clair — v2.16.0
+  Feu Clair — v2.17.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -607,7 +663,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.16.0";
+  const APP_VERSION = "2.17.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -1117,7 +1173,8 @@
       tags: item?.tags || [],
       active: item?.active !== false,
       custom: item?.custom === true,
-      createdAt: item?.createdAt || ""
+      createdAt: item?.createdAt || "",
+      updatedAt: item?.updatedAt || ""
     };
   }
 
@@ -1295,6 +1352,21 @@
         ? items.map(item => normalizeLibraryItem(item, key)).filter(item => item.custom).map(item => ({ key, item }))
         : []
     ));
+  }
+
+  function managedLibraryItems(key) {
+    const source = Array.isArray(data.library?.[key]) ? data.library[key] : [];
+    return source
+      .map(item => normalizeLibraryItem(item, key))
+      .sort((a, b) => Number(b.custom) - Number(a.custom));
+  }
+
+  function editingCustomLibraryEntry() {
+    const key = data.settings.libraryEditKey || "";
+    const id = data.settings.libraryEditId || "";
+    if (!key || !id) return null;
+    const item = managedLibraryItems(key).find(entry => entry.id === id && entry.custom);
+    return item ? { key, item } : null;
   }
 
   function resonanceItems(options = {}) {
@@ -2611,6 +2683,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
   function renderSanctuaire() {
     const search = data.settings.librarySearch || "";
     const results = librarySearchResults(search);
+    const manageKey = data.settings.libraryManageKey || "resonance";
+    const managedItems = managedLibraryItems(manageKey);
+    const editingEntry = editingCustomLibraryEntry();
     return `
       <section class="grid">
         <div class="card">
@@ -2626,14 +2701,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </div>
         </div>
 
-        <div class="grid two">
-          <div class="card">
-            <h3>Comprendre</h3>
-            <p><strong>Feu clair :</strong> une colère traversée sans être niée, projetée ou retournée contre soi.</p>
-            <p><strong>Colère-masque :</strong> une colère cachée derrière une fuite, une compulsion, une jalousie, une inertie ou un autre masque.</p>
-            <p><strong>Restitution :</strong> rendre la charge à la Terre, au Soleil, à l’Eau, à l’Air, au Feu clair ou à plus grand que soi, tout en gardant l’information utile.</p>
-          </div>
+        ${renderComprendre()}
 
+        <div class="grid two">
           <div class="card">
             <h3>Paramètres</h3>
 
@@ -2692,6 +2762,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
               </label>
             </div>
             <p class="muted mini">Ces filtres agissent sur les suggestions et la recherche. Ils ne suppriment aucune donnée.</p>
+          </div>
+
+          <div class="card">
+            <h3>Repères du Sanctuaire</h3>
+            <p class="muted">Les réglages, bibliothèques et données locales servent à préparer ou relire l’application. Rien ici n’est nécessaire pendant une traversée active.</p>
+            <div class="notice mini">
+              Les extensions et contenus sensibles restent optionnels. Le chemin principal demeure : reconnaître, stabiliser, traverser, rendre, garder la force, puis fermer.
+            </div>
           </div>
         </div>
 
@@ -2756,47 +2834,73 @@ Assez pour aujourd’hui si le corps le demande.</p>
                 `).join("")}
               </div>
 
-              <label>Ajouter une entrée personnalisée</label>
-              <select id="custom-library-key">
-                ${editableLibraryGroups().map(group => `<option value="${escapeAttr(group.key)}">${escapeHtml(group.label)}</option>`).join("")}
+              <label>${editingEntry ? "Modifier l’entrée personnalisée" : "Ajouter une entrée personnalisée"}</label>
+              <select id="custom-library-key" ${editingEntry ? "disabled" : ""}>
+                ${editableLibraryGroups().map(group => `<option value="${escapeAttr(group.key)}" ${(editingEntry?.key || "resonance") === group.key ? "selected" : ""}>${escapeHtml(group.label)}</option>`).join("")}
               </select>
 
               <label>Texte ou libellé</label>
-              <textarea id="custom-library-text" placeholder="Ex : Je peux poser une limite sans expliquer toute mon histoire."></textarea>
+              <textarea id="custom-library-text" placeholder="Ex : Je peux poser une limite sans expliquer toute mon histoire.">${escapeHtml(editingEntry?.item.text || "")}</textarea>
 
               <label>Famille associée</label>
               <select id="custom-library-family">
                 <option value="">Non précisée</option>
-                ${libraryItems("families", { ignoreCategoryToggle: true, includeSensitive: true }).map(item => `<option value="${escapeAttr(item.id)}">${escapeHtml(item.label)}</option>`).join("")}
+                ${libraryItems("families", { ignoreCategoryToggle: true, includeSensitive: true }).map(item => `<option value="${escapeAttr(item.id)}" ${editingEntry?.item.family === item.id ? "selected" : ""}>${escapeHtml(item.label)}</option>`).join("")}
               </select>
 
               <label>Mode recommandé</label>
               <select id="custom-library-mode">
-                ${option("doux", "Doux", "doux")}
-                ${option("profond", "Profond", "doux")}
-                ${option("intensif", "Intensif", "doux")}
+                ${option("doux", "Doux", editingEntry?.item.mode || "doux")}
+                ${option("profond", "Profond", editingEntry?.item.mode || "doux")}
+                ${option("intensif", "Intensif", editingEntry?.item.mode || "doux")}
               </select>
 
+              <label>Intensité du langage</label>
+              <select id="custom-library-intensity">
+                ${option("doux", "Doux", editingEntry?.item.intensity || "doux")}
+                ${option("moyen", "Moyen", editingEntry?.item.intensity || "doux")}
+                ${option("direct", "Direct", editingEntry?.item.intensity || "doux")}
+                ${option("très direct", "Très direct", editingEntry?.item.intensity || "doux")}
+              </select>
+
+              <label>Tags, séparés par des virgules</label>
+              <input id="custom-library-tags" value="${escapeAttr((editingEntry?.item.tags || []).filter(tag => tag !== "personnalisé").join(", "))}" placeholder="Ex : limite, parole, ancrage" />
+
               <div class="actions">
-                <button class="primary" data-action="add-custom-library-entry">Ajouter cette entrée</button>
+                <button class="primary" data-action="${editingEntry ? "save-custom-library-edit" : "add-custom-library-entry"}">${editingEntry ? "Enregistrer les modifications" : "Ajouter cette entrée"}</button>
+                ${editingEntry ? `<button class="ghost" data-action="cancel-custom-library-edit">Annuler la modification</button>` : ""}
               </div>
 
-              ${customLibraryItems().length ? `
-                <label>Entrées personnalisées</label>
-                <div class="grid">
-                  ${customLibraryItems().slice(0, 12).map(({ key, item }) => `
-                    <div class="notice mini">
-                      <strong>${escapeHtml(libraryGroupLabel(key))}</strong><br />
-                      ${escapeHtml(item.text || item.label)}
-                      <div class="actions">
-                        <button class="ghost" data-action="remove-custom-library-entry" data-library-key="${escapeAttr(key)}" data-library-id="${escapeAttr(item.id)}">Retirer</button>
-                      </div>
+              <label>Gérer les entrées d’une catégorie</label>
+              <select data-setting="libraryManageKey">
+                ${editableLibraryGroups().map(group => option(group.key, group.label, manageKey)).join("")}
+              </select>
+              <p class="muted mini">Les entrées désactivées restent dans les données locales mais ne sont plus proposées pendant le soin.</p>
+
+              <div class="grid">
+                ${managedItems.slice(0, 16).map(item => `
+                  <div class="notice mini ${item.active ? "" : "dangerBox"}">
+                    <strong>${escapeHtml(item.text || item.label)}</strong><br />
+                    ${escapeHtml(item.custom ? "Entrée personnelle" : "Entrée interne")} · ${escapeHtml(item.mode)} · ${escapeHtml(item.intensity)}
+                    <div class="actions">
+                      <button class="ghost" data-action="toggle-library-entry" data-library-key="${escapeAttr(manageKey)}" data-library-id="${escapeAttr(item.id)}">${item.active ? "Désactiver" : "Réactiver"}</button>
+                      ${item.custom ? `
+                        <button class="ghost" data-action="edit-custom-library-entry" data-library-key="${escapeAttr(manageKey)}" data-library-id="${escapeAttr(item.id)}">Modifier</button>
+                        <button class="ghost" data-action="remove-custom-library-entry" data-library-key="${escapeAttr(manageKey)}" data-library-id="${escapeAttr(item.id)}">Retirer</button>
+                      ` : ""}
                     </div>
-                  `).join("")}
-                </div>
-              ` : `
-                <div class="notice mini">Aucune entrée personnalisée pour l’instant.</div>
-              `}
+                  </div>
+                `).join("")}
+              </div>
+              ${managedItems.length > 16 ? `<p class="muted mini">${managedItems.length - 16} autre(s) entrée(s) non affichée(s). Utilise la recherche pour les retrouver.</p>` : ""}
+
+              <div class="actions">
+                <button class="ghost" data-action="export-library-pack">Exporter les bibliothèques personnalisables</button>
+                <label class="choice">
+                  Importer un pack de contenu
+                  <input type="file" accept="application/json" data-action="import-library-pack" style="display:none">
+                </label>
+              </div>
             </details>
           </div>
 
@@ -2842,6 +2946,144 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </div>
         </div>
       </section>
+    `;
+  }
+
+  function renderComprendre() {
+    return `
+      <div class="card">
+        <h3>Comprendre l’esprit de Feu Clair</h3>
+        <p class="muted">
+          Cette page sert à s’orienter avant ou après une traversée. Elle n’est pas une étape active de soin et ne demande rien d’ouvrir maintenant.
+        </p>
+
+        <div class="notice softBox">
+          <strong>Feu Clair</strong> désigne une colère reconnue, traversée et rendue à sa fonction juste.
+          Elle n’est ni niée, ni projetée, ni retournée contre soi. Elle redevient information, limite, courage, protection ou action claire.
+        </div>
+
+        <div class="understand-grid">
+          <div class="understand-card">
+            <h4>Charge, information, force</h4>
+            <p class="mini">La charge brûle, obsède ou crispe. L’information montre ce qui est touché. La force ramène courage, limite, dignité ou action.</p>
+          </div>
+          <div class="understand-card">
+            <h4>Restitution</h4>
+            <p class="mini">Restituer ne nie pas ce qui a été vécu. Cela rend ce que le corps n’a plus à porter, tout en gardant l’information utile.</p>
+          </div>
+          <div class="understand-card">
+            <h4>Clôturer</h4>
+            <p class="mini">Fermer un soin n’est pas abandonner. C’est respecter le corps. Parfois, la phrase juste est : pas plus aujourd’hui.</p>
+          </div>
+        </div>
+
+        <div class="understand-details">
+          <details>
+            <summary>Ce que l’application aide à faire</summary>
+            <ul>
+              <li>Reconnaître le feu sans s’y perdre.</li>
+              <li>Distinguer charge, information et limite.</li>
+              <li>Identifier les colères visibles, cachées, absorbées ou déguisées.</li>
+              <li>Faire sortir la charge par le corps, la parole, l’écriture ou le geste.</li>
+              <li>Rendre ce qui ne doit plus être porté, récupérer une qualité utile et poser une limite ou une non-action juste.</li>
+              <li>Clôturer proprement au lieu de rester ouvert.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Ce que l’application ne cherche pas à faire</summary>
+            <ul>
+              <li>Forcer des souvenirs ou prouver une histoire.</li>
+              <li>Décider à la place de l’utilisateur ou encourager une action impulsive.</li>
+              <li>Justifier une violence, nourrir la colère ou tout nettoyer en une seule session.</li>
+              <li>Remplacer le discernement intérieur ou le soutien humain si un thème est trop lourd.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Les formes possibles du feu</summary>
+            <p><strong>Colère de limite :</strong> un espace, un corps, un temps, une parole ou un consentement a été franchi.</p>
+            <p><strong>Colère d’injustice :</strong> quelque chose en soi refuse l’inversion, le mensonge ou l’abus.</p>
+            <p><strong>Colère d’impuissance :</strong> on voit ce qui ne va pas, mais l’action semble trop grande ou impossible.</p>
+            <p><strong>Colère ancienne :</strong> une situation présente réveille une mémoire non digérée.</p>
+            <p><strong>Colère absorbée :</strong> une charge semble venir d’un champ familial, collectif, relationnel ou subtil.</p>
+            <p><strong>Colère-masque :</strong> elle se cache derrière fuite, compulsion, jalousie, inertie, contrôle, cynisme ou pardon prématuré.</p>
+            <p><strong>Colère sacrée :</strong> une force claire se lève pour protéger le vivant, sans chercher à humilier ou détruire.</p>
+            <p><strong>Colère froide :</strong> retrait, coupure, mépris, silence ou figement plutôt qu’explosion.</p>
+          </details>
+
+          <details>
+            <summary>Vraie colère, colère-masque, colère déplacée</summary>
+            <p>Une colère peut être juste dans son fond, mais maladroite dans sa forme. Elle peut aussi se tromper de cible.</p>
+            <ul>
+              <li>Qu’est-ce qui est réellement touché ?</li>
+              <li>Est-ce la bonne cible, une ancienne mémoire ou une charge qui ne m’appartient pas ?</li>
+              <li>Une autre émotion est-elle cachée dessous ?</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Pourquoi le corps est une porte d’entrée</summary>
+            <p>
+              Le corps peut répondre avant les mots. Une gorge serrée, une mâchoire tendue, un ventre figé, des mains agitées ou un dos lourd ne prouvent rien à eux seuls.
+              Ce sont des portes d’entrée douces. La carte corporelle ne donne pas un diagnostic : elle aide à commencer là où quelque chose répond.
+            </p>
+          </details>
+
+          <details>
+            <summary>Pourquoi stabiliser avant de creuser</summary>
+            <p>
+              Quand l’intensité est forte, le corps a besoin de revenir au présent avant d’analyser. Stabiliser n’est pas éviter : c’est créer un contenant.
+              Si le feu est trop haut, on revient aux pieds, au souffle, à la pièce, à l’eau, puis on choisit de continuer ou de fermer.
+            </p>
+          </details>
+
+          <details>
+            <summary>Sortir la charge, agir ensuite</summary>
+            <p>
+              Ce qui sort dans le soin n’est pas automatiquement destiné à être dit, envoyé ou fait.
+              Une lettre brute, un cri, une phrase interdite ou une décharge corporelle servent d’abord à libérer la charge.
+            </p>
+            <p>L’action extérieure vient ensuite, si elle reste juste, claire et non destructrice.</p>
+            <div class="notice mini">
+              Parfois, l’action juste est de ne pas répondre, ne pas se justifier, ne pas convaincre, attendre que le feu redescende ou garder un message en quarantaine.
+            </div>
+          </details>
+
+          <details>
+            <summary>Mémoire du Corps</summary>
+            <p>
+              Certaines colères apparaissent comme tension, larmes, tremblement, vide, chaleur, froid, image, sensation ou verrouillage.
+              Une charge peut être libérée sans connaître toute son histoire.
+            </p>
+            <p><strong>Souvenir clair :</strong> quelque chose est situé et reconnaissable.</p>
+            <p><strong>Mémoire corporelle :</strong> le corps réagit sans histoire complète.</p>
+            <p><strong>Image ou sensation symbolique :</strong> une forme ou une impression apparaît, sans conclusion immédiate.</p>
+            <div class="notice mini">L’intensité indique une porte, pas une preuve.</div>
+          </details>
+
+          <details>
+            <summary>Feu d’Autorité et responsabilité</summary>
+            <p>
+              Le Feu d’Autorité sert à poser une limite intérieure forte contre une charge, un lien, une emprise, une inversion ou une signature perçue comme étrangère.
+              Il ne sert jamais à nourrir une violence réelle contre un être vivant présent.
+            </p>
+            <div class="notice mini">
+              Je ne dirige pas ce feu contre un être vivant présent. Je le dirige contre la charge, le lien, l’inversion, l’emprise ou le programme qui ne respecte pas mon axe.
+            </div>
+            <p>Même si une mémoire, une influence, un champ ou une charge agit en moi, je reste gardien de mes actes.</p>
+          </details>
+        </div>
+
+        <div class="notice softBox" style="margin-top:.85rem">
+          Feu Clair ne demande pas de tout ouvrir. Il aide à traverser ce qui est mûr aujourd’hui, rendre ce qui peut être rendu maintenant,
+          garder la force utile, puis revenir à une prochaine marche simple.
+        </div>
+
+        <div class="actions">
+          <button class="ghost" data-tab="boussole">J’ai compris l’esprit de Feu Clair — revenir à la Boussole</button>
+        </div>
+      </div>
     `;
   }
 
@@ -3021,6 +3263,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
       if (action === "import-json") {
         el.addEventListener("change", importJson);
+      } else if (action === "import-library-pack") {
+        el.addEventListener("change", importLibraryPack);
       } else {
         el.addEventListener("click", () => handleAction(el));
       }
@@ -3240,8 +3484,34 @@ Assez pour aujourd’hui si le corps le demande.</p>
       addCustomLibraryEntry();
     }
 
+    if (action === "edit-custom-library-entry") {
+      data.settings.libraryEditKey = el.dataset.libraryKey || "";
+      data.settings.libraryEditId = el.dataset.libraryId || "";
+      saveData();
+      render();
+    }
+
+    if (action === "cancel-custom-library-edit") {
+      data.settings.libraryEditKey = "";
+      data.settings.libraryEditId = "";
+      saveData();
+      render();
+    }
+
+    if (action === "save-custom-library-edit") {
+      saveCustomLibraryEdit();
+    }
+
+    if (action === "toggle-library-entry") {
+      toggleLibraryEntry(el.dataset.libraryKey, el.dataset.libraryId);
+    }
+
     if (action === "remove-custom-library-entry") {
       removeCustomLibraryEntry(el.dataset.libraryKey, el.dataset.libraryId);
+    }
+
+    if (action === "export-library-pack") {
+      exportLibraryPack();
     }
 
     if (action === "start-from-library") {
@@ -3584,10 +3854,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function addCustomLibraryEntry() {
-    const key = document.querySelector("#custom-library-key")?.value || "resonance";
-    const text = (document.querySelector("#custom-library-text")?.value || "").trim();
-    const family = document.querySelector("#custom-library-family")?.value || "";
-    const mode = document.querySelector("#custom-library-mode")?.value || "doux";
+    const { key, text, family, mode, intensity, tags } = readCustomLibraryForm();
 
     if (!text) {
       alert("Ajout impossible : écris d’abord un texte ou un libellé.");
@@ -3607,11 +3874,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
       text,
       family,
       mode,
-      intensity: mode === "intensif" ? "direct" : "doux",
-      tags: ["personnalisé"],
+      intensity,
+      tags,
       active: true,
       custom: true,
-      createdAt: nowISO()
+      createdAt: nowISO(),
+      updatedAt: nowISO()
     }, key);
 
     if (data.library[key].some(item => normalizeLibraryItem(item, key).id === entry.id)) {
@@ -3624,9 +3892,76 @@ Assez pour aujourd’hui si le corps le demande.</p>
     render();
   }
 
+  function readCustomLibraryForm() {
+    const tags = (document.querySelector("#custom-library-tags")?.value || "")
+      .split(",")
+      .map(tag => tag.trim())
+      .filter(Boolean);
+    return {
+      key: document.querySelector("#custom-library-key")?.value || data.settings.libraryEditKey || "resonance",
+      text: (document.querySelector("#custom-library-text")?.value || "").trim(),
+      family: document.querySelector("#custom-library-family")?.value || "",
+      mode: document.querySelector("#custom-library-mode")?.value || "doux",
+      intensity: document.querySelector("#custom-library-intensity")?.value || "doux",
+      tags: [...new Set(["personnalisé", ...tags])]
+    };
+  }
+
+  function saveCustomLibraryEdit() {
+    const editing = editingCustomLibraryEntry();
+    if (!editing) return;
+    const values = readCustomLibraryForm();
+    if (!values.text) {
+      alert("Modification impossible : le texte ou libellé ne peut pas être vide.");
+      return;
+    }
+    const duplicate = managedLibraryItems(editing.key).some(item => (
+      item.id !== editing.item.id && slugify(item.text || item.label) === slugify(values.text)
+    ));
+    if (duplicate) {
+      setNotice("Une autre entrée possède déjà ce texte. La modification n’a pas été enregistrée.", "danger");
+      render();
+      return;
+    }
+    const index = data.library[editing.key].findIndex(item => normalizeLibraryItem(item, editing.key).id === editing.item.id);
+    if (index < 0) return;
+    data.library[editing.key][index] = normalizeLibraryItem({
+      ...data.library[editing.key][index],
+      label: values.text,
+      text: values.text,
+      family: values.family,
+      mode: values.mode,
+      intensity: values.intensity,
+      tags: values.tags,
+      updatedAt: nowISO()
+    }, editing.key);
+    data.settings.libraryEditKey = "";
+    data.settings.libraryEditId = "";
+    setNotice("Entrée personnalisée modifiée.");
+    saveData();
+    render();
+  }
+
+  function toggleLibraryEntry(key, id) {
+    if (!key || !id || !Array.isArray(data.library?.[key])) return;
+    const index = data.library[key].findIndex(item => normalizeLibraryItem(item, key).id === id);
+    if (index < 0) return;
+    const current = normalizeLibraryItem(data.library[key][index], key);
+    data.library[key][index] = { ...data.library[key][index], active: !current.active, updatedAt: nowISO() };
+    setNotice(current.active ? "Entrée désactivée. Elle ne sera plus proposée pendant le soin." : "Entrée réactivée.");
+    saveData();
+    render();
+  }
+
   function removeCustomLibraryEntry(key, id) {
     if (!key || !id || !Array.isArray(data.library?.[key])) return;
+    const item = managedLibraryItems(key).find(entry => entry.id === id);
+    if (!item?.custom) return;
     data.library[key] = data.library[key].filter(item => normalizeLibraryItem(item, key).id !== id);
+    if (data.settings.libraryEditId === id) {
+      data.settings.libraryEditKey = "";
+      data.settings.libraryEditId = "";
+    }
     setNotice("Entrée personnalisée retirée.");
     saveData();
     render();
@@ -3680,6 +4015,72 @@ Assez pour aujourd’hui si le corps le demande.</p>
     a.download = options.anonymized ? `feu-clair-export-anonymise-${date}.json` : `feu-clair-export-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function exportLibraryPack() {
+    const library = Object.fromEntries(editableLibraryGroups().map(group => [
+      group.key,
+      managedLibraryItems(group.key).filter(item => item.custom)
+    ]));
+    const payload = {
+      app: "feu-clair",
+      version: APP_VERSION,
+      exportMode: "pack de bibliothèques",
+      exportedAt: nowISO(),
+      library
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `feu-clair-pack-bibliotheques-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importLibraryPack(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (imported?.app !== "feu-clair" || imported?.exportMode !== "pack de bibliothèques" || typeof imported?.library !== "object") {
+          alert("Import impossible : ce JSON ne ressemble pas à un pack de bibliothèques Feu Clair.");
+          return;
+        }
+        let added = 0;
+        let skipped = 0;
+        editableLibraryGroups().forEach(group => {
+          const entries = Array.isArray(imported.library[group.key]) ? imported.library[group.key] : [];
+          data.library[group.key] ||= [];
+          entries.forEach(raw => {
+            const item = normalizeLibraryItem({ ...raw, custom: true }, group.key);
+            const signature = slugify(item.text || item.label);
+            const exists = managedLibraryItems(group.key).some(existing => (
+              existing.id === item.id || slugify(existing.text || existing.label) === signature
+            ));
+            if (!signature || exists) {
+              skipped += 1;
+              return;
+            }
+            item.id = item.id || uid(`custom_${group.key}`);
+            item.createdAt ||= nowISO();
+            item.updatedAt = nowISO();
+            data.library[group.key].push(item);
+            added += 1;
+          });
+        });
+        setNotice(`${added} entrée${added > 1 ? "s" : ""} importée${added > 1 ? "s" : ""}. ${skipped} doublon${skipped > 1 ? "s" : ""} ignoré${skipped > 1 ? "s" : ""}.`);
+        saveData();
+        render();
+      } catch (error) {
+        alert("Import impossible : pack JSON invalide.");
+      } finally {
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file);
   }
 
   function exportCycleJson(cycleId, options = {}) {
