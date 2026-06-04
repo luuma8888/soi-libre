@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.13.1</title>
+  <title>Feu Clair — v2.14.0</title>
 
   <style>
     :root {
@@ -428,6 +428,36 @@
       font-size: .88rem;
     }
 
+    .body-return-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      background: rgba(31, 24, 19, .52);
+      backdrop-filter: blur(5px);
+    }
+
+    .body-return-card {
+      width: min(100%, 34rem);
+      max-height: calc(100vh - 2rem);
+      overflow: auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .body-return-card h2 {
+      margin-top: 0;
+    }
+
+    .body-return-card ol {
+      padding-left: 1.35rem;
+    }
+
     @media (max-width: 760px) {
       header { padding: .8rem; }
       main { padding: .8rem; }
@@ -444,7 +474,7 @@
         margin: 14mm;
       }
 
-      header, nav, .actions, .toolbar, button, input[type="file"] {
+      header, nav, .actions, .toolbar, button, input[type="file"], .body-return-panel {
         display: none !important;
       }
 
@@ -528,7 +558,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.13.1</h1>
+        <h1>Feu Clair — v2.14.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -544,7 +574,7 @@
 
 <script>
 /*
-  Feu Clair — v2.13.1
+  Feu Clair — v2.14.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -561,8 +591,16 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.13.1";
+  const APP_VERSION = "2.14.0";
   const RESONANCE_WAVE_LIMIT = 10;
+  const CYCLE_STATUSES = [
+    "ouvert",
+    "en pause",
+    "fermé pour aujourd’hui",
+    "à intégrer",
+    "clôturé",
+    "à revisiter doucement"
+  ];
 
   const STEPS = [
     "Préparer",
@@ -861,6 +899,8 @@
   };
 
   let data = normalizeData(loadData());
+  let bodyReturnOpen = false;
+  let bodyReturnContext = null;
 
   const tabs = [
     { id: "boussole", label: "Boussole" },
@@ -993,6 +1033,11 @@
     normalized.settings = mergeDefaults(DEFAULT_DATA.settings, normalized.settings || {});
     normalized.settings.advancedContent = mergeDefaults(DEFAULT_DATA.settings.advancedContent, normalized.settings.advancedContent || {});
     normalized.cycles ||= [];
+    normalized.cycles = normalized.cycles.map(cycle => ({
+      ...cycle,
+      status: CYCLE_STATUSES.includes(cycle?.status) ? cycle.status : "ouvert",
+      answers: cycle?.answers && typeof cycle.answers === "object" ? cycle.answers : {}
+    }));
     normalized.microSessions ||= [];
     normalized.bodyScans ||= [];
     normalized.bodyMemorySessions ||= [];
@@ -1200,6 +1245,16 @@
     }).filter(Boolean)).slice(0, 12);
   }
 
+  function findLibraryItemById(id) {
+    if (!id) return null;
+    const groups = ["families", "resonance", "boldWords", "egregores", "masks", "zones", "exits", "qualities", "permissionPhrases", "positioningPhrases", "actionOptions"];
+    for (const key of groups) {
+      const item = libraryItems(key, { includeSensitive: true, ignoreCategoryToggle: true }).find(entry => entry.id === id);
+      if (item) return item;
+    }
+    return null;
+  }
+
   function editableLibraryGroups() {
     return [
       { key: "resonance", label: "Phrases de résonance" },
@@ -1268,6 +1323,91 @@
 
   function currentRegulation(cycle) {
     return cycle?.regulationMode || getStepAnswers(1).regulationMode || getStepAnswers(0).regulationMode || "normal";
+  }
+
+  function cycleHasEntrySas(cycle) {
+    return Boolean(cycle?.entry?.requiresSas);
+  }
+
+  function entrySasAlertFlags(answers = {}) {
+    const alertFlags = ["Confusion", "Envie de fuir", "Vide inquiétant", "Activation forte"];
+    return (answers.entryFlags || []).filter(flag => alertFlags.includes(flag));
+  }
+
+  function entrySasCanContinue(cycle) {
+    if (!cycleHasEntrySas(cycle)) return true;
+    const answers = cycle.answers?.[1] || {};
+    const intensity = answers.intensity === "" || answers.intensity == null ? null : Number(answers.intensity);
+    return intensity !== null
+      && intensity <= 6
+      && answers.entryStability === "stable"
+      && answers.canReturnToBody === "yes"
+      && currentRegulation(cycle) !== "tooActivated"
+      && entrySasAlertFlags(answers).length === 0;
+  }
+
+  function entrySasSourceLabel(cycle) {
+    const labels = {
+      resonance_entry: "une résonance",
+      micro_session: "un micro-soin",
+      body_scan: "une zone corporelle",
+      body_memory: "la Mémoire du Corps",
+      authority_session: "le Feu d’Autorité"
+    };
+    return labels[cycle?.entry?.source] || "une porte d’entrée";
+  }
+
+  function renderEntrySas(cycle, answers) {
+    if (!cycleHasEntrySas(cycle)) return "";
+    const canContinue = entrySasCanContinue(cycle);
+    const alerts = entrySasAlertFlags(answers);
+    return `
+      <div class="notice ${canContinue ? "softBox" : ""}">
+        <strong>Mini-sas depuis ${escapeHtml(entrySasSourceLabel(cycle))}</strong><br />
+        Cette porte est une piste possible, pas une preuve. Avant d’aller plus loin, vérifions si ton feu est traversable maintenant.
+      </div>
+
+      <label>Intensité actuelle</label>
+      <select data-field="intensity">
+        <option value="" ${answers.intensity === "" || answers.intensity == null ? "selected" : ""}>Je ne sais pas encore</option>
+        ${Array.from({ length: 11 }, (_, i) => option(String(i), `${i}/10`, String(answers.intensity ?? ""))).join("")}
+      </select>
+
+      <label>Stabilité actuelle</label>
+      ${radios("entryStability", [
+        "stable|Je me sens assez stable pour identifier doucement",
+        "uncertain|Je ne sais pas encore",
+        "unstable|Je ne me sens pas assez stable"
+      ], answers.entryStability || "")}
+
+      <label>Capacité à revenir au corps</label>
+      ${radios("canReturnToBody", [
+        "yes|Je peux revenir au corps maintenant",
+        "uncertain|Je ne sais pas",
+        "no|Je n’arrive pas à revenir au corps"
+      ], answers.canReturnToBody || "")}
+
+      <label>Points d’attention éventuels</label>
+      ${checks("entryFlags", [
+        "Confusion",
+        "Envie de fuir",
+        "Vide inquiétant",
+        "Activation forte"
+      ], answers.entryFlags)}
+
+      ${canContinue ? `
+        <div class="notice softBox">
+          Le sas est suffisamment stable pour aller vers Identifier. Tu peux aussi rester ici ou fermer proprement.
+        </div>
+      ` : `
+        <div class="notice dangerBox">
+          ${alerts.length
+            ? `Point d’attention : ${escapeHtml(alerts.join(", "))}.`
+            : "Reste à Stabiliser tant que l’intensité, la stabilité ou le retour au corps ne sont pas assez clairs."}
+          Tu peux utiliser “Retour au corps” ou fermer proprement pour aujourd’hui.
+        </div>
+      `}
+    `;
   }
 
   function depthAllows(itemMode, depth) {
@@ -1522,6 +1662,17 @@
     render();
   }
 
+  function advanceStep() {
+    const c = activeCycle();
+    if (!c) return;
+    if (c.currentStep === 1 && cycleHasEntrySas(c) && !entrySasCanContinue(c)) {
+      setNotice("Le sas demande encore un peu de stabilisation. Vérifie l’intensité, le retour au corps et les points d’attention avant de continuer.", "danger");
+      render();
+      return;
+    }
+    setStep(c.currentStep + 1);
+  }
+
   function getStepAnswers(stepIndex = activeCycle()?.currentStep ?? 0) {
     const c = activeCycle();
     if (!c) return {};
@@ -1555,8 +1706,32 @@
     if (data.activeTab === "outils") view.innerHTML = renderOutils();
     if (data.activeTab === "carnet") view.innerHTML = renderCarnet();
     if (data.activeTab === "sanctuaire") view.innerHTML = renderSanctuaire();
+    if (bodyReturnOpen) view.insertAdjacentHTML("beforeend", renderBodyReturnPanel());
 
     bindDynamicEvents();
+  }
+
+  function renderBodyReturnPanel() {
+    return `
+      <div class="body-return-panel" role="dialog" aria-modal="true" aria-labelledby="body-return-title">
+        <div class="body-return-card">
+          <h2 id="body-return-title">Retour au corps</h2>
+          <p class="muted">Rien à comprendre maintenant. On revient ici.</p>
+          <ol>
+            <li>Ouvre les yeux.</li>
+            <li>Nomme 3 objets visibles.</li>
+            <li>Sens tes pieds au sol.</li>
+            <li>Pose une main sur le cœur ou le ventre.</li>
+            <li>Respire lentement.</li>
+            <li>Dis intérieurement : “pas plus que ce que je peux porter maintenant”.</li>
+          </ol>
+          <div class="actions">
+            <button class="primary" data-action="body-return-resume">Je reviens au soin</button>
+            <button class="ghost" data-action="body-return-close-today">Je ferme pour aujourd’hui</button>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function renderTabs(options = {}) {
@@ -1660,6 +1835,7 @@
 
     return `
       <section class="step-shell">
+        ${renderLastNotice()}
         <div class="toolbar">
           <div>
             <strong>${escapeHtml(visibleCycleTitle(c))}</strong><br />
@@ -1736,17 +1912,19 @@
         <h2>Stabiliser le feu</h2>
         <p class="muted">Avant de creuser, on vérifie si le corps peut traverser maintenant.</p>
 
-        <label>Intensité actuelle : <strong>${intensity}/10</strong></label>
-        <input type="range" min="0" max="10" data-field="intensity" value="${intensity}" />
+        ${cycleHasEntrySas(cycle) ? renderEntrySas(cycle, a) : `
+          <label>Intensité actuelle : <strong>${intensity}/10</strong></label>
+          <input type="range" min="0" max="10" data-field="intensity" value="${intensity}" />
 
-        ${intensity >= 8 ? `
-          <div class="notice dangerBox">
-            Intensité haute. Corps d’abord, analyse ensuite. Ne prends aucune décision, n’envoie aucun message, ne cherche pas encore les grandes causes.
-          </div>
-        ` : `
-          <div class="notice">
-            Intensité traversable. Tu peux continuer doucement.
-          </div>
+          ${intensity >= 8 ? `
+            <div class="notice dangerBox">
+              Intensité haute. Corps d’abord, analyse ensuite. Ne prends aucune décision, n’envoie aucun message, ne cherche pas encore les grandes causes.
+            </div>
+          ` : `
+            <div class="notice">
+              Intensité traversable. Tu peux continuer doucement.
+            </div>
+          `}
         `}
 
         <label>Mini-ancrage effectué ?</label>
@@ -1998,6 +2176,7 @@
   }
 
   function renderMicroSoin() {
+    const preset = data.toolDraft?.micro || {};
     return `
       <section class="grid">
         ${renderLastNotice()}
@@ -2007,24 +2186,24 @@
           <p class="muted">Pour une traversée rapide : un mot, une zone, un souffle, une restitution, une phrase.</p>
 
           <label>Un mot</label>
-          <input id="micro-word" placeholder="Ex : injustice, honte, silence, envahissement..." />
+          <input id="micro-word" value="${escapeAttr(preset.word || "")}" placeholder="Ex : injustice, honte, silence, envahissement..." />
 
           <label>Une zone du corps</label>
           <select id="micro-body">
-            ${libraryLabels("zones").map(v => `<option>${escapeHtml(v)}</option>`).join("")}
+            ${libraryLabels("zones").map(v => `<option ${preset.body === v ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
           </select>
 
           <label>Une restitution</label>
           <select id="micro-element">
-            ${libraryLabels("elements").map(v => `<option>${escapeHtml(v)}</option>`).join("")}
+            ${libraryLabels("elements").map(v => `<option ${preset.element === v ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
           </select>
 
           <label>Phrase de positionnement</label>
-          <input id="micro-phrase" placeholder="Ex : Je rends la charge, je garde ma force." />
+          <input id="micro-phrase" value="${escapeAttr(preset.phrase || "")}" placeholder="Ex : Je rends la charge, je garde ma force." />
 
           <label>Clôture rapide</label>
           <select id="micro-closing">
-            ${libraryItems("closingPhrases").map(item => `<option>${escapeHtml(item.text)}</option>`).join("")}
+            ${libraryItems("closingPhrases").map(item => `<option ${preset.closing === item.text ? "selected" : ""}>${escapeHtml(item.text)}</option>`).join("")}
           </select>
 
           <div class="actions">
@@ -2137,14 +2316,16 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <label>État actuel</label>
           ${checksStatic("body-scan-flags", [
             "Je me sens assez stable pour identifier doucement",
+            "Je peux revenir au corps maintenant",
             "Confusion",
             "Envie de fuir",
             "Vide inquiétant",
             "Trop activé",
             "Je préfère fermer proprement"
-          ])}
+          ], preset.flags)}
 
           <div class="actions">
+            <button class="ghost" data-action="body-return">Retour au corps</button>
             <button class="ghost" data-action="body-scan-close">Fermer proprement</button>
             <button class="primary" data-action="body-scan-to-cycle">Créer un Cycle de Feu depuis cette zone</button>
             ${data.cycles.length ? `
@@ -2159,6 +2340,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function renderMemoryTool() {
+    const preset = data.toolDraft?.memory || {};
     return `
         <div class="card">
           <p class="muted">
@@ -2167,46 +2349,46 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
           <label>Niveau d’approche</label>
           <select id="memory-level">
-            <option value="effleurer">Effleurer — noter sans creuser</option>
-            <option value="toucher">Toucher — rester proche du corps</option>
-            <option value="traverser">Traverser — seulement si très stable</option>
+            <option value="effleurer" ${preset.level === "effleurer" || !preset.level ? "selected" : ""}>Effleurer — noter sans creuser</option>
+            <option value="toucher" ${preset.level === "toucher" ? "selected" : ""}>Toucher — rester proche du corps</option>
+            <option value="traverser" ${preset.level === "traverser" ? "selected" : ""}>Traverser — seulement si très stable</option>
           </select>
 
           <label>Forme perçue</label>
           <select id="memory-kind">
-            <option value="mémoire corporelle">Mémoire corporelle</option>
-            <option value="souvenir clair">Souvenir clair</option>
-            <option value="image symbolique">Image / sensation symbolique</option>
-            <option value="perception subtile">Perception subtile à discerner</option>
-            <option value="je ne sais pas">Je ne sais pas</option>
+            <option value="mémoire corporelle" ${preset.kind === "mémoire corporelle" || !preset.kind ? "selected" : ""}>Mémoire corporelle</option>
+            <option value="souvenir clair" ${preset.kind === "souvenir clair" ? "selected" : ""}>Souvenir clair</option>
+            <option value="image symbolique" ${preset.kind === "image symbolique" ? "selected" : ""}>Image / sensation symbolique</option>
+            <option value="perception subtile" ${preset.kind === "perception subtile" ? "selected" : ""}>Perception subtile à discerner</option>
+            <option value="je ne sais pas" ${preset.kind === "je ne sais pas" ? "selected" : ""}>Je ne sais pas</option>
           </select>
 
           <label>Zone ou signal corporel</label>
           <select id="memory-zone">
-            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}">${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
+            ${libraryItems("zones").map(zone => `<option value="${escapeAttr(zone.label)}" ${preset.zone === zone.label ? "selected" : ""}>${escapeHtml(zone.label)} — ${escapeHtml(zone.cue || "")}</option>`).join("")}
           </select>
 
           <label>Intensité actuelle</label>
           <select id="memory-intensity">
-            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+            ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${String(preset.intensity ?? 0) === String(i) ? "selected" : ""}>${i}/10</option>`).join("")}
           </select>
 
           <label>Note courte, sans interprétation forcée</label>
-          <textarea id="memory-note" placeholder="Ex : image vague, froid dans le dos, sensation ancienne, rien de certain..."></textarea>
+          <textarea id="memory-note" placeholder="Ex : image vague, froid dans le dos, sensation ancienne, rien de certain...">${escapeHtml(preset.note || "")}</textarea>
 
           <label>Ce qui peut être rendu maintenant</label>
-          <textarea id="memory-release" placeholder="Ex : honte, peur, sidération, charge étrangère, lien, rien de clair encore..."></textarea>
+          <textarea id="memory-release" placeholder="Ex : honte, peur, sidération, charge étrangère, lien, rien de clair encore...">${escapeHtml(preset.release || "")}</textarea>
 
           <label>Qualité ou part qui revient</label>
-          ${checksStatic("memory-qualities", libraryLabels("qualities").slice(0, 10))}
+          ${checksStatic("memory-qualities", libraryLabels("qualities").slice(0, 10), preset.qualities)}
 
           <label>État après ce sas</label>
           <select id="memory-after-state">
-            <option value="à intégrer doucement">À intégrer doucement</option>
-            <option value="plus clair">Plus clair</option>
-            <option value="plus fatigué">Plus fatigué</option>
-            <option value="encore chargé">Encore chargé</option>
-            <option value="à revisiter doucement">À revisiter doucement</option>
+            <option value="à intégrer doucement" ${preset.afterState === "à intégrer doucement" || !preset.afterState ? "selected" : ""}>À intégrer doucement</option>
+            <option value="plus clair" ${preset.afterState === "plus clair" ? "selected" : ""}>Plus clair</option>
+            <option value="plus fatigué" ${preset.afterState === "plus fatigué" ? "selected" : ""}>Plus fatigué</option>
+            <option value="encore chargé" ${preset.afterState === "encore chargé" ? "selected" : ""}>Encore chargé</option>
+            <option value="à revisiter doucement" ${preset.afterState === "à revisiter doucement" ? "selected" : ""}>À revisiter doucement</option>
           </select>
 
           <label>Garde-fou de présence</label>
@@ -2215,13 +2397,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
             "Je peux fermer maintenant",
             "Je ne cherche pas une preuve",
             "Je reste gardien de mes actes"
-          ])}
+          ], preset.guards)}
 
           <div class="notice mini">
             Si l’intensité monte, fermeture maintenant. Si un Cycle est créé, il commencera par Stabiliser.
           </div>
 
           <div class="actions">
+            <button class="ghost" data-action="body-return">Retour au corps</button>
             <button class="ghost" data-action="memory-close">Fermer proprement</button>
             <button class="danger" data-action="memory-strong-close">Trop fort — je ferme maintenant</button>
             <button class="primary" data-action="memory-to-cycle">Créer un Cycle depuis ce sas</button>
@@ -2231,6 +2414,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function renderAuthorityTool() {
+    const preset = data.toolDraft?.authority || {};
     return `
         <div class="card">
           ${data.settings.archetypeMode === "neutre" ? `
@@ -2246,19 +2430,19 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
             <label>Ce que je vise symboliquement</label>
             <select id="authority-target-type">
-              <option value="charge">Une charge</option>
-              <option value="lien">Un lien</option>
-              <option value="emprise perçue">Une emprise perçue</option>
-              <option value="inversion">Une inversion</option>
-              <option value="présence perçue">Une présence perçue, sans verdict</option>
+              <option value="charge" ${preset.targetType === "charge" || !preset.targetType ? "selected" : ""}>Une charge</option>
+              <option value="lien" ${preset.targetType === "lien" ? "selected" : ""}>Un lien</option>
+              <option value="emprise perçue" ${preset.targetType === "emprise perçue" ? "selected" : ""}>Une emprise perçue</option>
+              <option value="inversion" ${preset.targetType === "inversion" ? "selected" : ""}>Une inversion</option>
+              <option value="présence perçue" ${preset.targetType === "présence perçue" ? "selected" : ""}>Une présence perçue, sans verdict</option>
             </select>
 
             <label>Formulation courte</label>
-            <textarea id="authority-note" placeholder="Ex : je rends ce qui n’est pas à moi ; je coupe l’emprise, pas un être ; je récupère mon corps..."></textarea>
+            <textarea id="authority-note" placeholder="Ex : je rends ce qui n’est pas à moi ; je coupe l’emprise, pas un être ; je récupère mon corps...">${escapeHtml(preset.note || "")}</textarea>
 
             <label>Intensité actuelle</label>
             <select id="authority-intensity">
-              ${Array.from({ length: 11 }, (_, i) => `<option value="${i}">${i}/10</option>`).join("")}
+              ${Array.from({ length: 11 }, (_, i) => `<option value="${i}" ${String(preset.intensity ?? 0) === String(i) ? "selected" : ""}>${i}/10</option>`).join("")}
             </select>
 
             <label>Garde-fous avant d’ouvrir</label>
@@ -2267,16 +2451,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
               "Je reste gardien de mes actes",
               "Je peux fermer maintenant",
               "Je garde une part de moi reliée au corps"
-            ])}
+            ], preset.guards)}
 
             <label>Qualité à récupérer</label>
-            ${checksStatic("authority-qualities", libraryLabels("qualities").slice(0, 10))}
+            ${checksStatic("authority-qualities", libraryLabels("qualities").slice(0, 10), preset.qualities)}
 
             <div class="notice mini">
               Phrase de repère : “Je ne détruis pas depuis la haine. Je tranche depuis l’autorité de mon être.”
             </div>
 
             <div class="actions">
+              <button class="ghost" data-action="body-return">Retour au corps</button>
               <button class="ghost" data-action="authority-close">Fermer proprement</button>
               <button class="primary" data-action="authority-to-cycle">Créer un Cycle depuis ce sas</button>
             </div>
@@ -2431,7 +2616,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
                     <strong>${escapeHtml(result.type)}</strong><br />
                     ${escapeHtml(result.text)}
                     <div class="actions">
-                      <button class="ghost" data-action="start-from-library" data-library-text="${escapeAttr(result.text)}" data-library-type="${escapeAttr(result.type)}">Commencer depuis cette résonance</button>
+                      <button class="ghost" data-action="start-from-library" data-library-id="${escapeAttr(result.item.id)}" data-library-text="${escapeAttr(result.text)}" data-library-type="${escapeAttr(result.type)}">Commencer depuis cette résonance</button>
                     </div>
                   </div>
                 `).join("")}
@@ -2668,6 +2853,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
       });
     });
 
+    document.querySelectorAll("[id^='micro-'], [id^='body-scan-'], [id^='memory-'], [id^='authority-'], [data-static-check-group]").forEach(el => {
+      if (el.dataset.boundToolDraft === "1") return;
+      el.dataset.boundToolDraft = "1";
+      const eventName = el.tagName === "SELECT" || el.type === "checkbox" ? "change" : "input";
+      el.addEventListener(eventName, saveActiveToolDraft);
+    });
+
     document.querySelectorAll("[data-setting]").forEach(el => {
       if (el.dataset.boundSetting === "1") return;
       el.dataset.boundSetting = "1";
@@ -2736,6 +2928,15 @@ Assez pour aujourd’hui si le corps le demande.</p>
     });
   }
 
+  function saveActiveToolDraft() {
+    data.toolDraft ||= {};
+    if (data.activeTab === "micro") data.toolDraft.micro = readMicroDraft();
+    if (data.activeTool === "body-scan") data.toolDraft.bodyScan = readBodyScan();
+    if (data.activeTool === "memory") data.toolDraft.memory = readBodyMemory();
+    if (data.activeTool === "authority") data.toolDraft.authority = readAuthoritySession();
+    saveData();
+  }
+
   function handleAction(el) {
     const action = el.dataset.action;
 
@@ -2774,7 +2975,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "prev-step") setStep((activeCycle()?.currentStep || 0) - 1);
 
-    if (action === "next-step") setStep((activeCycle()?.currentStep || 0) + 1);
+    if (action === "next-step") advanceStep();
 
     if (action === "save-and-close") {
       updateCycle({ status: "en pause" });
@@ -2818,7 +3019,34 @@ Assez pour aujourd’hui si le corps le demande.</p>
     }
 
     if (action === "body-return") {
-      alert("Retour au corps : pieds au sol, regarde autour de toi, nomme 3 objets visibles, respire lentement, bois de l’eau si possible.");
+      bodyReturnContext = data.activeTab;
+      bodyReturnOpen = true;
+      render();
+    }
+
+    if (action === "body-return-resume") {
+      bodyReturnOpen = false;
+      bodyReturnContext = null;
+      render();
+    }
+
+    if (action === "body-return-close-today") {
+      const c = activeCycle();
+      bodyReturnOpen = false;
+      if (c && bodyReturnContext === "soin") {
+        const tooActivated = currentRegulation(c) === "tooActivated" || c.currentStep >= 3;
+        updateCycle({ status: tooActivated ? "à revisiter doucement" : "fermé pour aujourd’hui" });
+        setNotice(
+          tooActivated
+            ? "Cycle fermé et à revisiter doucement. Pas plus aujourd’hui : le corps peut intégrer."
+            : "Cycle fermé proprement pour aujourd’hui. Tu pourras le reprendre sans que cela soit un échec.",
+          tooActivated ? "danger" : "soft"
+        );
+      } else {
+        setNotice("Retour au corps terminé. L’outil reste en brouillon local et peut être repris plus tard.", "soft");
+      }
+      bodyReturnContext = null;
+      setTab("boussole");
     }
 
     if (action === "archive-cycle") {
@@ -2834,6 +3062,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "open-cycle") {
       data.activeCycleId = el.dataset.id;
+      const c = activeCycle();
+      if (c?.status === "à revisiter doucement") c.currentStep = 1;
       data.activeTab = "soin";
       saveData();
       render();
@@ -2889,26 +3119,49 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (action === "start-from-library") {
       const text = el.dataset.libraryText || "";
       const type = el.dataset.libraryType || "Résonance";
+      const item = findLibraryItemById(el.dataset.libraryId) || normalizeLibraryItem({ text }, "resonance");
       const cycle = {
         id: uid("cycle"),
         title: `${type} : ${text.slice(0, 48)}`,
         status: "ouvert",
-        currentStep: 2,
+        currentStep: 1,
         createdAt: nowISO(),
         updatedAt: nowISO(),
+        entry: {
+          source: "resonance_entry",
+          requiresSas: true,
+          libraryId: item.id,
+          text,
+          family: item.family || "",
+          intensity: item.intensity || "",
+          tags: item.tags || [],
+          zones: item.zones || [],
+          element: item.element || ""
+        },
         answers: {
           0: {
             intention: "Explorer cette résonance comme une porte, sans en faire une preuve.",
             depth: data.settings.depth,
             regulationMode: "normal"
           },
+          1: {
+            intensity: "",
+            regulationMode: "normal",
+            entryStability: "",
+            canReturnToBody: "",
+            entryFlags: []
+          },
           2: {
             trigger: text,
             forWhat: "Comprendre ce que cette phrase ou ce mot cherche à protéger.",
-            families: []
+            families: item.family ? [item.family] : []
           },
           3: {
-            resonancePhrases: [text]
+            resonancePhrases: [text],
+            bodySignals: item.zones || []
+          },
+          7: {
+            element: item.element || ""
           }
         }
       };
@@ -2916,7 +3169,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.activeCycleId = cycle.id;
       data.activeTab = "soin";
       data.lastNotice = {
-        text: "Cycle créé depuis une résonance. Cette phrase est une porte d’exploration, pas une preuve.",
+        text: "Cycle créé depuis une résonance. Cette phrase est une porte, pas une preuve : le soin commence par vérifier ton état actuel.",
         tone: "soft",
         createdAt: nowISO()
       };
@@ -3114,11 +3367,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function saveMicro(createAsCycle) {
-    const word = document.querySelector("#micro-word")?.value || "";
-    const body = document.querySelector("#micro-body")?.value || "";
-    const element = document.querySelector("#micro-element")?.value || "";
-    const phrase = document.querySelector("#micro-phrase")?.value || "";
-    const closing = document.querySelector("#micro-closing")?.value || defaultClosingPhrase();
+    const { word, body, element, phrase, closing } = readMicroDraft();
 
     const micro = {
       id: uid("micro"),
@@ -3137,14 +3386,28 @@ Assez pour aujourd’hui si le corps le demande.</p>
         id: uid("cycle"),
         title: word ? `Micro-feu : ${word}` : "Cycle depuis micro-soin",
         status: "ouvert",
-        currentStep: 8,
+        currentStep: 1,
         createdAt: nowISO(),
         updatedAt: nowISO(),
+        entry: {
+          source: "micro_session",
+          requiresSas: true,
+          text: word,
+          zones: body ? [body] : [],
+          element
+        },
         answers: {
           0: {
             intention: "Transformer ce micro-soin en Cycle de Feu sans rouvrir trop grand.",
             depth: "doux",
             regulationMode: "normal"
+          },
+          1: {
+            intensity: "",
+            regulationMode: "normal",
+            entryStability: "",
+            canReturnToBody: "",
+            entryFlags: []
           },
           2: {
             trigger: word,
@@ -3171,10 +3434,25 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.cycles.unshift(cycle);
       data.activeCycleId = cycle.id;
       data.activeTab = "soin";
+      data.lastNotice = {
+        text: "Cycle créé depuis le micro-soin. Avant de reprendre les éléments déjà notés, vérifions si ton feu est traversable maintenant.",
+        tone: "soft",
+        createdAt: nowISO()
+      };
     }
 
     saveData();
     render();
+  }
+
+  function readMicroDraft() {
+    return {
+      word: document.querySelector("#micro-word")?.value || "",
+      body: document.querySelector("#micro-body")?.value || "",
+      element: document.querySelector("#micro-element")?.value || "",
+      phrase: document.querySelector("#micro-phrase")?.value || "",
+      closing: document.querySelector("#micro-closing")?.value || defaultClosingPhrase()
+    };
   }
 
   function addCustomLibraryEntry() {
@@ -3342,7 +3620,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const imported = cloneData(cycle || {});
     imported.id = uid("cycle");
     imported.title = imported.title || "Cycle importé";
-    imported.status = imported.status || "ouvert";
+    imported.status = CYCLE_STATUSES.includes(imported.status) ? imported.status : "ouvert";
     imported.currentStep = Number.isFinite(imported.currentStep) ? Math.max(0, Math.min(STEPS.length - 1, imported.currentStep)) : 0;
     imported.createdAt = imported.createdAt || nowISO();
     imported.updatedAt = nowISO();
@@ -3370,12 +3648,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
-  function checksStatic(name, values) {
+  function checksStatic(name, values, selected = []) {
+    const current = Array.isArray(selected) ? selected : [];
     return `
       <div class="pill-list" data-static-check-group="${escapeAttr(name)}">
         ${values.map(v => `
           <label class="choice">
-            <input type="checkbox" value="${escapeAttr(v)}">
+            <input type="checkbox" value="${escapeAttr(v)}" ${current.includes(v) ? "checked" : ""}>
             ${escapeHtml(v)}
           </label>
         `).join("")}
@@ -3458,6 +3737,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
       currentStep: 1,
       createdAt: nowISO(),
       updatedAt: nowISO(),
+      entry: {
+        source: "body_memory",
+        requiresSas: true,
+        zones: memory.zone ? [memory.zone] : [],
+        intensity: memory.intensity,
+        tags: [memory.kind, memory.level].filter(Boolean)
+      },
       answers: {
         0: {
           intention: "Explorer une perception corporelle sans forcer une mémoire ni conclure à une preuve.",
@@ -3467,7 +3753,10 @@ Assez pour aujourd’hui si le corps le demande.</p>
         1: {
           intensity: memory.intensity,
           regulationMode: memory.intensity >= 7 ? "tooActivated" : "normal",
-          grounding: memory.guards
+          grounding: memory.guards,
+          entryStability: "",
+          canReturnToBody: "",
+          entryFlags: memory.intensity >= 7 ? ["Activation forte"] : []
         },
         2: {
           trigger: memory.zone,
@@ -3519,6 +3808,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
       currentStep: 1,
       createdAt: nowISO(),
       updatedAt: nowISO(),
+      entry: {
+        source: "authority_session",
+        requiresSas: true,
+        intensity: session.intensity,
+        tags: [session.targetType].filter(Boolean)
+      },
       answers: {
         0: {
           intention: "Diriger le feu symboliquement contre une charge, jamais contre un être vivant présent.",
@@ -3528,7 +3823,10 @@ Assez pour aujourd’hui si le corps le demande.</p>
         1: {
           intensity: session.intensity,
           regulationMode: needsStabilizing ? "tooActivated" : "normal",
-          grounding: session.guards
+          grounding: session.guards,
+          entryStability: "",
+          canReturnToBody: session.guards.includes("Je garde une part de moi reliée au corps") ? "yes" : "",
+          entryFlags: needsStabilizing ? ["Activation forte"] : []
         },
         2: {
           trigger: `Sas Feu d’Autorité : ${session.targetType}`,
@@ -3565,7 +3863,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (scan.intensity === null) return true;
     if (scan.intensity >= 7) return true;
     if (scan.flags.some(flag => alertFlags.includes(flag))) return true;
-    return !scan.flags.includes("Je me sens assez stable pour identifier doucement");
+    return !scan.flags.includes("Je me sens assez stable pour identifier doucement")
+      || !scan.flags.includes("Je peux revenir au corps maintenant");
   }
 
   function createCycleFromBodyScan(scan) {
@@ -3577,6 +3876,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
       currentStep: needsStabilizing ? 1 : 2,
       createdAt: nowISO(),
       updatedAt: nowISO(),
+      entry: {
+        source: "body_scan",
+        requiresSas: needsStabilizing,
+        zones: scan.zone ? [scan.zone] : [],
+        intensity: scan.intensity,
+        tags: [scan.family].filter(Boolean)
+      },
       answers: {
         0: {
           intention: "Explorer une zone du corps sans forcer l’histoire.",
@@ -3585,7 +3891,11 @@ Assez pour aujourd’hui si le corps le demande.</p>
         },
         1: {
           intensity: scan.intensity ?? "",
-          regulationMode: needsStabilizing ? "tooActivated" : "normal"
+          regulationMode: needsStabilizing ? "tooActivated" : "normal",
+          entryStability: scan.flags.includes("Je me sens assez stable pour identifier doucement") ? "stable" : "",
+          canReturnToBody: scan.flags.includes("Je peux revenir au corps maintenant") ? "yes" : "",
+          entryFlags: scan.flags.filter(flag => ["Confusion", "Envie de fuir", "Vide inquiétant", "Trop activé"].includes(flag))
+            .map(flag => flag === "Trop activé" ? "Activation forte" : flag)
         },
         2: {
           trigger: scan.zone,
