@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.1.0</title>
+  <title>Feu Clair — v3.3.0</title>
 
   <style>
     :root {
@@ -601,6 +601,26 @@
       padding-left: 1.35rem;
     }
 
+    .companion-view {
+      max-width: 48rem;
+      margin: 0 auto;
+    }
+
+    .companion-step {
+      display: grid;
+      gap: .75rem;
+    }
+
+    .companion-step ol {
+      margin: 0;
+      padding-left: 1.35rem;
+    }
+
+    .companion-reminder {
+      border-left-color: var(--good);
+      background: color-mix(in srgb, var(--good) 14%, var(--surface));
+    }
+
     @media (max-width: 760px) {
       header { padding: .8rem; }
       main { padding: .8rem; }
@@ -715,7 +735,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.1.0</h1>
+        <h1>Feu Clair — v3.3.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -731,21 +751,21 @@
 
 <script>
 /*
-  Feu Clair — v3.1.0
+  Feu Clair — v3.3.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
 
   Socle V3 :
   - extensions séparées, optionnelles et désactivées par défaut
-  - données V3 versionnées et compatibles avec les exports V2
+  - données d'extensions structurées pour évoluer progressivement
   - aucun changement du parcours principal tant qu'une extension est inactive
 */
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.1.0";
+  const APP_VERSION = "3.3.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -776,6 +796,7 @@
       depth: "doux",
       oneStepMode: true,
       languageMode: "poétique sobre",
+      languageProfileId: "poetique-sobre",
       archetypeMode: "Terre / Soleil",
       privacy: {
         maskSensitiveTitles: false,
@@ -809,7 +830,7 @@
     bodyMemorySessions: [],
     authoritySessions: [],
     extensionsV3: {
-      schemaVersion: 1,
+      schemaVersion: 3,
       enabled: {
         seals: false,
         languageProfiles: false,
@@ -823,6 +844,7 @@
       },
       seals: [],
       languageProfiles: [],
+      languageProfilePreviewId: "poetique-sobre",
       companion: {
         displayLockEnabled: false
       },
@@ -1080,6 +1102,10 @@
   let data = normalizeData(loadData());
   let bodyReturnOpen = false;
   let bodyReturnContext = null;
+  let companionViewOpen = false;
+  let companionReturnLocked = false;
+  const openDetailsState = new Map();
+  let renderedTab = data.activeTab;
 
   const tabs = [
     { id: "boussole", label: "Boussole" },
@@ -1211,6 +1237,19 @@
     normalized.version = APP_VERSION;
     normalized.settings = mergeDefaults(DEFAULT_DATA.settings, normalized.settings || {});
     normalized.settings.advancedContent = mergeDefaults(DEFAULT_DATA.settings.advancedContent, normalized.settings.advancedContent || {});
+    const legacyLanguageProfiles = {
+      "sobre": "sobre",
+      "poétique sobre": "poetique-sobre",
+      "direct": "direct",
+      "spirituel": "spirituel-prudent",
+      "galactique / dragon / Mikaël / Source": "spirituel-prudent"
+    };
+    if (!input?.settings?.languageProfileId && legacyLanguageProfiles[normalized.settings.languageMode]) {
+      normalized.settings.languageProfileId = legacyLanguageProfiles[normalized.settings.languageMode];
+    }
+    if (["terre-soleil", "dragon-source"].includes(normalized.settings.languageProfileId)) {
+      normalized.settings.languageProfileId = "spirituel-prudent";
+    }
     normalized.cycles ||= [];
     normalized.cycles = normalized.cycles.map(cycle => ({
       ...cycle,
@@ -1224,7 +1263,9 @@
     normalized.extensionsV3 = mergeDefaults(DEFAULT_DATA.extensionsV3, normalized.extensionsV3 || {});
     normalized.extensionsV3.enabled = mergeDefaults(DEFAULT_DATA.extensionsV3.enabled, normalized.extensionsV3.enabled || {});
     normalized.extensionsV3.seals = Array.isArray(normalized.extensionsV3.seals) ? normalized.extensionsV3.seals : [];
-    normalized.extensionsV3.languageProfiles = Array.isArray(normalized.extensionsV3.languageProfiles) ? normalized.extensionsV3.languageProfiles : [];
+    normalized.extensionsV3.languageProfiles = Array.isArray(normalized.extensionsV3.languageProfiles)
+      ? normalized.extensionsV3.languageProfiles.map(profile => normalizeLanguageProfile(profile, true))
+      : [];
     normalized.extensionsV3.schemaVersion = DEFAULT_DATA.extensionsV3.schemaVersion;
     normalized.library = mergeLibraryDefaults(normalized.library || {});
     normalized.lastNotice ||= null;
@@ -1669,8 +1710,113 @@
     return "";
   }
 
+  function builtInLanguageProfiles() {
+    const neutral = {
+      prepareIntro: "On ouvre un cadre simple : un nom, une intention, une profondeur.",
+      prepareNotice: "Je n’entre pas ici pour nourrir la colère. Je viens l’entendre, libérer la charge et garder la force utile.",
+      stabilizeIntro: "Avant d’explorer, on vérifie si le corps peut traverser maintenant.",
+      identifyIntro: "On nomme ce qui est déjà accessible, sans forcer la mémoire.",
+      awakenIntro: "Lis lentement. Une phrase qui touche est une porte, pas une preuve.",
+      discernIntro: "On sépare l’information utile de la charge inutile ou étrangère.",
+      namingIntro: "Nommer juste peut aider le feu à cesser de tourner en rond.",
+      exitIntro: "Ce qui sort ici n’est pas automatiquement destiné à être dit, envoyé ou fait.",
+      purifyIntro: "On rend la charge et on garde l’information, la limite et la force.",
+      restitution: "Je rends la charge. Je garde la force utile.",
+      positionIntro: "Une colère traversée demande souvent une limite, une action ou une non-action claire.",
+      sealIntro: "On ferme la session. Le feu peut revenir comme signal, non comme prison.",
+      permission: "Je peux avancer sans forcer et m’arrêter si le corps le demande.",
+      closing: "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison."
+    };
+    return [
+      { id: "sobre", label: "Sobre", symbolic: false, texts: neutral },
+      {
+        id: "poetique-sobre",
+        label: "Poétique sobre",
+        symbolic: false,
+        texts: {
+          ...neutral,
+          prepareIntro: "On ouvre un contenant simple pour écouter le feu sans s’y perdre.",
+          purifyIntro: "On ne garde pas le poison. On garde l’information, la limite et la force.",
+          restitution: "Je rends la charge. Je garde la force. Je rends la rage. Je garde le courage.",
+          sealIntro: "On ferme la session. Le feu peut revenir comme signal, non comme prison."
+        }
+      },
+      {
+        id: "direct",
+        label: "Direct",
+        symbolic: false,
+        texts: {
+          ...neutral,
+          prepareIntro: "Choisis ce que tu traverses aujourd’hui. Une seule colère suffit.",
+          stabilizeIntro: "Vérifie d’abord si ton corps peut continuer sans se perdre.",
+          identifyIntro: "Dis ce qui s’est passé et ce que ce feu protège.",
+          exitIntro: "Fais sortir la charge ici. Ne l’envoie pas à quelqu’un.",
+          restitution: "Je rends ce qui me charge. Je garde ce qui me protège.",
+          closing: "La charge est rendue. Si le feu revient, je l’écoute comme un signal."
+        }
+      },
+      {
+        id: "spirituel-prudent",
+        label: "Spirituel prudent",
+        symbolic: true,
+        texts: {
+          ...neutral,
+          prepareIntro: "On ouvre un espace intérieur simple, avec discernement et responsabilité.",
+          discernIntro: "On distingue ce qui éclaire de ce qui brouille, sans conclure trop vite.",
+          restitution: "Je rends ce qui alourdit mon champ. Je garde la vérité utile et la responsabilité de mes actes.",
+          closing: "Cette charge est rendue maintenant. Si ce feu revient, il revient comme signal à discerner, non comme prison."
+        }
+      }
+    ];
+  }
+
+  function normalizeLanguageProfile(profile, custom = false) {
+    const safeTexts = {};
+    const allowedKeys = Object.keys(builtInLanguageProfiles()[0].texts);
+    allowedKeys.forEach(key => {
+      if (typeof profile?.texts?.[key] === "string") safeTexts[key] = profile.texts[key].slice(0, 600);
+    });
+    return {
+      id: String(profile?.id || uid("language_profile")).slice(0, 100),
+      label: String(profile?.label || "Profil personnalisé").slice(0, 100),
+      symbolic: profile?.symbolic === true,
+      custom,
+      texts: safeTexts,
+      createdAt: profile?.createdAt || "",
+      updatedAt: profile?.updatedAt || ""
+    };
+  }
+
+  function languageProfiles() {
+    const custom = (data.extensionsV3?.languageProfiles || []).map(profile => normalizeLanguageProfile(profile, true));
+    return [...builtInLanguageProfiles(), ...custom];
+  }
+
+  function activeLanguageProfile() {
+    const id = data.settings.languageProfileId || "poetique-sobre";
+    return languageProfiles().find(profile => profile.id === id) || builtInLanguageProfiles()[1];
+  }
+
+  function previewLanguageProfile() {
+    const id = data.extensionsV3?.languageProfilePreviewId || data.settings.languageProfileId || "poetique-sobre";
+    return languageProfiles().find(profile => profile.id === id) || activeLanguageProfile();
+  }
+
+  function profileText(key) {
+    const neutral = builtInLanguageProfiles()[0].texts;
+    return activeLanguageProfile().texts?.[key] || neutral[key] || "";
+  }
+
+  function renderNeutralAlternative(key) {
+    const profile = activeLanguageProfile();
+    if (!profile.symbolic) return "";
+    const neutral = builtInLanguageProfiles()[0].texts[key];
+    if (!neutral || neutral === profile.texts?.[key]) return "";
+    return `<p class="muted mini">Formulation neutre : ${escapeHtml(neutral)}</p>`;
+  }
+
   function defaultClosingPhrase() {
-    return libraryItems("closingPhrases")[0]?.text || "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.";
+    return profileText("closing") || libraryItems("closingPhrases")[0]?.text || "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.";
   }
 
   function sealDefinitions() {
@@ -2132,11 +2278,40 @@
     saveData();
   }
 
+  function detailsStateKey(details, index, tabId = data.activeTab) {
+    const explicit = details.dataset.detailsKey || details.dataset.followUpCycle || "";
+    const summary = details.querySelector(":scope > summary")?.textContent?.trim() || "";
+    return `${tabId}:${explicit || summary || index}`;
+  }
+
+  function captureOpenDetails() {
+    document.querySelectorAll("#view details").forEach((details, index) => {
+      openDetailsState.set(detailsStateKey(details, index, renderedTab), details.open);
+    });
+  }
+
+  function restoreOpenDetails() {
+    document.querySelectorAll("#view details").forEach((details, index) => {
+      const key = detailsStateKey(details, index);
+      if (openDetailsState.has(key)) details.open = openDetailsState.get(key);
+    });
+  }
+
   function render() {
     document.querySelector("#app").dataset.theme = data.settings.theme;
+    captureOpenDetails();
+    if (companionViewOpen && data.extensionsV3?.enabled?.companionMode) {
+      renderTabs({ locked: true });
+      document.querySelector("#view").innerHTML = renderCompanionView();
+      if (bodyReturnOpen) document.querySelector("#view").insertAdjacentHTML("beforeend", renderBodyReturnPanel());
+      renderedTab = data.activeTab;
+      bindDynamicEvents();
+      return;
+    }
     if (data.settings.privacy?.localVeilEnabled && !localVeilUnlocked()) {
       renderTabs({ locked: true });
       document.querySelector("#view").innerHTML = renderLocalVeil();
+      renderedTab = data.activeTab;
       bindDynamicEvents();
       return;
     }
@@ -2151,6 +2326,8 @@
     if (data.activeTab === "sanctuaire") view.innerHTML = renderSanctuaire();
     if (bodyReturnOpen) view.insertAdjacentHTML("beforeend", renderBodyReturnPanel());
 
+    restoreOpenDetails();
+    renderedTab = data.activeTab;
     bindDynamicEvents();
   }
 
@@ -2171,6 +2348,130 @@
           <div class="actions">
             <button class="primary" data-action="body-return-resume">Je reviens au soin</button>
             <button class="ghost" data-action="body-return-close-today">Je ferme pour aujourd’hui</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function companionStepGuidance(stepIndex) {
+    const guidance = [
+      {
+        title: "Préparer un cadre simple",
+        intro: "L’accompagnant aide à ralentir et à garder une intention limitée pour cette traversée.",
+        actions: ["Inviter à choisir une seule colère.", "Rappeler qu’il est possible de s’arrêter à tout moment.", "Ne pas demander les détails si l’utilisateur ne souhaite pas les partager."]
+      },
+      {
+        title: "Stabiliser avant d’explorer",
+        intro: "Le corps et le présent passent avant l’analyse.",
+        actions: ["Proposer les pieds au sol, le regard autour de soi et une respiration lente.", "Demander si l’intensité est traversable maintenant.", "Si le feu est trop fort, proposer une fermeture sans insister."]
+      },
+      {
+        title: "Écouter sans interpréter",
+        intro: "L’utilisateur choisit ce qu’il veut nommer. L’accompagnant ne complète pas son histoire.",
+        actions: ["Écouter les mots disponibles.", "Éviter les questions qui suggèrent une cause.", "Laisser les silences exister."]
+      },
+      {
+        title: "Laisser une résonance rester une porte",
+        intro: "Une phrase qui touche n’est ni une preuve ni un diagnostic.",
+        actions: ["Lire lentement si l’utilisateur le demande.", "Ne pas conclure à sa place.", "Revenir au corps si une phrase active trop fortement."]
+      },
+      {
+        title: "Soutenir le discernement",
+        intro: "L’objectif est de distinguer la charge, l’information utile et la responsabilité des actes.",
+        actions: ["Rappeler que plusieurs hypothèses peuvent coexister.", "Ne pas imposer une interprétation.", "Garder toute action extérieure pour plus tard si l’intensité est haute."]
+      },
+      {
+        title: "Aider à nommer sans figer",
+        intro: "Un nom peut éclairer le feu sans enfermer l’utilisateur dans une étiquette.",
+        actions: ["Accueillir les mots provisoires.", "Préférer une formulation ajustable.", "Ne pas chercher le mot parfait."]
+      },
+      {
+        title: "Permettre une sortie sans destinataire",
+        intro: "Ce qui sort dans le soin n’est pas automatiquement destiné à être envoyé ou fait.",
+        actions: ["Proposer une expression intérieure ou corporelle non dangereuse.", "Ne pas encourager un message impulsif.", "Vérifier que la sortie aide le corps à redescendre."]
+      },
+      {
+        title: "Rendre la charge, garder la force",
+        intro: "L’accompagnant soutient la restitution sans décider ce qui appartient à l’utilisateur.",
+        actions: ["Inviter à distinguer ce qui alourdit de ce qui protège.", "Laisser l’utilisateur choisir ses mots.", "Revenir à une qualité simple et concrète."]
+      },
+      {
+        title: "Préparer une prochaine marche juste",
+        intro: "Une limite, une action ou une non-action peut émerger après la charge, jamais sous la pression.",
+        actions: ["Ne pas pousser à agir immédiatement.", "Vérifier que la prochaine marche est claire et non destructrice.", "Respecter le choix de ne rien faire aujourd’hui."]
+      },
+      {
+        title: "Fermer et laisser intégrer",
+        intro: "La fermeture protège le corps et évite de laisser la traversée ouverte.",
+        actions: ["Inviter à revenir à la pièce et au corps.", "Rappeler que le feu peut revenir comme signal, non comme prison.", "Laisser le reste pour une autre fois."]
+      }
+    ];
+    return guidance[Math.max(0, Math.min(guidance.length - 1, stepIndex))];
+  }
+
+  function renderCompanionView() {
+    const cycle = activeCycle();
+    const stepIndex = cycle?.currentStep ?? 0;
+    const guidance = companionStepGuidance(stepIndex);
+    return `
+      <section class="grid companion-view">
+        <div class="card">
+          <h2>Vue accompagnant</h2>
+          <p class="muted">
+            Cette vue ne montre ni titre sensible, ni réponse intime, ni bibliothèque profonde.
+            Elle donne seulement des repères pour accompagner sans interpréter ni prendre le contrôle.
+          </p>
+          <div class="notice companion-reminder">
+            <strong>L’accompagnant ne décide pas à ta place.</strong><br />
+            L’utilisateur garde le contrôle des étapes, des mots, des données et de la fermeture.
+          </div>
+        </div>
+
+        <div class="card companion-step">
+          <p class="muted mini">${escapeHtml(visibleStepProgress(stepIndex))}</p>
+          <h2>${escapeHtml(guidance.title)}</h2>
+          <p>${escapeHtml(guidance.intro)}</p>
+          <ol>
+            ${guidance.actions.map(action => `<li>${escapeHtml(action)}</li>`).join("")}
+          </ol>
+          <div class="notice mini">
+            Aucun diagnostic, aucune interprétation imposée, aucune action impulsive. Si l’intensité monte, le corps et la fermeture passent d’abord.
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Repères permanents</h3>
+          <ul>
+            <li>Écouter sans chercher à expliquer.</li>
+            <li>Demander la permission avant toute proposition.</li>
+            <li>Respecter un silence, un refus ou une fermeture.</li>
+            <li>Ne jamais diriger le feu contre un être vivant présent.</li>
+          </ul>
+          <div class="actions">
+            <button class="ghost" data-action="body-return">Retour au corps</button>
+            <button class="danger" data-action="companion-close-today">Fermer pour aujourd’hui</button>
+            <button class="ghost" data-action="print">Imprimer cette vue</button>
+            <button class="primary" data-action="leave-companion-view">Reprendre la vue personnelle</button>
+          </div>
+        </div>
+
+        ${companionReturnLocked ? renderCompanionReturnLock() : ""}
+      </section>
+    `;
+  }
+
+  function renderCompanionReturnLock() {
+    return `
+      <div class="body-return-panel" role="dialog" aria-modal="true" aria-labelledby="companion-return-title">
+        <div class="body-return-card">
+          <h2 id="companion-return-title">Reprendre la vue personnelle</h2>
+          <p class="muted">Ce verrou court évite de révéler accidentellement les réponses intimes devant un autre regard.</p>
+          <label>Phrase d’ouverture</label>
+          <input id="companion-return-input" placeholder="Tape REPRENDRE" autocomplete="off" />
+          <div class="actions">
+            <button class="primary" data-action="confirm-leave-companion-view">Ouvrir la vue personnelle</button>
+            <button class="ghost" data-action="cancel-leave-companion-view">Rester en vue accompagnant</button>
           </div>
         </div>
       </div>
@@ -2287,6 +2588,7 @@
             <small>${escapeHtml(visibleStepProgress(c.currentStep))}</small>
           </div>
           <div class="actions" style="margin:0">
+            ${data.extensionsV3?.enabled?.companionMode ? `<button class="ghost" data-action="open-companion-view">Vue accompagnant</button>` : ""}
             <button class="ghost" data-action="body-return">Retour au corps</button>
             <button class="danger" data-action="strong-close">Trop fort — fermer</button>
             ${oneStepMode ? "" : `
@@ -2363,7 +2665,8 @@
     if (step === 0) {
       return `
         <h2>Préparer le cadre</h2>
-        <p class="muted">On ouvre un contenant simple : un nom, une intention, une profondeur.</p>
+        <p class="muted">${escapeHtml(profileText("prepareIntro"))}</p>
+        ${renderNeutralAlternative("prepareIntro")}
 
         <label>Nom du Cycle de Feu</label>
         <input data-cycle-title value="${escapeAttr(cycle.title)}" placeholder="Ex : Colère dans la gorge face à l’autorité" />
@@ -2386,8 +2689,9 @@
         </select>
 
         <div class="notice">
-          Je n’entre pas ici pour nourrir la colère. J’entre ici pour l’entendre, l’exprimer, rendre la charge, et revenir plus libre.
+          ${escapeHtml(profileText("prepareNotice"))}
         </div>
+        ${renderNeutralAlternative("prepareNotice")}
       `;
     }
 
@@ -2395,7 +2699,8 @@
       const intensity = Number(a.intensity || 0);
       return `
         <h2>Stabiliser le feu</h2>
-        <p class="muted">Avant de creuser, on vérifie si le corps peut traverser maintenant.</p>
+        <p class="muted">${escapeHtml(profileText("stabilizeIntro"))}</p>
+        ${renderNeutralAlternative("stabilizeIntro")}
 
         ${cycleHasEntrySas(cycle) ? renderEntrySas(cycle, a) : `
           <label>Intensité actuelle : <strong>${intensity}/10</strong></label>
@@ -2441,7 +2746,8 @@
     if (step === 2) {
       return `
         <h2>Identifier la colère visible</h2>
-        <p class="muted">On nomme ce qui est déjà accessible, sans forcer la mémoire.</p>
+        <p class="muted">${escapeHtml(profileText("identifyIntro"))}</p>
+        ${renderNeutralAlternative("identifyIntro")}
 
         <label>Déclencheur apparent</label>
         <textarea data-field="trigger" placeholder="Ce qui a déclenché le feu...">${escapeHtml(a.trigger || "")}</textarea>
@@ -2474,7 +2780,8 @@
 
       return `
         <h2>Éveiller la colère cachée</h2>
-        <p class="muted">Lis lentement. Une phrase qui touche est une porte, pas une preuve. Vague limitée à ${RESONANCE_WAVE_LIMIT} phrases.</p>
+        <p class="muted">${escapeHtml(profileText("awakenIntro"))} Vague limitée à ${RESONANCE_WAVE_LIMIT} phrases.</p>
+        ${renderNeutralAlternative("awakenIntro")}
 
         ${renderRegulationNotice(cycle)}
 
@@ -2500,7 +2807,8 @@
     if (step === 4) {
       return `
         <h2>Discerner ce qui m’appartient</h2>
-        <p class="muted">On sépare la vérité utile de la charge inutile ou étrangère.</p>
+        <p class="muted">${escapeHtml(profileText("discernIntro"))}</p>
+        ${renderNeutralAlternative("discernIntro")}
 
         <label>Appartenance ressentie</label>
         ${checks("ownership", [
@@ -2520,6 +2828,8 @@
 
         <label>Permission utile maintenant</label>
         ${radios("permissionPhrase", libraryItems("permissionPhrases").map(item => item.text), a.permissionPhrase || "")}
+        <div class="notice mini">${escapeHtml(profileText("permission"))}</div>
+        ${renderNeutralAlternative("permission")}
 
         <div class="notice">
           Même si une influence, une mémoire ou un champ agit en moi, je reste gardien de mes actes.
@@ -2530,7 +2840,8 @@
     if (step === 5) {
       return `
         <h2>Trouver le vrai nom</h2>
-        <p class="muted">Nommer juste permet souvent au feu de cesser de tourner en rond.</p>
+        <p class="muted">${escapeHtml(profileText("namingIntro"))}</p>
+        ${renderNeutralAlternative("namingIntro")}
 
         <label>Faux nom possible</label>
         <input data-field="falseName" value="${escapeAttr(a.falseName || "")}" placeholder="Ex : fatigue, jalousie, addiction, paresse, agacement..." />
@@ -2550,7 +2861,8 @@
       const exit = a.exit || "";
       return `
         <h2>Faire sortir le feu</h2>
-        <p class="muted">Ce qui sort ici n’est pas encore ce qui doit être envoyé, dit ou fait.</p>
+        <p class="muted">${escapeHtml(profileText("exitIntro"))}</p>
+        ${renderNeutralAlternative("exitIntro")}
 
         <label>Porte de sortie choisie</label>
         ${radios("exit", libraryLabels("exits"), exit)}
@@ -2573,7 +2885,8 @@
     if (step === 7) {
       return `
         <h2>Purifier et rendre la charge</h2>
-        <p class="muted">On ne garde pas le poison. On garde l’information, la limite et la force.</p>
+        <p class="muted">${escapeHtml(profileText("purifyIntro"))}</p>
+        ${renderNeutralAlternative("purifyIntro")}
 
         <label>Élément de restitution</label>
         ${radios("element", libraryLabels("elements"), a.element || "")}
@@ -2585,15 +2898,17 @@
         ${checks("qualities", libraryLabels("qualities"), a.qualities)}
 
         <div class="notice">
-          Je rends la charge. Je garde la force. Je rends la rage. Je garde le courage.
+          ${escapeHtml(profileText("restitution"))}
         </div>
+        ${renderNeutralAlternative("restitution")}
       `;
     }
 
     if (step === 8) {
       return `
         <h2>Se positionner dans la matière</h2>
-        <p class="muted">Une colère traversée demande souvent une limite, une action ou une non-action claire.</p>
+        <p class="muted">${escapeHtml(profileText("positionIntro"))}</p>
+        ${renderNeutralAlternative("positionIntro")}
 
         <label>Limite intérieure</label>
         <textarea data-field="innerBoundary" placeholder="Ex : Je ne confonds plus paix et silence forcé.">${escapeHtml(a.innerBoundary || "")}</textarea>
@@ -2620,7 +2935,8 @@
       const missing = cycleCompletionHints(cycle);
       return `
         <h2>Sceller et archiver</h2>
-        <p class="muted">On ferme la session. Le feu peut revenir comme signal, non comme prison.</p>
+        <p class="muted">${escapeHtml(profileText("sealIntro"))}</p>
+        ${renderNeutralAlternative("sealIntro")}
 
         <div class="print-only">
           <h1>${escapeHtml(cycle.title)}</h1>
@@ -2650,7 +2966,8 @@
         <textarea data-field="closingPhrase" placeholder="Si cette énergie revient, elle revient comme signal. Je refuse l’ancien circuit.">${escapeHtml(a.closingPhrase || "")}</textarea>
 
         <label>Phrase de clôture proposée</label>
-        ${radios("closingPreset", libraryItems("closingPhrases").map(item => item.text), a.closingPreset || "")}
+        ${radios("closingPreset", [...new Set([profileText("closing"), ...libraryItems("closingPhrases").map(item => item.text)])], a.closingPreset || "")}
+        ${renderNeutralAlternative("closing")}
 
         <label>Intégration après clôture</label>
         ${checks("integrationDone", libraryItems("integrationSteps").map(item => item.label), a.integrationDone)}
@@ -2984,7 +3301,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <button class="ghost" data-action="print">Imprimer</button>
           </div>
 
-          <details>
+          <details data-details-key="carnet-filters">
             <summary>Filtrer le Carnet</summary>
             <div class="grid two">
               <div>
@@ -3078,7 +3395,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const followUp = cycle.integrationFollowUp || createIntegrationFollowUp(cycle.answers?.[9]?.followUpPlan || "tomorrow");
     const answers = followUp.answers || {};
     return `
-      <details class="integration-follow-up" data-follow-up-cycle="${escapeAttr(cycle.id)}">
+      <details class="integration-follow-up" data-details-key="integration-${escapeAttr(cycle.id)}" data-follow-up-cycle="${escapeAttr(cycle.id)}">
         <summary>Suivi d’intégration 24h / 72h</summary>
         <p class="muted mini">${escapeHtml(followUpScheduleLabel(followUp))}</p>
 
@@ -3149,7 +3466,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   function v3ExtensionDefinitions() {
     return [
       { id: "seals", label: "Sceaux visuels locaux", description: "Une intention ou une qualité représentée par un symbole sobre et imprimable." },
-      { id: "languageProfiles", label: "Profils de langage", description: "Des formulations adaptées sans changer la logique ni les règles de sécurité." },
+      { id: "languageProfiles", label: "Atelier des modes de langage", description: "Prévisualiser, créer, importer ou retirer des tons rédactionnels. Le choix actif reste dans Paramètres." },
       { id: "companionMode", label: "Mode accompagnant", description: "Une vue sans réponses intimes pour un être de confiance." },
       { id: "richPrint", label: "Exports imprimables riches", description: "Des impressions préparées avec choix explicite des sections." },
       { id: "visualBodyMap", label: "Carte corporelle visuelle", description: "Un corps symbolique SVG relié au scan autonome existant." },
@@ -3158,6 +3475,79 @@ Assez pour aujourd’hui si le corps le demande.</p>
       { id: "cycleMap", label: "Cartographie douce des cycles", description: "Quelques liens lisibles entre les traversées, sans dashboard lourd." },
       { id: "localVoiceMeter", label: "Alchimètre vocal local", description: "Une visualisation optionnelle du souffle ou du son, sans analyse des mots." }
     ];
+  }
+
+  function renderLanguageProfilePreview() {
+    const profile = previewLanguageProfile();
+    const neutral = builtInLanguageProfiles()[0];
+    return `
+      <div class="notice softBox">
+        <strong>Aperçu : ${escapeHtml(profile.label)}</strong><br />
+        ${escapeHtml(profile.texts?.prepareIntro || neutral.texts.prepareIntro)}<br />
+        <span class="mini">${escapeHtml(profile.texts?.restitution || neutral.texts.restitution)}</span>
+      </div>
+      ${profile.symbolic ? `
+        <div class="notice mini">
+          <strong>Formulation neutre toujours disponible</strong><br />
+          ${escapeHtml(neutral.texts.prepareIntro)}<br />
+          ${escapeHtml(neutral.texts.restitution)}
+        </div>
+      ` : ""}
+    `;
+  }
+
+  function renderLanguageProfileSettings() {
+    const profiles = languageProfiles();
+    const preview = previewLanguageProfile();
+    const active = activeLanguageProfile();
+    return `
+      <details data-details-key="language-modes">
+        <summary>Gérer les modes de langage</summary>
+        <p class="muted mini">
+          Un mode de langage adapte seulement le ton des introductions, permissions, restitutions et clôtures.
+          Il ne choisit aucun archétype et ne change jamais les règles de sécurité, les seuils, les boutons ni la responsabilité des actes.
+        </p>
+
+        <label>Prévisualiser un mode sans le choisir</label>
+        <select data-language-profile-preview>
+          ${profiles.map(profile => option(profile.id, profile.label, preview.id)).join("")}
+        </select>
+        ${renderLanguageProfilePreview()}
+        <div class="actions">
+          <button class="ghost" data-action="apply-language-profile" data-profile-id="${escapeAttr(preview.id)}">Choisir ce mode dans Paramètres</button>
+        </div>
+        <p class="muted mini">Mode actuellement choisi dans Paramètres : <strong>${escapeHtml(active.label)}</strong>.</p>
+
+        <details data-details-key="custom-language-mode">
+          <summary>Créer un mode personnalisé local</summary>
+          <p class="muted mini">Le contenu reste du texte simple. Aucun HTML ni code n’est interprété.</p>
+          <label>Nom du mode</label>
+          <input id="custom-profile-label" placeholder="Ex : Mon langage d’ancrage" />
+          <label>Introduction de préparation</label>
+          <textarea id="custom-profile-prepare" placeholder="${escapeAttr(builtInLanguageProfiles()[0].texts.prepareIntro)}"></textarea>
+          <label>Permission courte</label>
+          <textarea id="custom-profile-permission" placeholder="${escapeAttr(builtInLanguageProfiles()[0].texts.permission)}"></textarea>
+          <label>Phrase de restitution</label>
+          <textarea id="custom-profile-restitution" placeholder="${escapeAttr(builtInLanguageProfiles()[0].texts.restitution)}"></textarea>
+          <label>Phrase de clôture</label>
+          <textarea id="custom-profile-closing" placeholder="${escapeAttr(builtInLanguageProfiles()[0].texts.closing)}"></textarea>
+          <div class="actions">
+            <button class="primary" data-action="save-custom-language-profile">Enregistrer ce mode local</button>
+          </div>
+        </details>
+
+        ${preview.custom ? `
+          <div class="actions">
+            <button class="ghost" data-action="export-language-profile" data-profile-id="${escapeAttr(preview.id)}">Exporter ce mode personnalisé</button>
+            <button class="danger" data-action="remove-language-profile" data-profile-id="${escapeAttr(preview.id)}">Retirer ce mode personnalisé</button>
+          </div>
+        ` : ""}
+        <label class="choice">
+          Importer un mode personnalisé
+          <input type="file" accept="application/json" data-action="import-language-profile" style="display:none">
+        </label>
+      </details>
+    `;
   }
 
   function renderSanctuaire() {
@@ -3203,15 +3593,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
             </p>
 
             <label>Mode de langage</label>
-            <select data-setting="languageMode">
-              ${option("sobre", "Sobre", data.settings.languageMode)}
-              ${option("poétique sobre", "Poétique sobre", data.settings.languageMode)}
-              ${option("direct", "Direct", data.settings.languageMode)}
-              ${option("spirituel", "Spirituel", data.settings.languageMode)}
-              ${option("galactique / dragon / Mikaël / Source", "Galactique / dragon / Mikaël / Source", data.settings.languageMode)}
+            <select data-setting="languageProfileId">
+              ${languageProfiles().map(profile => option(profile.id, profile.label, activeLanguageProfile().id)).join("")}
             </select>
+            <p class="muted mini">
+              Le mode de langage règle uniquement le ton des formulations. Les modes personnalisés se gèrent dans Extensions V3.
+            </p>
 
-            <label>Archétypes</label>
+            <label>Archétypes et contenus symboliques</label>
             <select data-setting="archetypeMode">
               ${option("neutre", "Neutre — masquer les contenus subtils sensibles", data.settings.archetypeMode)}
               ${option("Terre / Soleil", "Terre / Soleil", data.settings.archetypeMode)}
@@ -3219,7 +3608,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
             </select>
 
             <div class="notice mini">
-              En mode neutre, les signatures subtiles sensibles restent masquées dans les suggestions. L’alternative Terre / Soleil reste le repère symbolique simple.
+              Ce réglage choisit quels repères symboliques peuvent apparaître dans les suggestions et outils concernés.
+              Il ne change pas le ton des phrases. En mode neutre, les signatures subtiles sensibles restent masquées.
             </div>
 
             <label>Activation progressive des contenus sensibles</label>
@@ -3254,7 +3644,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
         </div>
 
         <div class="card">
-          <details>
+          <details data-details-key="extensions-v3">
             <summary>Extensions V3</summary>
             <p class="muted">
               Les extensions enrichissent le soin ; elles ne sont jamais nécessaires pour traverser une colère.
@@ -3281,9 +3671,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
               </label>
               <p class="muted mini">Les sceaux restent visibles dans l’application et les exports JSON, même s’ils sont masqués à l’impression.</p>
             ` : ""}
-            <p class="muted mini">
-              Les anciens exports V2 restent importables. Les données V3 utilisent une structure versionnée afin que chaque extension puisse évoluer sans casser les Cycles existants.
-            </p>
+            ${data.extensionsV3?.enabled?.languageProfiles ? renderLanguageProfileSettings() : ""}
+            ${data.extensionsV3?.enabled?.companionMode ? `
+              <div class="notice mini">
+                <strong>Mode accompagnant actif</strong><br />
+                Le bouton “Vue accompagnant” apparaît dans le Soin guidé. Cette vue ne rend aucune réponse intime ni titre sensible.
+              </div>
+              <label class="choice">
+                <input type="checkbox" data-companion-setting="displayLockEnabled" ${data.extensionsV3?.companion?.displayLockEnabled ? "checked" : ""}>
+                Demander la phrase REPRENDRE avant de réafficher la vue personnelle
+              </label>
+            ` : ""}
           </details>
         </div>
 
@@ -3315,26 +3713,26 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ` : `
               <div class="notice">Aucune entrée trouvée. Essaie un mot plus simple ou une zone du corps.</div>
             `}
-            <details>
+            <details data-details-key="library-families">
               <summary>Familles</summary>
               <div class="pill-list">${libraryLabels("families").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
-            <details>
+            <details data-details-key="library-masks">
               <summary>Masques</summary>
               <div class="pill-list">${libraryLabels("masks").map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
-            <details>
+            <details data-details-key="library-egregores">
               <summary>Égrégores / champs perçus — aperçu</summary>
               <div class="pill-list">${libraryLabels("egregores").slice(0, 12).map(x => `<span class="choice">${escapeHtml(x)}</span>`).join("")}</div>
             </details>
-            <details>
+            <details data-details-key="library-structure">
               <summary>Structure interne</summary>
               <p class="muted mini">
                 Les entrées contiennent maintenant id, famille, intensité, mode, zones, masques, égrégores, élément conseillé, tags et activation.
                 Pendant un soin, seules les phrases utiles à la vague courante apparaissent.
               </p>
             </details>
-            <details>
+            <details data-details-key="library-customization">
               <summary>Personnaliser les bibliothèques</summary>
               <p class="muted mini">Ces réglages agissent sur les suggestions. Les contenus restent locaux et exportables en JSON.</p>
 
@@ -3443,7 +3841,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
               <button class="danger" data-action="reset-data">Tout effacer</button>
             </div>
 
-            <details>
+            <details data-details-key="local-traces">
               <summary>Suppression sélective des traces ponctuelles</summary>
               <p class="muted mini">
                 Ces actions effacent seulement les traces enregistrées par les outils ponctuels.
@@ -3787,6 +4185,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
       });
     });
 
+    document.querySelectorAll("[data-language-profile-preview]").forEach(el => {
+      if (el.dataset.boundLanguageProfilePreview === "1") return;
+      el.dataset.boundLanguageProfilePreview = "1";
+      el.addEventListener("change", () => {
+        data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+        data.extensionsV3.languageProfilePreviewId = el.value;
+        saveData();
+        render();
+      });
+    });
+
     document.querySelectorAll("[data-print-preference]").forEach(el => {
       if (el.dataset.boundPrintPreference === "1") return;
       el.dataset.boundPrintPreference = "1";
@@ -3794,6 +4203,18 @@ Assez pour aujourd’hui si le corps le demande.</p>
         data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
         data.extensionsV3.printPreferences ||= cloneData(DEFAULT_DATA.extensionsV3.printPreferences);
         data.extensionsV3.printPreferences[el.dataset.printPreference] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-companion-setting]").forEach(el => {
+      if (el.dataset.boundCompanionSetting === "1") return;
+      el.dataset.boundCompanionSetting = "1";
+      el.addEventListener("change", () => {
+        data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+        data.extensionsV3.companion ||= cloneData(DEFAULT_DATA.extensionsV3.companion);
+        data.extensionsV3.companion[el.dataset.companionSetting] = el.checked;
         saveData();
         render();
       });
@@ -3831,6 +4252,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
         el.addEventListener("change", importJson);
       } else if (action === "import-library-pack") {
         el.addEventListener("change", importLibraryPack);
+      } else if (action === "import-language-profile") {
+        el.addEventListener("change", importLanguageProfile);
       } else {
         el.addEventListener("click", () => handleAction(el));
       }
@@ -3853,6 +4276,51 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.settings.theme = data.settings.theme === "dark" ? "light" : "dark";
       saveData();
       render();
+    }
+
+    if (action === "open-companion-view") {
+      if (!data.extensionsV3?.enabled?.companionMode) return;
+      companionViewOpen = true;
+      companionReturnLocked = false;
+      render();
+    }
+
+    if (action === "leave-companion-view") {
+      if (data.extensionsV3?.companion?.displayLockEnabled) {
+        companionReturnLocked = true;
+      } else {
+        companionViewOpen = false;
+      }
+      render();
+    }
+
+    if (action === "confirm-leave-companion-view") {
+      const value = (document.querySelector("#companion-return-input")?.value || "").trim().toUpperCase();
+      if (value !== "REPRENDRE") {
+        alert("Tape REPRENDRE pour réafficher la vue personnelle.");
+        return;
+      }
+      companionReturnLocked = false;
+      companionViewOpen = false;
+      render();
+    }
+
+    if (action === "cancel-leave-companion-view") {
+      companionReturnLocked = false;
+      render();
+    }
+
+    if (action === "companion-close-today") {
+      const c = activeCycle();
+      if (c) {
+        c.status = "fermé pour aujourd’hui";
+        c.updatedAt = nowISO();
+      }
+      companionViewOpen = false;
+      companionReturnLocked = false;
+      setNotice("Cycle fermé proprement pour aujourd’hui depuis la vue accompagnant.");
+      saveData();
+      setTab("boussole");
     }
 
     if (action === "unlock-local-veil") {
@@ -3970,6 +4438,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
         setNotice("Retour au corps terminé. L’outil reste en brouillon local et peut être repris plus tard.", "soft");
       }
       bodyReturnContext = null;
+      companionViewOpen = false;
+      companionReturnLocked = false;
       setTab("boussole");
     }
 
@@ -4099,6 +4569,28 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "export-library-pack") {
       exportLibraryPack();
+    }
+
+    if (action === "apply-language-profile") {
+      const profile = languageProfiles().find(item => item.id === el.dataset.profileId);
+      if (!profile) return;
+      data.settings.languageProfileId = profile.id;
+      data.extensionsV3.languageProfilePreviewId = profile.id;
+      setNotice(`Mode de langage “${profile.label}” choisi dans Paramètres. Les règles de sécurité restent inchangées.`);
+      saveData();
+      render();
+    }
+
+    if (action === "save-custom-language-profile") {
+      saveCustomLanguageProfile();
+    }
+
+    if (action === "export-language-profile") {
+      exportLanguageProfile(el.dataset.profileId);
+    }
+
+    if (action === "remove-language-profile") {
+      removeLanguageProfile(el.dataset.profileId);
     }
 
     if (action === "start-from-library") {
@@ -4627,6 +5119,101 @@ Assez pour aujourd’hui si le corps le demande.</p>
     a.download = options.anonymized ? `feu-clair-export-anonymise-${date}.json` : `feu-clair-export-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function saveCustomLanguageProfile() {
+    const label = (document.querySelector("#custom-profile-label")?.value || "").trim();
+    if (!label) {
+      setNotice("Donne un nom au mode personnalisé avant de l’enregistrer.", "danger");
+      render();
+      return;
+    }
+    const neutral = builtInLanguageProfiles()[0].texts;
+    const profile = normalizeLanguageProfile({
+      id: uid("language_profile"),
+      label,
+      texts: {
+        prepareIntro: document.querySelector("#custom-profile-prepare")?.value.trim() || neutral.prepareIntro,
+        permission: document.querySelector("#custom-profile-permission")?.value.trim() || neutral.permission,
+        restitution: document.querySelector("#custom-profile-restitution")?.value.trim() || neutral.restitution,
+        closing: document.querySelector("#custom-profile-closing")?.value.trim() || neutral.closing
+      },
+      createdAt: nowISO(),
+      updatedAt: nowISO()
+    }, true);
+    data.extensionsV3.languageProfiles ||= [];
+    data.extensionsV3.languageProfiles.push(profile);
+    data.extensionsV3.languageProfilePreviewId = profile.id;
+    setNotice(`Mode personnalisé “${profile.label}” enregistré localement. Tu peux le choisir dans Paramètres.`);
+    saveData();
+    render();
+  }
+
+  function exportLanguageProfile(profileId) {
+    const profile = languageProfiles().find(item => item.id === profileId && item.custom);
+    if (!profile) return;
+    const payload = {
+      app: "feu-clair",
+      version: APP_VERSION,
+      exportMode: "profil de langage",
+      exportedAt: nowISO(),
+      profile
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `feu-clair-profil-langage-${slugify(profile.label) || "personnalise"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importLanguageProfile(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
+        if (imported?.app !== "feu-clair" || imported?.exportMode !== "profil de langage" || typeof imported?.profile !== "object") {
+          alert("Import impossible : ce JSON ne ressemble pas à un mode de langage Feu Clair.");
+          return;
+        }
+        const profile = normalizeLanguageProfile({
+          ...imported.profile,
+          id: uid("language_profile"),
+          createdAt: nowISO(),
+          updatedAt: nowISO()
+        }, true);
+        if (!profile.label.trim()) {
+          alert("Import impossible : le mode ne contient pas de nom.");
+          return;
+        }
+        data.extensionsV3.languageProfiles ||= [];
+        data.extensionsV3.languageProfiles.push(profile);
+        data.extensionsV3.languageProfilePreviewId = profile.id;
+        setNotice(`Mode personnalisé “${profile.label}” importé. Prévisualise-le ici, puis choisis-le dans Paramètres.`);
+        saveData();
+        render();
+      } catch (error) {
+        alert("Import impossible : mode de langage JSON invalide.");
+      } finally {
+        event.target.value = "";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function removeLanguageProfile(profileId) {
+    const profile = languageProfiles().find(item => item.id === profileId && item.custom);
+    if (!profile) return;
+    if (!confirm(`Retirer le mode personnalisé “${profile.label}” ?`)) return;
+    data.extensionsV3.languageProfiles = (data.extensionsV3.languageProfiles || []).filter(item => item.id !== profile.id);
+    if (data.settings.languageProfileId === profile.id) data.settings.languageProfileId = "poetique-sobre";
+    if (data.extensionsV3.languageProfilePreviewId === profile.id) data.extensionsV3.languageProfilePreviewId = data.settings.languageProfileId;
+    setNotice("Mode personnalisé retiré. Le mode Poétique sobre reste disponible.");
+    saveData();
+    render();
   }
 
   function exportLibraryPack() {
