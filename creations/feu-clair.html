@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.7.0</title>
+  <title>Feu Clair — v3.8.0</title>
 
   <style>
     :root {
@@ -296,6 +296,30 @@
       flex-wrap: wrap;
       gap: .45rem;
       margin: .5rem 0;
+    }
+
+    .cycle-map-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .75rem;
+    }
+
+    .cycle-map-card {
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--accent-2);
+      border-radius: 14px;
+      padding: .85rem;
+      background: color-mix(in srgb, var(--surface) 96%, transparent);
+    }
+
+    .cycle-map-card h4,
+    .cycle-map-card p {
+      margin: 0;
+    }
+
+    .cycle-map-card p + p,
+    .cycle-map-card .actions {
+      margin-top: .65rem;
     }
 
     .choice {
@@ -777,7 +801,8 @@
     @media (max-width: 760px) {
       header { padding: .8rem; }
       main { padding: .8rem; }
-      .grid.two { grid-template-columns: 1fr; }
+      .grid.two,
+      .cycle-map-grid { grid-template-columns: 1fr; }
       .topbar { align-items: flex-start; }
       .actions button { flex: 1 1 auto; }
       .brand p { display: none; }
@@ -908,7 +933,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.7.0</h1>
+        <h1>Feu Clair — v3.8.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -924,7 +949,7 @@
 
 <script>
 /*
-  Feu Clair — v3.7.0
+  Feu Clair — v3.8.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -938,7 +963,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.7.0";
+  const APP_VERSION = "3.8.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -2214,6 +2239,69 @@
     if (action?.[1] >= 2) observations.push(patternObservation(`action-${slugify(action[0])}`, `L’action ou non-action “${action[0]}” semble revenir comme prochaine marche. C’est une piste possible à ajuster selon le terrain.`));
     if (openActions) observations.push(patternObservation("open-actions", "Certaines limites ou actions semblent encore ouvertes dans les suivis d’intégration. Elles peuvent être revisitées doucement, sans urgence ni jugement."));
     return observations;
+  }
+
+  function cycleMapFacetDefinitions() {
+    return [
+      {
+        id: "family",
+        label: "Famille",
+        question: "Qu’est-ce que ces traversées pourraient demander de reconnaître avec plus de douceur ?"
+      },
+      {
+        id: "zone",
+        label: "Zone corporelle",
+        question: "Que semble signaler cette zone quand elle revient comme porte d’entrée ?"
+      },
+      {
+        id: "quality",
+        label: "Qualité récupérée",
+        question: "Comment cette qualité pourrait-elle être nourrie entre deux traversées ?"
+      }
+    ];
+  }
+
+  function cycleMapGroups() {
+    const groups = [];
+    cycleMapFacetDefinitions().forEach(facet => {
+      const cyclesByValue = new Map();
+      data.cycles.forEach(cycle => {
+        [...new Set(cycleFacetValues(cycle, facet.id).filter(Boolean))].forEach(value => {
+          if (!cyclesByValue.has(value)) cyclesByValue.set(value, []);
+          cyclesByValue.get(value).push(cycle);
+        });
+      });
+      [...cyclesByValue.entries()]
+        .filter(([, cycles]) => cycles.length >= 2)
+        .sort((a, b) => b[1].length - a[1].length || String(a[0]).localeCompare(String(b[0]), "fr"))
+        .slice(0, 2)
+        .forEach(([value, cycles]) => groups.push({ facet, value, cycles }));
+    });
+    return groups
+      .sort((a, b) => b.cycles.length - a.cycles.length || a.facet.label.localeCompare(b.facet.label, "fr"))
+      .slice(0, 6);
+  }
+
+  function renderCycleMapGroup(group) {
+    const visibleCycles = group.cycles.slice(0, 3);
+    const remainingCount = group.cycles.length - visibleCycles.length;
+    return `
+      <div class="cycle-map-card">
+        <p class="muted mini">${escapeHtml(group.facet.label)}</p>
+        <h4>${escapeHtml(group.value)}</h4>
+        <p class="mini">
+          ${visibleCycles.map(cycle => {
+            const index = data.cycles.indexOf(cycle);
+            return escapeHtml(visibleCycleTitle(cycle, index));
+          }).join(" · ")}
+          ${remainingCount ? ` · ${remainingCount} autre${remainingCount > 1 ? "s" : ""}` : ""}
+        </p>
+        <p class="muted mini">${escapeHtml(group.facet.question)}</p>
+        <div class="actions">
+          <button class="ghost" data-action="filter-carnet-from-map" data-map-facet="${escapeAttr(group.facet.id)}" data-map-value="${escapeAttr(group.value)}">Voir ces Cycles dans le Carnet</button>
+        </div>
+      </div>
+    `;
   }
 
   function createIntegrationFollowUp(schedule = "tomorrow") {
@@ -4009,6 +4097,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const hiddenObservationIds = new Set(data.extensionsV3?.advancedPatterns?.hiddenObservationIds || []);
     const observations = allObservations.filter(observation => !hiddenObservationIds.has(observation.id));
     const hiddenObservationCount = allObservations.length - observations.length;
+    const cycleMapEnabled = data.extensionsV3?.enabled?.cycleMap === true;
+    const cycleMapGroupsList = cycleMapEnabled ? cycleMapGroups() : [];
     return `
       <section class="grid">
         <div class="card">
@@ -4091,6 +4181,31 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <p class="muted mini">Faire apparaître, dans le Carnet, des pistes locales sur les familles, zones, sorties, éléments, qualités et actions qui semblent revenir. Chaque observation pourra être masquée.</p>
             <div class="actions">
               <button class="ghost" data-action="activate-advanced-patterns">Afficher les observations douces</button>
+            </div>
+          </div>
+        `}
+
+        ${cycleMapEnabled ? `
+          <div class="card">
+            <h3>Cartographie douce des Cycles</h3>
+            <p class="muted mini">Quelques liens textuels entre les traversées, calculés localement. Cette vue ne classe pas les Cycles et ne cherche pas à expliquer leur sens à votre place.</p>
+            ${data.cycles.length < 2 ? `
+              <div class="notice softBox mini">Au moins deux Cycles sont nécessaires pour faire apparaître un lien.</div>
+            ` : cycleMapGroupsList.length ? `
+              <div class="cycle-map-grid">
+                ${cycleMapGroupsList.map(renderCycleMapGroup).join("")}
+              </div>
+              <p class="muted mini">La carte montre au maximum six liens et trois titres par lien afin de rester lisible.</p>
+            ` : `
+              <div class="notice softBox mini">Aucun lien récurrent n’apparaît encore entre les familles, zones ou qualités renseignées.</div>
+            `}
+          </div>
+        ` : `
+          <div class="card">
+            <h3>Cartographie douce des Cycles</h3>
+            <p class="muted mini">Relier quelques Cycles par famille, zone corporelle ou qualité récupérée, sous forme de petites cartes textuelles adaptées au mobile.</p>
+            <div class="actions">
+              <button class="ghost" data-action="activate-cycle-map">Afficher la cartographie douce</button>
             </div>
           </div>
         `}
@@ -5317,6 +5432,23 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (action === "restore-pattern-observations") {
       advancedPatternSettings().hiddenObservationIds = [];
       setNotice("Les observations masquées sont de nouveau visibles.");
+      saveData();
+      render();
+    }
+
+    if (action === "activate-cycle-map") {
+      data.extensionsV3.enabled.cycleMap = true;
+      setNotice("La cartographie douce est maintenant visible dans le Carnet.");
+      saveData();
+      render();
+    }
+
+    if (action === "filter-carnet-from-map") {
+      const facet = el.dataset.mapFacet;
+      const value = el.dataset.mapValue || "";
+      if (!["family", "zone", "quality"].includes(facet) || !value) return;
+      data.settings.carnetFilters = { status: "", family: "", zone: "", quality: "", [facet]: value };
+      setNotice("Le Carnet affiche maintenant les Cycles reliés par cette piste.");
       saveData();
       render();
     }
