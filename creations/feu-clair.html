@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.14.0</title>
+  <title>Feu Clair — v2.16.0</title>
 
   <style>
     :root {
@@ -273,6 +273,22 @@
       gap: .35rem;
       overflow-x: auto;
       padding-bottom: .25rem;
+    }
+
+    .path-guide {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      flex-wrap: wrap;
+      padding: .75rem .85rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+    }
+
+    .path-guide p {
+      margin: 0;
     }
 
     .dot {
@@ -558,7 +574,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.14.0</h1>
+        <h1>Feu Clair — v2.16.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -574,7 +590,7 @@
 
 <script>
 /*
-  Feu Clair — v2.14.0
+  Feu Clair — v2.16.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -591,7 +607,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.14.0";
+  const APP_VERSION = "2.16.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -620,6 +636,7 @@
     settings: {
       theme: "light",
       depth: "doux",
+      oneStepMode: true,
       languageMode: "poétique sobre",
       archetypeMode: "Terre / Soleil",
       privacy: {
@@ -1498,8 +1515,17 @@
   }
 
   function visibleCycleTitle(cycle, index = 0) {
+    if (cycle.rawTextsHidden) return `Cycle aux textes masqués${index ? ` ${index + 1}` : ""}`;
     if (!data.settings.privacy?.maskSensitiveTitles) return cycle.title || "Cycle sans titre";
     return `Cycle masqué ${index + 1}`;
+  }
+
+  function visibleStepLabel(stepIndex) {
+    return stepIndex === 0 ? "Préparer" : `Étape ${stepIndex} — ${STEPS[stepIndex]}`;
+  }
+
+  function visibleStepProgress(stepIndex) {
+    return stepIndex === 0 ? "Préparer" : `Étape ${stepIndex}/9 — ${STEPS[stepIndex]}`;
   }
 
   function anonymizedExportData() {
@@ -1549,8 +1575,26 @@
 
   function cycleExportData(cycle, options = {}) {
     const anonymized = options.anonymized === true;
+    const summaryOnly = options.summaryOnly === true;
+    const withoutRawTexts = options.withoutRawTexts === true;
     const copy = cloneData(cycle);
-    if (anonymized) {
+    if (summaryOnly) {
+      return {
+        app: "feu-clair",
+        version: APP_VERSION,
+        exportMode: "cycle synthèse seulement",
+        exportedAt: nowISO(),
+        cycle: {
+          id: copy.id,
+          title: copy.title,
+          status: copy.status,
+          createdAt: copy.createdAt,
+          updatedAt: copy.updatedAt,
+          summary: buildCycleSummary(copy)
+        }
+      };
+    }
+    if (anonymized || withoutRawTexts) {
       copy.title = "Cycle anonymisé";
       copy.notes = "";
       copy.answers = anonymizeAnswers(copy.answers || {});
@@ -1558,7 +1602,7 @@
     return {
       app: "feu-clair",
       version: APP_VERSION,
-      exportMode: anonymized ? "cycle anonymisé" : "cycle complet",
+      exportMode: anonymized ? "cycle anonymisé" : withoutRawTexts ? "cycle sans textes bruts" : "cycle complet",
       exportedAt: nowISO(),
       cycle: copy
     };
@@ -1790,7 +1834,7 @@
             ${
               c ? `
                 <p><strong>${escapeHtml(visibleCycleTitle(c))}</strong></p>
-                <p class="muted mini">Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}</p>
+                <p class="muted mini">Statut : ${escapeHtml(c.status)} · ${escapeHtml(visibleStepProgress(c.currentStep))}</p>
                 ${c.status === "à revisiter doucement" ? `
                   <div class="notice dangerBox mini">
                     Ce cycle a été fermé pendant une activation forte. Reprise douce recommandée : stabiliser avant de rouvrir.
@@ -1823,6 +1867,8 @@
 
   function renderSoin() {
     const c = activeCycle();
+    const oneStepMode = data.settings.oneStepMode !== false;
+    const showFullPath = !oneStepMode || c?.showFullPath === true;
     if (!c) {
       return `
         <div class="card">
@@ -1839,35 +1885,75 @@
         <div class="toolbar">
           <div>
             <strong>${escapeHtml(visibleCycleTitle(c))}</strong><br />
-            <small>${STEPS[c.currentStep]} — étape ${c.currentStep + 1}/${STEPS.length}</small>
+            <small>${escapeHtml(visibleStepProgress(c.currentStep))}</small>
           </div>
           <div class="actions" style="margin:0">
             <button class="ghost" data-action="body-return">Retour au corps</button>
-            <button class="ghost" data-action="set-numb-mode">Je ne ressens rien</button>
             <button class="danger" data-action="strong-close">Trop fort — fermer</button>
-            <button class="ghost" data-tab="boussole">Quitter</button>
+            ${oneStepMode ? "" : `
+              <button class="ghost" data-action="set-numb-mode">Je ne ressens rien</button>
+              <button class="ghost" data-tab="boussole">Quitter</button>
+            `}
           </div>
         </div>
 
-        <div class="progress">
-          ${STEPS.map((s, i) => `
-            <button class="dot ${i === c.currentStep ? "active" : ""} ${i < c.currentStep ? "done" : ""}" data-step="${i}" title="${s}">
-              ${i + 1}
-            </button>
-          `).join("")}
-        </div>
+        ${oneStepMode ? `
+          <div class="path-guide">
+            <p class="muted mini">L’application tient la carte. Toi, tu n’as besoin que de la prochaine marche.</p>
+            <button class="ghost" data-action="toggle-full-path">${showFullPath ? "Replier le chemin" : "Voir le chemin complet"}</button>
+          </div>
+        ` : ""}
+
+        ${showFullPath ? renderStepPath(c) : ""}
 
         <div class="card">
-          ${renderStep(c)}
+          ${c.rawTextsHidden ? renderMaskedCycleStep(c) : renderStep(c)}
         </div>
 
         <div class="actions">
-          <button ${c.currentStep === 0 ? "disabled" : ""} data-action="prev-step">Retour</button>
-          <button class="ghost" data-action="save-and-close">Sauvegarder et quitter</button>
-          <button class="ghost" data-action="close-cycle-soft">Fermer proprement</button>
-          <button class="primary" ${c.currentStep === STEPS.length - 1 ? "disabled" : ""} data-action="next-step">Continuer</button>
+          ${c.rawTextsHidden ? `
+            <button class="ghost" data-action="close-cycle-soft">Fermer proprement</button>
+          ` : `
+            <button ${c.currentStep === 0 ? "disabled" : ""} data-action="prev-step">Retour</button>
+            <button class="ghost" data-action="close-cycle-soft">Fermer proprement</button>
+            ${oneStepMode ? "" : `<button class="ghost" data-action="save-and-close">Sauvegarder et quitter</button>`}
+            <button class="primary" ${c.currentStep === STEPS.length - 1 ? "disabled" : ""} data-action="next-step">Continuer</button>
+          `}
         </div>
       </section>
+    `;
+  }
+
+  function renderStepPath(cycle) {
+    return `
+      <div class="progress" aria-label="Chemin complet du soin">
+        ${STEPS.map((step, index) => `
+          <button
+            class="dot ${index === cycle.currentStep ? "active" : ""} ${index < cycle.currentStep ? "done" : ""}"
+            data-step="${index}"
+            title="${escapeAttr(visibleStepLabel(index))}"
+            aria-label="${escapeAttr(visibleStepLabel(index))}">
+            ${index === 0 ? "P" : index}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderMaskedCycleStep(cycle) {
+    return `
+      <h2>Textes bruts masqués</h2>
+      <p class="muted">
+        Les réponses libres de ce Cycle sont cachées à l’écran. Les données restent présentes localement :
+        ce masquage n’est pas un chiffrement.
+      </p>
+      <div class="notice">
+        Étape actuelle : <strong>${escapeHtml(visibleStepProgress(cycle.currentStep))}</strong><br />
+        Tu peux réafficher les textes pour reprendre l’écriture, ou fermer le Cycle sans les montrer.
+      </div>
+      <div class="actions">
+        <button class="primary" data-action="toggle-cycle-raw-visibility" data-id="${escapeAttr(cycle.id)}">Réafficher les textes bruts</button>
+      </div>
     `;
   }
 
@@ -2487,7 +2573,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <div class="card">
             <h3>${escapeHtml(visibleCycleTitle(c, index))}</h3>
             <p class="muted mini">
-              Statut : ${escapeHtml(c.status)} · Étape ${c.currentStep + 1}/${STEPS.length} — ${STEPS[c.currentStep]}<br />
+              Statut : ${escapeHtml(c.status)} · ${escapeHtml(visibleStepProgress(c.currentStep))}<br />
               Dernière mise à jour : ${new Date(c.updatedAt).toLocaleString("fr-FR")}
             </p>
             ${c.status === "à intégrer" ? `
@@ -2496,14 +2582,19 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ${c.status === "à revisiter doucement" ? `
               <div class="notice dangerBox mini">Reprise douce : commencer par Stabiliser, sans ouvrir une nouvelle couche trop vite.</div>
             ` : ""}
-            ${cycleMiniSummary(c) ? `<pre class="summary mini">${escapeHtml(cycleMiniSummary(c))}</pre>` : ""}
+            ${c.rawTextsHidden ? `
+              <div class="notice mini">Textes bruts masqués à l’écran pour ce Cycle.</div>
+            ` : cycleMiniSummary(c) ? `<pre class="summary mini">${escapeHtml(cycleMiniSummary(c))}</pre>` : ""}
             <div class="actions">
               <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
               <button class="ghost" data-action="review-cycle" data-id="${c.id}">Relire la synthèse</button>
               ${c.status === "à intégrer" ? `<button class="ghost" data-action="mark-complete" data-id="${c.id}">Marquer clôturé</button>` : ""}
               <button class="ghost" data-action="export-cycle-json" data-id="${c.id}">Exporter ce Cycle</button>
               <button class="ghost" data-action="export-cycle-anonymized-json" data-id="${c.id}">Exporter anonymisé</button>
+              <button class="ghost" data-action="export-cycle-summary-json" data-id="${c.id}">Exporter synthèse avec textes</button>
+              <button class="ghost" data-action="export-cycle-no-raw-json" data-id="${c.id}">Exporter sans textes bruts</button>
               <button class="ghost" data-action="duplicate-cycle" data-id="${c.id}">Dupliquer</button>
+              <button class="ghost" data-action="toggle-cycle-raw-visibility" data-id="${c.id}">${c.rawTextsHidden ? "Réafficher les textes bruts" : "Masquer les textes bruts"}</button>
               <button class="ghost" data-action="redact-cycle" data-id="${c.id}">Effacer les textes bruts</button>
               <button class="danger" data-action="delete-cycle" data-id="${c.id}">Supprimer</button>
             </div>
@@ -2552,6 +2643,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
               ${option("profond", "Profond", data.settings.depth)}
               ${option("intensif", "Intensif", data.settings.depth)}
             </select>
+
+            <label class="choice">
+              <input type="checkbox" data-setting="oneStepMode" ${data.settings.oneStepMode !== false ? "checked" : ""}>
+              Mode une marche à la fois
+            </label>
+            <p class="muted mini">
+              Pendant un soin, seule l’étape actuelle reste visible. Le chemin complet peut être ouvert à la demande.
+            </p>
 
             <label>Mode de langage</label>
             <select data-setting="languageMode">
@@ -2864,7 +2963,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       if (el.dataset.boundSetting === "1") return;
       el.dataset.boundSetting = "1";
       el.addEventListener("change", () => {
-        data.settings[el.dataset.setting] = el.value;
+        data.settings[el.dataset.setting] = el.type === "checkbox" ? el.checked : el.value;
         saveData();
         render();
       });
@@ -2976,6 +3075,15 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (action === "prev-step") setStep((activeCycle()?.currentStep || 0) - 1);
 
     if (action === "next-step") advanceStep();
+
+    if (action === "toggle-full-path") {
+      const c = activeCycle();
+      if (!c) return;
+      c.showFullPath = c.showFullPath !== true;
+      c.updatedAt = nowISO();
+      saveData();
+      render();
+    }
 
     if (action === "save-and-close") {
       updateCycle({ status: "en pause" });
@@ -3094,6 +3202,26 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "export-cycle-anonymized-json") {
       exportCycleJson(el.dataset.id, { anonymized: true });
+    }
+
+    if (action === "export-cycle-summary-json") {
+      exportCycleJson(el.dataset.id, { summaryOnly: true });
+    }
+
+    if (action === "export-cycle-no-raw-json") {
+      exportCycleJson(el.dataset.id, { withoutRawTexts: true });
+    }
+
+    if (action === "toggle-cycle-raw-visibility") {
+      const cycle = data.cycles.find(item => item.id === el.dataset.id);
+      if (!cycle) return;
+      cycle.rawTextsHidden = cycle.rawTextsHidden !== true;
+      cycle.updatedAt = nowISO();
+      setNotice(cycle.rawTextsHidden
+        ? "Textes bruts masqués à l’écran pour ce Cycle. Les données restent présentes localement."
+        : "Textes bruts réaffichés pour ce Cycle.");
+      saveData();
+      render();
     }
 
     if (action === "library-search") {
@@ -3564,9 +3692,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const date = new Date().toISOString().slice(0, 10);
     const name = slugify(cycle.title || "cycle");
     a.href = url;
-    a.download = options.anonymized
-      ? `feu-clair-cycle-anonymise-${date}.json`
-      : `feu-clair-cycle-${name || "cycle"}-${date}.json`;
+    a.download = options.summaryOnly
+      ? `feu-clair-cycle-synthese-${name || "cycle"}-${date}.json`
+      : options.withoutRawTexts
+        ? `feu-clair-cycle-sans-textes-bruts-${name || "cycle"}-${date}.json`
+        : options.anonymized
+          ? `feu-clair-cycle-anonymise-${date}.json`
+          : `feu-clair-cycle-${name || "cycle"}-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
