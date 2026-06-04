@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.17.0</title>
+  <title>Feu Clair — v2.20.0</title>
 
   <style>
     :root {
@@ -630,7 +630,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.17.0</h1>
+        <h1>Feu Clair — v2.20.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -646,7 +646,7 @@
 
 <script>
 /*
-  Feu Clair — v2.17.0
+  Feu Clair — v2.20.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -663,7 +663,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.17.0";
+  const APP_VERSION = "2.20.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -1586,6 +1586,93 @@
     ].filter(Boolean).join("\n");
   }
 
+  function carnetFilters() {
+    data.settings.carnetFilters ||= { status: "", family: "", zone: "", quality: "" };
+    return data.settings.carnetFilters;
+  }
+
+  function cycleFacetValues(cycle, facet) {
+    const answers = cycle.answers || {};
+    if (facet === "family") return answers[2]?.families || [];
+    if (facet === "zone") return [...new Set([...(cycle.entry?.zones || []), ...(answers[3]?.bodySignals || [])])];
+    if (facet === "quality") return answers[7]?.qualities || [];
+    return [];
+  }
+
+  function carnetFilterValues(facet) {
+    return [...new Set(data.cycles.flatMap(cycle => cycleFacetValues(cycle, facet)).filter(Boolean))]
+      .sort((a, b) => String(a).localeCompare(String(b), "fr"));
+  }
+
+  function filteredCarnetCycles() {
+    const filters = carnetFilters();
+    return data.cycles.filter(cycle => (
+      (!filters.status || cycle.status === filters.status)
+      && (!filters.family || cycleFacetValues(cycle, "family").includes(filters.family))
+      && (!filters.zone || cycleFacetValues(cycle, "zone").includes(filters.zone))
+      && (!filters.quality || cycleFacetValues(cycle, "quality").includes(filters.quality))
+    ));
+  }
+
+  function mostFrequentCycleValue(values) {
+    const counts = new Map();
+    values.filter(Boolean).forEach(value => counts.set(value, (counts.get(value) || 0) + 1));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+  }
+
+  function carnetObservations() {
+    if (data.cycles.length < 2) return [];
+    const observations = [];
+    const family = mostFrequentCycleValue(data.cycles.flatMap(cycle => cycleFacetValues(cycle, "family")));
+    const zone = mostFrequentCycleValue(data.cycles.flatMap(cycle => cycleFacetValues(cycle, "zone")));
+    const quality = mostFrequentCycleValue(data.cycles.flatMap(cycle => cycleFacetValues(cycle, "quality")));
+    const exit = mostFrequentCycleValue(data.cycles.map(cycle => cycle.answers?.[6]?.exit));
+    const openActions = data.cycles.filter(cycle => {
+      const followUp = cycle.integrationFollowUp?.answers || {};
+      return followUp.actionDone === "pas encore" || followUp.boundaryPlaced === "pas encore";
+    }).length;
+
+    if (family?.[1] >= 2) observations.push(`La famille “${family[0]}” semble revenir dans plusieurs traversées. C’est une piste possible à observer doucement.`);
+    if (zone?.[1] >= 2) observations.push(`La zone “${zone[0]}” revient souvent comme porte d’entrée. Elle peut être écoutée sans en faire une preuve.`);
+    if (exit?.[1] >= 2) observations.push(`La sortie “${exit[0]}” semble avoir été choisie plusieurs fois. Elle est peut-être une ressource disponible.`);
+    if (quality?.[1] >= 2) observations.push(`La qualité “${quality[0]}” revient souvent après les soins. Elle peut être un pilier à nourrir.`);
+    if (openActions) observations.push(`${openActions} Cycle${openActions > 1 ? "s ont" : " a"} encore une limite ou une action ouverte selon le suivi d’intégration.`);
+    return observations.slice(0, 4);
+  }
+
+  function createIntegrationFollowUp(schedule = "tomorrow") {
+    const createdAt = nowISO();
+    return {
+      schedule,
+      createdAt,
+      dueAt: integrationDueAt(schedule, createdAt),
+      updatedAt: createdAt,
+      answers: {}
+    };
+  }
+
+  function integrationDueAt(schedule, from = nowISO()) {
+    const date = new Date(from);
+    if (schedule === "tomorrow") date.setHours(date.getHours() + 24);
+    else if (schedule === "72h") date.setHours(date.getHours() + 72);
+    else return "";
+    return date.toISOString();
+  }
+
+  function followUpScheduleLabel(followUp) {
+    if (followUp.schedule === "reactivation") return "Repère choisi : revisiter seulement si le feu se réactive.";
+    if (followUp.schedule === "none") return "Aucun rappel automatique : ce Cycle peut simplement rester dans le Carnet.";
+    if (!followUp.dueAt) return "Choisis un repère de suivi.";
+    return `Repère de suivi : ${new Date(followUp.dueAt).toLocaleString("fr-FR")}. Aucune notification ne sera envoyée.`;
+  }
+
+  function ensureIntegrationFollowUp(cycle) {
+    if (!cycle.integrationFollowUp) {
+      cycle.integrationFollowUp = createIntegrationFollowUp(cycle.answers?.[9]?.followUpPlan || "tomorrow");
+    }
+    return cycle.integrationFollowUp;
+  }
+
   function visibleCycleTitle(cycle, index = 0) {
     if (cycle.rawTextsHidden) return `Cycle aux textes masqués${index ? ` ${index + 1}` : ""}`;
     if (!data.settings.privacy?.maskSensitiveTitles) return cycle.title || "Cycle sans titre";
@@ -1614,7 +1701,8 @@
         createdAt: cycle.createdAt || "",
         updatedAt: cycle.updatedAt || "",
         notes: "",
-        answers: anonymizeAnswers(cycle.answers || {})
+        answers: anonymizeAnswers(cycle.answers || {}),
+        integrationFollowUp: anonymizeIntegrationFollowUp(cycle.integrationFollowUp)
       })),
       microSessions: [],
       bodyScans: (data.bodyScans || []).map(scan => ({
@@ -1670,6 +1758,7 @@
       copy.title = "Cycle anonymisé";
       copy.notes = "";
       copy.answers = anonymizeAnswers(copy.answers || {});
+      copy.integrationFollowUp = anonymizeIntegrationFollowUp(copy.integrationFollowUp);
     }
     return {
       app: "feu-clair",
@@ -1708,6 +1797,24 @@
     ]));
   }
 
+  function anonymizeIntegrationFollowUp(followUp) {
+    if (!followUp) return null;
+    return {
+      schedule: followUp.schedule || "",
+      createdAt: followUp.createdAt || "",
+      dueAt: followUp.dueAt || "",
+      updatedAt: followUp.updatedAt || "",
+      answers: {
+        chargeReturned: followUp.answers?.chargeReturned || "",
+        qualityPresent: followUp.answers?.qualityPresent || "",
+        boundaryPlaced: followUp.answers?.boundaryPlaced || "",
+        actionDone: followUp.answers?.actionDone || "",
+        bodyState: followUp.answers?.bodyState || "",
+        notes: ""
+      }
+    };
+  }
+
   function redactCycleRawTexts(cycle) {
     const textKeys = [
       "intention",
@@ -1738,6 +1845,7 @@
       });
     });
     cycle.notes = "";
+    if (cycle.integrationFollowUp?.answers?.notes) cycle.integrationFollowUp.answers.notes = "[texte effacé]";
     cycle.updatedAt = nowISO();
   }
 
@@ -2325,6 +2433,15 @@
         <label>Prochaine marche douce</label>
         <textarea data-field="nextGentleStep" placeholder="Ex : ne rien rouvrir aujourd’hui, dormir, imprimer la synthèse, demander soutien demain.">${escapeHtml(a.nextGentleStep || "")}</textarea>
 
+        <label>Souhait de suivi dans le Carnet</label>
+        <select data-field="followUpPlan">
+          ${option("tomorrow", "À revoir demain", a.followUpPlan || "tomorrow")}
+          ${option("72h", "À revoir dans 72 heures", a.followUpPlan || "tomorrow")}
+          ${option("reactivation", "À revisiter seulement si réactivation", a.followUpPlan || "tomorrow")}
+          ${option("none", "Ne pas revoir automatiquement", a.followUpPlan || "tomorrow")}
+        </select>
+        <p class="muted mini">Aucune notification ne sera envoyée. Ce repère restera seulement visible dans le Carnet.</p>
+
         <div class="actions">
           <button class="primary" data-action="archive-cycle">Clôturer ce Cycle</button>
           <button class="ghost" data-action="print">Imprimer / PDF</button>
@@ -2629,7 +2746,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function renderCarnet() {
-    const cycles = data.cycles;
+    const cycles = filteredCarnetCycles();
+    const filters = carnetFilters();
+    const observations = carnetObservations();
     return `
       <section class="grid">
         <div class="card">
@@ -2639,7 +2758,54 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <button class="primary" data-action="new-cycle">Nouveau Cycle</button>
             <button class="ghost" data-action="print">Imprimer</button>
           </div>
+
+          <details>
+            <summary>Filtrer le Carnet</summary>
+            <div class="grid two">
+              <div>
+                <label>Statut</label>
+                <select data-carnet-filter="status">
+                  ${option("", "Tous les statuts", filters.status)}
+                  ${CYCLE_STATUSES.map(status => option(status, status, filters.status)).join("")}
+                </select>
+              </div>
+              <div>
+                <label>Famille</label>
+                <select data-carnet-filter="family">
+                  ${option("", "Toutes les familles", filters.family)}
+                  ${carnetFilterValues("family").map(value => option(value, value, filters.family)).join("")}
+                </select>
+              </div>
+              <div>
+                <label>Zone corporelle</label>
+                <select data-carnet-filter="zone">
+                  ${option("", "Toutes les zones", filters.zone)}
+                  ${carnetFilterValues("zone").map(value => option(value, value, filters.zone)).join("")}
+                </select>
+              </div>
+              <div>
+                <label>Qualité récupérée</label>
+                <select data-carnet-filter="quality">
+                  ${option("", "Toutes les qualités", filters.quality)}
+                  ${carnetFilterValues("quality").map(value => option(value, value, filters.quality)).join("")}
+                </select>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="ghost" data-action="clear-carnet-filters">Effacer les filtres</button>
+            </div>
+          </details>
         </div>
+
+        ${observations.length ? `
+          <div class="card">
+            <h3>Observations douces</h3>
+            <p class="muted mini">Pistes locales à vérifier selon le terrain. Elles ne sont ni des scores ni des conclusions.</p>
+            <div class="grid">
+              ${observations.map(text => `<div class="notice softBox mini">${escapeHtml(text)}</div>`).join("")}
+            </div>
+          </div>
+        ` : ""}
 
         ${cycles.length ? cycles.map((c, index) => `
           <div class="card">
@@ -2657,6 +2823,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ${c.rawTextsHidden ? `
               <div class="notice mini">Textes bruts masqués à l’écran pour ce Cycle.</div>
             ` : cycleMiniSummary(c) ? `<pre class="summary mini">${escapeHtml(cycleMiniSummary(c))}</pre>` : ""}
+            ${renderIntegrationFollowUp(c)}
             <div class="actions">
               <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
               <button class="ghost" data-action="review-cycle" data-id="${c.id}">Relire la synthèse</button>
@@ -2673,10 +2840,83 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </div>
         `).join("") : `
           <div class="card">
-            <p class="muted">Aucun Cycle de Feu enregistré.</p>
+            <p class="muted">${data.cycles.length ? "Aucun Cycle ne correspond aux filtres actuels." : "Aucun Cycle de Feu enregistré."}</p>
           </div>
         `}
       </section>
+    `;
+  }
+
+  function renderIntegrationFollowUp(cycle) {
+    if (!["à intégrer", "clôturé", "à revisiter doucement"].includes(cycle.status) && !cycle.integrationFollowUp) return "";
+    const followUp = cycle.integrationFollowUp || createIntegrationFollowUp(cycle.answers?.[9]?.followUpPlan || "tomorrow");
+    const answers = followUp.answers || {};
+    return `
+      <details class="integration-follow-up" data-follow-up-cycle="${escapeAttr(cycle.id)}">
+        <summary>Suivi d’intégration 24h / 72h</summary>
+        <p class="muted mini">${escapeHtml(followUpScheduleLabel(followUp))}</p>
+
+        <label>Quand revoir ce Cycle ?</label>
+        <select data-follow-up-field="schedule">
+          ${option("tomorrow", "À revoir demain", followUp.schedule)}
+          ${option("72h", "À revoir dans 72 heures", followUp.schedule)}
+          ${option("reactivation", "Seulement si réactivation", followUp.schedule)}
+          ${option("none", "Ne pas revoir automatiquement", followUp.schedule)}
+        </select>
+
+        <label>La charge est-elle revenue ?</label>
+        <select data-follow-up-field="chargeReturned">
+          ${option("", "Je ne sais pas encore", answers.chargeReturned || "")}
+          ${option("non", "Non", answers.chargeReturned || "")}
+          ${option("moins forte", "Oui, mais moins forte", answers.chargeReturned || "")}
+          ${option("semblable", "Oui, de manière semblable", answers.chargeReturned || "")}
+          ${option("plus forte", "Oui, plus forte", answers.chargeReturned || "")}
+        </select>
+
+        <label>La qualité récupérée est-elle encore présente ?</label>
+        <select data-follow-up-field="qualityPresent">
+          ${option("", "Je ne sais pas encore", answers.qualityPresent || "")}
+          ${option("oui", "Oui", answers.qualityPresent || "")}
+          ${option("partiellement", "Partiellement", answers.qualityPresent || "")}
+          ${option("non", "Non", answers.qualityPresent || "")}
+        </select>
+
+        <label>La limite a-t-elle été posée ?</label>
+        <select data-follow-up-field="boundaryPlaced">
+          ${option("", "Je ne sais pas encore", answers.boundaryPlaced || "")}
+          ${option("oui", "Oui", answers.boundaryPlaced || "")}
+          ${option("pas encore", "Pas encore", answers.boundaryPlaced || "")}
+          ${option("non nécessaire", "Non nécessaire", answers.boundaryPlaced || "")}
+        </select>
+
+        <label>L’action prévue a-t-elle été faite ?</label>
+        <select data-follow-up-field="actionDone">
+          ${option("", "Je ne sais pas encore", answers.actionDone || "")}
+          ${option("oui", "Oui", answers.actionDone || "")}
+          ${option("pas encore", "Pas encore", answers.actionDone || "")}
+          ${option("non nécessaire", "Non nécessaire", answers.actionDone || "")}
+        </select>
+
+        <label>Comment le corps se sent-il maintenant ?</label>
+        <select data-follow-up-field="bodyState">
+          ${option("", "Je ne sais pas encore", answers.bodyState || "")}
+          ${option("plus clair", "Plus clair", answers.bodyState || "")}
+          ${option("fatigué", "Fatigué", answers.bodyState || "")}
+          ${option("vide", "Vide", answers.bodyState || "")}
+          ${option("calme", "Calme", answers.bodyState || "")}
+          ${option("fermé", "Fermé", answers.bodyState || "")}
+          ${option("vivant", "Vivant", answers.bodyState || "")}
+          ${option("encore chargé", "Encore chargé", answers.bodyState || "")}
+        </select>
+
+        <label>Observation douce</label>
+        <textarea data-follow-up-field="notes" placeholder="Ex : la charge est descendue, mais la limite reste à poser...">${escapeHtml(answers.notes || "")}</textarea>
+
+        <div class="actions">
+          <button class="primary" data-action="save-integration-follow-up" data-id="${escapeAttr(cycle.id)}">Enregistrer ce suivi</button>
+          <button class="ghost" data-action="mark-follow-up-revisit" data-id="${escapeAttr(cycle.id)}">À revisiter doucement</button>
+        </div>
+      </details>
     `;
   }
 
@@ -3131,7 +3371,24 @@ Assez pour aujourd’hui si le corps le demande.</p>
       ``,
       `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`,
       `Intégration : ${(a9.integrationDone || []).join(", ") || "—"}`,
-      `Prochaine marche douce : ${a9.nextGentleStep || "—"}`
+      `Prochaine marche douce : ${a9.nextGentleStep || "—"}`,
+      cycleFollowUpSummary(c)
+    ].join("\n");
+  }
+
+  function cycleFollowUpSummary(cycle) {
+    const followUp = cycle.integrationFollowUp;
+    if (!followUp) return "";
+    const answers = followUp.answers || {};
+    return [
+      "",
+      "Suivi d’intégration :",
+      `Charge revenue : ${answers.chargeReturned || "—"}`,
+      `Qualité encore présente : ${answers.qualityPresent || "—"}`,
+      `Limite posée : ${answers.boundaryPlaced || "—"}`,
+      `Action faite : ${answers.actionDone || "—"}`,
+      `État du corps : ${answers.bodyState || "—"}`,
+      `Observation : ${answers.notes || "—"}`
     ].join("\n");
   }
 
@@ -3206,6 +3463,16 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.dataset.boundSetting = "1";
       el.addEventListener("change", () => {
         data.settings[el.dataset.setting] = el.type === "checkbox" ? el.checked : el.value;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-carnet-filter]").forEach(el => {
+      if (el.dataset.boundCarnetFilter === "1") return;
+      el.dataset.boundCarnetFilter = "1";
+      el.addEventListener("change", () => {
+        carnetFilters()[el.dataset.carnetFilter] = el.value;
         saveData();
         render();
       });
@@ -3309,6 +3576,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "new-cycle") createCycle();
 
+    if (action === "clear-carnet-filters") {
+      data.settings.carnetFilters = { status: "", family: "", zone: "", quality: "" };
+      saveData();
+      render();
+    }
+
     if (action === "tools-list") {
       data.activeTab = "outils";
       data.activeTool = null;
@@ -3406,6 +3679,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       if (c) {
         c.answers[9] ||= {};
         c.answers[9].closingPreset ||= c.answers[9].closingPhrase || defaultClosingPhrase();
+        c.integrationFollowUp = createIntegrationFollowUp(c.answers[9].followUpPlan || "tomorrow");
       }
       updateCycle({ status: "à intégrer" });
       setNotice("Cycle clôturé. Cette charge est libérée maintenant ; si ce feu revient, il revient comme signal, non comme prison.");
@@ -3436,6 +3710,20 @@ Assez pour aujourd’hui si le corps le demande.</p>
       c.status = "clôturé";
       c.updatedAt = nowISO();
       setNotice("Cycle marqué comme clôturé. La synthèse reste disponible dans le Carnet.");
+      saveData();
+      render();
+    }
+
+    if (action === "save-integration-follow-up") {
+      saveIntegrationFollowUp(el.dataset.id, el.closest("[data-follow-up-cycle]"));
+    }
+
+    if (action === "mark-follow-up-revisit") {
+      const c = data.cycles.find(cycle => cycle.id === el.dataset.id);
+      if (!c) return;
+      c.status = "à revisiter doucement";
+      c.updatedAt = nowISO();
+      setNotice("Cycle marqué à revisiter doucement. Une reprise commencera par Stabiliser.");
       saveData();
       render();
     }
@@ -3851,6 +4139,31 @@ Assez pour aujourd’hui si le corps le demande.</p>
       phrase: document.querySelector("#micro-phrase")?.value || "",
       closing: document.querySelector("#micro-closing")?.value || defaultClosingPhrase()
     };
+  }
+
+  function saveIntegrationFollowUp(cycleId, container) {
+    const cycle = data.cycles.find(item => item.id === cycleId);
+    if (!cycle || !container) return;
+    const followUp = ensureIntegrationFollowUp(cycle);
+    const previousSchedule = followUp.schedule;
+    const value = field => container.querySelector(`[data-follow-up-field="${field}"]`)?.value || "";
+    followUp.schedule = value("schedule") || "tomorrow";
+    if (followUp.schedule !== previousSchedule || !followUp.dueAt) {
+      followUp.dueAt = integrationDueAt(followUp.schedule);
+    }
+    followUp.answers = {
+      chargeReturned: value("chargeReturned"),
+      qualityPresent: value("qualityPresent"),
+      boundaryPlaced: value("boundaryPlaced"),
+      actionDone: value("actionDone"),
+      bodyState: value("bodyState"),
+      notes: value("notes")
+    };
+    followUp.updatedAt = nowISO();
+    cycle.updatedAt = nowISO();
+    setNotice("Suivi d’intégration enregistré dans le Carnet.");
+    saveData();
+    render();
   }
 
   function addCustomLibraryEntry() {
