@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v2.20.0</title>
+  <title>Feu Clair — v3.0.0</title>
 
   <style>
     :root {
@@ -630,7 +630,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v2.20.0</h1>
+        <h1>Feu Clair — v3.0.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -646,24 +646,21 @@
 
 <script>
 /*
-  Feu Clair — v2.20.0
+  Feu Clair — v3.0.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
 
-  Prochaines extensions naturelles :
-  - bibliothèques éditables
-  - carte corporelle visuelle
-  - moteur de filtrage par tags
-  - outils corporels détaillés
-  - exports imprimables plus beaux
-  - chiffrement local optionnel
+  Socle V3 :
+  - extensions séparées, optionnelles et désactivées par défaut
+  - données V3 versionnées et compatibles avec les exports V2
+  - aucun changement du parcours principal tant qu'une extension est inactive
 */
 
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "2.20.0";
+  const APP_VERSION = "3.0.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -726,6 +723,30 @@
     bodyScans: [],
     bodyMemorySessions: [],
     authoritySessions: [],
+    extensionsV3: {
+      schemaVersion: 1,
+      enabled: {
+        seals: false,
+        languageProfiles: false,
+        companionMode: false,
+        richPrint: false,
+        visualBodyMap: false,
+        screenlessMode: false,
+        advancedPatterns: false,
+        cycleMap: false,
+        localVoiceMeter: false
+      },
+      seals: [],
+      languageProfiles: [],
+      companion: {
+        displayLockEnabled: false
+      },
+      printPreferences: {
+        includeSeal: true,
+        includeRawTexts: true,
+        includeConfidentialityNote: true
+      }
+    },
     library: {
       families: [
         { id: "limite", label: "Limite violée", mode: "doux", tags: ["limite", "corps", "consentement"], active: true },
@@ -1115,6 +1136,11 @@
     normalized.bodyScans ||= [];
     normalized.bodyMemorySessions ||= [];
     normalized.authoritySessions ||= [];
+    normalized.extensionsV3 = mergeDefaults(DEFAULT_DATA.extensionsV3, normalized.extensionsV3 || {});
+    normalized.extensionsV3.enabled = mergeDefaults(DEFAULT_DATA.extensionsV3.enabled, normalized.extensionsV3.enabled || {});
+    normalized.extensionsV3.seals = Array.isArray(normalized.extensionsV3.seals) ? normalized.extensionsV3.seals : [];
+    normalized.extensionsV3.languageProfiles = Array.isArray(normalized.extensionsV3.languageProfiles) ? normalized.extensionsV3.languageProfiles : [];
+    normalized.extensionsV3.schemaVersion = DEFAULT_DATA.extensionsV3.schemaVersion;
     normalized.library = mergeLibraryDefaults(normalized.library || {});
     normalized.lastNotice ||= null;
     return normalized;
@@ -2920,6 +2946,20 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
+  function v3ExtensionDefinitions() {
+    return [
+      { id: "seals", label: "Sceaux visuels locaux", description: "Une intention ou une qualité représentée par un symbole sobre et imprimable." },
+      { id: "languageProfiles", label: "Profils de langage", description: "Des formulations adaptées sans changer la logique ni les règles de sécurité." },
+      { id: "companionMode", label: "Mode accompagnant", description: "Une vue sans réponses intimes pour un être de confiance." },
+      { id: "richPrint", label: "Exports imprimables riches", description: "Des impressions préparées avec choix explicite des sections." },
+      { id: "visualBodyMap", label: "Carte corporelle visuelle", description: "Un corps symbolique SVG relié au scan autonome existant." },
+      { id: "screenlessMode", label: "Mode sans écran", description: "Une pratique courte à préparer avant de poser l’écran." },
+      { id: "advancedPatterns", label: "Motifs récurrents avancés", description: "Des observations douces, locales, sans score ni diagnostic." },
+      { id: "cycleMap", label: "Cartographie douce des cycles", description: "Quelques liens lisibles entre les traversées, sans dashboard lourd." },
+      { id: "localVoiceMeter", label: "Alchimètre vocal local", description: "Une visualisation optionnelle du souffle ou du son, sans analyse des mots." }
+    ];
+  }
+
   function renderSanctuaire() {
     const search = data.settings.librarySearch || "";
     const results = librarySearchResults(search);
@@ -3011,6 +3051,33 @@ Assez pour aujourd’hui si le corps le demande.</p>
               Les extensions et contenus sensibles restent optionnels. Le chemin principal demeure : reconnaître, stabiliser, traverser, rendre, garder la force, puis fermer.
             </div>
           </div>
+        </div>
+
+        <div class="card">
+          <details>
+            <summary>Extensions V3</summary>
+            <p class="muted">
+              Les extensions enrichissent le soin ; elles ne sont jamais nécessaires pour traverser une colère.
+              Elles restent séparées, locales et désactivées par défaut.
+            </p>
+            <div class="notice mini">
+              Activer une préférence prépare son usage futur sans ouvrir automatiquement un outil ni modifier le parcours principal.
+            </div>
+            <div class="grid two">
+              ${v3ExtensionDefinitions().map(extension => `
+                <label class="choice">
+                  <input type="checkbox" data-extension-toggle="${escapeAttr(extension.id)}" ${data.extensionsV3?.enabled?.[extension.id] ? "checked" : ""}>
+                  <span>
+                    <strong>${escapeHtml(extension.label)}</strong><br />
+                    <span class="muted mini">${escapeHtml(extension.description)}</span>
+                  </span>
+                </label>
+              `).join("")}
+            </div>
+            <p class="muted mini">
+              Les anciens exports V2 restent importables. Les données V3 utilisent une structure versionnée afin que chaque extension puisse évoluer sans casser les Cycles existants.
+            </p>
+          </details>
         </div>
 
         <div class="grid two">
@@ -3495,6 +3562,18 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.addEventListener("change", () => {
         data.settings.advancedContent ||= cloneData(DEFAULT_DATA.settings.advancedContent);
         data.settings.advancedContent[el.dataset.advancedSetting] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-extension-toggle]").forEach(el => {
+      if (el.dataset.boundExtensionToggle === "1") return;
+      el.dataset.boundExtensionToggle = "1";
+      el.addEventListener("change", () => {
+        data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+        data.extensionsV3.enabled ||= cloneData(DEFAULT_DATA.extensionsV3.enabled);
+        data.extensionsV3.enabled[el.dataset.extensionToggle] = el.checked;
         saveData();
         render();
       });
