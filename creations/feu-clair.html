@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.3.0</title>
+  <title>Feu Clair — v3.4.0</title>
 
   <style>
     :root {
@@ -621,6 +621,45 @@
       background: color-mix(in srgb, var(--good) 14%, var(--surface));
     }
 
+    .print-preview {
+      max-width: 52rem;
+      margin: 0 auto;
+    }
+
+    .print-preview-page {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .print-cover {
+      min-height: 18rem;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .print-document-section {
+      margin: 0 0 1rem;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print-document-section h2,
+    .print-document-section h3 {
+      margin-bottom: .4rem;
+    }
+
+    .print-cycle-block + .print-cycle-block {
+      margin-top: 1.2rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--line);
+    }
+
     @media (max-width: 760px) {
       header { padding: .8rem; }
       main { padding: .8rem; }
@@ -639,7 +678,7 @@
         margin: 14mm;
       }
 
-      header, nav, .actions, .toolbar, button, input[type="file"], .body-return-panel {
+      header, nav, .actions, .toolbar, button, input[type="file"], .body-return-panel, .no-print {
         display: none !important;
       }
 
@@ -700,6 +739,25 @@
       .seal-mark {
         color: #111 !important;
       }
+
+      .print-preview {
+        max-width: none !important;
+      }
+
+      .print-preview-page {
+        border: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+
+      .print-cover {
+        min-height: 235mm;
+      }
+
+      .print-document-section,
+      .print-cycle-block {
+        color: #111 !important;
+      }
     }
 
     [data-theme="dark"] button.ghost {
@@ -735,7 +793,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.3.0</h1>
+        <h1>Feu Clair — v3.4.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -751,7 +809,7 @@
 
 <script>
 /*
-  Feu Clair — v3.3.0
+  Feu Clair — v3.4.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -765,7 +823,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.3.0";
+  const APP_VERSION = "3.4.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -830,7 +888,7 @@
     bodyMemorySessions: [],
     authoritySessions: [],
     extensionsV3: {
-      schemaVersion: 3,
+      schemaVersion: 4,
       enabled: {
         seals: false,
         languageProfiles: false,
@@ -849,9 +907,17 @@
         displayLockEnabled: false
       },
       printPreferences: {
+        format: "complete",
         includeSeal: true,
         includeRawTexts: true,
-        includeConfidentialityNote: true
+        includeConfidentialityNote: true,
+        includeCover: true,
+        includeDate: true,
+        maskTitle: false,
+        includeSummary: true,
+        includeClosing: true,
+        includeIntegration: true,
+        selectedCycleIds: []
       }
     },
     library: {
@@ -1104,6 +1170,7 @@
   let bodyReturnContext = null;
   let companionViewOpen = false;
   let companionReturnLocked = false;
+  let printPreviewOpen = false;
   const openDetailsState = new Map();
   let renderedTab = data.activeTab;
 
@@ -2300,6 +2367,13 @@
   function render() {
     document.querySelector("#app").dataset.theme = data.settings.theme;
     captureOpenDetails();
+    if (printPreviewOpen && data.extensionsV3?.enabled?.richPrint) {
+      renderTabs({ locked: true });
+      document.querySelector("#view").innerHTML = renderPrintPreview();
+      renderedTab = data.activeTab;
+      bindDynamicEvents();
+      return;
+    }
     if (companionViewOpen && data.extensionsV3?.enabled?.companionMode) {
       renderTabs({ locked: true });
       document.querySelector("#view").innerHTML = renderCompanionView();
@@ -2474,6 +2548,272 @@
             <button class="ghost" data-action="cancel-leave-companion-view">Rester en vue accompagnant</button>
           </div>
         </div>
+      </div>
+    `;
+  }
+
+  function printPreferences() {
+    data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+    data.extensionsV3.printPreferences ||= cloneData(DEFAULT_DATA.extensionsV3.printPreferences);
+    return data.extensionsV3.printPreferences;
+  }
+
+  function selectedPrintCycles() {
+    const preferences = printPreferences();
+    const selectedIds = Array.isArray(preferences.selectedCycleIds) ? preferences.selectedCycleIds : [];
+    const selected = data.cycles.filter(cycle => selectedIds.includes(cycle.id));
+    if (selected.length) return selected;
+    const current = activeCycle();
+    return current ? [current] : data.cycles.slice(0, 1);
+  }
+
+  function printCycleTitle(cycle, index = 0) {
+    return printPreferences().maskTitle ? `Cycle masqué ${index + 1}` : cycle.title || "Cycle sans titre";
+  }
+
+  function renderPrintPreparation() {
+    const preferences = printPreferences();
+    const selectedIds = Array.isArray(preferences.selectedCycleIds) ? preferences.selectedCycleIds : [];
+    return `
+      <details data-details-key="rich-print-preparation">
+        <summary>Préparer une impression ou un PDF</summary>
+        <p class="muted mini">
+          Choisis d’abord ce qui doit apparaître. La prévisualisation devient ensuite l’unique contenu imprimé.
+        </p>
+
+        <label>Type de document</label>
+        <select data-print-format>
+          ${option("complete", "Synthèse personnelle complète", preferences.format)}
+          ${option("no-raw", "Synthèse sans textes bruts", preferences.format)}
+          ${option("integration", "Fiche d’intégration 24h / 72h", preferences.format)}
+          ${option("companion", "Fiche accompagnant sans réponses", preferences.format)}
+          ${option("seal", "Sceau visuel et phrase de clôture", preferences.format)}
+          ${option("notebook", "Carnet sélectionné de plusieurs Cycles", preferences.format)}
+        </select>
+
+        <label>Cycles à inclure</label>
+        <div class="pill-list">
+          ${data.cycles.length ? data.cycles.map((cycle, index) => `
+            <label class="choice">
+              <input type="checkbox" data-print-cycle-id="${escapeAttr(cycle.id)}" ${selectedIds.includes(cycle.id) ? "checked" : ""}>
+              ${escapeHtml(visibleCycleTitle(cycle, index))}
+            </label>
+          `).join("") : `<span class="muted mini">Aucun Cycle enregistré pour l’instant.</span>`}
+        </div>
+        <p class="muted mini">Sans sélection explicite, le Cycle actif est utilisé.</p>
+
+        <label class="choice">
+          <input type="checkbox" data-print-preference="includeCover" ${preferences.includeCover !== false ? "checked" : ""}>
+          Ajouter une page de garde
+        </label>
+        <label class="choice">
+          <input type="checkbox" data-print-preference="includeDate" ${preferences.includeDate !== false ? "checked" : ""}>
+          Afficher la date
+        </label>
+        <label class="choice">
+          <input type="checkbox" data-print-preference="maskTitle" ${preferences.maskTitle ? "checked" : ""}>
+          Masquer les titres des Cycles
+        </label>
+        <label class="choice">
+          <input type="checkbox" data-print-preference="includeConfidentialityNote" ${preferences.includeConfidentialityNote !== false ? "checked" : ""}>
+          Ajouter une note de confidentialité
+        </label>
+        ${data.extensionsV3?.enabled?.seals ? `
+          <label class="choice">
+            <input type="checkbox" data-print-preference="includeSeal" ${preferences.includeSeal !== false ? "checked" : ""}>
+            Inclure les sceaux visuels
+          </label>
+        ` : ""}
+
+        <label>Sections à inclure</label>
+        <div class="pill-list">
+          <label class="choice">
+            <input type="checkbox" data-print-preference="includeSummary" ${preferences.includeSummary !== false ? "checked" : ""}>
+            Synthèse du Cycle
+          </label>
+          <label class="choice">
+            <input type="checkbox" data-print-preference="includeClosing" ${preferences.includeClosing !== false ? "checked" : ""}>
+            Phrase de clôture
+          </label>
+          <label class="choice">
+            <input type="checkbox" data-print-preference="includeIntegration" ${preferences.includeIntegration !== false ? "checked" : ""}>
+            Suivi d’intégration
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="primary" data-action="open-print-preview">Prévisualiser le document</button>
+        </div>
+      </details>
+    `;
+  }
+
+  function printFormatLabel(format) {
+    const labels = {
+      complete: "Synthèse personnelle complète",
+      "no-raw": "Synthèse sans textes bruts",
+      integration: "Fiche d’intégration 24h / 72h",
+      companion: "Fiche accompagnant sans réponses",
+      seal: "Sceau visuel et phrase de clôture",
+      notebook: "Carnet sélectionné de Cycles"
+    };
+    return labels[format] || labels.complete;
+  }
+
+  function renderPrintPreview() {
+    const preferences = printPreferences();
+    const cycles = selectedPrintCycles();
+    const format = preferences.format || "complete";
+    return `
+      <section class="grid print-preview">
+        <div class="card no-print">
+          <h2>Prévisualisation d’impression</h2>
+          <p class="muted">Vérifie ce qui sera visible avant d’ouvrir la boîte de dialogue d’impression.</p>
+          <div class="actions">
+            <button class="primary" data-action="print">Imprimer / PDF</button>
+            <button class="ghost" data-action="close-print-preview">Modifier la préparation</button>
+          </div>
+        </div>
+        <article class="print-preview-page">
+          ${preferences.includeCover !== false ? renderPrintCover(format, cycles) : ""}
+          ${preferences.includeConfidentialityNote !== false ? `
+            <div class="notice mini print-document-section">
+              Document local et confidentiel. Vérifie le lieu d’impression, les destinataires et la conservation du PDF.
+            </div>
+          ` : ""}
+          ${cycles.length ? cycles.map((cycle, index) => renderPrintCycleDocument(cycle, index, format)).join("") : `
+            <div class="print-document-section">
+              <h2>Aucun Cycle disponible</h2>
+              <p>Crée ou sélectionne un Cycle avant de préparer ce document.</p>
+            </div>
+          `}
+        </article>
+      </section>
+    `;
+  }
+
+  function renderPrintCover(format, cycles) {
+    const preferences = printPreferences();
+    return `
+      <div class="print-cover">
+        <div>
+          <p class="muted">Feu Clair</p>
+          <h1>${escapeHtml(printFormatLabel(format))}</h1>
+          <p>${cycles.length} Cycle${cycles.length > 1 ? "s" : ""} sélectionné${cycles.length > 1 ? "s" : ""}</p>
+          ${preferences.includeDate !== false ? `<p>${new Date().toLocaleDateString("fr-FR")}</p>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPrintCycleDocument(cycle, index, format) {
+    const title = format === "companion" ? `Cycle accompagné ${index + 1}` : printCycleTitle(cycle, index);
+    const preferences = printPreferences();
+    const answers = cycle.answers || {};
+    const closing = answers[9]?.closingPreset || answers[9]?.closingPhrase || defaultClosingPhrase();
+    const guidance = companionStepGuidance(cycle.currentStep || 0);
+    const followUp = cycle.integrationFollowUp?.answers || {};
+    const commonHeader = `
+      <div class="print-document-section">
+        <h2>${escapeHtml(title)}</h2>
+        <p class="muted mini">
+          Statut : ${escapeHtml(cycle.status || "—")} · ${escapeHtml(visibleStepProgress(cycle.currentStep || 0))}
+          ${printPreferences().includeDate !== false ? ` · ${new Date(cycle.updatedAt || cycle.createdAt).toLocaleDateString("fr-FR")}` : ""}
+        </p>
+      </div>
+    `;
+
+    if (format === "companion") {
+      return `
+        <section class="print-cycle-block">
+          ${commonHeader}
+          <div class="print-document-section">
+            <h3>${escapeHtml(guidance.title)}</h3>
+            <p>${escapeHtml(guidance.intro)}</p>
+            <ol>${guidance.actions.map(action => `<li>${escapeHtml(action)}</li>`).join("")}</ol>
+            <p><strong>L’accompagnant ne décide pas à ta place.</strong></p>
+          </div>
+        </section>
+      `;
+    }
+
+    if (format === "integration") {
+      return `
+        <section class="print-cycle-block">
+          ${commonHeader}
+          <div class="print-document-section">
+            <h3>Fiche d’intégration</h3>
+            <p>${escapeHtml(followUpScheduleLabel(cycle.integrationFollowUp || createIntegrationFollowUp(answers[9]?.followUpPlan || "tomorrow")))}</p>
+            <p>Charge revenue : ${escapeHtml(followUp.chargeReturned || "À observer")}</p>
+            <p>Qualité encore présente : ${escapeHtml(followUp.qualityPresent || "À observer")}</p>
+            <p>Limite posée : ${escapeHtml(followUp.boundaryPlaced || "À observer")}</p>
+            <p>Action faite : ${escapeHtml(followUp.actionDone || "À observer")}</p>
+            <p>État du corps : ${escapeHtml(followUp.bodyState || "À observer")}</p>
+            <p>Observation : ${escapeHtml(followUp.notes || "................................................................")}</p>
+          </div>
+        </section>
+      `;
+    }
+
+    if (format === "seal") {
+      return `
+        <section class="print-cycle-block">
+          ${commonHeader}
+          ${preferences.includeSeal !== false ? renderSealDisplay(cycle) : ""}
+          ${preferences.includeClosing !== false ? `<div class="print-document-section">
+            <h3>Phrase de clôture</h3>
+            <p>${escapeHtml(closing)}</p>
+          </div>` : ""}
+        </section>
+      `;
+    }
+
+    if (format === "no-raw" || format === "notebook") {
+      return `
+        <section class="print-cycle-block">
+          ${commonHeader}
+          ${preferences.includeSeal !== false ? renderSealDisplay(cycle, { compact: true }) : ""}
+          ${preferences.includeSummary !== false ? `<pre class="summary">${escapeHtml(cycleMiniSummary(cycle) || "Synthèse structurée à compléter.")}</pre>` : ""}
+          ${preferences.includeClosing !== false ? `<div class="print-document-section">
+            <h3>Clôture</h3>
+            <p>${escapeHtml(closing)}</p>
+          </div>` : ""}
+          ${preferences.includeIntegration !== false ? renderPrintIntegrationSection(cycle) : ""}
+        </section>
+      `;
+    }
+
+    return `
+      <section class="print-cycle-block">
+        ${commonHeader}
+        ${preferences.includeSeal !== false ? renderSealDisplay(cycle) : ""}
+        ${preferences.includeSummary !== false ? `<pre class="summary">${escapeHtml(buildCycleSummary(cycle, { includeClosing: false, includeIntegration: false }))}</pre>` : ""}
+        ${preferences.includeClosing !== false ? `
+          <div class="print-document-section">
+            <h3>Phrase de clôture</h3>
+            <p>${escapeHtml(closing)}</p>
+          </div>
+        ` : ""}
+        ${preferences.includeIntegration !== false ? renderPrintIntegrationSection(cycle) : ""}
+      </section>
+    `;
+  }
+
+  function renderPrintIntegrationSection(cycle) {
+    const followUp = cycle.integrationFollowUp;
+    if (!followUp) return "";
+    const answers = followUp.answers || {};
+    return `
+      <div class="print-document-section">
+        <h3>Suivi d’intégration</h3>
+        <p>${escapeHtml(followUpScheduleLabel(followUp))}</p>
+        <p class="mini">
+          Charge revenue : ${escapeHtml(answers.chargeReturned || "—")} ·
+          Qualité présente : ${escapeHtml(answers.qualityPresent || "—")} ·
+          Limite posée : ${escapeHtml(answers.boundaryPlaced || "—")} ·
+          Action faite : ${escapeHtml(answers.actionDone || "—")} ·
+          État du corps : ${escapeHtml(answers.bodyState || "—")}
+        </p>
       </div>
     `;
   }
@@ -2986,7 +3326,9 @@
 
         <div class="actions">
           <button class="primary" data-action="archive-cycle">Clôturer ce Cycle</button>
-          <button class="ghost" data-action="print">Imprimer / PDF</button>
+          ${data.extensionsV3?.enabled?.richPrint
+            ? `<button class="ghost" data-action="open-print-preparation">Préparer impression / PDF</button>`
+            : `<button class="ghost" data-action="print">Imprimer / PDF</button>`}
         </div>
       `;
     }
@@ -3298,7 +3640,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <p class="muted">Cycles ouverts, en pause ou clôturés. Aucun échec : seulement des traversées à leur rythme.</p>
           <div class="actions">
             <button class="primary" data-action="new-cycle">Nouveau Cycle</button>
-            <button class="ghost" data-action="print">Imprimer</button>
+            ${data.extensionsV3?.enabled?.richPrint
+              ? `<button class="ghost" data-action="open-print-preparation">Préparer impression / PDF</button>`
+              : `<button class="ghost" data-action="print">Imprimer</button>`}
           </div>
 
           <details data-details-key="carnet-filters">
@@ -3682,6 +4026,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
                 Demander la phrase REPRENDRE avant de réafficher la vue personnelle
               </label>
             ` : ""}
+            ${data.extensionsV3?.enabled?.richPrint ? renderPrintPreparation() : ""}
           </details>
         </div>
 
@@ -3999,8 +4344,10 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
-  function buildCycleSummary(c) {
+  function buildCycleSummary(c, options = {}) {
     const s = c.answers;
+    const a0 = s[0] || {};
+    const a1 = s[1] || {};
     const a2 = s[2] || {};
     const a3 = s[3] || {};
     const a4 = s[4] || {};
@@ -4013,6 +4360,10 @@ Assez pour aujourd’hui si le corps le demande.</p>
     return [
       `Cycle : ${c.title}`,
       ``,
+      `Intention : ${a0.intention || "—"}`,
+      `Profondeur : ${a0.depth || "—"}`,
+      `Intensité de départ : ${a1.intensity ?? "—"}/10`,
+      ``,
       `Déclencheur : ${a2.trigger || "—"}`,
       `Contre quoi : ${a2.against || "—"}`,
       `Pour quoi : ${a2.forWhat || "—"}`,
@@ -4023,7 +4374,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
       `Masques : ${(a3.masks || []).join(", ") || "—"}`,
       `Appartenance : ${(a4.ownership || []).join(", ") || "—"}`,
       `Permission : ${a4.permissionPhrase || "—"}`,
+      `Notes de discernement : ${a4.discernmentNotes || "—"}`,
       ``,
+      `Faux nom possible : ${a5.falseName || "—"}`,
       `Vrai nom : ${a5.trueName || "—"}`,
       `Nom racine : ${a5.rootName || "—"}`,
       `Permission de nommage : ${a5.namingPermission || "—"}`,
@@ -4040,12 +4393,15 @@ Assez pour aujourd’hui si le corps le demande.</p>
       `Parole possible : ${a8.spokenBoundary || "—"}`,
       `Positionnement : ${a8.positioningPhrase || "—"}`,
       `Action / non-action : ${a8.action || a8.actionOption || "—"}`,
+      `Message en quarantaine : ${a8.quarantineMessage || "—"}`,
       ``,
-      `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`,
-      ...(data.extensionsV3?.enabled?.seals ? [`Sceau d’intention : ${sealDefinition(a9.sealId)?.label || "—"}`] : []),
+      ...(options.includeClosing === false ? [] : [
+        `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`,
+        ...(data.extensionsV3?.enabled?.seals ? [`Sceau d’intention : ${sealDefinition(a9.sealId)?.label || "—"}`] : [])
+      ]),
       `Intégration : ${(a9.integrationDone || []).join(", ") || "—"}`,
       `Prochaine marche douce : ${a9.nextGentleStep || "—"}`,
-      cycleFollowUpSummary(c)
+      ...(options.includeIntegration === false ? [] : [cycleFollowUpSummary(c)])
     ].join("\n");
   }
 
@@ -4208,6 +4564,26 @@ Assez pour aujourd’hui si le corps le demande.</p>
       });
     });
 
+    document.querySelectorAll("[data-print-format]").forEach(el => {
+      if (el.dataset.boundPrintFormat === "1") return;
+      el.dataset.boundPrintFormat = "1";
+      el.addEventListener("change", () => {
+        printPreferences().format = el.value;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-print-cycle-id]").forEach(el => {
+      if (el.dataset.boundPrintCycle === "1") return;
+      el.dataset.boundPrintCycle = "1";
+      el.addEventListener("change", () => {
+        const preferences = printPreferences();
+        preferences.selectedCycleIds = [...document.querySelectorAll("[data-print-cycle-id]:checked")].map(input => input.dataset.printCycleId);
+        saveData();
+      });
+    });
+
     document.querySelectorAll("[data-companion-setting]").forEach(el => {
       if (el.dataset.boundCompanionSetting === "1") return;
       el.dataset.boundCompanionSetting = "1";
@@ -4275,6 +4651,32 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (action === "toggle-theme") {
       data.settings.theme = data.settings.theme === "dark" ? "light" : "dark";
       saveData();
+      render();
+    }
+
+    if (action === "open-print-preparation") {
+      if (!data.extensionsV3?.enabled?.richPrint) return;
+      const c = activeCycle();
+      if (c && !printPreferences().selectedCycleIds?.length) {
+        printPreferences().selectedCycleIds = [c.id];
+      }
+      data.activeTab = "sanctuaire";
+      openDetailsState.set("sanctuaire:extensions-v3", true);
+      openDetailsState.set("sanctuaire:rich-print-preparation", true);
+      saveData();
+      render();
+    }
+
+    if (action === "open-print-preview") {
+      if (!data.extensionsV3?.enabled?.richPrint) return;
+      printPreviewOpen = true;
+      render();
+    }
+
+    if (action === "close-print-preview") {
+      printPreviewOpen = false;
+      openDetailsState.set("sanctuaire:extensions-v3", true);
+      openDetailsState.set("sanctuaire:rich-print-preparation", true);
       render();
     }
 
