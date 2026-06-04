@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.6.0</title>
+  <title>Feu Clair — v3.7.0</title>
 
   <style>
     :root {
@@ -908,7 +908,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.6.0</h1>
+        <h1>Feu Clair — v3.7.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -924,7 +924,7 @@
 
 <script>
 /*
-  Feu Clair — v3.6.0
+  Feu Clair — v3.7.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -938,7 +938,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.6.0";
+  const APP_VERSION = "3.7.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -1004,7 +1004,7 @@
     authoritySessions: [],
     screenlessSessions: [],
     extensionsV3: {
-      schemaVersion: 6,
+      schemaVersion: 7,
       enabled: {
         seals: false,
         languageProfiles: false,
@@ -1021,6 +1021,9 @@
       languageProfilePreviewId: "poetique-sobre",
       companion: {
         displayLockEnabled: false
+      },
+      advancedPatterns: {
+        hiddenObservationIds: []
       },
       printPreferences: {
         format: "complete",
@@ -1453,6 +1456,13 @@
     normalized.extensionsV3.seals = Array.isArray(normalized.extensionsV3.seals) ? normalized.extensionsV3.seals : [];
     normalized.extensionsV3.languageProfiles = Array.isArray(normalized.extensionsV3.languageProfiles)
       ? normalized.extensionsV3.languageProfiles.map(profile => normalizeLanguageProfile(profile, true))
+      : [];
+    normalized.extensionsV3.advancedPatterns = mergeDefaults(
+      DEFAULT_DATA.extensionsV3.advancedPatterns,
+      normalized.extensionsV3.advancedPatterns || {}
+    );
+    normalized.extensionsV3.advancedPatterns.hiddenObservationIds = Array.isArray(normalized.extensionsV3.advancedPatterns.hiddenObservationIds)
+      ? normalized.extensionsV3.advancedPatterns.hiddenObservationIds.filter(Boolean)
       : [];
     normalized.extensionsV3.schemaVersion = DEFAULT_DATA.extensionsV3.schemaVersion;
     normalized.library = mergeLibraryDefaults(normalized.library || {});
@@ -2172,6 +2182,16 @@
     return [...counts.entries()].sort((a, b) => b[1] - a[1])[0] || null;
   }
 
+  function advancedPatternSettings() {
+    data.extensionsV3.advancedPatterns ||= cloneData(DEFAULT_DATA.extensionsV3.advancedPatterns);
+    data.extensionsV3.advancedPatterns.hiddenObservationIds ||= [];
+    return data.extensionsV3.advancedPatterns;
+  }
+
+  function patternObservation(id, text) {
+    return { id, text };
+  }
+
   function carnetObservations() {
     if (data.cycles.length < 2) return [];
     const observations = [];
@@ -2179,17 +2199,21 @@
     const zone = mostFrequentCycleValue(data.cycles.flatMap(cycle => cycleFacetValues(cycle, "zone")));
     const quality = mostFrequentCycleValue(data.cycles.flatMap(cycle => cycleFacetValues(cycle, "quality")));
     const exit = mostFrequentCycleValue(data.cycles.map(cycle => cycle.answers?.[6]?.exit));
+    const element = mostFrequentCycleValue(data.cycles.map(cycle => cycle.answers?.[7]?.element));
+    const action = mostFrequentCycleValue(data.cycles.map(cycle => cycle.answers?.[8]?.actionOption));
     const openActions = data.cycles.filter(cycle => {
       const followUp = cycle.integrationFollowUp?.answers || {};
       return followUp.actionDone === "pas encore" || followUp.boundaryPlaced === "pas encore";
     }).length;
 
-    if (family?.[1] >= 2) observations.push(`La famille “${family[0]}” semble revenir dans plusieurs traversées. C’est une piste possible à observer doucement.`);
-    if (zone?.[1] >= 2) observations.push(`La zone “${zone[0]}” revient souvent comme porte d’entrée. Elle peut être écoutée sans en faire une preuve.`);
-    if (exit?.[1] >= 2) observations.push(`La sortie “${exit[0]}” semble avoir été choisie plusieurs fois. Elle est peut-être une ressource disponible.`);
-    if (quality?.[1] >= 2) observations.push(`La qualité “${quality[0]}” revient souvent après les soins. Elle peut être un pilier à nourrir.`);
-    if (openActions) observations.push(`${openActions} Cycle${openActions > 1 ? "s ont" : " a"} encore une limite ou une action ouverte selon le suivi d’intégration.`);
-    return observations.slice(0, 4);
+    if (family?.[1] >= 2) observations.push(patternObservation(`family-${slugify(family[0])}`, `La famille “${family[0]}” semble revenir dans plusieurs traversées. C’est une piste possible à observer doucement.`));
+    if (zone?.[1] >= 2) observations.push(patternObservation(`zone-${slugify(zone[0])}`, `La zone “${zone[0]}” semble revenir comme porte d’entrée. Elle peut être écoutée sans en faire une preuve.`));
+    if (exit?.[1] >= 2) observations.push(patternObservation(`exit-${slugify(exit[0])}`, `La sortie “${exit[0]}” semble avoir été choisie plusieurs fois. Elle est peut-être une ressource disponible, à vérifier selon le terrain.`));
+    if (element?.[1] >= 2) observations.push(patternObservation(`element-${slugify(element[0])}`, `L’élément “${element[0]}” semble revenir dans les temps de purification. Il peut offrir un repère symbolique, à vérifier selon le terrain.`));
+    if (quality?.[1] >= 2) observations.push(patternObservation(`quality-${slugify(quality[0])}`, `La qualité “${quality[0]}” semble revenir après les soins. Elle peut être un pilier à nourrir sans devenir une conclusion.`));
+    if (action?.[1] >= 2) observations.push(patternObservation(`action-${slugify(action[0])}`, `L’action ou non-action “${action[0]}” semble revenir comme prochaine marche. C’est une piste possible à ajuster selon le terrain.`));
+    if (openActions) observations.push(patternObservation("open-actions", "Certaines limites ou actions semblent encore ouvertes dans les suivis d’intégration. Elles peuvent être revisitées doucement, sans urgence ni jugement."));
+    return observations;
   }
 
   function createIntegrationFollowUp(schedule = "tomorrow") {
@@ -3980,7 +4004,11 @@ Assez pour aujourd’hui si le corps le demande.</p>
   function renderCarnet() {
     const cycles = filteredCarnetCycles();
     const filters = carnetFilters();
-    const observations = carnetObservations();
+    const advancedPatternsEnabled = data.extensionsV3?.enabled?.advancedPatterns === true;
+    const allObservations = carnetObservations();
+    const hiddenObservationIds = new Set(data.extensionsV3?.advancedPatterns?.hiddenObservationIds || []);
+    const observations = allObservations.filter(observation => !hiddenObservationIds.has(observation.id));
+    const hiddenObservationCount = allObservations.length - observations.length;
     return `
       <section class="grid">
         <div class="card">
@@ -4031,15 +4059,41 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </details>
         </div>
 
-        ${observations.length ? `
+        ${advancedPatternsEnabled ? `
           <div class="card">
-            <h3>Observations douces</h3>
-            <p class="muted mini">Pistes locales à vérifier selon le terrain. Elles ne sont ni des scores ni des conclusions.</p>
-            <div class="grid">
-              ${observations.map(text => `<div class="notice softBox mini">${escapeHtml(text)}</div>`).join("")}
+            <h3>Motifs récurrents avancés</h3>
+            <p class="muted mini">Observations calculées seulement à partir de vos Cycles locaux. Ce sont des pistes à vérifier selon le terrain, jamais des scores, diagnostics ou conclusions.</p>
+            ${data.cycles.length < 2 ? `
+              <div class="notice softBox mini">Au moins deux Cycles sont nécessaires pour laisser apparaître une piste récurrente.</div>
+            ` : observations.length ? `
+              <div class="grid">
+                ${observations.map(observation => `
+                  <div class="notice softBox mini">
+                    ${escapeHtml(observation.text)}
+                    <div class="actions">
+                      <button class="ghost" data-action="hide-pattern-observation" data-observation-id="${escapeAttr(observation.id)}">Masquer cette observation</button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            ` : `
+              <div class="notice softBox mini">Aucune observation récurrente visible pour le moment. Certaines pistes peuvent aussi avoir été masquées.</div>
+            `}
+            ${hiddenObservationCount ? `
+              <div class="actions">
+                <button class="ghost" data-action="restore-pattern-observations">Réafficher les observations masquées</button>
+              </div>
+            ` : ""}
+          </div>
+        ` : `
+          <div class="card">
+            <h3>Motifs récurrents avancés</h3>
+            <p class="muted mini">Faire apparaître, dans le Carnet, des pistes locales sur les familles, zones, sorties, éléments, qualités et actions qui semblent revenir. Chaque observation pourra être masquée.</p>
+            <div class="actions">
+              <button class="ghost" data-action="activate-advanced-patterns">Afficher les observations douces</button>
             </div>
           </div>
-        ` : ""}
+        `}
 
         ${cycles.length ? cycles.map((c, index) => `
           <div class="card">
@@ -5238,6 +5292,31 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
     if (action === "clear-carnet-filters") {
       data.settings.carnetFilters = { status: "", family: "", zone: "", quality: "" };
+      saveData();
+      render();
+    }
+
+    if (action === "activate-advanced-patterns") {
+      data.extensionsV3.enabled.advancedPatterns = true;
+      setNotice("Les observations douces sont maintenant visibles dans le Carnet.");
+      saveData();
+      render();
+    }
+
+    if (action === "hide-pattern-observation") {
+      const observationId = el.dataset.observationId;
+      const settings = advancedPatternSettings();
+      if (observationId && !settings.hiddenObservationIds.includes(observationId)) {
+        settings.hiddenObservationIds.push(observationId);
+      }
+      setNotice("Observation masquée. Les Cycles restent inchangés.");
+      saveData();
+      render();
+    }
+
+    if (action === "restore-pattern-observations") {
+      advancedPatternSettings().hiddenObservationIds = [];
+      setNotice("Les observations masquées sont de nouveau visibles.");
       saveData();
       render();
     }
