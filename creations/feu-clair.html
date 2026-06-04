@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.5.1</title>
+  <title>Feu Clair — v3.6.0</title>
 
   <style>
     :root {
@@ -509,6 +509,30 @@
       color: var(--accent);
     }
 
+    .screenless-space {
+      min-height: 62vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .screenless-space h2 {
+      font-size: clamp(1.7rem, 5vw, 3rem);
+      margin-bottom: .5rem;
+    }
+
+    .screenless-timer {
+      font-size: clamp(2rem, 9vw, 4.5rem);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .06em;
+      margin: 1rem 0;
+    }
+
+    .screenless-space .actions {
+      justify-content: center;
+    }
+
     .tool-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -884,7 +908,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.5.1</h1>
+        <h1>Feu Clair — v3.6.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -900,7 +924,7 @@
 
 <script>
 /*
-  Feu Clair — v3.5.1
+  Feu Clair — v3.6.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -914,7 +938,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.5.1";
+  const APP_VERSION = "3.6.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -978,8 +1002,9 @@
     bodyScans: [],
     bodyMemorySessions: [],
     authoritySessions: [],
+    screenlessSessions: [],
     extensionsV3: {
-      schemaVersion: 5,
+      schemaVersion: 6,
       enabled: {
         seals: false,
         languageProfiles: false,
@@ -1265,6 +1290,7 @@
   let companionViewOpen = false;
   let companionReturnLocked = false;
   let printPreviewOpen = false;
+  let screenlessTimerId = null;
   const openDetailsState = new Map();
   let renderedTab = data.activeTab;
 
@@ -1421,6 +1447,7 @@
     normalized.bodyScans ||= [];
     normalized.bodyMemorySessions ||= [];
     normalized.authoritySessions ||= [];
+    normalized.screenlessSessions ||= [];
     normalized.extensionsV3 = mergeDefaults(DEFAULT_DATA.extensionsV3, normalized.extensionsV3 || {});
     normalized.extensionsV3.enabled = mergeDefaults(DEFAULT_DATA.extensionsV3.enabled, normalized.extensionsV3.enabled || {});
     normalized.extensionsV3.seals = Array.isArray(normalized.extensionsV3.seals) ? normalized.extensionsV3.seals : [];
@@ -2254,6 +2281,12 @@
         targetType: session.targetType || "",
         guards: session.guards || [],
         qualities: session.qualities || []
+      })),
+      screenlessSessions: (data.screenlessSessions || []).map(session => ({
+        status: session.status || "",
+        createdAt: session.createdAt || "",
+        practice: session.practice || "",
+        duration: session.duration || "0"
       }))
     };
   }
@@ -2460,6 +2493,10 @@
 
   function render() {
     document.querySelector("#app").dataset.theme = data.settings.theme;
+    if (screenlessTimerId) {
+      clearInterval(screenlessTimerId);
+      screenlessTimerId = null;
+    }
     captureOpenDetails();
     if (printPreviewOpen && data.extensionsV3?.enabled?.richPrint) {
       renderTabs({ locked: true });
@@ -2497,6 +2534,7 @@
     restoreOpenDetails();
     renderedTab = data.activeTab;
     bindDynamicEvents();
+    startScreenlessTimerIfNeeded();
   }
 
   function renderBodyReturnPanel() {
@@ -3483,6 +3521,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (tool === "body-scan") return renderOutilShell("Carte corporelle — scan autonome", renderBodyScanTool());
     if (tool === "memory") return renderOutilShell("Mémoire du Corps — sas prudent", renderMemoryTool());
     if (tool === "authority") return renderOutilShell("Feu d’Autorité — sas symbolique", renderAuthorityTool());
+    if (tool === "screenless") return renderScreenlessTool();
 
     return `
       <section class="grid">
@@ -3510,6 +3549,12 @@ Assez pour aujourd’hui si le corps le demande.</p>
             <strong>Feu d’Autorité</strong>
             <span>Diriger symboliquement le feu vers une charge, avec garde-fous de responsabilité.</span>
             <small>${data.settings.archetypeMode === "neutre" ? "Fermé en mode neutre" : "Symbolique"}</small>
+          </button>
+
+          <button class="tool-card body" data-tool="screenless">
+            <strong>Mode sans écran</strong>
+            <span>Préparer une pratique courte, poser l’écran, puis revenir avec trois questions maximum.</span>
+            <small>${data.extensionsV3?.enabled?.screenlessMode ? "Pratique locale" : "À activer"}</small>
           </button>
         </div>
       </section>
@@ -3817,6 +3862,119 @@ Assez pour aujourd’hui si le corps le demande.</p>
           `}
         </div>
     `;
+  }
+
+  function screenlessDraft() {
+    data.toolDraft ||= {};
+    data.toolDraft.screenless ||= {
+      phase: "prepare",
+      practice: "marche",
+      duration: "0",
+      startedAt: "",
+      changed: "",
+      remainingCharge: "",
+      returningQuality: ""
+    };
+    return data.toolDraft.screenless;
+  }
+
+  function screenlessPracticeDefinition(id) {
+    return {
+      marche: {
+        label: "Marche de feu",
+        instruction: "Marche lentement. À chaque pas, laisse le corps rendre un peu de charge et garder une prochaine marche possible."
+      },
+      cri: {
+        label: "Cri muet",
+        instruction: "Pose les pieds. Laisse le visage et le souffle former un cri sans son obligatoire, sans te faire mal."
+      },
+      restitution: {
+        label: "Restitution Terre / Soleil",
+        instruction: "Rends la densité à la Terre. Garde seulement la clarté, la limite et la force utile."
+      },
+      souffle: {
+        label: "Souffle de restitution",
+        instruction: "Expire plus longuement que tu n’inspires. À chaque souffle, rends la charge sans forcer le corps."
+      }
+    }[id] || screenlessPracticeDefinition("marche");
+  }
+
+  function renderScreenlessTool() {
+    if (!data.extensionsV3?.enabled?.screenlessMode) {
+      return renderOutilShell("Mode sans écran", `
+        <div class="card">
+          <h3>Poser l’écran pendant une pratique courte</h3>
+          <p class="muted">Aucun son n’est obligatoire. Rien ne s’ouvre automatiquement et tu peux fermer proprement à tout moment.</p>
+          <div class="actions">
+            <button class="primary" data-action="activate-screenless-mode">Activer ce mode local</button>
+            <button class="ghost" data-action="tools-list">Revenir à la liste</button>
+          </div>
+        </div>
+      `);
+    }
+    const draft = screenlessDraft();
+    if (draft.phase === "practice") return renderScreenlessPractice(draft);
+    if (draft.phase === "return") return renderScreenlessReturn(draft);
+    return renderOutilShell("Mode sans écran — préparer une pratique", `
+      <div class="card">
+        <p class="notice">Prépare une seule pratique, puis pose l’écran. Pas besoin de surveiller le temps ni de réussir quelque chose.</p>
+        <label>Pratique choisie</label>
+        <select id="screenless-practice">
+          ${option("marche", "Marche de feu", draft.practice)}
+          ${option("cri", "Cri muet", draft.practice)}
+          ${option("restitution", "Restitution Terre / Soleil", draft.practice)}
+          ${option("souffle", "Souffle de restitution", draft.practice)}
+        </select>
+        <label>Minuteur doux optionnel</label>
+        <select id="screenless-duration">
+          ${option("0", "Sans minuteur", draft.duration)}
+          ${option("60", "1 minute", draft.duration)}
+          ${option("120", "2 minutes", draft.duration)}
+          ${option("300", "5 minutes", draft.duration)}
+        </select>
+        <p class="muted mini">Le minuteur est visuel seulement : aucun son, aucune notification, aucun appel réseau.</p>
+        <div class="actions">
+          <button class="primary" data-action="start-screenless-practice">Commencer et poser l’écran</button>
+          <button class="ghost" data-action="screenless-close">Fermer proprement</button>
+        </div>
+      </div>
+    `);
+  }
+
+  function renderScreenlessPractice(draft) {
+    const practice = screenlessPracticeDefinition(draft.practice);
+    return `
+      <section class="screenless-space">
+        <div>
+          <p class="muted">Mode sans écran</p>
+          <h2>${escapeHtml(practice.label)}</h2>
+          <p>${escapeHtml(practice.instruction)}</p>
+          ${Number(draft.duration) > 0 ? `<div class="screenless-timer" data-screenless-timer>--:--</div>` : `<p class="muted">Reviens quand le corps le demande.</p>`}
+          <div class="actions">
+            <button class="primary" data-action="return-from-screenless">Je reviens</button>
+            <button class="ghost" data-action="screenless-close">Fermer proprement</button>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function renderScreenlessReturn(draft) {
+    return renderOutilShell("Mode sans écran — retour doux", `
+      <div class="card">
+        <p class="muted">Trois questions maximum. Tu peux laisser une réponse vide et fermer.</p>
+        <label>Qu’est-ce qui a changé ?</label>
+        <textarea id="screenless-changed" placeholder="Ex : le souffle est plus ample, la marche a ralenti...">${escapeHtml(draft.changed || "")}</textarea>
+        <label>Où reste la charge ?</label>
+        <textarea id="screenless-remaining" placeholder="Ex : encore dans la gorge, moins forte, difficile à situer...">${escapeHtml(draft.remainingCharge || "")}</textarea>
+        <label>Quelle qualité revient ?</label>
+        <input id="screenless-quality" value="${escapeAttr(draft.returningQuality || "")}" placeholder="Ex : clarté, courage, calme, limite..." />
+        <div class="actions">
+          <button class="primary" data-action="save-screenless-return">Enregistrer et fermer</button>
+          <button class="ghost" data-action="screenless-close">Fermer sans enregistrer</button>
+        </div>
+      </div>
+    `);
   }
 
   function renderCarnet() {
@@ -4403,6 +4561,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
                 <button class="ghost" data-action="clear-local-trace" data-trace-key="bodyScans">Effacer scans corporels (${data.bodyScans.length})</button>
                 <button class="ghost" data-action="clear-local-trace" data-trace-key="bodyMemorySessions">Effacer sas Mémoire (${data.bodyMemorySessions.length})</button>
                 <button class="ghost" data-action="clear-local-trace" data-trace-key="authoritySessions">Effacer sas Autorité (${data.authoritySessions.length})</button>
+                <button class="ghost" data-action="clear-local-trace" data-trace-key="screenlessSessions">Effacer pratiques sans écran (${data.screenlessSessions.length})</button>
                 <button class="danger" data-action="clear-all-local-traces">Effacer toutes les traces ponctuelles</button>
               </div>
             </details>
@@ -4705,7 +4864,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       });
     });
 
-    document.querySelectorAll("[id^='micro-'], [id^='body-scan-'], [id^='memory-'], [id^='authority-'], [data-static-check-group]").forEach(el => {
+    document.querySelectorAll("[id^='micro-'], [id^='body-scan-'], [id^='memory-'], [id^='authority-'], [id^='screenless-'], [data-static-check-group]").forEach(el => {
       if (el.dataset.boundToolDraft === "1") return;
       el.dataset.boundToolDraft = "1";
       const eventName = el.tagName === "SELECT" || el.type === "checkbox" ? "change" : "input";
@@ -4867,7 +5026,37 @@ Assez pour aujourd’hui si le corps le demande.</p>
     if (data.activeTool === "body-scan") data.toolDraft.bodyScan = readBodyScan();
     if (data.activeTool === "memory") data.toolDraft.memory = readBodyMemory();
     if (data.activeTool === "authority") data.toolDraft.authority = readAuthoritySession();
+    if (data.activeTool === "screenless") data.toolDraft.screenless = readScreenlessDraft();
     saveData();
+  }
+
+  function readScreenlessDraft() {
+    const current = screenlessDraft();
+    return {
+      ...current,
+      practice: document.querySelector("#screenless-practice")?.value || current.practice,
+      duration: document.querySelector("#screenless-duration")?.value || current.duration,
+      changed: document.querySelector("#screenless-changed")?.value || current.changed,
+      remainingCharge: document.querySelector("#screenless-remaining")?.value || current.remainingCharge,
+      returningQuality: document.querySelector("#screenless-quality")?.value || current.returningQuality
+    };
+  }
+
+  function startScreenlessTimerIfNeeded() {
+    const timer = document.querySelector("[data-screenless-timer]");
+    const draft = data.toolDraft?.screenless;
+    if (!timer || !draft?.startedAt || Number(draft.duration) <= 0) return;
+    const update = () => {
+      const elapsed = Math.floor((Date.now() - new Date(draft.startedAt).getTime()) / 1000);
+      const remaining = Math.max(0, Number(draft.duration) - elapsed);
+      timer.textContent = `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`;
+      if (remaining === 0 && screenlessTimerId) {
+        clearInterval(screenlessTimerId);
+        screenlessTimerId = null;
+      }
+    };
+    update();
+    screenlessTimerId = setInterval(update, 1000);
   }
 
   function selectBodyMapZone(zone) {
@@ -4899,6 +5088,47 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.extensionsV3.enabled.visualBodyMap = true;
       saveData();
       render();
+    }
+
+    if (action === "activate-screenless-mode") {
+      data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+      data.extensionsV3.enabled ||= cloneData(DEFAULT_DATA.extensionsV3.enabled);
+      data.extensionsV3.enabled.screenlessMode = true;
+      saveData();
+      render();
+    }
+
+    if (action === "start-screenless-practice") {
+      data.toolDraft.screenless = {
+        ...readScreenlessDraft(),
+        phase: "practice",
+        startedAt: nowISO()
+      };
+      saveData();
+      render();
+    }
+
+    if (action === "return-from-screenless") {
+      data.toolDraft.screenless = { ...screenlessDraft(), phase: "return" };
+      saveData();
+      render();
+    }
+
+    if (action === "save-screenless-return") {
+      const session = { ...readScreenlessDraft(), id: uid("screenless"), status: "terminé", createdAt: nowISO() };
+      data.screenlessSessions ||= [];
+      data.screenlessSessions.unshift(session);
+      data.toolDraft.screenless = cloneData(DEFAULT_DATA.toolDraft?.screenless || {});
+      setNotice("Pratique sans écran enregistrée et fermée proprement.");
+      saveData();
+      setTab("boussole");
+    }
+
+    if (action === "screenless-close") {
+      data.toolDraft.screenless = { ...screenlessDraft(), phase: "prepare", startedAt: "" };
+      setNotice("Mode sans écran fermé proprement. Rien d’autre n’a besoin d’être ouvert maintenant.");
+      saveData();
+      setTab("boussole");
     }
 
     if (action === "open-print-preparation") {
@@ -5739,7 +5969,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
       microSessions: "les micro-soins",
       bodyScans: "les scans corporels",
       bodyMemorySessions: "les sas Mémoire du Corps",
-      authoritySessions: "les sas Feu d’Autorité"
+      authoritySessions: "les sas Feu d’Autorité",
+      screenlessSessions: "les pratiques sans écran"
     };
     if (!Object.prototype.hasOwnProperty.call(labels, key) || !Array.isArray(data[key])) return;
     const count = data[key].length;
@@ -5756,7 +5987,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function clearAllLocalTraces() {
-    const keys = ["microSessions", "bodyScans", "bodyMemorySessions", "authoritySessions"];
+    const keys = ["microSessions", "bodyScans", "bodyMemorySessions", "authoritySessions", "screenlessSessions"];
     const count = keys.reduce((sum, key) => sum + (Array.isArray(data[key]) ? data[key].length : 0), 0);
     if (!count) {
       setNotice("Aucune trace ponctuelle à effacer.");
