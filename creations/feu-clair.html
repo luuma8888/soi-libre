@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.0.0</title>
+  <title>Feu Clair — v3.1.0</title>
 
   <style>
     :root {
@@ -495,6 +495,82 @@
       font-size: .88rem;
     }
 
+    .seal-selector {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .7rem;
+      margin-top: .75rem;
+    }
+
+    .seal-choice {
+      display: grid;
+      grid-template-columns: 4.2rem 1fr;
+      align-items: center;
+      gap: .65rem;
+      margin: 0;
+      padding: .7rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .seal-choice:has(input:checked) {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent-2) 14%, var(--surface));
+    }
+
+    .seal-choice:has(input:focus-visible) {
+      outline: 3px solid color-mix(in srgb, var(--accent) 65%, transparent);
+      outline-offset: 2px;
+    }
+
+    .seal-choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .seal-choice strong,
+    .seal-choice small {
+      display: block;
+    }
+
+    .seal-mark {
+      width: 4rem;
+      height: 4rem;
+      color: var(--accent);
+    }
+
+    .seal-mark svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .seal-display {
+      display: grid;
+      grid-template-columns: 5.5rem 1fr;
+      align-items: center;
+      gap: .9rem;
+      margin: .85rem 0;
+      padding: .85rem;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--accent-2) 10%, var(--surface));
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .seal-display .seal-mark {
+      width: 5rem;
+      height: 5rem;
+    }
+
+    .seal-display p {
+      margin: .2rem 0 0;
+    }
+
     .body-return-panel {
       position: fixed;
       inset: 0;
@@ -535,6 +611,7 @@
       .body-map { grid-template-columns: 1fr; }
       .tool-grid { grid-template-columns: 1fr; }
       .understand-grid { grid-template-columns: 1fr; }
+      .seal-selector { grid-template-columns: 1fr; }
     }
 
     @media print {
@@ -595,6 +672,14 @@
       .print-only {
         display: block !important;
       }
+
+      .seal-print-hidden {
+        display: none !important;
+      }
+
+      .seal-mark {
+        color: #111 !important;
+      }
     }
 
     [data-theme="dark"] button.ghost {
@@ -630,7 +715,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.0.0</h1>
+        <h1>Feu Clair — v3.1.0</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -646,7 +731,7 @@
 
 <script>
 /*
-  Feu Clair — v3.0.0
+  Feu Clair — v3.1.0
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -660,7 +745,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.0.0";
+  const APP_VERSION = "3.1.0";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -1588,6 +1673,113 @@
     return libraryItems("closingPhrases")[0]?.text || "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.";
   }
 
+  function sealDefinitions() {
+    return [
+      { id: "terre", label: "Terre", description: "Ancrage, stabilité et charge rendue.", keywords: ["terre", "ancrage", "stabilité", "pieds", "jambes"] },
+      { id: "soleil", label: "Soleil", description: "Clarté, vérité et force qui revient.", keywords: ["soleil", "clarté", "vérité", "courage"] },
+      { id: "air-parole", label: "Air / parole", description: "Souffle, gorge et parole rendue à sa justesse.", keywords: ["air", "gorge", "parole", "voix"] },
+      { id: "eau-coeur", label: "Eau / cœur", description: "Adoucissement, cœur et émotion remise en mouvement.", keywords: ["eau", "cœur", "coeur", "poitrine", "douceur"] },
+      { id: "feu-clair", label: "Feu clair", description: "Charge libérée, force gardée et action clarifiée.", keywords: ["feu", "action", "force", "courage"] },
+      { id: "limite", label: "Limite", description: "Un espace juste retrouvé sans attaque ni effacement.", keywords: ["limite", "non", "consentement", "protection"] },
+      { id: "dignite", label: "Dignité", description: "Une valeur intérieure reconnue et gardée.", keywords: ["dignité", "respect", "honte", "humiliation"] },
+      { id: "parole", label: "Parole", description: "Une vérité exprimable en peu de mots.", keywords: ["parole", "gorge", "dire", "voix", "vérité"] },
+      { id: "souverainete", label: "Souveraineté", description: "Une autorité intérieure responsable et non violente.", keywords: ["souveraineté", "autorité", "axe", "responsabilité"] }
+    ];
+  }
+
+  function sealDefinition(id) {
+    return sealDefinitions().find(seal => seal.id === id) || null;
+  }
+
+  function sealSvg(id) {
+    const common = `viewBox="0 0 100 100" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"`;
+    const shapes = {
+      terre: `<circle cx="50" cy="50" r="34"/><path d="M24 58h52M31 69h38M39 80h22"/><path d="M50 20v30"/>`,
+      soleil: `<circle cx="50" cy="50" r="18"/><path d="M50 12v14M50 74v14M12 50h14M74 50h14M23 23l10 10M67 67l10 10M77 23L67 33M33 67L23 77"/>`,
+      "air-parole": `<circle cx="50" cy="50" r="34"/><path d="M24 42c13-10 25-10 38 0 7 5 13 5 19 0M20 54c17-9 32-9 45 0 6 4 11 4 16 0M29 66c12-6 23-6 33 0"/>`,
+      "eau-coeur": `<circle cx="50" cy="50" r="34"/><path d="M50 76c-14-12-24-22-24-34 0-8 6-14 14-14 5 0 9 3 10 7 2-4 6-7 11-7 8 0 14 6 14 14 0 12-11 22-25 34z"/>`,
+      "feu-clair": `<circle cx="50" cy="50" r="34"/><path d="M51 77c-12 0-20-8-20-19 0-12 9-18 17-31 1 9 8 13 8 21 4-3 7-7 8-12 5 7 7 14 7 21 0 12-8 20-20 20z"/><path d="M50 68c-5 0-8-3-8-8 0-5 4-8 8-14 1 5 5 7 5 12 0 6-2 10-5 10z"/>`,
+      limite: `<circle cx="50" cy="50" r="34"/><path d="M33 25v50M67 25v50M33 50h34"/><path d="M22 35l11-10 11 10M56 65l11 10 11-10"/>`,
+      dignite: `<circle cx="50" cy="50" r="34"/><path d="M28 61l7-27 15 15 15-15 7 27z"/><path d="M30 69h40"/>`,
+      parole: `<circle cx="50" cy="50" r="34"/><path d="M28 50h44M35 39c10 7 20 7 30 0M35 61c10-7 20-7 30 0"/>`,
+      souverainete: `<circle cx="50" cy="50" r="34"/><path d="M50 22l18 12v20c0 12-8 20-18 25-10-5-18-13-18-25V34z"/><path d="M50 35v30M40 50h20"/>`
+    };
+    return `<svg ${common}>${shapes[id] || shapes["feu-clair"]}</svg>`;
+  }
+
+  function cycleSealSearchText(cycle) {
+    const answers = cycle.answers || {};
+    return [
+      answers[2]?.forWhat,
+      ...(answers[3]?.bodySignals || []),
+      answers[7]?.element,
+      ...(answers[7]?.qualities || []),
+      answers[8]?.innerBoundary,
+      answers[8]?.spokenBoundary,
+      answers[8]?.positioningPhrase,
+      answers[8]?.action
+    ].filter(Boolean).join(" ").toLocaleLowerCase("fr");
+  }
+
+  function recommendedSeals(cycle) {
+    const text = cycleSealSearchText(cycle);
+    const scored = sealDefinitions().map((seal, index) => ({
+      seal,
+      score: seal.keywords.reduce((score, keyword) => score + (text.includes(keyword) ? 1 : 0), 0),
+      index
+    })).sort((a, b) => b.score - a.score || a.index - b.index);
+    const matched = scored.filter(item => item.score > 0).slice(0, 4).map(item => item.seal);
+    return matched.length ? matched : sealDefinitions().slice(0, 4);
+  }
+
+  function renderSealDisplay(cycle, options = {}) {
+    if (!data.extensionsV3?.enabled?.seals) return "";
+    const seal = sealDefinition(cycle.answers?.[9]?.sealId);
+    if (!seal) return "";
+    const printHidden = data.extensionsV3?.printPreferences?.includeSeal === false ? "seal-print-hidden" : "";
+    const compact = options.compact === true ? "mini" : "";
+    return `
+      <div class="seal-display ${printHidden} ${compact}" role="img" aria-label="${escapeAttr(`Sceau ${seal.label} : ${seal.description}`)}">
+        <div class="seal-mark">${sealSvg(seal.id)}</div>
+        <div>
+          <strong>Sceau d’intention : ${escapeHtml(seal.label)}</strong>
+          <p class="muted mini">${escapeHtml(seal.description)} Ce symbole représente une intention gardée, pas une preuve de guérison.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSealSelector(cycle, selectedId = "") {
+    const current = sealDefinition(selectedId);
+    const suggestions = recommendedSeals(cycle);
+    if (current && !suggestions.some(seal => seal.id === current.id)) suggestions.unshift(current);
+    return `
+      <div class="notice mini">
+        Le sceau est facultatif. Il représente une qualité ou une intention gardée après le soin, sans promesse de protection ni verdict.
+      </div>
+      <div class="seal-selector" data-radio-group="sealId">
+        ${suggestions.map(seal => `
+          <label class="seal-choice">
+            <input type="radio" name="sealId" value="${escapeAttr(seal.id)}" ${selectedId === seal.id ? "checked" : ""}>
+            <span class="seal-mark">${sealSvg(seal.id)}</span>
+            <span>
+              <strong>${escapeHtml(seal.label)}</strong>
+              <small>${escapeHtml(seal.description)}</small>
+            </span>
+          </label>
+        `).join("")}
+        <label class="seal-choice">
+          <input type="radio" name="sealId" value="" ${selectedId ? "" : "checked"}>
+          <span class="seal-mark">${sealSvg("feu-clair")}</span>
+          <span>
+            <strong>Aucun sceau</strong>
+            <small>Clôturer sans symbole visuel.</small>
+          </span>
+        </label>
+      </div>
+    `;
+  }
+
   function cycleCompletionHints(cycle) {
     const s = cycle.answers || {};
     const missing = [];
@@ -1814,6 +2006,7 @@
       "qualities",
       "positioningPhrase",
       "actionOption",
+      "sealId",
       "closingPreset",
       "integrationDone"
     ]);
@@ -2434,6 +2627,12 @@
           <p>Feu Clair — synthèse de cycle · ${new Date(cycle.updatedAt).toLocaleDateString("fr-FR")}</p>
         </div>
 
+        ${data.extensionsV3?.enabled?.seals ? `
+          <label>Sceau visuel local</label>
+          ${renderSealSelector(cycle, a.sealId || "")}
+          ${renderSealDisplay(cycle)}
+        ` : ""}
+
         <div class="summary">${escapeHtml(summary)}</div>
 
         ${missing.length ? `
@@ -2849,6 +3048,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ${c.rawTextsHidden ? `
               <div class="notice mini">Textes bruts masqués à l’écran pour ce Cycle.</div>
             ` : cycleMiniSummary(c) ? `<pre class="summary mini">${escapeHtml(cycleMiniSummary(c))}</pre>` : ""}
+            ${renderSealDisplay(c, { compact: true })}
             ${renderIntegrationFollowUp(c)}
             <div class="actions">
               <button class="primary" data-action="open-cycle" data-id="${c.id}">Continuer</button>
@@ -3074,6 +3274,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
                 </label>
               `).join("")}
             </div>
+            ${data.extensionsV3?.enabled?.seals ? `
+              <label class="choice">
+                <input type="checkbox" data-print-preference="includeSeal" ${data.extensionsV3?.printPreferences?.includeSeal !== false ? "checked" : ""}>
+                Inclure les sceaux dans les impressions et PDF
+              </label>
+              <p class="muted mini">Les sceaux restent visibles dans l’application et les exports JSON, même s’ils sont masqués à l’impression.</p>
+            ` : ""}
             <p class="muted mini">
               Les anciens exports V2 restent importables. Les données V3 utilisent une structure versionnée afin que chaque extension puisse évoluer sans casser les Cycles existants.
             </p>
@@ -3437,6 +3644,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
       `Action / non-action : ${a8.action || a8.actionOption || "—"}`,
       ``,
       `Clôture : ${a9.closingPreset || a9.closingPhrase || "—"}`,
+      ...(data.extensionsV3?.enabled?.seals ? [`Sceau d’intention : ${sealDefinition(a9.sealId)?.label || "—"}`] : []),
       `Intégration : ${(a9.integrationDone || []).join(", ") || "—"}`,
       `Prochaine marche douce : ${a9.nextGentleStep || "—"}`,
       cycleFollowUpSummary(c)
@@ -3574,6 +3782,18 @@ Assez pour aujourd’hui si le corps le demande.</p>
         data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
         data.extensionsV3.enabled ||= cloneData(DEFAULT_DATA.extensionsV3.enabled);
         data.extensionsV3.enabled[el.dataset.extensionToggle] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-print-preference]").forEach(el => {
+      if (el.dataset.boundPrintPreference === "1") return;
+      el.dataset.boundPrintPreference = "1";
+      el.addEventListener("change", () => {
+        data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+        data.extensionsV3.printPreferences ||= cloneData(DEFAULT_DATA.extensionsV3.printPreferences);
+        data.extensionsV3.printPreferences[el.dataset.printPreference] = el.checked;
         saveData();
         render();
       });
