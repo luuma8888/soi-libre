@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v3.4.0</title>
+  <title>Feu Clair — v3.5.1</title>
 
   <style>
     :root {
@@ -419,6 +419,96 @@
       margin-top: .18rem;
     }
 
+    .visual-body-map {
+      display: grid;
+      grid-template-columns: minmax(14rem, .8fr) minmax(0, 1.2fr);
+      gap: 1rem;
+      align-items: start;
+      margin: 1rem 0;
+    }
+
+    .body-map-svg {
+      width: 100%;
+      max-height: 34rem;
+      color: var(--accent);
+      background: color-mix(in srgb, var(--accent-2) 8%, var(--surface));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .75rem;
+    }
+
+    .body-map-silhouette {
+      fill: color-mix(in srgb, var(--surface-2) 82%, transparent);
+      stroke: var(--muted);
+      stroke-width: 2;
+    }
+
+    .body-map-zone {
+      cursor: pointer;
+      outline: none;
+    }
+
+    .body-map-zone circle,
+    .body-map-zone ellipse,
+    .body-map-zone path {
+      fill: color-mix(in srgb, var(--accent-2) 28%, transparent);
+      stroke: var(--accent);
+      stroke-width: 2;
+      transition: fill .15s ease, stroke-width .15s ease;
+    }
+
+    .body-map-zone:hover circle,
+    .body-map-zone:hover ellipse,
+    .body-map-zone:hover path,
+    .body-map-zone:focus-visible circle,
+    .body-map-zone:focus-visible ellipse,
+    .body-map-zone:focus-visible path,
+    .body-map-zone.active circle,
+    .body-map-zone.active ellipse,
+    .body-map-zone.active path {
+      fill: color-mix(in srgb, var(--accent) 48%, transparent);
+      stroke-width: 4;
+    }
+
+    .body-map-zone text {
+      fill: var(--text);
+      font-size: 10px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .body-map-zone.field-zone ellipse {
+      fill: none;
+      stroke-width: 10;
+      opacity: .55;
+    }
+
+    .body-map-zone.field-zone:hover ellipse,
+    .body-map-zone.field-zone:focus-visible ellipse,
+    .body-map-zone.field-zone.active ellipse,
+    .body-map-zone.field-zone.linked-highlight ellipse {
+      fill: none;
+      stroke-width: 14;
+      opacity: .9;
+    }
+
+    .body-map-zone.linked-highlight circle,
+    .body-map-zone.linked-highlight ellipse,
+    .body-map-zone.linked-highlight path {
+      fill: color-mix(in srgb, var(--accent) 48%, transparent);
+      stroke-width: 4;
+    }
+
+    .body-zone.active,
+    .body-zone.linked-highlight {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent-2) 16%, var(--surface));
+    }
+
+    .body-zone.linked-highlight strong {
+      color: var(--accent);
+    }
+
     .tool-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -668,6 +758,7 @@
       .actions button { flex: 1 1 auto; }
       .brand p { display: none; }
       .body-map { grid-template-columns: 1fr; }
+      .visual-body-map { grid-template-columns: 1fr; }
       .tool-grid { grid-template-columns: 1fr; }
       .understand-grid { grid-template-columns: 1fr; }
       .seal-selector { grid-template-columns: 1fr; }
@@ -793,7 +884,7 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v3.4.0</h1>
+        <h1>Feu Clair — v3.5.1</h1>
         <p>Traverser une colère, rendre la charge, garder la force.</p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
@@ -809,7 +900,7 @@
 
 <script>
 /*
-  Feu Clair — v3.4.0
+  Feu Clair — v3.5.1
   Application offline, sans CDN, sauvegarde locale.
   Objectif : garder un soin guidé simple, avec des bibliothèques internes
   structurées mais révélées par petites vagues.
@@ -823,7 +914,7 @@
 (() => {
   const STORAGE_KEY = "feu_clair_v01_data";
   const VEIL_SESSION_KEY = "feu_clair_local_veil_unlocked";
-  const APP_VERSION = "3.4.0";
+  const APP_VERSION = "3.5.1";
   const RESONANCE_WAVE_LIMIT = 10;
   const CYCLE_STATUSES = [
     "ouvert",
@@ -888,7 +979,7 @@
     bodyMemorySessions: [],
     authoritySessions: [],
     extensionsV3: {
-      schemaVersion: 4,
+      schemaVersion: 5,
       enabled: {
         seals: false,
         languageProfiles: false,
@@ -1049,15 +1140,18 @@
         { id: "pardon-museliere", text: "Pardon utilisé comme muselière.", family: "spirituelle", intensity: "très direct", mode: "intensif", zones: ["gorge", "poitrine"], element: "soleil", tags: ["mots qui osent", "fausse lumière"], active: true }
       ],
       zones: [
+        { id: "tete", label: "Tête", cue: "surcharge, pensée en boucle, confusion", tags: ["pensée"], active: true },
         { id: "gorge", label: "Gorge", cue: "parole retenue, vérité avalée, cri étouffé", tags: ["parole"], active: true },
         { id: "machoire", label: "Mâchoire", cue: "contrôle, morsure retenue, colère serrée", tags: ["retenue"], active: true },
         { id: "poitrine", label: "Poitrine", cue: "cœur, trahison, tristesse sous le feu", tags: ["cœur"], active: true },
         { id: "plexus", label: "Plexus", cue: "pouvoir, injustice, impuissance, confusion", tags: ["pouvoir"], active: true },
         { id: "ventre", label: "Ventre", cue: "peur, consentement, mémoire corporelle douce", tags: ["peur", "intuition"], active: true },
+        { id: "bassin", label: "Bassin", cue: "territoire, sécurité, mouvement retenu", tags: ["territoire"], active: true },
         { id: "dos", label: "Dos / épaules", cue: "charge portée, loyauté, collectif", tags: ["charge"], active: true },
         { id: "mains", label: "Mains", cue: "action, coupure, restitution, limite", tags: ["action"], active: true },
         { id: "jambes", label: "Jambes / pieds", cue: "ancrage, fuite, prochaine marche", tags: ["ancrage"], active: true },
         { id: "tout", label: "Tout le corps", cue: "activation globale, secousse, fermeture forte", tags: ["activation"], active: true },
+        { id: "champ", label: "Champ autour", cue: "espace personnel, proximité, limite ressentie", tags: ["espace"], active: true },
         { id: "rien", label: "Je ne ressens rien", cue: "vide, verrou, fatigue, accès protégé", tags: ["dissociation", "verrou"], active: true }
       ],
       exits: [
@@ -3440,6 +3534,93 @@ Assez pour aujourd’hui si le corps le demande.</p>
     `;
   }
 
+  function visualBodyMapZones() {
+    return [
+      { label: "Tête", cue: "surcharge ou confusion" },
+      { label: "Mâchoire", cue: "colère serrée" },
+      { label: "Gorge", cue: "parole retenue" },
+      { label: "Poitrine", cue: "cœur et tristesse" },
+      { label: "Plexus", cue: "pouvoir et injustice" },
+      { label: "Ventre", cue: "peur et consentement" },
+      { label: "Bassin", cue: "territoire et sécurité" },
+      { label: "Dos / épaules", cue: "charge portée" },
+      { label: "Mains", cue: "action et restitution" },
+      { label: "Jambes / pieds", cue: "ancrage et fuite" },
+      { label: "Tout le corps", cue: "activation globale" },
+      { label: "Champ autour", cue: "espace personnel" }
+    ];
+  }
+
+  function renderVisualBodyMap(selectedZone = "") {
+    const active = label => selectedZone === label ? "active" : "";
+    return `
+      <div class="visual-body-map">
+        <svg class="body-map-svg" viewBox="0 0 360 500" role="group" aria-label="Carte corporelle symbolique. Utilise les zones cliquables ou la liste accessible à côté.">
+          <ellipse class="body-map-silhouette" cx="130" cy="250" rx="105" ry="220" opacity=".25"></ellipse>
+          <circle class="body-map-silhouette" cx="130" cy="62" r="34"></circle>
+          <path class="body-map-silhouette" d="M104 98 C82 118 76 170 82 225 L92 330 L108 330 L112 455 L128 455 L130 330 L132 330 L136 455 L152 455 L168 330 L178 225 C184 170 178 118 156 98 Z"></path>
+          <path class="body-map-silhouette" d="M86 130 L48 255 L62 262 L104 168"></path>
+          <path class="body-map-silhouette" d="M174 130 L212 255 L198 262 L156 168"></path>
+
+          <g class="body-map-zone field-zone ${active("Champ autour")}" tabindex="0" role="button" aria-label="Champ autour" data-body-map-zone="Champ autour">
+            <ellipse cx="130" cy="250" rx="112" ry="228"></ellipse><text x="18" y="28">champ</text>
+          </g>
+          <g class="body-map-zone ${active("Tout le corps")}" tabindex="0" role="button" aria-label="Tout le corps" data-body-map-zone="Tout le corps">
+            <path d="M100 102 C72 140 72 300 100 350 M160 102 C188 140 188 300 160 350"></path><text x="173" y="352">tout</text>
+          </g>
+          <g class="body-map-zone ${active("Tête")}" tabindex="0" role="button" aria-label="Tête" data-body-map-zone="Tête">
+            <circle cx="130" cy="62" r="25"></circle><text x="160" y="65">tête</text>
+          </g>
+          <g class="body-map-zone ${active("Mâchoire")}" tabindex="0" role="button" aria-label="Mâchoire" data-body-map-zone="Mâchoire">
+            <path d="M111 70 Q130 88 149 70"></path><text x="158" y="88">mâchoire</text>
+          </g>
+          <g class="body-map-zone ${active("Gorge")}" tabindex="0" role="button" aria-label="Gorge" data-body-map-zone="Gorge">
+            <ellipse cx="130" cy="105" rx="18" ry="11"></ellipse><text x="154" y="109">gorge</text>
+          </g>
+          <g class="body-map-zone ${active("Poitrine")}" tabindex="0" role="button" aria-label="Poitrine" data-body-map-zone="Poitrine">
+            <ellipse cx="130" cy="150" rx="35" ry="25"></ellipse><text x="170" y="153">poitrine</text>
+          </g>
+          <g class="body-map-zone ${active("Plexus")}" tabindex="0" role="button" aria-label="Plexus" data-body-map-zone="Plexus">
+            <circle cx="130" cy="192" r="18"></circle><text x="153" y="196">plexus</text>
+          </g>
+          <g class="body-map-zone ${active("Ventre")}" tabindex="0" role="button" aria-label="Ventre" data-body-map-zone="Ventre">
+            <ellipse cx="130" cy="238" rx="28" ry="32"></ellipse><text x="163" y="242">ventre</text>
+          </g>
+          <g class="body-map-zone ${active("Bassin")}" tabindex="0" role="button" aria-label="Bassin" data-body-map-zone="Bassin">
+            <ellipse cx="130" cy="290" rx="36" ry="23"></ellipse><text x="171" y="294">bassin</text>
+          </g>
+          <g class="body-map-zone ${active("Mains")}" tabindex="0" role="button" aria-label="Mains" data-body-map-zone="Mains">
+            <circle cx="55" cy="268" r="14"></circle><circle cx="205" cy="268" r="14"></circle><text x="12" y="288">mains</text>
+          </g>
+          <g class="body-map-zone ${active("Jambes / pieds")}" tabindex="0" role="button" aria-label="Jambes et pieds" data-body-map-zone="Jambes / pieds">
+            <path d="M98 325 L128 325 L128 470 L98 470 Z M132 325 L162 325 L162 470 L132 470 Z"></path><text x="170" y="450">jambes / pieds</text>
+          </g>
+
+          <g aria-label="Silhouette arrière pour le dos">
+            <circle class="body-map-silhouette" cx="300" cy="120" r="22"></circle>
+            <path class="body-map-silhouette" d="M282 148 C270 165 270 225 278 270 L288 330 L312 330 L322 270 C330 225 330 165 318 148 Z"></path>
+            <text x="274" y="92">dos</text>
+          </g>
+          <g class="body-map-zone ${active("Dos / épaules")}" tabindex="0" role="button" aria-label="Dos et épaules" data-body-map-zone="Dos / épaules">
+            <path d="M278 165 Q300 145 322 165 L318 235 Q300 250 282 235 Z"></path><text x="267" y="265">dos / épaules</text>
+          </g>
+        </svg>
+        <div>
+          <h3>Choisir une zone</h3>
+          <p class="muted mini">Cette carte est symbolique et non médicale. Une zone est une porte d’entrée, pas une preuve.</p>
+          <div class="body-map" aria-label="Liste accessible des zones corporelles">
+            ${visualBodyMapZones().map(zone => `
+              <button class="body-zone ${active(zone.label)}" data-body-map-zone="${escapeAttr(zone.label)}">
+                <strong>${escapeHtml(zone.label)}</strong>
+                <small>${escapeHtml(zone.cue)}</small>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function renderBodyScanTool() {
     const preset = data.toolDraft?.bodyScan || {};
     return `
@@ -3448,6 +3629,15 @@ Assez pour aujourd’hui si le corps le demande.</p>
             Cette zone est une porte d’entrée, pas une preuve.
             Tu peux créer un Cycle de Feu à partir d’elle, mais le soin commencera par vérifier ton état actuel pour ne pas ouvrir trop vite.
           </p>
+
+          ${data.extensionsV3?.enabled?.visualBodyMap ? renderVisualBodyMap(preset.zone || "") : `
+            <div class="notice mini">
+              Une carte corporelle visuelle optionnelle est disponible. Elle reste symbolique, non médicale, et préremplit seulement le scan.
+              <div class="actions">
+                <button class="ghost" data-action="activate-visual-body-map">Activer la carte visuelle</button>
+              </div>
+            </div>
+          `}
 
           <label>Zone corporelle</label>
           <select id="body-scan-zone">
@@ -3913,6 +4103,22 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <div class="actions">
             <button class="primary" data-tab="outils" data-tool="body-scan">Ouvrir le scan corporel</button>
           </div>
+        </div>
+
+        <div class="card">
+          <h3>Impression et PDF</h3>
+          <p class="muted">
+            Prépare un document avant impression : format, Cycles à inclure, titres masqués, page de garde,
+            note de confidentialité, synthèse, clôture, suivi d’intégration et sceaux.
+          </p>
+          <div class="actions">
+            <button class="primary" data-action="open-rich-print">
+              ${data.extensionsV3?.enabled?.richPrint ? "Préparer une impression ou un PDF" : "Activer et préparer une impression"}
+            </button>
+          </div>
+          <p class="muted mini">
+            Les boutons “Imprimer” simples utilisent l’impression directe. Ce panneau donne accès aux formats détaillés.
+          </p>
         </div>
 
         ${renderComprendre()}
@@ -4435,6 +4641,25 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.addEventListener("click", () => setTab("outils", el.dataset.tool, toolDraftFromDataset(el)));
     });
 
+    document.querySelectorAll("[data-body-map-zone]").forEach(el => {
+      if (el.dataset.boundBodyMapZone === "1") return;
+      el.dataset.boundBodyMapZone = "1";
+      const chooseZone = () => selectBodyMapZone(el.dataset.bodyMapZone);
+      const highlightZone = () => setBodyMapLinkedHighlight(el.dataset.bodyMapZone, true);
+      const clearHighlight = () => setBodyMapLinkedHighlight(el.dataset.bodyMapZone, false);
+      el.addEventListener("click", chooseZone);
+      el.addEventListener("mouseenter", highlightZone);
+      el.addEventListener("mouseleave", clearHighlight);
+      el.addEventListener("focus", highlightZone);
+      el.addEventListener("blur", clearHighlight);
+      el.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          chooseZone();
+        }
+      });
+    });
+
     document.querySelectorAll("[data-step]").forEach(el => {
       if (el.dataset.boundStep === "1") return;
       el.dataset.boundStep = "1";
@@ -4645,11 +4870,33 @@ Assez pour aujourd’hui si le corps le demande.</p>
     saveData();
   }
 
+  function selectBodyMapZone(zone) {
+    if (!zone) return;
+    data.toolDraft ||= {};
+    data.toolDraft.bodyScan = { ...readBodyScan(), zone };
+    saveData();
+    render();
+  }
+
+  function setBodyMapLinkedHighlight(zone, enabled) {
+    document.querySelectorAll("[data-body-map-zone]").forEach(el => {
+      if (el.dataset.bodyMapZone === zone) el.classList.toggle("linked-highlight", enabled);
+    });
+  }
+
   function handleAction(el) {
     const action = el.dataset.action;
 
     if (action === "toggle-theme") {
       data.settings.theme = data.settings.theme === "dark" ? "light" : "dark";
+      saveData();
+      render();
+    }
+
+    if (action === "activate-visual-body-map") {
+      data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+      data.extensionsV3.enabled ||= cloneData(DEFAULT_DATA.extensionsV3.enabled);
+      data.extensionsV3.enabled.visualBodyMap = true;
       saveData();
       render();
     }
@@ -4661,6 +4908,20 @@ Assez pour aujourd’hui si le corps le demande.</p>
         printPreferences().selectedCycleIds = [c.id];
       }
       data.activeTab = "sanctuaire";
+      openDetailsState.set("sanctuaire:extensions-v3", true);
+      openDetailsState.set("sanctuaire:rich-print-preparation", true);
+      saveData();
+      render();
+    }
+
+    if (action === "open-rich-print") {
+      data.extensionsV3 ||= cloneData(DEFAULT_DATA.extensionsV3);
+      data.extensionsV3.enabled ||= cloneData(DEFAULT_DATA.extensionsV3.enabled);
+      data.extensionsV3.enabled.richPrint = true;
+      const c = activeCycle();
+      if (c && !printPreferences().selectedCycleIds?.length) {
+        printPreferences().selectedCycleIds = [c.id];
+      }
       openDetailsState.set("sanctuaire:extensions-v3", true);
       openDetailsState.set("sanctuaire:rich-print-preparation", true);
       saveData();
