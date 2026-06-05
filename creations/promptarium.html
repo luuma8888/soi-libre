@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Promptarium v0.2.alpha</title>
+  <title>Promptarium v0.3.alpha</title>
   <style>
 :root{
   --bg:#f8f7f2; --panel:#fffdf8; --panel2:#f0ede4; --ink:#24231f; --muted:#6f6b60;
@@ -33,7 +33,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .app{max-width:1680px;margin:auto;padding:18px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.brand{display:flex;align-items:center;gap:12px;min-width:0}.logo{width:42px;height:42px;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:var(--shadow);display:grid;place-items:center;color:white;font-weight:800}.brand h1{margin:0;font-size:1.25rem;letter-spacing:.02em;line-height:1.1}.brand p{margin:3px 0 0;color:var(--muted);font-size:.88rem}.top-actions,.toolbar,.minirow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.top-actions{justify-content:flex-end}.nav{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 16px}.tab,.btn{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 12px;color:var(--ink);box-shadow:0 1px 0 rgba(0,0,0,.02)}.tab.active,.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}.btn.primary.danger{background:var(--danger);border-color:var(--danger);color:#fff}.btn.small{padding:6px 9px;font-size:.86rem}.btn.warn{border-color:rgba(176,138,69,.35);color:var(--warn)}.btn.danger{border-color:rgba(184,107,101,.45);color:var(--danger)}.btn:disabled{opacity:.45;cursor:not-allowed}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .grid{display:grid;gap:var(--space)}.grid.two{grid-template-columns:minmax(0,1fr) minmax(340px,.78fr)}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:var(--space)}.section-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}.section-title h2,.section-title h3{margin:0;font-size:1rem}.section-title p{margin:3px 0 0;color:var(--muted);font-size:.88rem}label{display:block;font-weight:650;margin:9px 0 5px}.hint,.muted{color:var(--muted)}.hint{font-size:.86rem}.summaryline{margin:6px 0 12px}.pill{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:4px 8px;font-size:.82rem;color:var(--muted);margin:2px}.pill.ok{color:var(--ok);border-color:rgba(109,146,119,.35)}.pill.warn{color:var(--warn);border-color:rgba(176,138,69,.35)}.pill.danger{color:var(--danger);border-color:rgba(184,107,101,.35)}.warntext{color:var(--warn);font-weight:650}.list{display:grid;gap:8px;max-height:68vh;overflow:auto;padding-right:2px}.smalllist{max-height:360px}.pickerlist{max-height:330px}.item{border:1px solid var(--line);border-radius:var(--radius2);background:var(--panel);padding:10px;text-align:left;transition:.12s}.item:hover{border-color:var(--accent);transform:translateY(-1px)}.item.active{outline:2px solid color-mix(in srgb,var(--accent) 65%,transparent);border-color:var(--accent)}.item h4{margin:0 0 5px;font-size:.96rem}.item p{margin:0;color:var(--muted);font-size:.86rem}.item .meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.inlineitem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}.viewer{position:sticky;top:10px}.codebox{white-space:pre-wrap;word-break:break-word;background:#111;color:#f7f2e8;border-radius:var(--radius2);padding:12px;max-height:54vh;overflow:auto;font-family:var(--mono);font-size:.9rem;line-height:1.5}.splitline{height:1px;background:var(--line);margin:12px 0}.details{border:1px solid var(--line);border-radius:var(--radius2);padding:10px;background:var(--panel2);margin-top:10px}.details summary{cursor:pointer;font-weight:700}.empty{border:1px dashed var(--line);border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted);background:var(--panel2)}.togglebar{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--panel2);padding:3px;gap:3px}.togglebar button{border:0;background:transparent;border-radius:999px;padding:6px 10px}.togglebar button.active{background:var(--panel);box-shadow:0 1px 6px rgba(0,0,0,.08)}.checkgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px}.check{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 9px;font-weight:500;margin:0}.check input{width:auto}.dot{display:inline-block;width:12px;height:12px;border-radius:999px;background:var(--dot,#6f8f84);border:1px solid rgba(0,0,0,.12)}.builder-list{display:grid;gap:8px}.builder-item{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel2);padding:9px;border-radius:var(--radius2)}.builder-item strong{display:block}.builder-item small{color:var(--muted)}.builder-item textarea{margin-top:8px;min-height:86px}.kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:1px 5px;font-size:.82em}.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:999px;box-shadow:var(--shadow);z-index:20;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;bottom:26px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:20px;z-index:30}.modal.show{display:flex}.modalbox{max-width:720px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}.modal textarea{min-height:240px}.tagcloud{display:flex;flex-wrap:wrap;gap:4px}.footer{margin:18px 0 4px;color:var(--muted);font-size:.85rem;text-align:center}
 
-/* v0.2.alpha — micro-polish visuel : cartes lisibles, badges colorés, sans dépendance externe. */
+/* v0.3.alpha — micro-polish visuel : cartes lisibles, badges colorés, sans dépendance externe. */
 .item{position:relative;overflow:hidden}.item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--line)}
 .item[data-kind="prompt"]::before{background:#8aa3ff}.item[data-kind="fragment"]::before{background:#9cc5b8}.item[data-kind="recipe"]::before{background:#d0b17f}
 .rolechip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 8px;font-size:.8rem;border:1px solid var(--line);background:var(--panel2);color:var(--muted)}
@@ -46,7 +46,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 
 
-/* v0.2.alpha — ergonomie : choix directs, actions hiérarchisées, interface plus douce. */
+/* v0.3.alpha — ergonomie : choix directs, actions hiérarchisées, interface plus douce. */
 .segchoice{display:flex;flex-wrap:wrap;gap:6px;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:4px;margin:4px 0 8px}.segchoice.wrap{border-radius:var(--radius2)}
 .segoption{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:999px;padding:7px 11px;color:var(--muted);font-weight:650;cursor:pointer;user-select:none;transition:.13s;border:1px solid transparent}.segoption:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 8%,var(--panel))}.segoption input{position:absolute;opacity:0;inset:0;cursor:pointer}.segoption:has(input:checked){background:var(--ink);color:var(--bg);box-shadow:0 1px 8px rgba(0,0,0,.08)}
 .choice-more{margin-top:4px}.choice-more summary{font-size:.86rem;color:var(--muted);cursor:pointer}.choice-more select{margin-top:7px}.quick-tools{display:grid;gap:4px}.form-compact{display:grid;gap:8px}.form-section{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:10px}.primary-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.primary-actions .btn.primary{padding-inline:18px}.more-actions summary{color:var(--muted)}
@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .mobile-fab{display:none}.capture-actions{display:flex;gap:8px;flex-wrap:wrap}.capture-actions .btn{min-height:38px}.search-help{font-size:.84rem}.qualityline .qbar{opacity:.72}.viewer .details.more-actions{margin-top:6px}
 
 
-/* v0.2.alpha — confort grand écran : panneaux ajustables, zones de découpage plus généreuses, édition ample. */
+/* v0.3.alpha — confort grand écran : panneaux ajustables, zones de découpage plus généreuses, édition ample. */
 .capture-split,.compose-split,.library-split,.variables-split{display:grid;align-items:start;gap:0}
 .capture-split{grid-template-columns:minmax(380px,var(--split-left,58%)) 12px minmax(380px,1fr)}
 .compose-split{grid-template-columns:minmax(400px,var(--split-left,60%)) 12px minmax(380px,1fr)}
@@ -99,6 +99,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
 .compare-mini{display:grid;gap:8px}.qualityline{font-size:.86rem;color:var(--muted)}.thumb{max-width:150px;max-height:110px;border-radius:12px;border:1px solid var(--line);display:block;margin-top:8px;object-fit:cover}.print-title{margin:0 0 12px}.version-mini{font-size:.84rem;color:var(--muted)}.import-preview{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:10px;margin-top:8px}.dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space)}.statcard{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.statcard strong{display:block;font-size:1.55rem}.workflow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}.workflow .btn{text-align:left;border-radius:var(--radius2);padding:12px}.home-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.home-actions .btn{border-radius:var(--radius2);text-align:left;padding:14px}.filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.filterbar .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.helpgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.helpbox{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:12px}.helpbox h3{margin:0 0 6px}
 .library-mode{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.library-mode .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}.library-layout .list{max-height:none;overflow:visible}.collection-browse-layout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:10px;align-items:start}.collection-rail{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:9px;position:sticky;top:10px}.collection-rail summary{cursor:pointer;font-weight:800}.collection-browser{display:grid;gap:7px;margin-top:8px}.collection-folder{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:8px;text-align:left}.collection-folder.active{outline:2px solid color-mix(in srgb,var(--accent) 65%,transparent);border-color:var(--accent);background:var(--panel)}.folder-icon{width:22px;height:18px;border-radius:6px;background:var(--dot,#9cc5b8);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}input[type="color"]{min-height:42px;padding:4px;background:var(--panel);cursor:pointer}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}input[type="color"]::-moz-color-swatch{border:1px solid rgba(0,0,0,.18);border-radius:9px}.collection-create-box{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:9px;margin-top:8px}.quick-choice{border:1px solid var(--line);background:var(--panel2);border-radius:var(--radius2);padding:6px}.quick-choice .segchoice{border:0;background:transparent;margin:0}.quick-choice details{margin-top:5px}.quick-choice details[open]{border-top:1px solid var(--line);padding-top:6px}.audit-list{display:grid;gap:8px}.audit-item{border:1px solid var(--line);border-radius:var(--radius2);background:var(--panel);padding:10px}.audit-item h3{margin:0 0 4px;font-size:.98rem}.audit-score{font-weight:800}.advice-list{margin:8px 0 0;padding-left:18px;color:var(--muted)}.advice-list li{margin:3px 0}.variables-tools{display:grid;gap:8px;margin-bottom:10px}.variables-list{max-height:none;overflow:visible}
+.thumb-preview{width:min(200px,100%);aspect-ratio:1/1;border:1px solid var(--line);border-radius:var(--radius2);object-fit:cover;background:var(--panel2);display:block;margin:8px 0}.item-thumb{display:grid;grid-template-columns:74px minmax(0,1fr);gap:10px;align-items:start}.item-thumb img{width:74px;height:74px;border-radius:var(--radius2);border:1px solid var(--line);object-fit:cover;background:var(--panel2)}.gallery-tools{display:grid;gap:10px;margin-bottom:12px}.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}.gallery-card{border:1px solid var(--line);background:var(--panel);border-radius:var(--radius2);padding:9px;text-align:left;display:grid;gap:8px;min-width:0}.gallery-card:hover{border-color:var(--accent);transform:translateY(-1px)}.gallery-card img,.gallery-placeholder{width:100%;aspect-ratio:1/1;border-radius:var(--radius2);border:1px solid var(--line);background:var(--panel2);object-fit:cover;display:grid;place-items:center;color:var(--muted);font-weight:700}.gallery-card h3{font-size:.95rem;margin:0;line-height:1.2}.gallery-card p{margin:0;color:var(--muted);font-size:.84rem}
 @media (max-width:900px){.collection-browse-layout{grid-template-columns:1fr}.collection-rail{position:static}}
 </style>
 </head>
@@ -107,9 +108,10 @@ body.is-resizing{user-select:none;cursor:col-resize}
   <header class="topbar">
     <div class="brand">
       <div class="logo">P</div>
-      <div><h1>Promptarium <span class="muted">v0.2.alpha</span></h1><p>Bibliothèque locale de prompts, morceaux réutilisables et modèles à remplir.</p></div>
+      <div><h1>Promptarium <span class="muted">v0.3.alpha</span></h1><p>Bibliothèque locale de prompts, morceaux réutilisables et modèles à remplir.</p></div>
     </div>
     <div class="top-actions no-print">
+      <button class="btn small" data-action="quick-backup" title="Exporter immédiatement une copie JSON complète">💾 Sauvegarde rapide</button>
       <button class="btn small" data-action="toggle-theme">🌗 Thème</button>
       <button class="btn small" data-action="toggle-density">↕ Densité</button>
       <button class="btn small primary" data-tab-go="capture">+ Ajouter</button>
@@ -118,7 +120,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
   <nav class="nav no-print" id="tabs"></nav>
   <main id="view"><div class="card">Chargement…</div></main>
   <button class="btn primary mobile-fab no-print" data-tab-go="capture">+ Ajouter</button>
-  <div class="footer">Promptarium v0.2.alpha est local et offline. Exporte régulièrement ton JSON pour garder une copie de sécurité.</div>
+  <div class="footer">Promptarium v0.3.alpha est local et offline. Exporte régulièrement ton JSON pour garder une copie de sécurité.</div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modal" id="copyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="copyModalTitle">
@@ -160,7 +162,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 (function(){
   'use strict';
 
-  const VERSION = 'v0.2.alpha';
+  const VERSION = 'v0.3.alpha';
   const DB_NAME = 'PromptariumOfflineDB';
   const DB_VERSION = 1;
   const STORE = 'kv';
@@ -244,6 +246,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
     compareTarget: '',
     variablePresetId: '',
     printableCollectionId: '',
+    galleryQuery: '',
+    galleryCollectionId: '',
     captureDraft: '',
     captureDraftData: emptyCaptureDraftData(),
     captureSplit: 58,
@@ -267,10 +271,11 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
 
   function templateState(){
+    const optionLists = normalizeOptionLists({});
     return {
-      schemaVersion: 6,
+      schemaVersion: 7,
       version: VERSION,
-      settings: { theme:'light', density:'comfortable', optionLists:{}, quickOptions:{}, panelLayout:{} },
+      settings: { theme:'light', density:'comfortable', optionLists, quickOptions:normalizeQuickOptions({}, optionLists), panelLayout:{}, thumbnailMaxSize:200 },
       meta: { createdAt:now(), updatedAt:null, lastExportAt:null, changesSinceExport:0, migratedFrom:null },
       prompts: [],
       fragments: [],
@@ -355,7 +360,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 
   async function persist(count=true){
     state.version = VERSION;
-    state.schemaVersion = 6;
+    state.schemaVersion = 7;
     state.meta.updatedAt = now();
     if(count) state.meta.changesSinceExport = Number(state.meta.changesSinceExport||0) + 1;
     try{
@@ -415,6 +420,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     base.settings.optionLists = normalizeOptionLists(settings.optionLists);
     base.settings.quickOptions = normalizeQuickOptions(settings.quickOptions, base.settings.optionLists);
     base.settings.panelLayout = normalizePanelLayout(settings.panelLayout);
+    base.settings.thumbnailMaxSize = normalizeThumbnailMaxSize(settings.thumbnailMaxSize);
     base.meta.createdAt = meta.createdAt || now();
     base.meta.updatedAt = meta.updatedAt || null;
     base.meta.lastExportAt = meta.lastExportAt || null;
@@ -450,6 +456,26 @@ body.is-resizing{user-select:none;cursor:col-resize}
       out.splits[name] = Number.isFinite(raw) ? clamp(raw, 36, 76) : defaults[name];
     });
     return out;
+  }
+  function normalizeThumbnailMaxSize(value){
+    const n = Number(value);
+    if(!Number.isFinite(n)) return 200;
+    return clamp(Math.round(n), 80, 800);
+  }
+  function normalizeThumbnail(value){
+    const src = value && typeof value === 'object' ? value : {};
+    const data = String(src.imageData || '');
+    const ok = /^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(data);
+    return {
+      imageData: ok ? data : '',
+      imageName: String(src.imageName || ''),
+      width: Number(src.width || 0) || 0,
+      height: Number(src.height || 0) || 0,
+      updatedAt: src.updatedAt || null
+    };
+  }
+  function hasThumbnail(item){
+    return !!item?.thumbnail?.imageData;
   }
 
   function normalizeOptionLists(optionLists){
@@ -547,6 +573,13 @@ body.is-resizing{user-select:none;cursor:col-resize}
       tags: normalizeTags(p.tags),
       collectionIds: ensureArray(p.collectionIds).map(String),
       notes: String(p.notes || ''),
+      thumbnail: normalizeThumbnail(p.thumbnail || {
+        imageData:p.thumbnailData || p.thumbnailImage || p.imageData,
+        imageName:p.thumbnailName || p.imageName,
+        width:p.thumbnailWidth,
+        height:p.thumbnailHeight,
+        updatedAt:p.thumbnailUpdatedAt
+      }),
       tests: ensureArray(p.tests).map(normalizeTest),
       versions: ensureArray(p.versions).map(normalizeVersion).filter(Boolean),
       variableSets: ensureArray(p.variableSets || p.variablePresets || p.fillSets).map(normalizePromptVariableSet).filter(Boolean),
@@ -888,6 +921,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(ui.space === 'dashboard') elView.innerHTML = viewDashboard();
     else if(ui.space === 'capture') elView.innerHTML = viewCapture();
     else if(ui.space === 'library') elView.innerHTML = viewLibrary();
+    else if(ui.space === 'gallery') elView.innerHTML = viewGallery();
     else if(ui.space === 'variables') elView.innerHTML = viewVariables();
     else if(ui.space === 'compose') elView.innerHTML = viewCompose();
     else if(ui.space === 'audit') elView.innerHTML = viewAudit();
@@ -898,6 +932,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       ['dashboard','Vue d’ensemble'],
       ['capture','Ajouter'],
       ['library','Bibliothèque'],
+      ['gallery','Vignettes'],
       ['variables','Remplir'],
       ['compose','Composer'],
       ['audit','Améliorer'],
@@ -926,6 +961,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
         <div class="home-actions">
           <button class="btn primary" data-space="capture"><strong>Ajouter un prompt</strong><br><span class="hint">Coller, classer ou découper un nouvel élément.</span></button>
           <button class="btn" data-space="library"><strong>Ouvrir la bibliothèque</strong><br><span class="hint">Chercher, parcourir les collections et copier.</span></button>
+          <button class="btn" data-space="gallery"><strong>Voir les vignettes</strong><br><span class="hint">Parcourir les prompts par exemple visuel.</span></button>
           <button class="btn" data-space="audit"><strong>Améliorer les éléments</strong><br><span class="hint">Voir ce qui reste à tester, compléter ou valider.</span></button>
         </div>
         ${summaryLine()}
@@ -1201,6 +1237,48 @@ body.is-resizing{user-select:none;cursor:col-resize}
     </section>`;
   }
 
+  function filteredGalleryPrompts(){
+    let list = active(state.prompts).map(x=>kindWrap('prompt', x)).sort(byUpdated);
+    if(ui.galleryCollectionId) list = list.filter(x => ensureArray(x.collectionIds).includes(ui.galleryCollectionId));
+    if(ui.galleryQuery) list = list.filter(x => matchesSearch(x, ui.galleryQuery));
+    return list;
+  }
+  function viewGallery(){
+    const prompts = filteredGalleryPrompts();
+    const withThumb = prompts.filter(hasThumbnail).length;
+    return `<section class="grid">
+      <div class="card">
+        <div class="section-title"><div><h2>Vignettes</h2><p>Parcourir les prompts par exemple visuel, image de référence ou résultat attendu.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
+        <div class="gallery-tools">
+          <input id="gallerySearch" value="${esc(ui.galleryQuery)}" placeholder="Rechercher dans les prompts visuels…">
+          <div class="toolbar">
+            <button class="btn small" data-action="clear-gallery-search">Effacer recherche</button>
+            ${ui.galleryCollectionId ? `<button class="btn small" data-action="clear-gallery-collection">Toutes collections</button>` : ''}
+            <span class="pill">${prompts.length} prompt(s)</span>
+            <span class="pill ${withThumb ? 'ok' : ''}">${withThumb} vignette(s)</span>
+          </div>
+          ${galleryCollectionChips()}
+        </div>
+      </div>
+      <div class="gallery-grid">${prompts.length ? prompts.map(galleryCard).join('') : '<div class="empty">Aucun prompt dans cette vue.</div>'}</div>
+    </section>`;
+  }
+  function galleryCollectionChips(){
+    const cols = active(state.collections);
+    if(!cols.length) return '<p class="hint">Aucune collection créée. Les vignettes s’afficheront dès qu’un prompt reçoit une image.</p>';
+    return `<div class="quickchips" aria-label="Filtrer les vignettes par collection"><span class="pill ${ui.galleryCollectionId?'tagclick':''}" data-action="clear-gallery-collection">Toutes collections</span>${cols.slice(0,18).map(c=>`<span class="pill tagclick ${ui.galleryCollectionId===c.id?'ok':''}" data-action="filter-gallery-collection" data-id="${esc(c.id)}"><span class="dot" style="--dot:${esc(c.color)}"></span>${esc(c.name)} · ${collectionCount(c.id)}</span>`).join('')}</div>`;
+  }
+  function galleryCard(item){
+    const thumb = hasThumbnail(item)
+      ? `<img src="${esc(item.thumbnail.imageData)}" alt="${esc('Vignette de '+item.title)}">`
+      : '<div class="gallery-placeholder">Sans vignette</div>';
+    return `<button class="gallery-card" data-action="open-item" data-kind="prompt" data-id="${esc(item.id)}">
+      ${thumb}
+      <div><h3>${item.favorite?'★ ':''}${esc(item.title)}</h3><p>${esc([item.type, item.role, item.tool, item.status].filter(Boolean).join(' · '))}</p></div>
+      <div class="meta">${(item.tags||[]).slice(0,3).map(t=>`<span class="pill">#${esc(t)}</span>`).join('')}</div>
+    </button>`;
+  }
+
   function collectionFilterChips(){
     const cols = active(state.collections);
     if(!cols.length) return '<p class="hint">Aucune collection créée. Tu peux en créer depuis Ajouter ou Sauvegarder.</p>';
@@ -1255,11 +1333,15 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const meta = [kindLabel(item._kind), item.type || item.role || '', item._kind==='prompt' ? item.role || '' : '', item.tool || '', item.status || ''].filter(Boolean);
     const snippet = item._kind === 'recipe' ? (item.description || `${ensureArray(item.items).length} élément(s)`) : strip(item.content).slice(0,160);
     const role = item._kind==='fragment' ? rolePill(item.role) : typePill(item.type || 'générique');
+    const thumbnail = item._kind === 'prompt' && hasThumbnail(item) ? `<div class="item-thumb"><img src="${esc(item.thumbnail.imageData)}" alt="${esc('Vignette de '+item.title)}"><div>` : '';
+    const thumbnailEnd = thumbnail ? '</div></div>' : '';
     return `<button class="item ${activeCls}" data-kind="${esc(item._kind)}" data-action="select-item" data-id="${esc(item.id)}">
+      ${thumbnail}
       <h4>${item.favorite?'★ ':''}${esc(item.title)}</h4>
       <p>${esc(snippet || 'Sans aperçu')}</p>
       ${qualityLine(item)}
       <div class="meta">${role}${meta.filter(m=>m!==item.type && m!==item.role).map(m=>`<span class="pill">${esc(m)}</span>`).join('')}${(item.tags||[]).slice(0,4).map(t=>`<span class="pill tagclick" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</span>`).join('')}</div>
+      ${thumbnailEnd}
     </button>`;
   }
   function kindLabel(k){ return ({prompt:'Prompt',fragment:'Morceau',recipe:'Modèle',collection:'Collection'})[k] || k; }
@@ -1275,6 +1357,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <details class="details"><summary>Pourquoi ce repère ?</summary>${qualityAdviceBlock(item)}</details>
       <div class="primary-actions"><button class="btn primary" data-action="copy-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Copier</button>${canAssemble?`<button class="btn" data-action="load-recipe-builder" data-id="${esc(item.id)}">Composer</button>`:''}<button class="btn" data-action="duplicate-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Dupliquer</button></div>
       <details class="details more-actions"><summary>Plus d’actions</summary><div class="toolbar"><button class="btn" data-action="toggle-favorite" data-kind="${item._kind}" data-id="${esc(item.id)}">${item.favorite?'Retirer favori':'Favori'}</button><button class="btn danger" data-action="trash-item" data-kind="${item._kind}" data-id="${esc(item.id)}">Mettre à la corbeille</button></div></details>
+      ${item._kind === 'prompt' ? thumbnailBlock(item) : ''}
       <pre class="codebox">${esc(content)}</pre>
       <details class="details"><summary>Modifier</summary>${editItemForm(item)}</details>
       <details class="details"><summary>Notes, résultats et tests</summary>${notesTestsBlock(item)}</details>
@@ -1283,6 +1366,19 @@ body.is-resizing{user-select:none;cursor:col-resize}
       ${item._kind === 'prompt' ? `<details class="details" ${ui.extractorSourceId===item.id?'open':''}><summary>Extraire des morceaux</summary><p class="hint">Découpe ce prompt en morceaux réutilisables. Rien n’est sauvegardé sans validation.</p><div class="toolbar"><button class="btn small" data-action="suggest-from-prompt" data-id="${esc(item.id)}">Analyser ce prompt</button></div><div id="extractArea">${ui.extractorSourceId===item.id ? suggestionList(ui.extractorSuggestions, 'prompt') : ''}</div></details>` : ''}
       ${item._kind === 'recipe' && missingFragments(item).length ? `<p class="warntext">⚠ Ce modèle contient ${missingFragments(item).length} morceau(x) manquant(s).</p>` : ''}
     </div>`;
+  }
+
+  function thumbnailBlock(item){
+    const maxSize = thumbnailMaxSize();
+    const thumb = normalizeThumbnail(item.thumbnail);
+    return `<details class="details" ${thumb.imageData?'open':''}><summary>Vignette visuelle</summary>
+      ${thumb.imageData ? `<img class="thumb-preview" src="${esc(thumb.imageData)}" alt="${esc('Vignette de '+item.title)}"><p class="hint">${esc(thumb.imageName || 'Image intégrée')} · ${thumb.width || '?'}×${thumb.height || '?'} px · mise à jour ${fmtDate(thumb.updatedAt)}</p>` : '<p class="hint">Aucune vignette. Ajoute une image d’exemple, une référence ou un résultat obtenu.</p>'}
+      <form class="thumbnailForm" data-id="${esc(item.id)}">
+        <label>Choisir une image</label><input type="file" name="thumbnail" accept="image/*">
+        <div class="toolbar"><button class="btn primary" type="submit">Enregistrer la vignette</button>${thumb.imageData ? `<button class="btn danger" type="button" data-action="remove-thumbnail" data-id="${esc(item.id)}">Supprimer la vignette</button>` : ''}</div>
+        <p class="hint">L’image est réduite à ${maxSize}×${maxSize} px maximum puis sauvegardée en base64 dans l’export JSON.</p>
+      </form>
+    </details>`;
   }
 
   function editItemForm(item){
@@ -1852,11 +1948,22 @@ body.is-resizing{user-select:none;cursor:col-resize}
   }
   function trashAge(d){ try{return Math.max(0, Math.floor((Date.now()-new Date(d).getTime())/86400000));}catch(e){return 0;} }
   function settingsBlock(){
-    return `<p>Thème : <strong>${esc(state.settings.theme)}</strong> · Densité : <strong>${esc(state.settings.density)}</strong></p><div class="toolbar"><button class="btn" data-action="toggle-theme">Changer thème</button><button class="btn" data-action="toggle-density">Changer densité</button><button class="btn" data-action="install-starter-kit">Installer pack de départ</button></div>${optionListsBlock()}<div class="shortcut-hint">Raccourcis : <span class="kbd">Ctrl/⌘ K</span> recherche · <span class="kbd">Ctrl/⌘ N</span> ajouter · <span class="kbd">Ctrl/⌘ Entrée</span> copier le prompt visible.</div><p class="hint">Version ${VERSION}. Stockage : ${esc(storageMode)}. Migration : ${esc(state.meta.migratedFrom || 'aucune')}.</p>`;
+    return `<p>Thème : <strong>${esc(state.settings.theme)}</strong> · Densité : <strong>${esc(state.settings.density)}</strong></p><div class="toolbar"><button class="btn" data-action="toggle-theme">Changer thème</button><button class="btn" data-action="toggle-density">Changer densité</button><button class="btn" data-action="install-starter-kit">Installer pack de départ</button></div>${thumbnailSettingsBlock()}${optionListsBlock()}<div class="shortcut-hint">Raccourcis : <span class="kbd">Ctrl/⌘ K</span> recherche · <span class="kbd">Ctrl/⌘ N</span> ajouter · <span class="kbd">Ctrl/⌘ Entrée</span> copier le prompt visible.</div><p class="hint">Version ${VERSION}. Stockage : ${esc(storageMode)}. Migration : ${esc(state.meta.migratedFrom || 'aucune')}.</p>`;
+  }
+
+  function thumbnailSettingsBlock(){
+    return `<details class="details"><summary>Vignettes visuelles</summary>
+      <form id="thumbnailSettingsForm" class="grid">
+        <div><label>Taille maximale des vignettes</label><input type="number" name="thumbnailMaxSize" min="80" max="800" step="10" value="${esc(thumbnailMaxSize())}"></div>
+        <div class="toolbar"><button class="btn primary" type="submit">Enregistrer ce réglage</button></div>
+        <p class="hint">Par défaut : 200 px. Une taille plus grande rend les exports JSON plus lourds.</p>
+      </form>
+    </details>`;
   }
 
   function optionListsBlock(){
-    const quick = state.settings.quickOptions || normalizeQuickOptions({}, state.settings.optionLists);
+    const optionLists = normalizeOptionLists(state.settings.optionLists);
+    const quick = normalizeQuickOptions(state.settings.quickOptions, optionLists);
     return `<details class="details"><summary>Listes prédéfinies</summary>
       <p class="hint">Une valeur par ligne. Les listes complètes restent disponibles dans “Autre”. Les valeurs mises en avant deviennent les boutons visibles.</p>
       <form id="optionListsForm" class="grid">
@@ -2362,7 +2469,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       if(duplicates.length>40) break;
     }
     const versionCount = items.reduce((sum,x)=>sum+ensureArray(x.versions).length,0);
-    const mediaCount = items.reduce((sum,x)=>sum+ensureArray(x.tests).filter(t=>t.imageData).length,0);
+    const mediaCount = items.reduce((sum,x)=>sum+ensureArray(x.tests).filter(t=>t.imageData).length+(hasThumbnail(x)?1:0),0);
     return { total:items.length, trash:trashed().length, tags:allTags().length, missing, duplicates, versionCount, mediaCount };
   }
   function textSimilarity(a,b){
@@ -2457,15 +2564,15 @@ body.is-resizing{user-select:none;cursor:col-resize}
     state.meta.changesSinceExport = 0;
     await persist(false);
     const payload = JSON.stringify(state, null, 2);
-    downloadText(payload, 'promptarium_v0_2_alpha_export_' + new Date().toISOString().slice(0,10) + '.json', 'application/json');
+    downloadText(payload, 'promptarium_v0_3_alpha_export_' + new Date().toISOString().slice(0,10) + '.json', 'application/json');
     toast('Export JSON créé.'); render();
   }
   function exportMarkdown(){
-    downloadText(markdownLibrary(), 'promptarium_v0_2_alpha_export_' + new Date().toISOString().slice(0,10) + '.md', 'text/markdown');
+    downloadText(markdownLibrary(), 'promptarium_v0_3_alpha_export_' + new Date().toISOString().slice(0,10) + '.md', 'text/markdown');
     toast('Export Markdown créé.');
   }
   function exportText(){
-    downloadText(textLibrary(), 'promptarium_v0_2_alpha_export_' + new Date().toISOString().slice(0,10) + '.txt', 'text/plain');
+    downloadText(textLibrary(), 'promptarium_v0_3_alpha_export_' + new Date().toISOString().slice(0,10) + '.txt', 'text/plain');
     toast('Export TXT créé.');
   }
   async function exportCollectionPack(id=null){
@@ -2638,6 +2745,14 @@ body.is-resizing{user-select:none;cursor:col-resize}
     toast('Listes prédéfinies réinitialisées.');
     render();
   }
+  async function saveThumbnailSettings(e){
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    state.settings.thumbnailMaxSize = normalizeThumbnailMaxSize(fd.get('thumbnailMaxSize'));
+    await persist(false);
+    toast('Réglage des vignettes enregistré.');
+    render();
+  }
 
   function fileToDataURL(file){
     return new Promise((resolve,reject)=>{
@@ -2648,6 +2763,65 @@ body.is-resizing{user-select:none;cursor:col-resize}
       reader.onerror = () => reject(reader.error || new Error('Lecture image impossible'));
       reader.readAsDataURL(file);
     });
+  }
+  function thumbnailMaxSize(){
+    return normalizeThumbnailMaxSize(state?.settings?.thumbnailMaxSize);
+  }
+  function fileToThumbnail(file, maxSize){
+    return new Promise((resolve,reject)=>{
+      if(!file){ reject(new Error('Aucune image choisie')); return; }
+      if(!/^image\//.test(file.type || '')){ reject(new Error('Fichier non image')); return; }
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error || new Error('Lecture image impossible'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Image illisible'));
+        img.onload = () => {
+          const sourceW = Math.max(1, img.naturalWidth || img.width || 1);
+          const sourceH = Math.max(1, img.naturalHeight || img.height || 1);
+          const scale = Math.min(1, maxSize / Math.max(sourceW, sourceH));
+          const width = Math.max(1, Math.round(sourceW * scale));
+          const height = Math.max(1, Math.round(sourceH * scale));
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve({ imageData:canvas.toDataURL('image/jpeg', 0.82), imageName:file.name || '', width, height, updatedAt:now() });
+        };
+        img.src = String(reader.result || '');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function saveThumbnail(e){
+    e.preventDefault();
+    const form = e.target;
+    const item = baseItem('prompt', form.dataset.id);
+    if(!item) return;
+    const file = form.querySelector('input[type="file"]')?.files?.[0];
+    if(!file){ toast('Choisis une image pour la vignette.'); return; }
+    try{
+      item.thumbnail = normalizeThumbnail(await fileToThumbnail(file, thumbnailMaxSize()));
+      item.updatedAt = now();
+      await persist();
+      toast('Vignette enregistrée.');
+      render();
+    }catch(err){
+      console.error(err);
+      toast('Image impossible à convertir en vignette.');
+    }
+  }
+  async function removeThumbnail(id){
+    const item = baseItem('prompt', id);
+    if(!item) return;
+    item.thumbnail = normalizeThumbnail({});
+    item.updatedAt = now();
+    await persist();
+    toast('Vignette supprimée.');
+    render();
   }
 
   async function addTest(e){
@@ -2795,8 +2969,12 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='create-inline-collection'){ await createInlineCollection(btn); return; }
     if(a==='toggle-theme'){ state.settings.theme = state.settings.theme==='dark'?'light':'dark'; await persist(false); render(); return; }
     if(a==='toggle-density'){ state.settings.density = state.settings.density==='dense'?'comfortable':'dense'; await persist(false); render(); return; }
+    if(a==='quick-backup'){ await exportJSON(); return; }
     if(a==='install-starter-kit'){ await installStarterKit(); return; }
     if(a==='clear-search'){ ui.query=''; render(); return; }
+    if(a==='clear-gallery-search'){ ui.galleryQuery=''; render(); return; }
+    if(a==='filter-gallery-collection'){ ui.galleryCollectionId=id; render(); return; }
+    if(a==='clear-gallery-collection'){ ui.galleryCollectionId=''; render(); return; }
     if(a==='set-library-mode'){ ui.libraryMode = btn.dataset.mode || 'search'; render(); return; }
     if(a==='filter-collection-id'){ ui.libraryMode='browse'; ui.selectedCollectionId=id; ui.libraryKind='all'; ui.query=''; ui.space='library'; render(); return; }
     if(a==='clear-collection-filter'){ ui.selectedCollectionId=''; render(); return; }
@@ -2879,6 +3057,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(a==='run-diagnostic'){ ui.diagnostics=diagnostics(); render(); return; }
     if(a==='restore-item'){ await restoreItem(kind,id); return; }
     if(a==='restore-version'){ await restoreVersion(kind,id,btn.dataset.index); return; }
+    if(a==='remove-thumbnail'){ await removeThumbnail(id); return; }
     if(a==='purge-item'){ await purgeItem(kind,id); return; }
     if(a==='purge-old-trash'){ if(await appConfirm('Supprimer définitivement les éléments dans la corbeille depuis plus de 30 jours ?', 'Purger la corbeille', 'Supprimer', true)){ const old=x=>!x.deletedAt || trashAge(x.deletedAt)<=30; state.prompts=state.prompts.filter(old); state.fragments=state.fragments.filter(old); state.recipes=state.recipes.filter(old); state.collections=state.collections.filter(old); await persist(); toast('Anciens éléments supprimés.'); render(); } return; }
     if(a==='empty-trash'){ if(await appConfirm('Vider définitivement toute la corbeille ?', 'Vider la corbeille', 'Vider', true)){ state.prompts=state.prompts.filter(x=>!x.deletedAt); state.fragments=state.fragments.filter(x=>!x.deletedAt); state.recipes=state.recipes.filter(x=>!x.deletedAt); state.collections=state.collections.filter(x=>!x.deletedAt); await persist(); render(); } return; }
@@ -3020,6 +3199,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(e.target.id === 'importFile'){ ui.importPreview = null; ui.importDraft = null; return; }
     if(e.target.matches('[data-suggestion-field]')){ const arr=getSuggestionArray(e.target.dataset.source); const s=arr[Number(e.target.dataset.index)]; if(s) s[e.target.dataset.suggestionField]=e.target.value; return; }
     if(e.target.id === 'librarySearch'){ ui.query = e.target.value; updateLibraryPane(); return; }
+    if(e.target.id === 'gallerySearch'){ ui.galleryQuery = e.target.value; renderSoonWithFocus('gallerySearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'variableSearch'){ ui.variableQuery = e.target.value; if(!updateVariablesPane()) renderSoonWithFocus('variableSearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'fragmentPickerSearch'){ ui.fragmentPickerQuery = e.target.value; renderSoonWithFocus('fragmentPickerSearch', e.target.selectionStart || e.target.value.length); return; }
     if(e.target.id === 'recipePickerSearch'){ ui.recipePickerQuery = e.target.value; renderSoonWithFocus('recipePickerSearch', e.target.selectionStart || e.target.value.length); return; }
@@ -3033,6 +3213,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
     if(e.target.id === 'builderMeta'){ e.preventDefault(); return; }
     if(e.target.id === 'captureForm') return saveCaptureForm(e);
     if(e.target.id === 'optionListsForm') return saveOptionLists(e);
+    if(e.target.id === 'thumbnailSettingsForm') return saveThumbnailSettings(e);
+    if(e.target.classList.contains('thumbnailForm')) return saveThumbnail(e);
     if(e.target.classList.contains('promptVariableSetForm')) return savePromptVariableSet(e);
     if(e.target.classList.contains('editItemForm')) return saveEditItemForm(e);
     if(e.target.id === 'collectionForm') return createCollection(e);
