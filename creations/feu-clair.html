@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Feu Clair — v0.1.alpha</title>
+  <title>Feu Clair</title>
 
   <style>
     :root {
@@ -146,6 +146,19 @@
       margin: .1rem 0 0;
       color: var(--muted);
       font-size: .86rem;
+    }
+
+    .app-version {
+      display: inline-block;
+      margin-left: .35rem;
+      padding: .08rem .38rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 650;
+      vertical-align: middle;
+      background: color-mix(in srgb, var(--surface) 72%, transparent);
     }
 
     nav {
@@ -496,6 +509,55 @@
       border-radius: 14px;
       padding: .85rem;
       color: var(--text);
+    }
+
+    .symbolic-suggestions {
+      display: grid;
+      gap: .45rem;
+      margin: .85rem 0;
+    }
+
+    .symbolic-suggestion-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      margin-top: .45rem;
+    }
+
+    .symbolic-suggestion {
+      flex: 1 1 13rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: .7rem .75rem;
+      background: color-mix(in srgb, var(--surface) 92%, var(--accent-2) 8%);
+    }
+
+    .symbolic-suggestion strong,
+    .symbolic-suggestion span {
+      display: block;
+    }
+
+    .symbolic-suggestion span {
+      margin-top: .22rem;
+      color: var(--muted);
+    }
+
+    .archetype-group {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: .75rem;
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+    }
+
+    .archetype-group h4 {
+      margin: 0 0 .45rem;
+    }
+
+    .symbolic-profile-note {
+      display: block;
+      margin: .45rem 0 .85rem;
+      color: var(--muted);
+      line-height: 1.35;
     }
 
     .notice h3 {
@@ -1056,8 +1118,8 @@
   <header>
     <div class="topbar">
       <div class="brand">
-        <h1>Feu Clair — v0.1.alpha</h1>
-        <p>Traverser une colère, rendre la charge, garder la force.</p>
+        <h1>Feu Clair</h1>
+        <p>Traverser une colère, rendre la charge, garder la force. <span class="app-version">v0.1.alpha</span></p>
       </div>
       <button class="ghost" data-action="toggle-theme">Jour / Nuit</button>
     </div>
@@ -1120,7 +1182,8 @@
       oneStepMode: true,
       languageMode: "poétique sobre",
       languageProfileId: "poetique-sobre",
-      archetypeMode: "Terre / Soleil",
+      archetypeMode: "elementaire",
+      customArchetypeIds: [],
       privacy: {
         maskSensitiveTitles: false,
         localVeilEnabled: false
@@ -1595,6 +1658,20 @@
     if (["terre-soleil", "dragon-source"].includes(normalized.settings.languageProfileId)) {
       normalized.settings.languageProfileId = "spirituel-prudent";
     }
+    const legacyArchetypeModes = {
+      neutre: "aucun",
+      "Terre / Soleil": "elementaire",
+      "Dragon / Mikaël / Source": "gardiens"
+    };
+    if (legacyArchetypeModes[normalized.settings.archetypeMode]) {
+      normalized.settings.archetypeMode = legacyArchetypeModes[normalized.settings.archetypeMode];
+    }
+    if (!symbolicProfiles().some(profile => profile.id === normalized.settings.archetypeMode)) {
+      normalized.settings.archetypeMode = DEFAULT_DATA.settings.archetypeMode;
+    }
+    normalized.settings.customArchetypeIds = Array.isArray(normalized.settings.customArchetypeIds)
+      ? normalized.settings.customArchetypeIds.filter(id => archetypeDefinitions().some(archetype => archetype.id === id))
+      : [];
     normalized.cycles = Array.isArray(normalized.cycles) ? normalized.cycles.map(normalizeCycleData) : [];
     normalized.activeCycleId = normalized.cycles.some(cycle => cycle.id === normalized.activeCycleId) ? normalized.activeCycleId : null;
     normalized.microSessions = Array.isArray(normalized.microSessions) ? normalized.microSessions : [];
@@ -1767,7 +1844,7 @@
   }
 
   function itemAllowedByArchetype(item, key) {
-    if (data.settings.archetypeMode !== "neutre") return true;
+    if (activeSymbolicProfile().id !== "aucun") return true;
     const sensitiveWords = [
       "spirituel",
       "subtil",
@@ -2000,7 +2077,7 @@
       micro_session: "un micro-soin",
       body_scan: "une zone corporelle",
       body_memory: "la Mémoire du Corps",
-      authority_session: "le Feu d’Autorité"
+      authority_session: activeSymbolicProfile().id === "aucun" ? "un geste de limite forte" : "le Feu d’Autorité"
     };
     return labels[cycle?.entry?.source] || "une porte d’entrée";
   }
@@ -2224,6 +2301,341 @@
 
   function defaultClosingPhrase() {
     return profileText("closing") || libraryItems("closingPhrases")[0]?.text || "Cette charge est libérée maintenant. Si ce feu revient, il revient comme signal, non comme prison.";
+  }
+
+  function symbolicProfiles() {
+    return [
+      { id: "aucun", label: "Aucun / sobre", archetypes: [] },
+      { id: "elementaire", label: "Élémentaire", archetypes: ["terre", "soleil", "eau", "air", "feu-clair", "ether"] },
+      { id: "gardiens", label: "Gardiens lumineux", archetypes: ["dragon", "mikael", "source", "ange-gardien", "gardien-seuil"] },
+      { id: "nature", label: "Nature vivante", archetypes: ["arbre", "foret", "riviere", "montagne", "pierre", "abeille"] },
+      { id: "lignees", label: "Lignées & réparation", archetypes: ["ancetres-lumineux", "lignee-apaisee", "enfant-interieur", "adulte-protecteur", "mere-pere-solaire"] },
+      { id: "geometrie", label: "Géométrie sacrée", archetypes: ["cube-metatron", "fleur-vie", "merkaba", "cercle-protection", "spirale-transmutation"] },
+      { id: "transmutation", label: "Transmutation profonde", archetypes: ["kali-mahakali", "phenix", "flamme-violette", "dragon", "mikael", "terre", "soleil"], advanced: true },
+      { id: "personnalise", label: "Personnalisé", archetypes: [] }
+    ];
+  }
+
+  function archetypeDefinitions() {
+    return [
+      { id: "terre", group: "Élémentaires", label: "Terre", functionText: "Ancrer, composter, recevoir la lourdeur.", cues: ["honte", "lourdeur", "ancienne", "lignée", "collectif", "dos", "épaules", "jambes", "pieds", "ventre"], phrases: {
+        restitution: "Terre, reçois ce que mon corps ne doit plus porter.",
+        stabilization: "Je rends la lourdeur. Je garde la stabilité.",
+        closure: "Ce qui était charge devient compost."
+      }},
+      { id: "soleil", group: "Élémentaires", label: "Soleil", functionText: "Transmuter, éclairer, clarifier.", cues: ["injustice", "sacrée", "mental", "confusion", "spirituelle", "clarté", "plexus"], phrases: {
+        transmutation: "Soleil, prends le relais de ce feu et transmute la charge.",
+        restitution: "Je rends la brûlure. Je garde la clarté.",
+        integration: "Ce feu redevient courage, pas rage."
+      }},
+      { id: "eau", group: "Élémentaires", label: "Eau", functionText: "Laver, adoucir, permettre les larmes.", cues: ["tristesse", "trahison", "humiliation", "enfant", "honte", "poitrine", "cœur", "coeur", "fatigue"], phrases: {
+        stabilization: "Eau, lave ce qui a durci autour du cœur.",
+        restitution: "Je rends la douleur, je garde la tendresse.",
+        integration: "Je laisse les larmes nettoyer sans me noyer."
+      }},
+      { id: "air", group: "Élémentaires", label: "Air", functionText: "Libérer la parole et remettre du mouvement.", cues: ["gorge", "parole", "cri", "silence", "vérité", "tête", "confusion"], phrases: {
+        entry: "Air, ouvre la voie de ma parole juste.",
+        cut: "Je souffle ce qui était coincé.",
+        integration: "Ma parole peut être ferme sans être destructrice."
+      }},
+      { id: "feu-clair", group: "Élémentaires", label: "Feu clair", functionText: "Purifier, trancher, transformer la rage en courage.", cues: ["limite", "coupe", "mains", "autorité", "action", "injustice", "courage"], phrases: {
+        restitution: "Je rends la rage. Je garde le courage.",
+        cut: "Je tranche l’ancien lien sans perdre mon cœur.",
+        responsibility: "Mon feu protège, il ne détruit pas le vivant."
+      }},
+      { id: "ether", group: "Élémentaires", label: "Éther", functionText: "Rendre les charges subtiles et dissoudre les liens invisibles.", cues: ["signature", "subtil", "étrangère", "champ", "emprise", "interférence"], phrases: {
+        restitution: "Je rends cette charge à plus grand que moi.",
+        cut: "Ce qui n’est pas à moi quitte mon champ.",
+        closure: "Je garde l’information, je rends l’interférence."
+      }},
+      { id: "dragon", group: "Gardiens", label: "Dragon", functionText: "Feu vital, territoire, protection corporelle.", cues: ["ventre", "mains", "plexus", "territoire", "force", "protection", "autorité"], phrases: {
+        authority: "Dragon, garde mon feu vivant.",
+        integration: "Mon feu revient dans mon corps, pas contre moi.",
+        cut: "Je reprends mon territoire intérieur."
+      }},
+      { id: "mikael", group: "Gardiens", label: "Mikaël", functionText: "Coupe, discernement, autorité sans haine.", cues: ["lien", "emprise", "confusion", "autorité", "étrangère", "coupe", "mains"], phrases: {
+        authority: "Mikaël, aide-moi à couper ce qui n’est pas juste.",
+        cut: "Je tranche le lien, pas le vivant.",
+        responsibility: "Je discerne sans nourrir la peur."
+      }},
+      { id: "source", group: "Gardiens", label: "Source", functionText: "Paix, réintégration et restitution ultime.", cues: ["clôture", "fatigue", "axe", "intégration", "absorbé", "champ"], phrases: {
+        closure: "Source, reprends ce qui n’est pas à moi. Je reviens à mon axe vivant.",
+        restitution: "Source, reprends ce que je ne dois plus porter.",
+        integration: "L’espace libéré se remplit de présence."
+      }},
+      { id: "ange-gardien", group: "Gardiens", label: "Ange gardien / présence protectrice", functionText: "Douceur, sécurité, soutien non intrusif.", cues: ["enfant", "peur", "honte", "vulnérabilité"], phrases: {
+        stabilization: "Je suis accompagné sans être forcé.",
+        entry: "Je peux ouvrir seulement ce qui est mûr.",
+        closure: "Ce qui n’est pas prêt reste protégé."
+      }},
+      { id: "gardien-seuil", group: "Gardiens", label: "Gardien du seuil", functionText: "Vérifier si l’on peut ouvrir ou non.", cues: ["mémoire", "fort", "confusion", "vide", "seuil"], phrases: {
+        entry: "Tout ne doit pas être ouvert aujourd’hui.",
+        stabilization: "Je demande seulement la porte juste.",
+        closure: "Si ce n’est pas mûr, cela reste fermé et protégé."
+      }},
+      { id: "arbre", group: "Nature vivante", label: "Arbre", functionText: "Enracinement, verticalité, stabilité douce.", cues: ["dos", "lignée", "surcharge", "intégration", "lenteur"], phrases: {
+        stabilization: "Je m’enracine sans me figer.",
+        restitution: "Je laisse descendre la charge vers les racines.",
+        integration: "Je retrouve ma verticalité."
+      }},
+      { id: "foret", group: "Nature vivante", label: "Forêt", functionText: "Refuge, silence, régénération.", cues: ["fatigue", "hypersensibilité", "solitude", "calme"], phrases: {
+        stabilization: "Je me retire dans un espace vivant et sûr.",
+        closure: "Je n’ai pas besoin de tout résoudre maintenant.",
+        integration: "La forêt intérieure me régénère."
+      }},
+      { id: "riviere", group: "Nature vivante", label: "Rivière", functionText: "Circulation, nettoyage, mouvement émotionnel.", cues: ["larmes", "tristesse", "stagnation", "honte", "cœur", "coeur"], phrases: {
+        stabilization: "Ce qui était figé retrouve un courant.",
+        restitution: "Je laisse passer sans retenir.",
+        integration: "L’eau emporte la charge, pas la leçon."
+      }},
+      { id: "montagne", group: "Nature vivante", label: "Montagne", functionText: "Solidité, recul, paix stable.", cues: ["collectif", "confusion", "perspective", "dos", "épaules"], phrases: {
+        stabilization: "Je prends de la hauteur sans fuir.",
+        responsibility: "Je reste stable au milieu du vent.",
+        closure: "La montagne ne répond pas à chaque tempête."
+      }},
+      { id: "pierre", group: "Nature vivante", label: "Pierre", functionText: "Ancrage simple et contact concret.", cues: ["panique", "vide", "dissociation", "mains", "contact"], phrases: {
+        stabilization: "Je reviens au poids simple du réel.",
+        entry: "Je tiens la pierre, je reviens ici.",
+        integration: "Mon corps retrouve un point d’appui."
+      }},
+      { id: "abeille", group: "Nature vivante", label: "Abeille", functionText: "Ordre vivant, douceur active, création.", cues: ["collectif", "action", "création", "réparation", "contribution"], phrases: {
+        integration: "Je transforme le feu en œuvre utile.",
+        responsibility: "Je sers le vivant sans m’épuiser.",
+        closure: "Je retrouve la douceur active."
+      }},
+      { id: "ancetres-lumineux", group: "Lignées & réparation", label: "Ancêtres lumineux", functionText: "Soutien de lignée et restitution des charges héritées.", cues: ["lignée", "familial", "ancêtre", "transgénérationnel", "loyauté", "dos"], phrases: {
+        restitution: "Je rends la charge à la lignée et je garde la force.",
+        cut: "Je ne porte plus ce qui n’a jamais été à moi.",
+        integration: "Que la sagesse reste, que le fardeau reparte."
+      }},
+      { id: "lignee-apaisee", group: "Lignées & réparation", label: "Lignée apaisée", functionText: "Réparer sans rejeter, garder l’amour sans le poids.", cues: ["famille", "loyauté", "culpabilité", "parents"], phrases: {
+        restitution: "Je rends le fardeau sans rejeter l’amour.",
+        integration: "Je garde la vie, pas la répétition.",
+        closure: "La lignée peut continuer sans cette charge."
+      }},
+      { id: "enfant-interieur", group: "Lignées & réparation", label: "Enfant intérieur", functionText: "Vérité simple, besoin, innocence blessée.", cues: ["enfant", "enfance", "peur", "besoin", "innocence"], phrases: {
+        entry: "Je t’écoute maintenant.",
+        restitution: "Tu n’avais pas à porter cela.",
+        integration: "Ta colère a le droit d’être reconnue sans te mettre en danger."
+      }},
+      { id: "adulte-protecteur", group: "Lignées & réparation", label: "Adulte intérieur protecteur", functionText: "Présence responsable, protection, cadre.", cues: ["enfant", "peur", "décision", "limite"], phrases: {
+        responsibility: "Je suis là maintenant pour protéger.",
+        stabilization: "Je ne laisse plus l’enfant intérieur seul avec la charge.",
+        cut: "Je pose la limite depuis l’adulte vivant."
+      }},
+      { id: "mere-pere-solaire", group: "Lignées & réparation", label: "Mère solaire / Père solaire symbolique", functionText: "Réparation parentale symbolique et soutien juste.", cues: ["parent", "soutien", "protection", "chaleur"], phrases: {
+        integration: "Je reçois une chaleur qui ne demande rien en échange.",
+        authority: "Je retrouve une autorité qui protège au lieu d’écraser.",
+        closure: "Je laisse revenir un soutien juste."
+      }},
+      { id: "cube-metatron", group: "Géométrie sacrée", label: "Cube de Métatron", functionText: "Ordre, structure, clarification.", cues: ["confusion", "structure", "mental", "éparpillement"], phrases: {
+        stabilization: "Je remets de l’ordre dans mon champ.",
+        integration: "Ce qui est confus retrouve une structure claire.",
+        responsibility: "Je distingue ce qui est à moi de ce qui ne l’est pas."
+      }},
+      { id: "fleur-vie", group: "Géométrie sacrée", label: "Fleur de Vie", functionText: "Réharmonisation et retour à l’unité vivante.", cues: ["intégration", "réparation", "clôture", "paix"], phrases: {
+        integration: "Je réharmonise sans forcer.",
+        closure: "Chaque partie revient à sa juste place.",
+        restitution: "Je laisse la vie circuler à nouveau."
+      }},
+      { id: "merkaba", group: "Géométrie sacrée", label: "Merkaba", functionText: "Axe corps, âme, esprit et cohérence du champ.", cues: ["axe", "réintégration", "clôture", "champ"], phrases: {
+        integration: "Je reviens dans mon axe corps, âme et esprit.",
+        closure: "Mon champ retrouve sa cohérence.",
+        stabilization: "Je ne flotte pas : je m’incarne."
+      }},
+      { id: "cercle-protection", group: "Géométrie sacrée", label: "Cercle de protection", functionText: "Limite claire et espace de soin.", cues: ["mémoire", "autorité", "fort", "protection", "limite"], phrases: {
+        entry: "Dans ce cercle, seul ce qui est juste peut entrer.",
+        stabilization: "Je ne force rien, je ne laisse rien m’envahir.",
+        responsibility: "Mon espace intérieur est gardé."
+      }},
+      { id: "spirale-transmutation", group: "Géométrie sacrée", label: "Spirale de transmutation", functionText: "Libération progressive par couches.", cues: ["cycle", "récurrent", "mémoire", "long", "transmutation"], phrases: {
+        transmutation: "Je traverse par couches, pas par violence contre moi.",
+        closure: "La spirale sait revenir sans répéter.",
+        restitution: "Ce qui est mûr sort, ce qui ne l’est pas reste protégé."
+      }},
+      { id: "kali-mahakali", group: "Transmutation profonde", label: "Kali / Mahakali symbolique", functionText: "Autorité radicale et dissolution symbolique de l’emprise.", advanced: true, cues: ["emprise", "inversion", "collé", "autorité", "transmutation"], phrases: {
+        authority: "Je ne détruis pas le vivant. Je dissous l’emprise.",
+        cut: "Ce qui viole mon axe n’a plus droit d’habiter mon champ.",
+        transmutation: "Je tranche l’inversion et je rends la charge à la transmutation."
+      }},
+      { id: "phenix", group: "Transmutation profonde", label: "Phénix", functionText: "Renaissance après libération.", cues: ["fin", "cycle", "décharge", "renaissance", "intégration"], phrases: {
+        integration: "Je ne reste pas dans les cendres.",
+        closure: "Ce qui a brûlé libère une forme plus vraie.",
+        transmutation: "Je renais sans reprendre l’ancienne charge."
+      }},
+      { id: "flamme-violette", group: "Transmutation profonde", label: "Flamme violette", functionText: "Purification symbolique des densités.", cues: ["honte", "subtil", "mélangée", "nettoyage", "densité"], phrases: {
+        transmutation: "Je laisse cette charge se purifier sans me consumer.",
+        restitution: "La densité devient lumière utile.",
+        closure: "Je rends ce qui était lourd à la transmutation."
+      }}
+    ];
+  }
+
+  function activeSymbolicProfile() {
+    return symbolicProfiles().find(profile => profile.id === data.settings.archetypeMode) || symbolicProfiles()[1];
+  }
+
+  function activeArchetypeIds() {
+    const profile = activeSymbolicProfile();
+    if (profile.id === "aucun") return [];
+    if (profile.id === "personnalise") return data.settings.customArchetypeIds || [];
+    return profile.archetypes || [];
+  }
+
+  function activeArchetypes() {
+    const activeIds = new Set(activeArchetypeIds());
+    return archetypeDefinitions().filter(archetype => activeIds.has(archetype.id));
+  }
+
+  function renderActiveSymbolicProfileNote() {
+    const profile = activeSymbolicProfile();
+    if (profile.id === "personnalise") return "";
+    const labels = activeArchetypes().map(archetype => archetype.label);
+    const text = labels.length
+      ? `Contient : ${labels.join(" · ")}.`
+      : "Contient : aucun archétype visible ; les formulations restent sobres, corporelles et concrètes.";
+    return `<small class="symbolic-profile-note">${escapeHtml(text)}</small>`;
+  }
+
+  function symbolicContext(cycle, extras = {}) {
+    const answers = cycle?.answers || {};
+    return [
+      extras.intent,
+      extras.theme,
+      extras.zone,
+      extras.text,
+      cycle?.title,
+      cycle?.entry?.source,
+      ...(cycle?.entry?.zones || []),
+      answers[2]?.trigger,
+      answers[2]?.against,
+      answers[2]?.forWhat,
+      ...(answers[2]?.families || []),
+      ...(answers[3]?.bodySignals || []),
+      ...(answers[4]?.ownership || []),
+      answers[7]?.whatIReturn,
+      answers[7]?.element,
+      answers[8]?.innerBoundary,
+      answers[9]?.nextGentleStep
+    ].filter(Boolean).join(" ").toLowerCase();
+  }
+
+  function getSuggestedArchetypes(context = {}) {
+    const available = activeArchetypes();
+    if (!available.length) return [];
+    const haystack = String(context.text || "").toLowerCase();
+    const forced = [];
+    const addForced = ids => ids.forEach(id => {
+      const archetype = available.find(item => item.id === id);
+      if (archetype && !forced.some(item => item.id === id)) forced.push(archetype);
+    });
+
+    if (/gorge|parole|cri|silence/.test(haystack)) addForced(["air", "eau", "mikael"]);
+    if (/ventre/.test(haystack)) addForced(["terre", "dragon", "eau"]);
+    if (/dos|épaules|epaules/.test(haystack)) addForced(["terre", "arbre", "ancetres-lumineux"]);
+    if (/mains/.test(haystack)) addForced(["feu-clair", "mikael", "dragon"]);
+    if (/injustice|vérité|verite/.test(haystack)) addForced(["soleil", "feu-clair", "mikael"]);
+    if (/enfant|enfance/.test(haystack)) addForced(["eau", "enfant-interieur", "adulte-protecteur"]);
+    if (/absorb|collectif/.test(haystack)) addForced(["terre", "ether", "source", "montagne", "abeille"]);
+    if (/lignée|lignee|familial|ancêtre|ancetre/.test(haystack)) addForced(["terre", "ancetres-lumineux", "lignee-apaisee"]);
+    if (/mémoire|memoire/.test(haystack)) addForced(["terre", "gardien-seuil", "cercle-protection"]);
+    if (/autorité|autorite|emprise|lien|inversion/.test(haystack)) addForced(["feu-clair", "mikael", "dragon"]);
+    if (/transmutation|profond|inversion/.test(haystack)) addForced(["feu-clair", "kali-mahakali", "phenix"]);
+    if (/intégration|integration|clôture|cloture/.test(haystack)) addForced(["eau", "fleur-vie", "source", "phenix"]);
+    if (/confusion|mental|tête|tete/.test(haystack)) addForced(["air", "cube-metatron", "montagne"]);
+
+    const scored = available.map(archetype => ({
+      archetype,
+      score: (archetype.cues || []).reduce((sum, cue) => sum + (haystack.includes(cue.toLowerCase()) ? 1 : 0), 0)
+    })).filter(item => item.score > 0).sort((a, b) => b.score - a.score).map(item => item.archetype);
+    return [...forced, ...scored, ...available]
+      .filter((item, index, list) => list.findIndex(candidate => candidate.id === item.id) === index)
+      .slice(0, 3);
+  }
+
+  function getSymbolicPhrase(intent, archetypeId) {
+    const archetype = archetypeDefinitions().find(item => item.id === archetypeId);
+    if (!archetype) return "";
+    return archetype.phrases?.[intent]
+      || archetype.phrases?.restitution
+      || archetype.phrases?.stabilization
+      || Object.values(archetype.phrases || {})[0]
+      || "";
+  }
+
+  function renderSymbolicSuggestions(intent, cycle, extras = {}) {
+    const contextText = symbolicContext(cycle, { ...extras, intent });
+    const suggestions = getSuggestedArchetypes({ text: contextText });
+    if (!suggestions.length) return "";
+    return `
+      <div class="notice mini symbolic-suggestions">
+        <strong>Symboles proposés pour cette étape : ${suggestions.map(item => escapeHtml(item.label)).join(" · ")}</strong>
+        <div class="symbolic-suggestion-list">
+          ${suggestions.map(item => `
+            <div class="symbolic-suggestion">
+              <strong>${escapeHtml(item.label)}</strong>
+              <span>${escapeHtml(getSymbolicPhrase(intent, item.id))}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSymbolicResponsibility(ids = []) {
+    const strongIds = new Set(["kali-mahakali", "feu-clair", "dragon", "mikael"]);
+    const needsStrong = ids.some(id => strongIds.has(id));
+    if (activeSymbolicProfile().id === "aucun" && !needsStrong) return "";
+    return `
+      <div class="notice mini">
+        Même si une mémoire, une influence ou un champ agit en moi, je reste gardien de mes actes.
+        ${needsStrong ? `<br />Je ne dirige pas ce feu contre un être vivant présent. Je le dirige contre la charge, le lien, l’inversion, l’emprise ou le programme qui ne respecte pas mon axe.` : ""}
+      </div>
+    `;
+  }
+
+  function renderArchetypeGlossary() {
+    const glossaryIds = ["terre", "soleil", "eau", "air", "feu-clair", "ether", "dragon", "mikael", "source", "enfant-interieur", "ancetres-lumineux", "cube-metatron", "phenix", "kali-mahakali"];
+    const entries = archetypeDefinitions().filter(item => glossaryIds.includes(item.id));
+    return `
+      <details data-details-key="archetype-glossary">
+        <summary>Petit glossaire des archétypes</summary>
+        <div class="grid two">
+          ${entries.map(item => `
+            <div class="notice mini">
+              <strong>${escapeHtml(item.label)}</strong><br />
+              ${escapeHtml(item.functionText)}
+            </div>
+          `).join("")}
+        </div>
+      </details>
+    `;
+  }
+
+  function renderCustomArchetypeSettings() {
+    const selected = new Set(data.settings.customArchetypeIds || []);
+    const groups = [...new Set(archetypeDefinitions().map(item => item.group))];
+    return `
+      <div class="grid two">
+        ${groups.map(group => `
+          <div class="archetype-group">
+            <h4>${escapeHtml(group)}</h4>
+            <div class="pill-list">
+              ${archetypeDefinitions().filter(item => item.group === group).map(item => `
+                <label class="choice">
+                  <input type="checkbox" data-archetype-toggle="${escapeAttr(item.id)}" ${selected.has(item.id) ? "checked" : ""}>
+                  ${escapeHtml(item.label)}
+                </label>
+              `).join("")}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function authorityToolTitle() {
+    return activeSymbolicProfile().id === "aucun" ? "Geste de limite forte — coupe symbolique sobre" : "Feu d’Autorité — sas symbolique";
   }
 
   function sealDefinitions() {
@@ -2923,6 +3335,7 @@
         <div class="body-return-card">
           <h2 id="body-return-title">Retour au corps</h2>
           <p class="muted">Rien à comprendre maintenant. On revient ici.</p>
+          ${renderSymbolicSuggestions("stabilization", activeCycle(), { theme: "retour au corps pierre terre arbre souffle" })}
           <ol>
             <li>Ouvre les yeux.</li>
             <li>Nomme 3 objets visibles.</li>
@@ -3553,6 +3966,7 @@
         <h2>Stabiliser le feu</h2>
         <p class="muted">${escapeHtml(profileText("stabilizeIntro"))}</p>
         ${renderNeutralAlternative("stabilizeIntro")}
+        ${renderSymbolicSuggestions("stabilization", cycle, { theme: "stabiliser mémoire du corps retour au corps" })}
 
         ${cycleHasEntrySas(cycle) ? renderEntrySas(cycle, a) : `
           <label>Intensité actuelle : <strong>${intensity}/10</strong></label>
@@ -3661,6 +4075,7 @@
         <h2>Discerner ce qui m’appartient</h2>
         <p class="muted">${escapeHtml(profileText("discernIntro"))}</p>
         ${renderNeutralAlternative("discernIntro")}
+        ${renderSymbolicSuggestions("responsibility", cycle, { theme: "discernement charge subtile responsabilité" })}
 
         <label>Appartenance ressentie</label>
         ${checks("ownership", [
@@ -3715,6 +4130,7 @@
         <h2>Faire sortir le feu</h2>
         <p class="muted">${escapeHtml(profileText("exitIntro"))}</p>
         ${renderNeutralAlternative("exitIntro")}
+        ${renderSymbolicSuggestions("cut", cycle, { theme: "sortir coupe parole action" })}
 
         <label>Porte de sortie choisie</label>
         ${radios("exit", libraryLabels("exits"), exit)}
@@ -3739,6 +4155,7 @@
         <h2>Purifier et rendre la charge</h2>
         <p class="muted">${escapeHtml(profileText("purifyIntro"))}</p>
         ${renderNeutralAlternative("purifyIntro")}
+        ${renderSymbolicSuggestions("restitution", cycle, { theme: "restitution transmutation purification" })}
 
         <label>Élément de restitution</label>
         ${radios("element", libraryLabels("elements"), a.element || "")}
@@ -3761,6 +4178,7 @@
         <h2>Se positionner dans la matière</h2>
         <p class="muted">${escapeHtml(profileText("positionIntro"))}</p>
         ${renderNeutralAlternative("positionIntro")}
+        ${renderSymbolicSuggestions("integration", cycle, { theme: "positionner limite action intégration" })}
 
         <label>Limite intérieure</label>
         <textarea data-field="innerBoundary" placeholder="Ex : Je ne confonds plus paix et silence forcé.">${escapeHtml(a.innerBoundary || "")}</textarea>
@@ -3789,6 +4207,7 @@
         <h2>Sceller et archiver</h2>
         <p class="muted">${escapeHtml(profileText("sealIntro"))}</p>
         ${renderNeutralAlternative("sealIntro")}
+        ${renderSymbolicSuggestions("closure", cycle, { theme: "clôture intégration fin de cycle" })}
 
         <div class="print-only">
           <h1>${escapeHtml(cycle.title)}</h1>
@@ -3900,7 +4319,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
     const tool = data.activeTool || "";
     if (tool === "body-scan") return renderOutilShell("Carte corporelle — scan autonome", renderBodyScanTool());
     if (tool === "memory") return renderOutilShell("Mémoire du Corps — sas prudent", renderMemoryTool());
-    if (tool === "authority") return renderOutilShell("Feu d’Autorité — sas symbolique", renderAuthorityTool());
+    if (tool === "authority") return renderOutilShell(authorityToolTitle(), renderAuthorityTool());
     if (tool === "screenless") return renderScreenlessTool();
 
     return `
@@ -3926,9 +4345,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
           </button>
 
           <button class="tool-card authority" data-tool="authority">
-            <strong>Feu d’Autorité</strong>
-            <span>Diriger symboliquement le feu vers une charge, avec garde-fous de responsabilité.</span>
-            <small>${data.settings.archetypeMode === "neutre" ? "Fermé en mode neutre" : "Symbolique"}</small>
+            <strong>${activeSymbolicProfile().id === "aucun" ? "Geste de limite forte" : "Feu d’Autorité"}</strong>
+            <span>${activeSymbolicProfile().id === "aucun" ? "Poser une coupe symbolique sobre, sans langage subtil." : "Diriger symboliquement le feu vers une charge, avec garde-fous de responsabilité."}</span>
+            <small>${activeSymbolicProfile().id === "aucun" ? "Sobre" : "Symbolique"}</small>
           </button>
 
           <button class="tool-card body" data-tool="screenless">
@@ -4054,6 +4473,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
             Cette zone est une porte d’entrée, pas une preuve.
             Tu peux créer un Cycle de Feu à partir d’elle, mais le soin commencera par vérifier ton état actuel pour ne pas ouvrir trop vite.
           </p>
+          ${renderSymbolicSuggestions("entry", null, { theme: `${preset.zone || ""} ${preset.signal || ""} mémoire du corps carte corporelle` })}
 
           ${data.extensionsV3?.enabled?.visualBodyMap ? renderVisualBodyMap(preset.zone || "") : `
             <div class="notice mini">
@@ -4120,6 +4540,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
           <p class="muted">
             Outil désactivé par défaut dans le sens où rien ne s’ouvre automatiquement : tu notes seulement une perception, sans conclure à une preuve ni forcer une mémoire.
           </p>
+          ${renderSymbolicSuggestions("entry", null, { theme: `${preset.zone || ""} ${preset.kind || ""} mémoire du corps gardien seuil cercle protection` })}
 
           <label>Niveau d’approche</label>
           <select id="memory-level">
@@ -4189,20 +4610,17 @@ Assez pour aujourd’hui si le corps le demande.</p>
 
   function renderAuthorityTool() {
     const preset = data.toolDraft?.authority || {};
+    const sober = activeSymbolicProfile().id === "aucun";
     return `
         <div class="card">
-          ${data.settings.archetypeMode === "neutre" ? `
-            <p class="notice mini">
-              Ce sas reste fermé en mode neutre. Pour l’utiliser, active un mode d’archétype dans le Sanctuaire.
-              L’alternative neutre reste disponible avec “Geste de coupe”, “Geste de restitution” et “Retour au corps”.
-            </p>
-          ` : `
-            <p class="notice">
-              Ce feu ne vise jamais un être vivant présent. Il vise symboliquement la charge, le lien, l’emprise perçue,
-              l’inversion ou ce qui n’a plus droit d’habiter ton champ.
-            </p>
+          <p class="notice">
+            ${sober
+              ? "Ce geste vise une charge, un lien ou une limite intérieure. Il ne vise jamais un être vivant présent et ne décide pas d’une action extérieure."
+              : "Ce feu ne vise jamais un être vivant présent. Il vise symboliquement la charge, le lien, l’emprise perçue, l’inversion ou ce qui n’a plus droit d’habiter ton champ."}
+          </p>
+          ${renderSymbolicSuggestions("authority", null, { theme: "Feu d’Autorité emprise lien inversion mains plexus" })}
 
-            <label>Ce que je vise symboliquement</label>
+            <label>${sober ? "Ce que je vise intérieurement" : "Ce que je vise symboliquement"}</label>
             <select id="authority-target-type">
               <option value="charge" ${preset.targetType === "charge" || !preset.targetType ? "selected" : ""}>Une charge</option>
               <option value="lien" ${preset.targetType === "lien" ? "selected" : ""}>Un lien</option>
@@ -4231,15 +4649,15 @@ Assez pour aujourd’hui si le corps le demande.</p>
             ${checksStatic("authority-qualities", libraryLabels("qualities").slice(0, 10), preset.qualities)}
 
             <div class="notice mini">
-              Phrase de repère : “Je ne détruis pas depuis la haine. Je tranche depuis l’autorité de mon être.”
+              Phrase de repère : “${sober ? "Je pose une limite forte sans laisser la charge conduire mes actes." : "Je ne détruis pas depuis la haine. Je tranche depuis l’autorité de mon être."}”
             </div>
+            ${renderSymbolicResponsibility(getSuggestedArchetypes({ text: "autorité emprise lien inversion dragon mikael feu clair" }).map(item => item.id))}
 
             <div class="actions">
               <button class="ghost" data-action="body-return">Retour au corps</button>
               <button class="ghost" data-action="authority-close">Fermer proprement</button>
               <button class="primary" data-action="authority-to-cycle">Créer un Cycle depuis ce sas</button>
             </div>
-          `}
         </div>
     `;
   }
@@ -4269,8 +4687,8 @@ Assez pour aujourd’hui si le corps le demande.</p>
         instruction: "Pose les pieds. Laisse le visage et le souffle former un cri sans son obligatoire, sans te faire mal."
       },
       restitution: {
-        label: "Restitution Terre / Soleil",
-        instruction: "Rends la densité à la Terre. Garde seulement la clarté, la limite et la force utile."
+        label: "Restitution symbolique",
+        instruction: "Rends la densité à un support juste. Garde seulement la clarté, la limite et la force utile."
       },
       souffle: {
         label: "Souffle de restitution",
@@ -4302,7 +4720,7 @@ Assez pour aujourd’hui si le corps le demande.</p>
         <select id="screenless-practice">
           ${option("marche", "Marche de feu", draft.practice)}
           ${option("cri", "Cri muet", draft.practice)}
-          ${option("restitution", "Restitution Terre / Soleil", draft.practice)}
+          ${option("restitution", "Restitution symbolique", draft.practice)}
           ${option("souffle", "Souffle de restitution", draft.practice)}
         </select>
         <label>Minuteur doux optionnel</label>
@@ -4761,17 +5179,23 @@ Assez pour aujourd’hui si le corps le demande.</p>
                   Le mode de langage règle uniquement le ton des formulations. Les modes personnalisés se gèrent dans Extensions V3.
                 </p>
 
-                <label>Archétypes et contenus symboliques</label>
+                <label>Cadre symbolique</label>
                 <select data-setting="archetypeMode">
-                  ${option("neutre", "Neutre — masquer les contenus subtils sensibles", data.settings.archetypeMode)}
-                  ${option("Terre / Soleil", "Terre / Soleil", data.settings.archetypeMode)}
-                  ${option("Dragon / Mikaël / Source", "Dragon / Mikaël / Source", data.settings.archetypeMode)}
+                  ${symbolicProfiles().map(profile => option(profile.id, `${profile.label}${profile.advanced ? " — avancé" : ""}`, data.settings.archetypeMode)).join("")}
                 </select>
+                ${renderActiveSymbolicProfileNote()}
 
                 <div class="notice mini">
-                  Ce réglage choisit quels repères symboliques peuvent apparaître dans les suggestions et outils concernés.
-                  Il ne change pas le ton des phrases. En mode neutre, les signatures subtiles sensibles restent masquées.
+                  Les archétypes ne sont pas des obligations ni des preuves. Ce sont des supports symboliques.
+                  Tu peux les désactiver à tout moment. Le soin reste valide sans eux.
                 </div>
+                ${activeSymbolicProfile().id === "transmutation" ? `
+                  <div class="notice dangerBox mini">
+                    Ce cadre utilise des symboles forts de coupe et de transmutation. Ils servent uniquement à travailler une charge,
+                    un lien, une inversion ou une emprise perçue. Ils ne justifient aucune violence extérieure.
+                  </div>
+                ` : ""}
+                ${activeSymbolicProfile().id === "personnalise" ? renderCustomArchetypeSettings() : ""}
               </div>
 
               <div>
@@ -5191,6 +5615,13 @@ Assez pour aujourd’hui si le corps le demande.</p>
           garder la force utile, puis revenir à une prochaine marche simple.
         </div>
 
+        <div class="notice mini">
+          Les archétypes ne sont pas des obligations ni des preuves. Ce sont des supports symboliques, limités à quelques suggestions contextuelles.
+          Le soin reste pleinement valable en cadre sobre.
+        </div>
+
+        ${renderArchetypeGlossary()}
+
         <div class="actions">
           <button class="ghost" data-tab="boussole">J’ai compris l’esprit de Feu Clair — revenir à la Boussole</button>
         </div>
@@ -5398,6 +5829,19 @@ Assez pour aujourd’hui si le corps le demande.</p>
       el.addEventListener("change", () => {
         data.settings.advancedContent ||= cloneData(DEFAULT_DATA.settings.advancedContent);
         data.settings.advancedContent[el.dataset.advancedSetting] = el.checked;
+        saveData();
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-archetype-toggle]").forEach(el => {
+      if (el.dataset.boundArchetypeToggle === "1") return;
+      el.dataset.boundArchetypeToggle = "1";
+      el.addEventListener("change", () => {
+        data.settings.customArchetypeIds ||= [];
+        const id = el.dataset.archetypeToggle;
+        if (el.checked && !data.settings.customArchetypeIds.includes(id)) data.settings.customArchetypeIds.push(id);
+        if (!el.checked) data.settings.customArchetypeIds = data.settings.customArchetypeIds.filter(item => item !== id);
         saveData();
         render();
       });
@@ -6195,7 +6639,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.authoritySessions ||= [];
       data.authoritySessions.unshift({ ...session, id: uid("authority"), status: "fermé proprement", createdAt: nowISO() });
       data.lastNotice = {
-        text: "Sas Feu d’Autorité fermé proprement. Le feu reste symbolique, le corps peut redescendre.",
+        text: activeSymbolicProfile().id === "aucun"
+          ? "Geste de limite forte fermé proprement. Le corps peut redescendre."
+          : "Sas Feu d’Autorité fermé proprement. Le feu reste symbolique, le corps peut redescendre.",
         tone: "soft",
         createdAt: nowISO()
       };
@@ -6212,7 +6658,9 @@ Assez pour aujourd’hui si le corps le demande.</p>
       data.activeCycleId = cycle.id;
       data.activeTab = "soin";
       data.lastNotice = {
-        text: "Cycle créé depuis le Feu d’Autorité. Il commence par Stabiliser pour garder le feu symbolique et responsable.",
+        text: activeSymbolicProfile().id === "aucun"
+          ? "Cycle créé depuis le geste de limite forte. Il commence par Stabiliser pour garder la charge contenue et responsable."
+          : "Cycle créé depuis le Feu d’Autorité. Il commence par Stabiliser pour garder le feu symbolique et responsable.",
         tone: session.intensity >= 7 ? "danger" : "soft",
         createdAt: nowISO()
       };
@@ -6962,13 +7410,14 @@ Assez pour aujourd’hui si le corps le demande.</p>
   }
 
   function createCycleFromAuthority(session) {
+    const sober = activeSymbolicProfile().id === "aucun";
     const guarded = session.guards.includes("Je ne dirige pas ce feu contre un être vivant présent")
       && session.guards.includes("Je reste gardien de mes actes")
       && session.guards.includes("Je peux fermer maintenant");
     const needsStabilizing = session.intensity >= 7 || !guarded;
     return {
       id: uid("cycle"),
-      title: `Feu d’Autorité : ${session.targetType || "charge"}`,
+      title: `${sober ? "Geste de limite forte" : "Feu d’Autorité"} : ${session.targetType || "charge"}`,
       status: "ouvert",
       currentStep: 1,
       createdAt: nowISO(),
@@ -6994,14 +7443,16 @@ Assez pour aujourd’hui si le corps le demande.</p>
           entryFlags: needsStabilizing ? ["Activation forte"] : []
         },
         2: {
-          trigger: `Sas Feu d’Autorité : ${session.targetType}`,
+          trigger: `${sober ? "Geste de limite forte" : "Sas Feu d’Autorité"} : ${session.targetType}`,
           forWhat: "Discerner ce qui doit être rendu, coupé ou transmuté sans perdre la responsabilité des actes.",
-          families: ["Colère spirituelle"],
+          families: sober ? ["Limite violée"] : ["Colère spirituelle"],
           authorityNotes: authoritySummary(session)
         },
         4: {
-          ownership: ["Signature à discerner"],
-          discernmentNotes: "Feu d’Autorité : expression intérieure symbolique. Ne pas conclure à une cause unique."
+          ownership: [sober ? "Limite intérieure à clarifier" : "Signature à discerner"],
+          discernmentNotes: sober
+            ? "Geste de limite forte : expression intérieure sobre. Ne pas conclure à une cause unique."
+            : "Feu d’Autorité : expression intérieure symbolique. Ne pas conclure à une cause unique."
         },
         7: {
           qualities: session.qualities || []
