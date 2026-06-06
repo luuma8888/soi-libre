@@ -632,7 +632,7 @@
         <div>
           <h1>PrintPics</h1>
           <p class="subtitle">Composer des planches d'images prêtes à imprimer.</p>
-          <span class="app-version" id="app-version">v0.1.alpha</span>
+          <span class="app-version" id="app-version">v0.2.alpha</span>
         </div>
         <div class="icon-actions">
           <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le mode jour ou nuit" title="Jour / nuit">🌙</button>
@@ -742,7 +742,7 @@
         </div>
         <details>
           <summary>Parametres avances</summary>
-          <p class="hint">La résolution agit sur les exports JPG et la netteté du PDF. Au-delà de 300 DPI, les fichiers deviennent vite lourds.</p>
+          <p class="hint">La résolution définit les dimensions réelles de la planche exportée. Augmente le DPI pour conserver davantage de pixels des images sources ; au-delà de 300 DPI, les fichiers et la mémoire utilisés deviennent vite importants.</p>
           <div class="check-row">
             <input id="draw-guides" type="checkbox">
             <label for="draw-guides">Afficher de fins repères autour des images</label>
@@ -763,13 +763,14 @@
         <h2 class="panel-title">5. Actions</h2>
         <div class="button-grid">
           <button class="btn primary wide" id="print" type="button">Imprimer / PDF</button>
-          <button class="btn" id="export-jpg" type="button">Exporter JPG</button>
+          <button class="btn" id="export-png" type="button">Exporter PNG sans perte</button>
+          <button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button>
           <button class="btn" id="export-json" type="button">Exporter réglages</button>
           <button class="btn" id="import-json" type="button">Importer réglages</button>
           <button class="btn danger" id="clear" type="button">Vider</button>
           <input class="visually-hidden" id="json-input" type="file" accept="application/json,.json">
         </div>
-        <p class="hint">Le profil JSON contient les réglages, pas les images, pour rester léger et confidentiel.</p>
+        <p class="hint">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif. Le profil JSON contient les réglages, pas les images.</p>
         <p class="print-help">Pour le PDF ou l'impression papier, choisir une échelle à 100 %, sans marges ajoutées par le navigateur. PrintPics place déjà les marges dans la planche.</p>
       </section>
     </aside>
@@ -801,7 +802,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.1.alpha",
+        version: "0.2.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -893,6 +894,7 @@
           confirmOk: byId("confirm-ok"),
           printStyle: byId("print-page-style"),
           print: byId("print"),
+          exportPng: byId("export-png"),
           exportJpg: byId("export-jpg"),
           exportJson: byId("export-json"),
           importJson: byId("import-json"),
@@ -1318,6 +1320,8 @@
             canvas.width = widthPx;
             canvas.height = heightPx;
             const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, widthPx, heightPx);
 
@@ -1621,6 +1625,7 @@
         updateButtons() {
           const hasCanvases = App.state.canvases.length > 0;
           App.els.print.disabled = !hasCanvases;
+          App.els.exportPng.disabled = !hasCanvases;
           App.els.exportJpg.disabled = !hasCanvases;
           App.els.clear.disabled = App.state.images.length === 0;
         },
@@ -1681,7 +1686,8 @@
             window.print();
           });
 
-          App.els.exportJpg.addEventListener("click", () => this.exportJpg());
+          App.els.exportPng.addEventListener("click", () => this.exportCanvases("png"));
+          App.els.exportJpg.addEventListener("click", () => this.exportCanvases("jpeg"));
           App.els.exportJson.addEventListener("click", () => this.exportJson());
           App.els.importJson.addEventListener("click", () => App.els.jsonInput.click());
           App.els.suggestionActions.addEventListener("click", async (event) => {
@@ -1780,14 +1786,39 @@
           App.view.showMessage(App.i18n.imagesCleared);
         },
 
-        exportJpg() {
-          if (!App.state.canvases.length) return;
-          App.state.canvases.forEach((canvas, index) => {
-            const link = document.createElement("a");
-            link.download = `printpics-page-${index + 1}.jpg`;
-            link.href = canvas.toDataURL("image/jpeg", 0.95);
-            link.click();
+        async canvasToBlob(canvas, type, quality) {
+          return new Promise((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Encodage impossible"));
+            }, type, quality);
           });
+        },
+
+        async exportCanvases(format) {
+          if (!App.state.canvases.length) return;
+          const isPng = format === "png";
+          const mimeType = isPng ? "image/png" : "image/jpeg";
+          const extension = isPng ? "png" : "jpg";
+
+          try {
+            for (let index = 0; index < App.state.canvases.length; index += 1) {
+              const blob = await this.canvasToBlob(App.state.canvases[index], mimeType, isPng ? undefined : 1);
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.download = `printpics-page-${index + 1}.${extension}`;
+              link.href = url;
+              link.click();
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+            App.view.showMessage(
+              isPng
+                ? "Export PNG terminé sans perte sur la planche générée."
+                : "Export JPG terminé avec la qualité maximale du navigateur."
+            );
+          } catch (error) {
+            App.view.showMessage("L'export de la planche a échoué.", "warning");
+          }
         },
 
         exportJson() {
