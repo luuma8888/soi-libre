@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>PrintPics - planches d'images à imprimer</title>
+  <title>PrintPics - imprimer et recadrer des images</title>
   <style id="print-page-style">
     @media print {
       @page { size: 210mm 297mm; margin: 0; }
@@ -256,6 +256,59 @@
       grid-column: 1 / -1;
     }
 
+    .paired-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-column: 1 / -1;
+      gap: 12px;
+    }
+
+    .swap-format-btn {
+      grid-column: 1 / -1;
+      justify-self: stretch;
+    }
+
+    .mode-choice {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mode-choice label {
+      display: grid;
+      gap: 4px;
+      min-height: 76px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      cursor: pointer;
+    }
+
+    .mode-choice label:has(input:checked) {
+      border-color: var(--accent-strong);
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+
+    .mode-choice input {
+      width: 18px;
+      min-height: 18px;
+      margin: 0;
+      accent-color: var(--accent-strong);
+    }
+
+    .mode-choice strong {
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .mode-choice span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+
     label,
     .label {
       color: var(--muted);
@@ -505,6 +558,79 @@
       height: auto;
     }
 
+    .crop-result {
+      display: grid;
+      gap: 12px;
+      width: min(100%, 820px);
+    }
+
+    .crop-result h3 {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 1rem;
+    }
+
+    .crop-source {
+      position: relative;
+      overflow: hidden;
+      max-height: 68vh;
+      border-radius: var(--radius);
+      background: #171b22;
+      box-shadow: var(--paper-shadow);
+    }
+
+    .crop-source img {
+      display: block;
+      width: 100%;
+      max-height: 68vh;
+      object-fit: contain;
+    }
+
+    .crop-mask {
+      position: absolute;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 9999px rgba(15, 19, 24, 0.58);
+      pointer-events: none;
+    }
+
+    .crop-mask::before,
+    .crop-mask::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, transparent 33.1%, rgba(255,255,255,.55) 33.3%, rgba(255,255,255,.55) 33.7%, transparent 33.9%, transparent 66.1%, rgba(255,255,255,.55) 66.3%, rgba(255,255,255,.55) 66.7%, transparent 66.9%),
+        linear-gradient(to bottom, transparent 33.1%, rgba(255,255,255,.55) 33.3%, rgba(255,255,255,.55) 33.7%, transparent 33.9%, transparent 66.1%, rgba(255,255,255,.55) 66.3%, rgba(255,255,255,.55) 66.7%, transparent 66.9%);
+      opacity: .6;
+    }
+
+    .crop-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .crop-caption strong {
+      color: var(--text);
+    }
+
+    .crop-final {
+      display: flex;
+      justify-content: center;
+      overflow: auto;
+      background: transparent;
+    }
+
+    .crop-final canvas {
+      width: auto;
+      max-width: 100%;
+      max-height: 76vh;
+      object-fit: contain;
+      box-shadow: var(--paper-shadow);
+    }
+
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -541,7 +667,8 @@
       }
 
       .form-grid,
-      .button-grid {
+      .button-grid,
+      .mode-choice {
         grid-template-columns: 1fr;
       }
 
@@ -631,8 +758,8 @@
       <header class="app-header">
         <div>
           <h1>PrintPics</h1>
-          <p class="subtitle">Composer des planches d'images prêtes à imprimer.</p>
-          <span class="app-version" id="app-version">v0.2.alpha</span>
+          <p class="subtitle">Composer des planches ou recadrer des images hors ligne.</p>
+          <span class="app-version" id="app-version">v0.3.alpha</span>
         </div>
         <div class="icon-actions">
           <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le mode jour ou nuit" title="Jour / nuit">🌙</button>
@@ -649,46 +776,76 @@
       </section>
 
       <section class="panel">
-        <h2 class="panel-title">2. Papier</h2>
+        <h2 class="panel-title">2. Usage</h2>
+        <div class="mode-choice" role="radiogroup" aria-label="Usage de l'application">
+          <label>
+            <input id="mode-print" type="radio" name="output-mode" value="print" checked>
+            <strong>Composer une planche</strong>
+            <span>Plusieurs images sur une ou plusieurs pages à imprimer.</span>
+          </label>
+          <label>
+            <input id="mode-crop" type="radio" name="output-mode" value="crop">
+            <strong>Recadrer des images</strong>
+            <span>Créer des images aux proportions voulues, sans bordure.</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel print-only">
+        <h2 class="panel-title">3. Format de la planche</h2>
         <div class="form-grid">
-          <div class="field">
-            <label for="paper">Format</label>
+          <div class="field full">
+            <label for="paper">Format final</label>
             <select id="paper">
-              <option value="A4">A4 - 210 x 297 mm</option>
-              <option value="A3">A3 - 297 x 420 mm</option>
-              <option value="A5">A5 - 148 x 210 mm</option>
-              <option value="US_LETTER">Letter - 215.9 x 279.4 mm</option>
+              <optgroup label="Papier">
+                <option value="A4">A4 - 210 × 297 mm - proportion 1:1,414</option>
+                <option value="A3">A3 - 297 × 420 mm - proportion 1:1,414</option>
+                <option value="A5">A5 - 148 × 210 mm - proportion 1:1,419</option>
+                <option value="US_LETTER">Letter - 215,9 × 279,4 mm - proportion 1:1,294</option>
+                <option value="PHOTO_10X15">Photo 10 × 15 cm - proportion 2:3</option>
+                <option value="PHOTO_13X18">Photo 13 × 18 cm - proportion 13:18</option>
+              </optgroup>
+              <optgroup label="Écrans et réseaux">
+                <option value="SCREEN_9_16">Story / téléphone vertical - 1080 × 1920 px - 9:16</option>
+                <option value="SCREEN_16_9">Écran paysage Full HD - 1920 × 1080 px - 16:9</option>
+                <option value="SCREEN_1_1">Carré - 1080 × 1080 px - 1:1</option>
+                <option value="SCREEN_4_5">Portrait social - 1080 × 1350 px - 4:5</option>
+                <option value="SCREEN_3_4">Portrait classique - 1200 × 1600 px - 3:4</option>
+                <option value="SCREEN_4_3">Paysage classique - 1600 × 1200 px - 4:3</option>
+                <option value="SCREEN_3_2">Photo paysage - 1800 × 1200 px - 3:2</option>
+              </optgroup>
               <option value="CUSTOM">Sur mesure</option>
             </select>
+            <p class="hint">Les formats écran créent une planche aux dimensions exactes en pixels. Ils peuvent être exportés en PNG/JPG comme les formats papier.</p>
           </div>
-          <div class="field">
-            <label for="orientation">Orientation</label>
-            <select id="orientation">
-              <option value="portrait">Portrait</option>
-              <option value="landscape">Paysage</option>
-            </select>
+          <button class="btn swap-format-btn" id="swap-format" type="button">
+            Permuter largeur ↔ hauteur
+          </button>
+          <div class="paired-fields custom-field-group">
+            <div class="field">
+              <label for="custom-width">Largeur mm</label>
+              <input id="custom-width" type="number" min="20" max="1000" step="0.1" value="210">
+            </div>
+            <div class="field">
+              <label for="custom-height">Hauteur mm</label>
+              <input id="custom-height" type="number" min="20" max="1000" step="0.1" value="297">
+            </div>
           </div>
-          <div class="field custom-field">
-            <label for="custom-width">Largeur mm</label>
-            <input id="custom-width" type="number" min="20" max="1000" step="0.1" value="210">
-          </div>
-          <div class="field custom-field">
-            <label for="custom-height">Hauteur mm</label>
-            <input id="custom-height" type="number" min="20" max="1000" step="0.1" value="297">
-          </div>
-          <div class="field">
-            <label for="margin">Marge externe mm</label>
-            <input id="margin" type="number" min="0" max="80" step="0.5" value="5">
-          </div>
-          <div class="field">
-            <label for="spacing">Espacement mm</label>
-            <input id="spacing" type="number" min="0" max="80" step="0.5" value="2">
+          <div class="paired-fields">
+            <div class="field">
+              <label for="margin">Marge externe mm</label>
+              <input id="margin" type="number" min="0" max="80" step="0.5" value="5">
+            </div>
+            <div class="field">
+              <label for="spacing">Espacement mm</label>
+              <input id="spacing" type="number" min="0" max="80" step="0.5" value="2">
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="panel">
-        <h2 class="panel-title">3. Placement</h2>
+      <section class="panel print-only">
+        <h2 class="panel-title">4. Placement</h2>
         <div class="form-grid">
           <div class="field full">
             <label for="layout-mode">Calcul d'integration</label>
@@ -750,8 +907,77 @@
         </details>
       </section>
 
+      <section class="panel crop-only" hidden>
+        <h2 class="panel-title">3. Format de l'image recadrée</h2>
+        <p class="hint">1. Choisis la forme de l'image. 2. Choisis sa taille d'export si nécessaire. 3. Déplace la zone conservée.</p>
+        <div class="form-grid">
+          <div class="field full">
+            <label for="crop-ratio">1. Forme de l'image finale</label>
+            <select id="crop-ratio">
+              <optgroup label="Papier">
+                <option value="A3">A3 portrait - 297 × 420 mm</option>
+                <option value="A4">A4 portrait - 210 × 297 mm</option>
+                <option value="A5">A5 portrait - 148 × 210 mm</option>
+                <option value="A4_LANDSCAPE">A4 paysage - 297 × 210 mm</option>
+                <option value="US_LETTER">Letter portrait - 215,9 × 279,4 mm</option>
+                <option value="PHOTO_10X15_P">Photo 10 × 15 cm - portrait 2:3</option>
+                <option value="PHOTO_10X15_L">Photo 10 × 15 cm - paysage 3:2</option>
+                <option value="PHOTO_13X18_P">Photo 13 × 18 cm - portrait</option>
+                <option value="PHOTO_13X18_L">Photo 13 × 18 cm - paysage</option>
+              </optgroup>
+              <optgroup label="Écrans et réseaux">
+                <option value="SCREEN_9_16">Vertical 9:16 - Story / téléphone</option>
+                <option value="SCREEN_16_9">Paysage 16:9 - écran / vidéo</option>
+                <option value="SCREEN_1_1">Carré 1:1</option>
+                <option value="SCREEN_4_5">Portrait 4:5 - réseau social</option>
+                <option value="SCREEN_3_4">Portrait 3:4 - classique</option>
+                <option value="SCREEN_4_3">Paysage 4:3 - classique</option>
+                <option value="SCREEN_3_2">Paysage 3:2 - photo</option>
+              </optgroup>
+              <option value="ORIGINAL">Proportions d'origine</option>
+              <option value="CUSTOM">Proportions sur mesure</option>
+            </select>
+          </div>
+          <div class="field crop-custom-field" hidden>
+            <label for="crop-ratio-width">Largeur relative</label>
+            <input id="crop-ratio-width" type="number" min="0.1" max="100" step="0.1" value="16" inputmode="decimal">
+          </div>
+          <div class="field crop-custom-field" hidden>
+            <label for="crop-ratio-height">Hauteur relative</label>
+            <input id="crop-ratio-height" type="number" min="0.1" max="100" step="0.1" value="9" inputmode="decimal">
+          </div>
+          <div class="field full">
+            <label for="crop-size-mode">2. Taille du fichier final</label>
+            <select id="crop-size-mode">
+              <option value="native">Qualité source maximale - recommandé</option>
+              <option value="preset">Taille standard du format choisi</option>
+              <option value="custom">Choisir la largeur en pixels</option>
+            </select>
+          </div>
+          <div class="field crop-size-field" hidden>
+            <label for="crop-output-width">Largeur finale en pixels</label>
+            <input id="crop-output-width" type="number" min="1" max="20000" step="1" value="1080" inputmode="numeric">
+          </div>
+          <div class="field crop-size-field crop-output-height-field" hidden>
+            <label for="crop-output-height">Hauteur finale px</label>
+            <input id="crop-output-height" type="number" min="1" max="20000" step="1" value="1920" inputmode="numeric" readonly>
+          </div>
+          <div class="field">
+            <label for="crop-x">3. Position horizontale</label>
+            <input id="crop-x" type="range" min="0" max="100" step="1" value="50">
+            <p class="hint">Gauche <span id="crop-x-value">50 %</span> droite</p>
+          </div>
+          <div class="field">
+            <label for="crop-y">Position verticale</label>
+            <input id="crop-y" type="range" min="0" max="100" step="1" value="50">
+            <p class="hint">Haut <span id="crop-y-value">50 %</span> bas</p>
+          </div>
+        </div>
+        <p class="hint" id="crop-size-help">La zone claire est conservée et tout le reste est supprimé. Le fichier final ne contient ni cadre ni marge. Le mode « pixels natifs » évite toute mise à l'échelle.</p>
+      </section>
+
       <section class="panel">
-        <h2 class="panel-title">4. Résultat calculé</h2>
+        <h2 class="panel-title"><span class="print-only">5. </span><span class="crop-only" hidden>4. </span>Résultat calculé</h2>
         <dl class="stats" id="stats"></dl>
         <div class="suggestion-box" id="suggestion-box" hidden>
           <p id="suggestion-text"></p>
@@ -760,9 +986,9 @@
       </section>
 
       <section class="panel">
-        <h2 class="panel-title">5. Actions</h2>
+        <h2 class="panel-title"><span class="print-only">6. </span><span class="crop-only" hidden>5. </span>Actions</h2>
         <div class="button-grid">
-          <button class="btn primary wide" id="print" type="button">Imprimer / PDF</button>
+          <button class="btn primary wide print-only" id="print" type="button">Imprimer / PDF</button>
           <button class="btn" id="export-png" type="button">Exporter PNG sans perte</button>
           <button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button>
           <button class="btn" id="export-json" type="button">Exporter réglages</button>
@@ -770,8 +996,8 @@
           <button class="btn danger" id="clear" type="button">Vider</button>
           <input class="visually-hidden" id="json-input" type="file" accept="application/json,.json">
         </div>
-        <p class="hint">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif. Le profil JSON contient les réglages, pas les images.</p>
-        <p class="print-help">Pour le PDF ou l'impression papier, choisir une échelle à 100 %, sans marges ajoutées par le navigateur. PrintPics place déjà les marges dans la planche.</p>
+        <p class="hint" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif. Le profil JSON contient les réglages, pas les images.</p>
+        <p class="print-help print-only">Pour le PDF ou l'impression papier, choisir une échelle à 100 %, sans marges ajoutées par le navigateur. PrintPics place déjà les marges dans la planche.</p>
       </section>
     </aside>
 
@@ -779,7 +1005,7 @@
       <div class="message" id="message" role="status" aria-live="polite"></div>
       <div class="preview-toolbar no-print">
         <div>
-          <h2>Aperçu de la planche</h2>
+          <h2 id="preview-title">Aperçu de la planche</h2>
           <p id="preview-note">Ajoute des images pour lancer le calcul automatique.</p>
         </div>
       </div>
@@ -802,7 +1028,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.2.alpha",
+        version: "0.3.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -810,13 +1036,41 @@
           A3: { label: "A3", width: 297, height: 420 },
           A4: { label: "A4", width: 210, height: 297 },
           A5: { label: "A5", width: 148, height: 210 },
-          US_LETTER: { label: "Letter", width: 215.9, height: 279.4 }
+          US_LETTER: { label: "Letter", width: 215.9, height: 279.4 },
+          PHOTO_10X15: { label: "Photo 10 × 15 cm", width: 100, height: 150 },
+          PHOTO_13X18: { label: "Photo 13 × 18 cm", width: 130, height: 180 },
+          SCREEN_9_16: { label: "Story / téléphone vertical", widthPx: 1080, heightPx: 1920 },
+          SCREEN_16_9: { label: "Écran paysage Full HD", widthPx: 1920, heightPx: 1080 },
+          SCREEN_1_1: { label: "Carré", widthPx: 1080, heightPx: 1080 },
+          SCREEN_4_5: { label: "Portrait social", widthPx: 1080, heightPx: 1350 },
+          SCREEN_3_4: { label: "Portrait classique", widthPx: 1200, heightPx: 1600 },
+          SCREEN_4_3: { label: "Paysage classique", widthPx: 1600, heightPx: 1200 },
+          SCREEN_3_2: { label: "Photo paysage", widthPx: 1800, heightPx: 1200 }
+        },
+        cropFormats: {
+          A3: { label: "A3 portrait", width: 297, height: 420, outputWidth: 3508, outputHeight: 4961 },
+          A4: { label: "A4 portrait", width: 210, height: 297, outputWidth: 2480, outputHeight: 3508 },
+          A5: { label: "A5 portrait", width: 148, height: 210, outputWidth: 1748, outputHeight: 2480 },
+          A4_LANDSCAPE: { label: "A4 paysage", width: 297, height: 210, outputWidth: 3508, outputHeight: 2480 },
+          US_LETTER: { label: "Letter portrait", width: 215.9, height: 279.4, outputWidth: 2550, outputHeight: 3300 },
+          PHOTO_10X15_P: { label: "Photo 10 × 15 cm portrait", width: 2, height: 3, outputWidth: 1200, outputHeight: 1800 },
+          PHOTO_10X15_L: { label: "Photo 10 × 15 cm paysage", width: 3, height: 2, outputWidth: 1800, outputHeight: 1200 },
+          PHOTO_13X18_P: { label: "Photo 13 × 18 cm portrait", width: 13, height: 18, outputWidth: 1300, outputHeight: 1800 },
+          PHOTO_13X18_L: { label: "Photo 13 × 18 cm paysage", width: 18, height: 13, outputWidth: 1800, outputHeight: 1300 },
+          SCREEN_9_16: { label: "Story / téléphone vertical", width: 9, height: 16, outputWidth: 1080, outputHeight: 1920 },
+          SCREEN_16_9: { label: "Écran paysage Full HD", width: 16, height: 9, outputWidth: 1920, outputHeight: 1080 },
+          SCREEN_1_1: { label: "Carré", width: 1, height: 1, outputWidth: 1080, outputHeight: 1080 },
+          SCREEN_4_5: { label: "Portrait social", width: 4, height: 5, outputWidth: 1080, outputHeight: 1350 },
+          SCREEN_3_4: { label: "Portrait classique", width: 3, height: 4, outputWidth: 1200, outputHeight: 1600 },
+          SCREEN_4_3: { label: "Paysage classique", width: 4, height: 3, outputWidth: 1600, outputHeight: 1200 },
+          SCREEN_3_2: { label: "Photo paysage", width: 3, height: 2, outputWidth: 1800, outputHeight: 1200 }
         }
       },
 
       i18n: {
         emptyTitle: "Aucune image pour le moment",
         emptyText: "Ajoute des images, choisis le format papier, puis indique le nombre d'images par page. PrintPics propose ensuite une grille et des suggestions ajustables.",
+        cropEmptyText: "Ajoute une ou plusieurs images, choisis les proportions finales, puis déplace la zone conservée avec les réglages horizontal et vertical.",
         emptyPreview: "Ajoute des images pour lancer le calcul automatique.",
         noImagePrint: "Ajoute au moins une image avant d'imprimer.",
         noReadableImage: "Aucune image lisible n'a été trouvée dans la sélection.",
@@ -835,9 +1089,12 @@
         recommendation: null,
         recommendationOptions: [],
         messageTimer: null,
+        formUpdateTimer: null,
+        generationToken: 0,
         confirmResolver: null,
         settings: {
           theme: "light",
+          outputMode: "print",
           paper: "A4",
           orientation: "portrait",
           customWidth: 210,
@@ -854,7 +1111,15 @@
           fit: "contain",
           dpi: 300,
           autoRotate: true,
-          drawGuides: false
+          drawGuides: false,
+          cropRatio: "SCREEN_9_16",
+          cropRatioWidth: 16,
+          cropRatioHeight: 9,
+          cropSizeMode: "native",
+          cropOutputWidth: 1080,
+          cropOutputHeight: 1920,
+          cropX: 50,
+          cropY: 50
         }
       },
 
@@ -878,6 +1143,7 @@
           preview: byId("preview"),
           message: byId("message"),
           previewNote: byId("preview-note"),
+          previewTitle: byId("preview-title"),
           themeToggle: byId("theme-toggle"),
           pickImages: byId("pick-images"),
           imageInput: byId("image-input"),
@@ -899,9 +1165,15 @@
           exportJson: byId("export-json"),
           importJson: byId("import-json"),
           clear: byId("clear"),
+          swapFormat: byId("swap-format"),
+          exportHelp: byId("export-help"),
+          cropSizeHelp: byId("crop-size-help"),
+          cropXValue: byId("crop-x-value"),
+          cropYValue: byId("crop-y-value"),
           fields: {
+            outputModePrint: byId("mode-print"),
+            outputModeCrop: byId("mode-crop"),
             paper: byId("paper"),
-            orientation: byId("orientation"),
             customWidth: byId("custom-width"),
             customHeight: byId("custom-height"),
             margin: byId("margin"),
@@ -916,7 +1188,15 @@
             fit: byId("fit"),
             dpi: byId("dpi"),
             autoRotate: byId("auto-rotate"),
-            drawGuides: byId("draw-guides")
+            drawGuides: byId("draw-guides"),
+            cropRatio: byId("crop-ratio"),
+            cropRatioWidth: byId("crop-ratio-width"),
+            cropRatioHeight: byId("crop-ratio-height"),
+            cropSizeMode: byId("crop-size-mode"),
+            cropOutputWidth: byId("crop-output-width"),
+            cropOutputHeight: byId("crop-output-height"),
+            cropX: byId("crop-x"),
+            cropY: byId("crop-y")
           }
         };
       },
@@ -960,6 +1240,7 @@
           const next = { ...base, ...raw };
           const papers = [...Object.keys(App.config.paperSizes), "CUSTOM"];
           next.theme = next.theme === "dark" ? "dark" : "light";
+          next.outputMode = next.outputMode === "crop" ? "crop" : "print";
           next.paper = papers.includes(next.paper) ? next.paper : base.paper;
           next.orientation = next.orientation === "landscape" ? "landscape" : "portrait";
           next.customWidth = this.clamp(next.customWidth, 20, 1000, base.customWidth);
@@ -977,6 +1258,40 @@
           next.dpi = Math.round(this.clamp(next.dpi, 72, 600, base.dpi));
           next.autoRotate = Boolean(next.autoRotate);
           next.drawGuides = Boolean(next.drawGuides);
+          const legacyCropRatios = {
+            "9:16": "SCREEN_9_16",
+            "16:9": "SCREEN_16_9",
+            "1:1": "SCREEN_1_1",
+            "4:5": "SCREEN_4_5",
+            "3:2": "SCREEN_3_2",
+            "2:3": "PHOTO_10X15_P",
+            "4:3": "SCREEN_4_3",
+            "3:4": "SCREEN_3_4",
+            "5:7": "PHOTO_13X18_P",
+            "7:5": "PHOTO_13X18_L"
+          };
+          next.cropRatio = legacyCropRatios[next.cropRatio] || next.cropRatio;
+          const cropRatios = [...Object.keys(App.config.cropFormats), "ORIGINAL", "CUSTOM"];
+          next.cropRatio = cropRatios.includes(next.cropRatio) ? next.cropRatio : base.cropRatio;
+          next.cropRatioWidth = this.clamp(next.cropRatioWidth, 0.1, 100, base.cropRatioWidth);
+          next.cropRatioHeight = this.clamp(next.cropRatioHeight, 0.1, 100, base.cropRatioHeight);
+          next.cropSizeMode = ["native", "preset", "custom"].includes(next.cropSizeMode) ? next.cropSizeMode : base.cropSizeMode;
+          next.cropOutputWidth = Math.round(this.clamp(next.cropOutputWidth, 1, 20000, base.cropOutputWidth));
+          next.cropOutputHeight = Math.round(this.clamp(next.cropOutputHeight, 1, 20000, base.cropOutputHeight));
+          if (next.cropSizeMode === "preset") {
+            const preset = App.config.cropFormats[next.cropRatio];
+            if (preset) {
+              next.cropOutputWidth = preset.outputWidth;
+              next.cropOutputHeight = preset.outputHeight;
+            } else {
+              next.cropSizeMode = "native";
+            }
+          } else if (next.cropSizeMode === "custom") {
+            const aspect = this.getCropAspectForSettings(next, App.state.images[0]);
+            next.cropOutputHeight = Math.max(1, Math.round(next.cropOutputWidth / aspect));
+          }
+          next.cropX = Math.round(this.clamp(next.cropX, 0, 100, base.cropX));
+          next.cropY = Math.round(this.clamp(next.cropY, 0, 100, base.cropY));
           return next;
         },
 
@@ -989,10 +1304,13 @@
           const base = s.paper === "CUSTOM"
             ? { width: s.customWidth, height: s.customHeight }
             : App.config.paperSizes[s.paper];
-          let width = base.width;
-          let height = base.height;
+          const isPixelFormat = Boolean(base.widthPx && base.heightPx);
+          let width = isPixelFormat ? (base.widthPx * 25.4) / s.dpi : base.width;
+          let height = isPixelFormat ? (base.heightPx * 25.4) / s.dpi : base.height;
           if (s.orientation === "landscape") [width, height] = [height, width];
-          return { width, height };
+          const widthPx = s.orientation === "landscape" ? base.heightPx : base.widthPx;
+          const heightPx = s.orientation === "landscape" ? base.widthPx : base.heightPx;
+          return { width, height, widthPx, heightPx, isPixelFormat, label: base.label };
         },
 
         getContentBox() {
@@ -1002,6 +1320,63 @@
             paper,
             width: Math.max(1, paper.width - (s.margin * 2)),
             height: Math.max(1, paper.height - (s.margin * 2))
+          };
+        },
+
+        getCropAspectForSettings(settings, image = null) {
+          const s = settings;
+          if (s.cropRatio === "ORIGINAL") return image?.aspect || 1;
+          if (s.cropRatio === "CUSTOM") return s.cropRatioWidth / s.cropRatioHeight;
+          const format = App.config.cropFormats[s.cropRatio];
+          return format ? format.width / format.height : 1;
+        },
+
+        getCropAspect(image = null) {
+          return this.getCropAspectForSettings(App.state.settings, image);
+        },
+
+        getCropFormatLabel() {
+          const s = App.state.settings;
+          if (s.cropRatio === "ORIGINAL") return "Proportions d'origine";
+          if (s.cropRatio === "CUSTOM") return `Proportions ${s.cropRatioWidth}:${s.cropRatioHeight}`;
+          return App.config.cropFormats[s.cropRatio]?.label || "Format personnalisé";
+        },
+
+        getCropOutputSize(rect) {
+          const s = App.state.settings;
+          if (s.cropSizeMode === "native") return { width: rect.width, height: rect.height, resized: false };
+          return {
+            width: s.cropOutputWidth,
+            height: s.cropOutputHeight,
+            resized: s.cropOutputWidth !== rect.width || s.cropOutputHeight !== rect.height
+          };
+        },
+
+        getCropRect(image) {
+          const sourceW = image.element.naturalWidth;
+          const sourceH = image.element.naturalHeight;
+          const targetAspect = this.getCropAspect(image);
+          let width = sourceW;
+          let height = sourceH;
+
+          if (sourceW / sourceH > targetAspect) {
+            width = Math.max(1, Math.round(sourceH * targetAspect));
+          } else {
+            height = Math.max(1, Math.round(sourceW / targetAspect));
+          }
+
+          const maxX = Math.max(0, sourceW - width);
+          const maxY = Math.max(0, sourceH - height);
+          const x = Math.round(maxX * (App.state.settings.cropX / 100));
+          const y = Math.round(maxY * (App.state.settings.cropY / 100));
+          return {
+            x,
+            y,
+            width,
+            height,
+            sourceW,
+            sourceH,
+            keptRatio: (width * height) / Math.max(1, sourceW * sourceH)
           };
         },
 
@@ -1255,8 +1630,8 @@
         estimateCanvasLoad(pageCount) {
           const paper = this.getPaperSize();
           const dpi = App.state.settings.dpi;
-          const widthPx = this.mmToPx(paper.width, dpi);
-          const heightPx = this.mmToPx(paper.height, dpi);
+          const widthPx = paper.widthPx || this.mmToPx(paper.width, dpi);
+          const heightPx = paper.heightPx || this.mmToPx(paper.height, dpi);
           const megaPixelsPerPage = (widthPx * heightPx) / 1000000;
           return {
             widthPx,
@@ -1267,6 +1642,11 @@
         },
 
         async generate() {
+          if (App.state.settings.outputMode === "crop") {
+            this.generateCrops();
+            return;
+          }
+
           const warning = this.validateLayout();
           if (warning) {
             App.state.canvases = [];
@@ -1348,6 +1728,63 @@
           App.state.canvases = canvases;
         },
 
+        generateCrops() {
+          const images = App.state.images;
+          if (!images.length) {
+            App.state.canvases = [];
+            App.state.lastLayout = null;
+            return;
+          }
+
+          const crops = images.map((image) => {
+            const rect = this.getCropRect(image);
+            return { image, rect, output: this.getCropOutputSize(rect) };
+          });
+          const totalMegaPixels = crops.reduce((sum, crop) => sum + ((crop.output.width * crop.output.height) / 1000000), 0);
+          const first = crops[0];
+          App.state.recommendation = null;
+          App.state.recommendationOptions = [];
+          App.state.lastLayout = {
+            modeLabel: "Recadrage",
+            crops,
+            cropRect: first.rect,
+            cropOutput: first.output,
+            canvasLoad: { totalMegaPixels },
+            warning: totalMegaPixels > App.config.memorySoftLimitMegaPixels
+              ? `Recadrages trop lourds à générer ensemble (${Math.round(totalMegaPixels)} mégapixels). Réduis le nombre d'images chargées.`
+              : ""
+          };
+
+          if (App.state.lastLayout.warning) {
+            App.state.canvases = [];
+            return;
+          }
+
+          App.state.canvases = crops.map(({ image, rect, output }) => {
+            const canvas = document.createElement("canvas");
+            canvas.width = output.width;
+            canvas.height = output.height;
+            const ctx = canvas.getContext("2d");
+            ctx.imageSmoothingEnabled = output.resized;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(
+              image.element,
+              rect.x,
+              rect.y,
+              rect.width,
+              rect.height,
+              0,
+              0,
+              output.width,
+              output.height
+            );
+            canvas.dataset.imageName = image.name;
+            canvas.dataset.cropWidth = String(rect.width);
+            canvas.dataset.cropHeight = String(rect.height);
+            return canvas;
+          });
+        },
+
         drawImageInCell(ctx, image, cell) {
           const s = App.state.settings;
           const img = image.element;
@@ -1397,19 +1834,30 @@
       },
 
       view: {
-        applySettingsToForm() {
+        applySettingsToForm(options = {}) {
           const s = App.state.settings;
+          const preserveActive = Boolean(options.preserveActive);
           Object.entries(App.els.fields).forEach(([key, element]) => {
+            if (preserveActive && element === document.activeElement) return;
+            if (key === "outputModePrint") {
+              element.checked = s.outputMode === "print";
+              return;
+            }
+            if (key === "outputModeCrop") {
+              element.checked = s.outputMode === "crop";
+              return;
+            }
             if (element.type === "checkbox") element.checked = Boolean(s[key]);
             else element.value = s[key];
           });
         },
 
-        readFormToSettings() {
+        readFormToSettings(options = {}) {
           const fields = App.els.fields;
           const raw = {
+            outputMode: fields.outputModeCrop.checked ? "crop" : "print",
             paper: fields.paper.value,
-            orientation: fields.orientation.value,
+            orientation: App.state.settings.orientation,
             customWidth: fields.customWidth.value,
             customHeight: fields.customHeight.value,
             margin: fields.margin.value,
@@ -1425,10 +1873,18 @@
             dpi: fields.dpi.value,
             autoRotate: fields.autoRotate.checked,
             drawGuides: fields.drawGuides.checked,
+            cropRatio: fields.cropRatio.value,
+            cropRatioWidth: fields.cropRatioWidth.value,
+            cropRatioHeight: fields.cropRatioHeight.value,
+            cropSizeMode: fields.cropSizeMode.value,
+            cropOutputWidth: fields.cropOutputWidth.value,
+            cropOutputHeight: fields.cropOutputHeight.value,
+            cropX: fields.cropX.value,
+            cropY: fields.cropY.value,
             theme: App.state.settings.theme
           };
           App.state.settings = App.model.normalizeSettings(raw);
-          this.applySettingsToForm();
+          if (options.commit) this.applySettingsToForm();
           this.updateModeVisibility();
           this.updatePrintPageStyle();
           App.store.save();
@@ -1443,8 +1899,36 @@
         updateModeVisibility() {
           const mode = App.state.settings.layoutMode;
           const isCustom = App.state.settings.paper === "CUSTOM";
+          const isCrop = App.state.settings.outputMode === "crop";
+          const isCustomCrop = App.state.settings.cropRatio === "CUSTOM";
+          const usesPresetSize = App.state.settings.cropSizeMode === "preset";
+          const usesCustomSize = App.state.settings.cropSizeMode === "custom";
           document.querySelectorAll(".grid-setting").forEach((el) => { el.hidden = mode !== "grid"; });
-          document.querySelectorAll(".custom-field").forEach((el) => { el.hidden = !isCustom; });
+          document.querySelectorAll(".custom-field-group").forEach((el) => { el.hidden = !isCustom; });
+          document.querySelectorAll(".print-only").forEach((el) => { el.hidden = isCrop; });
+          document.querySelectorAll(".crop-only").forEach((el) => { el.hidden = !isCrop; });
+          document.querySelectorAll(".crop-custom-field").forEach((el) => { el.hidden = !isCustomCrop; });
+          document.querySelectorAll(".crop-size-field").forEach((el) => { el.hidden = !usesCustomSize; });
+          App.els.fields.cropOutputWidth.disabled = usesPresetSize;
+          document.querySelectorAll(".crop-output-height-field").forEach((el) => { el.hidden = !usesCustomSize; });
+          App.els.fields.cropOutputHeight.disabled = !usesCustomSize;
+          App.els.fields.cropOutputWidth.value = App.state.settings.cropOutputWidth;
+          App.els.fields.cropOutputHeight.value = App.state.settings.cropOutputHeight;
+          App.els.previewTitle.textContent = isCrop ? "Aperçu du recadrage" : "Aperçu de la planche";
+          App.els.exportPng.textContent = isCrop ? "Exporter les recadrages PNG" : "Exporter PNG sans perte";
+          App.els.exportJpg.textContent = isCrop ? "Exporter les recadrages JPG" : "Exporter JPG qualité max.";
+          App.els.exportHelp.textContent = isCrop
+            ? "Le fichier exporté contient uniquement l'image rognée : aucun cadre, aucune marge et aucun fond ajouté. Le PNG est sans perte ; le JPG est légèrement destructif."
+            : "Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif. Le profil JSON contient les réglages, pas les images.";
+          if (isCrop) {
+            App.els.cropSizeHelp.textContent = App.state.settings.cropSizeMode === "native"
+              ? "Recommandé : l'image est simplement rognée. Aucun cadre, aucune marge et aucun redimensionnement."
+              : (usesPresetSize
+                ? `Taille standard : ${App.state.settings.cropOutputWidth} × ${App.state.settings.cropOutputHeight} px. La forme reste celle choisie au-dessus.`
+                : `Taille calculée : ${App.state.settings.cropOutputWidth} × ${App.state.settings.cropOutputHeight} px. La hauteur suit automatiquement la forme choisie.`);
+          }
+          App.els.cropXValue.textContent = `${App.state.settings.cropX} %`;
+          App.els.cropYValue.textContent = `${App.state.settings.cropY} %`;
         },
 
         updatePrintPageStyle() {
@@ -1461,6 +1945,8 @@
             this.renderEmpty();
           } else if (!App.state.canvases.length && App.state.lastLayout?.warning) {
             this.renderNotice(App.state.lastLayout.warning);
+          } else if (App.state.settings.outputMode === "crop") {
+            this.renderCrops();
           } else {
             this.renderCanvases();
           }
@@ -1489,10 +1975,14 @@
           const title = document.createElement("h2");
           title.textContent = App.i18n.emptyTitle;
           const text = document.createElement("p");
-          text.textContent = App.i18n.emptyText;
+          text.textContent = App.state.settings.outputMode === "crop"
+            ? App.i18n.cropEmptyText
+            : App.i18n.emptyText;
           empty.append(title, text);
           App.els.preview.appendChild(empty);
-          App.els.previewNote.textContent = App.i18n.emptyPreview;
+          App.els.previewNote.textContent = App.state.settings.outputMode === "crop"
+            ? "Ajoute une ou plusieurs images pour visualiser la zone conservée."
+            : App.i18n.emptyPreview;
           this.updateButtons();
         },
 
@@ -1513,6 +2003,49 @@
           App.els.previewNote.textContent = `${App.state.canvases.length} page(s) générée(s) pour ${App.state.images.length} image(s).`;
         },
 
+        renderCrops() {
+          const crops = App.state.lastLayout?.crops || [];
+          App.els.preview.innerHTML = "";
+          crops.forEach(({ image, rect, output }, index) => {
+            const wrapper = document.createElement("section");
+            wrapper.className = "crop-result";
+
+            const guideTitle = document.createElement("h3");
+            guideTitle.textContent = "Guide de positionnement - non exporté";
+            const source = document.createElement("div");
+            source.className = "crop-source";
+            const img = document.createElement("img");
+            img.src = image.url;
+            img.alt = `Aperçu du recadrage de ${image.name}`;
+            const mask = document.createElement("div");
+            mask.className = "crop-mask";
+            mask.style.left = `${(rect.x / rect.sourceW) * 100}%`;
+            mask.style.top = `${(rect.y / rect.sourceH) * 100}%`;
+            mask.style.width = `${(rect.width / rect.sourceW) * 100}%`;
+            mask.style.height = `${(rect.height / rect.sourceH) * 100}%`;
+            source.append(img, mask);
+
+            const caption = document.createElement("div");
+            caption.className = "crop-caption";
+            const name = document.createElement("strong");
+            name.textContent = image.name;
+            const dimensions = document.createElement("span");
+            dimensions.textContent = `${rect.width} × ${rect.height} px conservés (${Math.round(rect.keptRatio * 100)} %)`;
+            caption.append(name, dimensions);
+
+            const finalTitle = document.createElement("h3");
+            finalTitle.textContent = `Image finale seule - ${output.width} × ${output.height} px - sans cadre ni marge`;
+            const final = document.createElement("div");
+            final.className = "crop-final";
+            const canvas = App.state.canvases[index];
+            if (canvas) final.appendChild(canvas);
+
+            wrapper.append(finalTitle, final, guideTitle, source, caption);
+            App.els.preview.appendChild(wrapper);
+          });
+          App.els.previewNote.textContent = `${crops.length} image(s) prête(s). Le résultat final ne contient que l'image rognée et peut être enregistré directement par clic droit.`;
+        },
+
         renderStats() {
           const stats = App.els.stats;
           stats.innerHTML = "";
@@ -1520,10 +2053,25 @@
           const layout = App.state.lastLayout;
           const rows = [
             ["Images chargées", String(App.state.images.length)],
-            ["Papier", `${this.formatNumber(paper.width)} x ${this.formatNumber(paper.height)} mm`]
           ];
 
-          if (layout && layout.grid) {
+          if (App.state.settings.outputMode === "crop") {
+            rows.push(["Format choisi", App.model.getCropFormatLabel()]);
+            if (layout?.cropRect) {
+              rows.push(["Zone source gardée", `${layout.cropRect.width} × ${layout.cropRect.height} px`]);
+              rows.push(["Fichier final", `${layout.cropOutput.width} × ${layout.cropOutput.height} px`]);
+              rows.push(["Zone conservée", `${Math.round(layout.cropRect.keptRatio * 100)} %`]);
+              rows.push(["Redimensionnement", layout.cropOutput.resized ? "oui, haute qualité" : "aucun"]);
+              rows.push(["Cadre ou marge", "aucun"]);
+            }
+            if (layout?.canvasLoad) rows.push(["Poids de calcul", `${Math.round(layout.canvasLoad.totalMegaPixels)} MP cumulés`]);
+          } else if (layout && layout.grid) {
+            rows.push([
+              "Format final",
+              paper.isPixelFormat
+                ? `${paper.label} - ${paper.widthPx} × ${paper.heightPx} px`
+                : `${paper.label || "Sur mesure"} - ${this.formatNumber(paper.width)} × ${this.formatNumber(paper.height)} mm`
+            ]);
             rows.push(["Mode", layout.modeLabel]);
             rows.push(["Images / page", String(layout.perPage)]);
             rows.push(["Grille", `${layout.grid.cols} x ${layout.grid.rows}`]);
@@ -1540,6 +2088,14 @@
           } else if (layout && layout.warning) {
             rows.push(["Point d'attention", layout.warning]);
           } else {
+            if (App.state.settings.outputMode === "print") {
+              rows.push([
+                "Format final",
+                paper.isPixelFormat
+                  ? `${paper.label} - ${paper.widthPx} × ${paper.heightPx} px`
+                  : `${paper.label || "Sur mesure"} - ${this.formatNumber(paper.width)} × ${this.formatNumber(paper.height)} mm`
+              ]);
+            }
             rows.push(["Mode", "En attente"]);
           }
 
@@ -1560,7 +2116,10 @@
           if (layout && layout.warning) {
             this.showMessage(layout.warning, "warning", false);
           } else if (layout?.canvasLoad && layout.canvasLoad.totalMegaPixels > App.config.memoryWarningMegaPixels) {
-            this.showMessage(`Cette génération est lourde (${Math.round(layout.canvasLoad.totalMegaPixels)} mégapixels cumulés). Réduire le DPI peut améliorer la fluidité.`, "warning", false);
+            const advice = App.state.settings.outputMode === "crop"
+              ? "Réduire le nombre d'images chargées peut améliorer la fluidité."
+              : "Réduire le DPI peut améliorer la fluidité.";
+            this.showMessage(`Cette génération est lourde (${Math.round(layout.canvasLoad.totalMegaPixels)} mégapixels cumulés). ${advice}`, "warning", false);
           } else if (App.els.message.classList.contains("warning")) {
             App.els.message.className = "message";
             App.els.message.textContent = "";
@@ -1624,7 +2183,7 @@
 
         updateButtons() {
           const hasCanvases = App.state.canvases.length > 0;
-          App.els.print.disabled = !hasCanvases;
+          App.els.print.disabled = !hasCanvases || App.state.settings.outputMode === "crop";
           App.els.exportPng.disabled = !hasCanvases;
           App.els.exportJpg.disabled = !hasCanvases;
           App.els.clear.disabled = App.state.images.length === 0;
@@ -1662,8 +2221,30 @@
           });
 
           Object.values(App.els.fields).forEach((field) => {
-            field.addEventListener("input", () => this.updateFromForm());
-            field.addEventListener("change", () => this.updateFromForm());
+            field.addEventListener("input", () => {
+              const delay = field.type === "range" ? 40 : 280;
+              this.scheduleFormUpdate(delay);
+            });
+            field.addEventListener("change", () => this.updateFromForm({ commit: true }));
+            if (field.type === "number") {
+              field.addEventListener("blur", () => this.updateFromForm({ commit: true }));
+            }
+          });
+
+          App.els.swapFormat.addEventListener("click", async () => {
+            const s = App.state.settings;
+            if (s.paper === "CUSTOM") {
+              const current = App.model.getPaperSize();
+              s.customWidth = current.height;
+              s.customHeight = current.width;
+              s.orientation = "portrait";
+            } else {
+              s.orientation = s.orientation === "landscape" ? "portrait" : "landscape";
+            }
+            App.view.applySettingsToForm();
+            App.view.updatePrintPageStyle();
+            App.store.save();
+            await this.regenerate();
           });
 
           App.els.dropZone.addEventListener("dragover", (event) => {
@@ -1712,9 +2293,24 @@
           });
         },
 
-        async updateFromForm() {
-          App.view.readFormToSettings();
+        scheduleFormUpdate(delay = 280) {
+          clearTimeout(App.state.formUpdateTimer);
+          App.view.readFormToSettings({ commit: false });
+          App.state.formUpdateTimer = setTimeout(() => {
+            this.regenerate();
+          }, delay);
+        },
+
+        async updateFromForm(options = {}) {
+          clearTimeout(App.state.formUpdateTimer);
+          App.view.readFormToSettings({ commit: Boolean(options.commit) });
+          await this.regenerate();
+        },
+
+        async regenerate() {
+          const token = ++App.state.generationToken;
           await App.model.generate();
+          if (token !== App.state.generationToken) return;
           App.view.render();
         },
 
@@ -1806,15 +2402,29 @@
               const blob = await this.canvasToBlob(App.state.canvases[index], mimeType, isPng ? undefined : 1);
               const url = URL.createObjectURL(blob);
               const link = document.createElement("a");
-              link.download = `printpics-page-${index + 1}.${extension}`;
+              const sourceName = App.state.canvases[index].dataset.imageName || "";
+              const cleanName = sourceName
+                .replace(/\.[^.]+$/, "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9_-]+/g, "-")
+                .replace(/^-+|-+$/g, "")
+                .slice(0, 80);
+              link.download = App.state.settings.outputMode === "crop"
+                ? `${cleanName || `image-${index + 1}`}-recadree.${extension}`
+                : `printpics-page-${index + 1}.${extension}`;
               link.href = url;
               link.click();
               setTimeout(() => URL.revokeObjectURL(url), 1000);
             }
             App.view.showMessage(
-              isPng
-                ? "Export PNG terminé sans perte sur la planche générée."
-                : "Export JPG terminé avec la qualité maximale du navigateur."
+              App.state.settings.outputMode === "crop"
+                ? (isPng
+                  ? "Export PNG terminé : seuls les pixels de la zone conservée ont été enregistrés, sans agrandissement."
+                  : "Export JPG terminé : les recadrages ont été enregistrés avec la qualité maximale du navigateur.")
+                : (isPng
+                  ? "Export PNG terminé sans perte sur la planche générée."
+                  : "Export JPG terminé avec la qualité maximale du navigateur.")
             );
           } catch (error) {
             App.view.showMessage("L'export de la planche a échoué.", "warning");
