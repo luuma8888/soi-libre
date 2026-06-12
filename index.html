@@ -305,6 +305,18 @@
             background-color: var(--primary-light);
         }
 
+        .btn-optional {
+            flex: 0 1 auto;
+            padding-inline: 14px;
+            border-color: #9a6044;
+            color: #8a5037;
+            font-size: 0.82rem;
+        }
+
+        .btn-optional:hover {
+            background: #fff0e8;
+        }
+
         .dual-captures {
             flex-direction: column;
             gap: 8px;
@@ -821,6 +833,34 @@
                 <div class="card-actions">
                     <a href="creations/atelier_comedie_musicale.html" class="btn btn-visit">Ouvrir</a>
                     <a href="creations/atelier_comedie_musicale.html" download="atelier-comedie-musicale-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez synchroniser des paroles, préparer un karaoké et exporter des sous-titres ou une vidéo.</span>
+                <span class="audience-tag">Audio & vidéo</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/syncrostella-preview.png'); background-position: center top;"
+                data-full="assets/syncrostella-full.png"
+                title="Cliquez pour voir la capture grand écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">SyncroStella</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Synchronisez les paroles, ajustez le karaoké et exportez en JSON, ASS, SRT ou vidéo MP4 optionnelle.
+                    </p>
+                </div>
+                <div class="card-actions wrap">
+                    <a href="creations/syncrostella/syncro-stella.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/syncrostella/syncro-stella.html" download="syncro-stella-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                    <a href="creations/syncrostella/karaoke_video_builder.py" download="karaoke_video_builder.py" class="btn btn-download btn-optional">Script Python optionnel</a>
                 </div>
             </div>
         </article>
