@@ -1366,6 +1366,76 @@ const View = {
         });
         this.renderEditorPreview(Controller.audio.currentTime);
     },
+    visualFocusDescriptor(element) {
+        const container = this.el['visual-editor-container'];
+        if (!element || !container?.contains(element)) return null;
+        if (element.matches('button[data-entity]')) {
+            return {
+                kind: 'adjuster',
+                entity: element.dataset.entity,
+                index: element.dataset.index,
+                property: element.dataset.property,
+                delta: element.dataset.delta
+            };
+        }
+        if (element.matches('button[data-preview-block]')) {
+            return { kind: 'preview', index: element.dataset.previewBlock };
+        }
+        if (element.matches('input[data-display-start-index]')) {
+            return { kind: 'displayStart', index: element.dataset.displayStartIndex };
+        }
+        if (element.matches('.block-select-chk')) {
+            return { kind: 'blockSelect', index: element.value };
+        }
+        return null;
+    },
+    findVisualFocusTarget(descriptor) {
+        if (!descriptor) return null;
+        const container = this.el['visual-editor-container'];
+        if (descriptor.kind === 'adjuster') {
+            return [...container.querySelectorAll('button[data-entity]')].find(button =>
+                button.dataset.entity === descriptor.entity &&
+                button.dataset.index === descriptor.index &&
+                button.dataset.property === descriptor.property &&
+                button.dataset.delta === descriptor.delta
+            ) || null;
+        }
+        if (descriptor.kind === 'preview') {
+            return [...container.querySelectorAll('button[data-preview-block]')].find(button =>
+                button.dataset.previewBlock === descriptor.index
+            ) || null;
+        }
+        if (descriptor.kind === 'displayStart') {
+            return [...container.querySelectorAll('input[data-display-start-index]')].find(input =>
+                input.dataset.displayStartIndex === descriptor.index
+            ) || null;
+        }
+        if (descriptor.kind === 'blockSelect') {
+            return [...container.querySelectorAll('.block-select-chk')].find(input =>
+                input.value === descriptor.index
+            ) || null;
+        }
+        return null;
+    },
+    stableVisualRender(render, focusCandidate = null) {
+        const container = this.el['visual-editor-container'];
+        const scrollTop = container?.scrollTop ?? 0;
+        const scrollLeft = container?.scrollLeft ?? 0;
+        const pageX = window.scrollX;
+        const pageY = window.scrollY;
+        const descriptor = this.visualFocusDescriptor(focusCandidate || document.activeElement);
+        render();
+        if (container) {
+            container.scrollTop = scrollTop;
+            container.scrollLeft = scrollLeft;
+        }
+        const target = this.findVisualFocusTarget(descriptor);
+        if (target) {
+            try { target.focus({ preventScroll: true }); }
+            catch { target.focus(); }
+        }
+        window.scrollTo(pageX, pageY);
+    },
     renderEditorPreview(time) {
         const activeBlock = Controller.previewBlockIndex;
         this.el['visual-editor-container'].querySelectorAll('[data-editor-word-index]').forEach(node => {
@@ -1898,7 +1968,10 @@ const Controller = {
         document.getElementById('btn-keep-old-sync').addEventListener('click', () => {
             Model.keepOldSync(); this.closeDialog(View.el['sync-review-dialog']); View.syncDisplay(); View.renderFinal(0, true); this.changed('Ancienne synchronisation conservée.');
         });
-        document.querySelectorAll('input[name="editor-format"]').forEach(input => input.addEventListener('change', () => { View.visual(input.value, this.selectedBlocks()); this.updateCode(); }));
+        document.querySelectorAll('input[name="editor-format"]').forEach(input => input.addEventListener('change', () => {
+            View.stableVisualRender(() => View.visual(input.value, this.selectedBlocks()));
+            this.updateCode();
+        }));
         View.el['visual-editor-container'].addEventListener('click', event => {
             const previewButton = event.target.closest('button[data-preview-block]');
             if (previewButton) {
@@ -1908,13 +1981,14 @@ const Controller = {
             const button = event.target.closest('button[data-entity]'); if (!button) return;
             const selected = this.selectedBlocks(); const { entity, property } = button.dataset; const index = Number(button.dataset.index); const delta = Number(button.dataset.delta);
             if (entity === 'word') Model.adjustWord(index, delta); else Model.adjustBlock(index, property, delta);
-            View.visual(document.querySelector('input[name="editor-format"]:checked').value, selected); this.changed();
+            View.stableVisualRender(() => View.visual(document.querySelector('input[name="editor-format"]:checked').value, selected), button);
+            this.changed();
         });
         View.el['visual-editor-container'].addEventListener('change', event => {
             const input = event.target.closest('input[data-display-start-index]');
             if (!input) return;
             Model.setBlockDisplayStart(Number(input.dataset.displayStartIndex), input.value);
-            View.visual(document.querySelector('input[name="editor-format"]:checked').value, this.selectedBlocks());
+            View.stableVisualRender(() => View.visual(document.querySelector('input[name="editor-format"]:checked').value, this.selectedBlocks()), input);
             View.renderFinal(this.audio.currentTime, true);
             View.videoAssistant();
             this.changed('Instant d’affichage mis à jour.');
@@ -2194,7 +2268,10 @@ const Controller = {
         const selectedOnly = document.querySelector('input[name="shift-target"]:checked').value === 'selected';
         const selected = selectedOnly ? this.selectedBlocks() : null;
         if (selectedOnly && !selected.length) return View.status('Aucun écran sélectionné.', 'error');
-        Model.shift(amount * direction, selected); View.visual(document.querySelector('input[name="editor-format"]:checked').value, selected || []); this.updateCode(); this.changed();
+        Model.shift(amount * direction, selected);
+        View.stableVisualRender(() => View.visual(document.querySelector('input[name="editor-format"]:checked').value, selected || []));
+        this.updateCode();
+        this.changed();
     },
     startRenderLoop() {
         cancelAnimationFrame(this.animationFrame);
@@ -2295,6 +2372,45 @@ const TestSuite = {
             Controller.previewBlockIndex = oldPreview;
             Model.data = old;
             View.visual('ass');
+        });
+        test('Éditeur conserve scroll et focus après ajustement', () => {
+            const old = Model.data;
+            const previousTab = document.querySelector('.tab-content.active')?.id || 'tab-config';
+            try {
+                Controller.openTab('tab-edit');
+                Model.parseText(Array.from({ length: 32 }, (_, index) => `Écran ${index + 1}`).join('\n\n'));
+                Model.data.words.forEach((word, index) => { word.start = index; word.end = index + 0.5; });
+                Model.data.blocks.forEach((block, index) => {
+                    block.start = index;
+                    block.end = index + 0.5;
+                    block.displayStart = index;
+                });
+                document.getElementById('time-step').value = '50';
+                View.visual('ass');
+                const container = View.el['visual-editor-container'];
+                container.scrollTop = 260;
+                const button = [...container.querySelectorAll('button[data-entity="block"]')].find(candidate =>
+                    candidate.dataset.index === '12' &&
+                    candidate.dataset.property === 'displayStart' &&
+                    candidate.dataset.delta === '50'
+                );
+                if (!button) throw new Error('bouton de test absent');
+                button.focus({ preventScroll: true });
+                const before = container.scrollTop;
+                Model.adjustBlock(12, 'displayStart', 50);
+                View.stableVisualRender(() => View.visual('ass'), button);
+                if (container.scrollTop !== before) throw new Error(`scroll déplacé ${before} -> ${container.scrollTop}`);
+                const focused = document.activeElement;
+                if (
+                    focused?.dataset?.entity !== 'block' ||
+                    focused.dataset.index !== '12' ||
+                    focused.dataset.property !== 'displayStart' ||
+                    focused.dataset.delta !== '50'
+                ) throw new Error('focus non restauré');
+            } finally {
+                Model.data = old;
+                Controller.openTab(previousTab);
+            }
         });
         test('Tentative non destructive', () => {
             const old = Model.data; Model.parseText('Un deux'); Model.data.words.forEach((word, index) => { word.start = index; word.end = index + 0.5; }); Model.data.blocks[0].start = 0; Model.data.blocks[0].end = 1.5; Model.data.currentIndex = 2;
