@@ -487,6 +487,20 @@
       margin-bottom: 18px;
     }
 
+    .preview-toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .order-toggle-btn.is-active {
+      border-color: var(--accent-strong);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+
     .preview-toolbar h2 {
       margin: 0;
       font-size: 1.15rem;
@@ -497,6 +511,117 @@
       margin: 4px 0 0;
       color: var(--muted);
       font-size: 0.92rem;
+    }
+
+    .order-list-panel {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .order-list-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .order-list-head h3 {
+      margin: 0;
+      color: var(--accent-strong);
+      font-size: 1rem;
+    }
+
+    .order-list-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .order-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .order-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel-soft);
+    }
+
+    .order-row.is-drop-target,
+    .order-chip.is-drop-target {
+      border-color: var(--accent-strong);
+      box-shadow: var(--focus);
+    }
+
+    .order-row.is-selected {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-strong), transparent 62%);
+      background: color-mix(in srgb, var(--accent-soft), var(--panel-soft) 55%);
+    }
+
+    .order-row.is-dragging,
+    .order-chip.is-dragging {
+      opacity: 0.5;
+    }
+
+    .order-thumb {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--bg) center/cover no-repeat;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+      flex: 0 0 auto;
+    }
+
+    .order-meta {
+      min-width: 0;
+    }
+
+    .order-meta strong {
+      display: block;
+      color: var(--text);
+      font-size: 0.92rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .order-meta span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .order-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .order-mini-btn {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 9px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 700;
     }
 
     .preview-container {
@@ -542,6 +667,129 @@
       box-shadow: var(--paper-shadow);
     }
 
+    .page-wrapper.is-orderable {
+      border: 1px solid color-mix(in srgb, var(--accent), var(--border) 55%);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .page-visual {
+      position: relative;
+    }
+
+    .page-order-overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: var(--overlay-gap, 0px);
+      padding: var(--overlay-margin, 0px);
+      grid-template-columns: repeat(var(--overlay-cols, 1), minmax(0, 1fr));
+      grid-template-rows: repeat(var(--overlay-rows, 1), minmax(0, 1fr));
+      pointer-events: none;
+    }
+
+    .page-slot {
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 100%;
+      min-width: 0;
+      min-height: 0;
+      padding: 10px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.0), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.04);
+      color: inherit;
+      cursor: grab;
+      text-align: left;
+      user-select: none;
+      backdrop-filter: blur(1px);
+    }
+
+    .page-slot:hover {
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent-soft), transparent 74%), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.08);
+    }
+
+    .page-slot:active {
+      cursor: grabbing;
+    }
+
+    .page-slot.is-empty {
+      border-style: dashed;
+      color: var(--muted);
+    }
+
+    .page-slot.is-selected {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-strong), transparent 60%);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent-soft), transparent 62%), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.1);
+    }
+
+    .page-slot.is-drop-target {
+      border-color: var(--accent-strong);
+      box-shadow: var(--focus);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent-soft), transparent 42%), rgba(255, 255, 255, 0.1)),
+        rgba(255, 255, 255, 0.1);
+    }
+
+    .page-slot.is-dragging {
+      opacity: 0.45;
+    }
+
+    .page-slot-top,
+    .page-slot-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .page-slot-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.56);
+      color: var(--accent-strong);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .page-slot-name {
+      display: block;
+      min-width: 0;
+      color: var(--text);
+      font-size: 0.86rem;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .page-slot-hint {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
     .page-wrapper::before {
       content: attr(data-page);
       position: absolute;
@@ -550,6 +798,70 @@
       color: var(--muted);
       font-size: 0.86rem;
       font-weight: 700;
+    }
+
+    .page-order-strip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 10px 10px 8px;
+      border-bottom: 1px dashed var(--border);
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel-soft), transparent 10%), color-mix(in srgb, var(--panel), transparent 0%));
+    }
+
+    .page-order-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .order-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+      padding: 3px 8px 3px 4px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 650;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .order-chip:active {
+      cursor: grabbing;
+    }
+
+    .order-chip-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--border), transparent 10%);
+      background: var(--bg) center/cover no-repeat;
+      flex: 0 0 auto;
+    }
+
+    .order-chip-index {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.6em;
+      color: var(--accent-strong);
     }
 
     canvas {
@@ -680,6 +992,32 @@
       .preview-toolbar {
         display: grid;
       }
+
+      .preview-toolbar-actions {
+        justify-content: flex-start;
+      }
+
+      .page-slot {
+        padding: 7px;
+        border-radius: 10px;
+      }
+
+      .page-slot-name {
+        font-size: 0.78rem;
+      }
+
+      .page-slot-hint {
+        display: none;
+      }
+
+      .order-row {
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .order-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -707,6 +1045,8 @@
       .no-print,
       .sidebar,
       .preview-toolbar,
+      .order-list-panel,
+      .page-order-strip,
       .message,
       .modal-backdrop,
       .empty-state {
@@ -759,7 +1099,7 @@
         <div>
           <h1>PrintPics</h1>
           <p class="subtitle">Composer des planches ou recadrer des images hors ligne.</p>
-          <span class="app-version" id="app-version">v0.3.alpha</span>
+          <span class="app-version" id="app-version">v0.4.alpha</span>
         </div>
         <div class="icon-actions">
           <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le mode jour ou nuit" title="Jour / nuit">🌙</button>
@@ -1008,7 +1348,21 @@
           <h2 id="preview-title">Aperçu de la planche</h2>
           <p id="preview-note">Ajoute des images pour lancer le calcul automatique.</p>
         </div>
+        <div class="preview-toolbar-actions">
+          <button class="btn order-toggle-btn is-active" id="toggle-order-edit" type="button" hidden aria-pressed="true">Masquer le tri</button>
+          <button class="btn" id="toggle-order-list" type="button" hidden aria-expanded="false" aria-controls="order-list-panel">Liste</button>
+        </div>
       </div>
+      <section class="order-list-panel no-print" id="order-list-panel" hidden aria-label="Ordre des images">
+        <div class="order-list-head">
+          <div>
+            <h3>Ordre des images</h3>
+            <p>Glisser une ligne sur une autre pour échanger leur place. Les flèches restent utiles sur mobile.</p>
+          </div>
+          <button class="btn" id="close-order-list" type="button">Masquer</button>
+        </div>
+        <div class="order-list" id="order-list"></div>
+      </section>
       <div class="preview-container" id="preview"></div>
     </main>
   </div>
@@ -1028,7 +1382,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.3.alpha",
+        version: "0.4.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -1085,12 +1439,19 @@
       state: {
         images: [],
         canvases: [],
+        pageImages: [],
+        pagePages: [],
         lastLayout: null,
         recommendation: null,
         recommendationOptions: [],
         messageTimer: null,
         formUpdateTimer: null,
         generationToken: 0,
+        orderListOpen: false,
+        orderEditMode: true,
+        dragImageIndex: null,
+        dragTargetIndex: null,
+        selectedOrderIndex: null,
         confirmResolver: null,
         settings: {
           theme: "light",
@@ -1131,6 +1492,7 @@
         this.view.applySettingsToForm();
         this.view.applyTheme();
         this.view.updateModeVisibility();
+        this.view.updateOrderVisibility();
         this.view.renderEmpty();
         this.view.renderStats();
         this.view.updatePrintPageStyle();
@@ -1144,6 +1506,11 @@
           message: byId("message"),
           previewNote: byId("preview-note"),
           previewTitle: byId("preview-title"),
+          toggleOrderEdit: byId("toggle-order-edit"),
+          toggleOrderList: byId("toggle-order-list"),
+          orderListPanel: byId("order-list-panel"),
+          orderList: byId("order-list"),
+          closeOrderList: byId("close-order-list"),
           themeToggle: byId("theme-toggle"),
           pickImages: byId("pick-images"),
           imageInput: byId("image-input"),
@@ -1258,6 +1625,7 @@
           next.dpi = Math.round(this.clamp(next.dpi, 72, 600, base.dpi));
           next.autoRotate = Boolean(next.autoRotate);
           next.drawGuides = Boolean(next.drawGuides);
+          next.orderEditMode = next.orderEditMode !== false;
           const legacyCropRatios = {
             "9:16": "SCREEN_9_16",
             "16:9": "SCREEN_16_9",
@@ -1611,6 +1979,24 @@
           return pages;
         },
 
+        buildPagePages(images, perPage) {
+          const pages = this.chunkImages(images, Math.max(1, perPage));
+          let startIndex = 0;
+          return pages.map((pageImages) => {
+            const s = App.state.settings;
+            const grid = s.layoutMode === "grid"
+              ? this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages))
+              : this.optimizeGrid(pageImages.length, pageImages);
+            const page = {
+              images: pageImages,
+              grid,
+              startIndex
+            };
+            startIndex += pageImages.length;
+            return page;
+          });
+        },
+
         validateLayout() {
           const s = App.state.settings;
           const paper = this.getPaperSize();
@@ -1647,6 +2033,8 @@
             return;
           }
 
+          App.state.pagePages = this.buildPagePages(App.state.images, Math.max(1, App.state.settings.perPage));
+          App.state.pageImages = App.state.pagePages.map((page) => page.images);
           const warning = this.validateLayout();
           if (warning) {
             App.state.canvases = [];
@@ -1659,6 +2047,8 @@
           const images = App.state.images;
           if (!images.length) {
             App.state.canvases = [];
+            App.state.pageImages = [];
+            App.state.pagePages = [];
             App.state.lastLayout = null;
             App.state.recommendation = null;
             App.state.recommendationOptions = [];
@@ -1667,12 +2057,14 @@
 
           const layout = this.resolveLayout(images);
           App.state.lastLayout = layout;
+          App.state.pagePages = this.buildPagePages(images, Math.max(1, layout?.perPage || App.state.settings.perPage));
+          App.state.pageImages = App.state.pagePages.map((page) => page.images);
           if (!layout || !layout.grid || layout.grid.cellW <= 0 || layout.grid.cellH <= 0) {
             App.state.canvases = [];
             return;
           }
 
-          const pages = this.chunkImages(images, Math.max(1, layout.perPage));
+          const pages = App.state.pagePages;
           const paper = this.getPaperSize();
           const s = App.state.settings;
           const load = this.estimateCanvasLoad(pages.length);
@@ -1692,10 +2084,8 @@
             return;
           }
 
-          for (const pageImages of pages) {
-            const grid = s.layoutMode === "grid"
-              ? this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages))
-              : this.optimizeGrid(pageImages.length, pageImages);
+          for (const page of pages) {
+            const { images: pageImages, grid } = page;
             const canvas = document.createElement("canvas");
             canvas.width = widthPx;
             canvas.height = heightPx;
@@ -1732,6 +2122,8 @@
           const images = App.state.images;
           if (!images.length) {
             App.state.canvases = [];
+            App.state.pageImages = [];
+            App.state.pagePages = [];
             App.state.lastLayout = null;
             return;
           }
@@ -1742,6 +2134,8 @@
           });
           const totalMegaPixels = crops.reduce((sum, crop) => sum + ((crop.output.width * crop.output.height) / 1000000), 0);
           const first = crops[0];
+          App.state.pageImages = [];
+          App.state.pagePages = [];
           App.state.recommendation = null;
           App.state.recommendationOptions = [];
           App.state.lastLayout = {
@@ -1929,6 +2323,7 @@
           }
           App.els.cropXValue.textContent = `${App.state.settings.cropX} %`;
           App.els.cropYValue.textContent = `${App.state.settings.cropY} %`;
+          this.updateOrderVisibility();
         },
 
         updatePrintPageStyle() {
@@ -1938,6 +2333,180 @@
           document.documentElement.style.setProperty("--print-page-w", `${paper.width}mm`);
           document.documentElement.style.setProperty("--print-page-h", `${paper.height}mm`);
           document.documentElement.dataset.orientation = orientation;
+        },
+
+        updateOrderVisibility() {
+          const canOrder = App.state.settings.outputMode === "print" && App.state.images.length > 1;
+          const canEdit = canOrder && App.state.settings.orderEditMode;
+
+          App.els.toggleOrderEdit.hidden = !canOrder;
+          App.els.toggleOrderEdit.textContent = App.state.settings.orderEditMode ? "Masquer le tri" : "Activer le tri";
+          App.els.toggleOrderEdit.classList.toggle("is-active", App.state.settings.orderEditMode);
+          App.els.toggleOrderEdit.setAttribute("aria-pressed", String(App.state.settings.orderEditMode));
+
+          if (!canOrder) {
+            App.state.selectedOrderIndex = null;
+            App.state.orderListOpen = false;
+            App.els.toggleOrderEdit.hidden = true;
+            App.els.toggleOrderList.hidden = true;
+            App.els.toggleOrderList.setAttribute("aria-expanded", "false");
+            App.els.orderListPanel.hidden = true;
+            return;
+          }
+
+          App.els.toggleOrderList.hidden = !canEdit;
+          App.els.toggleOrderList.setAttribute("aria-expanded", String(canEdit && App.state.orderListOpen));
+          if (!canEdit) {
+            App.state.orderListOpen = false;
+            App.els.orderListPanel.hidden = true;
+          } else {
+            App.els.orderListPanel.hidden = !App.state.orderListOpen;
+          }
+        },
+
+        createOrderChip(image, index) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "order-chip order-drag-source";
+          chip.draggable = true;
+          chip.dataset.imageIndex = String(index);
+          chip.dataset.orderTarget = "true";
+          chip.title = `Glisser pour échanger : ${image.name}`;
+          chip.setAttribute("aria-label", `Image ${index + 1} : ${image.name}`);
+
+          const thumb = document.createElement("span");
+          thumb.className = "order-chip-thumb";
+          thumb.style.backgroundImage = `url("${image.url}")`;
+
+          const badge = document.createElement("span");
+          badge.className = "order-chip-index";
+          badge.textContent = String(index + 1);
+
+          chip.append(thumb, badge);
+          return chip;
+        },
+
+        createPageSlot(page, pageIndex, slotIndex) {
+          const slot = document.createElement("button");
+          const image = page.images[slotIndex] || null;
+          const targetIndex = page.startIndex + slotIndex;
+          const isOccupied = Boolean(image);
+
+          slot.type = "button";
+          slot.className = `page-slot order-drag-source ${isOccupied ? "" : "is-empty"}`.trim();
+          slot.draggable = isOccupied;
+          slot.dataset.orderTarget = "true";
+          slot.dataset.pageIndex = String(pageIndex);
+          slot.dataset.slotIndex = String(slotIndex);
+          slot.dataset.targetIndex = String(targetIndex);
+          slot.dataset.imageIndex = String(targetIndex);
+          slot.dataset.occupied = String(isOccupied);
+
+          const top = document.createElement("div");
+          top.className = "page-slot-top";
+          const pageTag = document.createElement("span");
+          pageTag.className = "page-slot-tag";
+          pageTag.textContent = `P${pageIndex + 1} · ${slotIndex + 1}`;
+          top.appendChild(pageTag);
+
+          const bottom = document.createElement("div");
+          bottom.className = "page-slot-bottom";
+          const name = document.createElement("span");
+          name.className = "page-slot-name";
+          name.textContent = isOccupied ? image.name : "Case libre";
+          const hint = document.createElement("span");
+          hint.className = "page-slot-hint";
+          hint.textContent = isOccupied ? "Glisser" : "Déposer ici";
+          bottom.append(name, hint);
+
+          slot.append(top, bottom);
+          slot.title = isOccupied
+            ? `Image ${targetIndex + 1} : ${image.name}`
+            : `Case vide - page ${pageIndex + 1}, position ${slotIndex + 1}`;
+          slot.setAttribute("aria-label", slot.title);
+          if (App.state.selectedOrderIndex === targetIndex && isOccupied) slot.classList.add("is-selected");
+          return slot;
+        },
+
+        renderOrderList() {
+          const canOrder = App.state.settings.outputMode === "print" && App.state.images.length > 1 && App.state.settings.orderEditMode;
+          const panel = App.els.orderListPanel;
+          const list = App.els.orderList;
+          if (!canOrder) {
+            list.innerHTML = "";
+            panel.hidden = true;
+            return;
+          }
+
+          const pageLookup = new Map();
+          (App.state.pagePages || []).forEach((page, pageIndex) => {
+            page.images.forEach((image, slotIndex) => {
+              pageLookup.set(image.id, { page: pageIndex + 1, slot: slotIndex + 1 });
+            });
+          });
+
+          list.innerHTML = "";
+          App.state.images.forEach((image, index) => {
+            const row = document.createElement("article");
+            row.className = "order-row";
+            if (App.state.selectedOrderIndex === index) row.classList.add("is-selected");
+            row.dataset.imageIndex = String(index);
+            row.dataset.orderTarget = "true";
+            row.dataset.occupied = "true";
+
+            const thumb = document.createElement("span");
+            thumb.className = "order-thumb";
+            thumb.style.backgroundImage = `url("${image.url}")`;
+
+            const meta = document.createElement("div");
+            meta.className = "order-meta";
+            const title = document.createElement("strong");
+            title.textContent = `${index + 1}. ${image.name}`;
+            const place = pageLookup.get(image.id);
+            const sub = document.createElement("span");
+            sub.textContent = place
+              ? `Page ${place.page} · position ${place.slot}`
+              : "En attente de placement";
+            meta.append(title, sub);
+
+            const actions = document.createElement("div");
+            actions.className = "order-actions";
+
+            const drag = document.createElement("button");
+            drag.type = "button";
+            drag.className = "btn order-mini-btn order-drag-source";
+            drag.draggable = true;
+            drag.dataset.imageIndex = String(index);
+            drag.setAttribute("aria-label", `Glisser l'image ${index + 1}`);
+            drag.title = "Glisser";
+            drag.textContent = "↕";
+
+            const up = document.createElement("button");
+            up.type = "button";
+            up.className = "btn order-mini-btn";
+            up.dataset.imageIndex = String(index);
+            up.dataset.shift = "-1";
+            up.setAttribute("aria-label", `Monter l'image ${index + 1}`);
+            up.title = "Monter";
+            up.textContent = "▲";
+
+            const down = document.createElement("button");
+            down.type = "button";
+            down.className = "btn order-mini-btn";
+            down.dataset.imageIndex = String(index);
+            down.dataset.shift = "1";
+            down.setAttribute("aria-label", `Descendre l'image ${index + 1}`);
+            down.title = "Descendre";
+            down.textContent = "▼";
+
+            up.disabled = index === 0;
+            down.disabled = index === App.state.images.length - 1;
+            actions.append(drag, up, down);
+            row.append(thumb, meta, actions);
+            list.appendChild(row);
+          });
+
+          panel.hidden = !App.state.orderListOpen;
         },
 
         render() {
@@ -1950,6 +2519,8 @@
           } else {
             this.renderCanvases();
           }
+          this.updateOrderVisibility();
+          this.renderOrderList();
           this.renderStats();
           this.updateButtons();
         },
@@ -1989,18 +2560,48 @@
         renderCanvases() {
           const paper = App.model.getPaperSize();
           const previewWidth = paper.width >= paper.height ? 820 : 620;
+          const canEditOrder = App.state.settings.outputMode === "print" && App.state.images.length > 1 && App.state.settings.orderEditMode;
           App.els.preview.innerHTML = "";
           App.state.canvases.forEach((canvas, index) => {
+            const page = App.state.pagePages[index];
             const wrapper = document.createElement("section");
             wrapper.className = "page-wrapper";
+            if (canEditOrder) {
+              wrapper.classList.add("is-orderable");
+            }
             wrapper.dataset.page = `Page ${index + 1}`;
             wrapper.style.setProperty("--preview-width", `${previewWidth}px`);
             wrapper.style.setProperty("--print-page-w", `${paper.width}mm`);
             wrapper.style.setProperty("--print-page-h", `${paper.height}mm`);
-            wrapper.appendChild(canvas);
+
+            const visual = document.createElement("div");
+            visual.className = "page-visual";
+            visual.appendChild(canvas);
+
+            if (canEditOrder && page?.grid) {
+              const overlay = document.createElement("div");
+              overlay.className = "page-order-overlay";
+              overlay.style.setProperty("--overlay-cols", String(page.grid.cols));
+              overlay.style.setProperty("--overlay-rows", String(page.grid.rows));
+              const marginRatio = paper.width ? (App.state.settings.margin / paper.width) : 0;
+              const spacingRatio = paper.width ? (App.state.settings.spacing / paper.width) : 0;
+              overlay.style.setProperty("--overlay-margin", `${Math.max(0, Math.round(previewWidth * marginRatio))}px`);
+              overlay.style.setProperty("--overlay-gap", `${Math.max(0, Math.round(previewWidth * spacingRatio))}px`);
+
+              const slotCount = page.grid.cols * page.grid.rows;
+              for (let slotIndex = 0; slotIndex < slotCount; slotIndex += 1) {
+                overlay.appendChild(this.createPageSlot(page, index, slotIndex));
+              }
+
+              visual.appendChild(overlay);
+            }
+
+            wrapper.appendChild(visual);
             App.els.preview.appendChild(wrapper);
           });
-          App.els.previewNote.textContent = `${App.state.canvases.length} page(s) générée(s) pour ${App.state.images.length} image(s).`;
+          App.els.previewNote.textContent = canEditOrder
+            ? `${App.state.canvases.length} page(s) générée(s) pour ${App.state.images.length} image(s). Mode tri actif : glisse une case sur une autre, ou clique d'abord sur une image puis sur sa nouvelle place.`
+            : `${App.state.canvases.length} page(s) générée(s) pour ${App.state.images.length} image(s). Rendu réel affiché sans couche de tri.`;
         },
 
         renderCrops() {
@@ -2271,6 +2872,27 @@
           App.els.exportJpg.addEventListener("click", () => this.exportCanvases("jpeg"));
           App.els.exportJson.addEventListener("click", () => this.exportJson());
           App.els.importJson.addEventListener("click", () => App.els.jsonInput.click());
+          App.els.toggleOrderEdit.addEventListener("click", () => {
+            App.state.settings.orderEditMode = !App.state.settings.orderEditMode;
+            if (!App.state.settings.orderEditMode) {
+              App.state.orderListOpen = false;
+              this.clearOrderSelection();
+            }
+            App.store.save();
+            App.view.render();
+          });
+          App.els.toggleOrderList.addEventListener("click", () => {
+            App.state.orderListOpen = !App.state.orderListOpen;
+            App.view.updateOrderVisibility();
+            App.view.renderOrderList();
+            App.els.toggleOrderList.focus();
+          });
+          App.els.closeOrderList.addEventListener("click", () => {
+            App.state.orderListOpen = false;
+            App.view.updateOrderVisibility();
+            App.view.renderOrderList();
+            App.els.toggleOrderList.focus();
+          });
           App.els.suggestionActions.addEventListener("click", async (event) => {
             const button = event.target.closest("button[data-per-page]");
             if (!button) return;
@@ -2288,9 +2910,153 @@
           App.els.confirmModal.addEventListener("click", (event) => {
             if (event.target === App.els.confirmModal) App.view.closeConfirm(false);
           });
+          this.bindOrderSurface(App.els.preview);
+          this.bindOrderSurface(App.els.orderList);
           document.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && !App.els.confirmModal.hidden) App.view.closeConfirm(false);
           });
+        },
+
+        bindOrderSurface(container) {
+          const resolveTarget = (event) => event.target.closest("[data-order-target='true'][data-image-index]");
+          const clearDropTargets = () => {
+            container.querySelectorAll(".is-drop-target").forEach((el) => el.classList.remove("is-drop-target"));
+          };
+          const targetIsOccupied = (target) => target?.dataset.occupied === "true";
+          const isOrderEditingEnabled = () => App.state.settings.outputMode === "print" && App.state.images.length > 1 && App.state.settings.orderEditMode;
+
+          container.addEventListener("dragstart", (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const source = event.target.closest(".order-drag-source[data-image-index]");
+            if (!source || !container.contains(source)) return;
+            App.state.dragImageIndex = Number(source.dataset.imageIndex);
+            App.state.dragTargetIndex = null;
+            source.classList.add("is-dragging");
+            if (event.dataTransfer) {
+              event.dataTransfer.effectAllowed = "move";
+              event.dataTransfer.setData("text/plain", String(App.state.dragImageIndex));
+            }
+          });
+
+          container.addEventListener("dragover", (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const target = resolveTarget(event);
+            if (!target || !container.contains(target) || !App.state.images.length) return;
+            event.preventDefault();
+            if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+            clearDropTargets();
+            target.classList.add("is-drop-target");
+            App.state.dragTargetIndex = Number(target.dataset.imageIndex);
+          });
+
+          container.addEventListener("dragleave", (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const target = resolveTarget(event);
+            if (!target || !container.contains(target)) return;
+            if (event.relatedTarget && target.contains(event.relatedTarget)) return;
+            target.classList.remove("is-drop-target");
+          });
+
+          container.addEventListener("drop", async (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const target = resolveTarget(event);
+            if (!target || !container.contains(target)) return;
+            event.preventDefault();
+            const sourceIndex = Number.isFinite(App.state.dragImageIndex)
+              ? App.state.dragImageIndex
+              : Number(event.dataTransfer?.getData("text/plain"));
+            const targetIndex = Number(target.dataset.imageIndex);
+            clearDropTargets();
+            this.clearOrderDragState();
+            await this.reorderImageOrder(sourceIndex, targetIndex, targetIsOccupied(target));
+          });
+
+          container.addEventListener("dragend", () => {
+            if (!isOrderEditingEnabled()) return;
+            clearDropTargets();
+            this.clearOrderDragState();
+          });
+
+          container.addEventListener("click", async (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const shiftButton = event.target.closest("button[data-shift][data-image-index]");
+            if (!shiftButton || !container.contains(shiftButton)) return;
+            const index = Number(shiftButton.dataset.imageIndex);
+            const shift = Number(shiftButton.dataset.shift);
+            await this.reorderImageOrder(index, index + shift, true);
+          });
+
+          container.addEventListener("click", async (event) => {
+            if (!isOrderEditingEnabled()) return;
+            const target = resolveTarget(event);
+            if (!target || !container.contains(target)) return;
+            if (event.target.closest("button[data-shift]")) return;
+            if (event.target.closest("button[data-per-page]")) return;
+            const index = Number(target.dataset.imageIndex);
+            const occupied = targetIsOccupied(target);
+            if (!Number.isInteger(index)) return;
+
+            if (App.state.selectedOrderIndex === null) {
+              if (!occupied) return;
+              App.state.selectedOrderIndex = index;
+              this.renderOrderSelection();
+              App.view.showMessage("Image sélectionnée. Choisis maintenant une autre case.");
+              return;
+            }
+
+            if (App.state.selectedOrderIndex === index) {
+              this.clearOrderSelection();
+              return;
+            }
+
+            const sourceIndex = App.state.selectedOrderIndex;
+            this.clearOrderSelection();
+            await this.reorderImageOrder(sourceIndex, index, occupied);
+          });
+        },
+
+        clearOrderDragState() {
+          App.state.dragImageIndex = null;
+          App.state.dragTargetIndex = null;
+          document.querySelectorAll(".is-dragging").forEach((el) => el.classList.remove("is-dragging"));
+        },
+
+        clearOrderSelection() {
+          App.state.selectedOrderIndex = null;
+          this.renderOrderSelection();
+        },
+
+        renderOrderSelection() {
+          App.view.renderOrderList();
+          App.view.renderCanvases();
+        },
+
+        async reorderImageOrder(fromIndex, toIndex, targetOccupied) {
+          if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return;
+          if (fromIndex === toIndex) return;
+          if (fromIndex < 0 || toIndex < 0) return;
+          if (fromIndex >= App.state.images.length || toIndex > App.state.images.length) return;
+
+          const images = App.state.images;
+          if (targetOccupied) {
+            if (toIndex >= images.length) return;
+            [images[fromIndex], images[toIndex]] = [images[toIndex], images[fromIndex]];
+          } else {
+            const [moved] = images.splice(fromIndex, 1);
+            const insertAt = fromIndex < toIndex ? Math.max(0, toIndex - 1) : toIndex;
+            images.splice(Math.max(0, Math.min(insertAt, images.length)), 0, moved);
+          }
+          App.state.selectedOrderIndex = null;
+          App.state.pageImages = App.model.chunkImages(images, Math.max(1, App.state.lastLayout?.perPage || App.state.settings.perPage));
+          App.state.pagePages = App.model.buildPagePages(images, Math.max(1, App.state.lastLayout?.perPage || App.state.settings.perPage));
+          App.view.renderOrderList();
+          await this.regenerate();
+        },
+
+        async shiftImageOrder(index, shift) {
+          const target = index + shift;
+          if (target < 0 || target >= App.state.images.length) return;
+          await this.reorderImageOrder(index, target, true);
         },
 
         scheduleFormUpdate(delay = 280) {
@@ -2377,7 +3143,11 @@
           App.state.images.forEach((image) => URL.revokeObjectURL(image.url));
           App.state.images = [];
           App.state.canvases = [];
+          App.state.pageImages = [];
           App.state.lastLayout = null;
+          App.state.orderListOpen = false;
+          App.state.selectedOrderIndex = null;
+          App.view.updateOrderVisibility();
           App.view.render();
           App.view.showMessage(App.i18n.imagesCleared);
         },
