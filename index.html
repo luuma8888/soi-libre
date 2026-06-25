@@ -58,8 +58,54 @@
 
         /* Grille large */
         .grid {
+            display: flex;
+            flex-direction: column;
+            gap: 54px;
+        }
+
+        .app-group {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .group-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 20px 22px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(244, 241, 250, 0.95), rgba(255, 248, 241, 0.96));
+            border: 1px solid rgba(142, 125, 196, 0.12);
+            box-shadow: 0 8px 24px rgba(142, 125, 196, 0.05);
+        }
+
+        .group-kicker {
+            margin: 0;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        .group-title {
+            margin: 0;
+            font-size: 1.35rem;
+            line-height: 1.25;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .group-description {
+            margin: 0;
+            color: var(--text-light);
+            font-size: 0.96rem;
+        }
+
+        .group-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Cartes plus larges */
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
             gap: 40px;
             align-items: start;
         }
@@ -484,7 +530,17 @@
 
         /* Mobile */
         @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
+            .grid {
+                gap: 36px;
+            }
+            .group-grid { grid-template-columns: 1fr; }
+            .group-heading {
+                padding: 18px 16px;
+                border-radius: 18px;
+            }
+            .group-title {
+                font-size: 1.12rem;
+            }
             .card {
                 display: grid;
                 grid-template-columns: 92px minmax(0, 1fr);
@@ -559,7 +615,7 @@
     <header>
         <div class="header-logo">✦</div>
         <h1>Soi-Libre</h1>
-        <p class="subtitle">L'archipel des outils souverains pour l'exploration intérieure.</p>
+        <p class="subtitle">L'archipel des outils souverains pour l'exploration intérieure et la créativité.</p>
         
         <div class="manifesto">
             <p>
@@ -575,7 +631,13 @@
     </header>
 
     <main class="grid">
-        
+        <section class="app-group">
+            <div class="group-heading">
+                <p class="group-kicker">Exploration intérieure</p>
+                <h2 class="group-title">Applications pour se connaître, se recentrer et traverser avec douceur</h2>
+                <p class="group-description">Les outils placés ici accompagnent l’écoute de soi, la stabilisation et les éclairages personnels.</p>
+            </div>
+            <div class="group-grid">
         <article class="card card-theme-introspection">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez avancer avec douceur dans votre chemin intérieur.</span>
@@ -810,6 +872,16 @@
             </div>
         </article>
 
+        </div>
+        </section>
+
+        <section class="app-group">
+            <div class="group-heading">
+                <p class="group-kicker">Créativité</p>
+                <h2 class="group-title">Applications pour créer, composer, organiser et produire</h2>
+                <p class="group-description">Ces outils soutiennent les ateliers, les dossiers, les supports et les projets à façonner.</p>
+            </div>
+            <div class="group-grid">
         <article class="card compact-card card-theme-creation">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez transformer une idée scénique en dossier jouable.</span>
@@ -999,6 +1071,9 @@
                 </div>
             </div>
         </article>
+
+        </div>
+        </section>
 
     </main>
 
