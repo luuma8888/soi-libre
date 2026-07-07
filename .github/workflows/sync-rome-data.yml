@@ -1,0 +1,32 @@
+name: Sync ROME data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 1 * *"
+
+jobs:
+  sync-rome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node scripts/sync-france-travail-rome.mjs
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_SCOPE: ${{ vars.FT_SCOPE }}
+          FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
+          FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
+          FT_ROME_COMPETENCES_URL: ${{ vars.FT_ROME_COMPETENCES_URL }}
+          FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
+          FT_ROME_FICHES_METIERS_URL: ${{ vars.FT_ROME_FICHES_METIERS_URL }}
+      - name: Commit generated data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/generated
+          git commit -m "Update generated ROME data" || echo "No changes"
+          git push
