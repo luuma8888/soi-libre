@@ -10,10 +10,24 @@ Le chemin recommande est :
 
 1. Creer une application dans l'espace France Travail IO.
 2. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub du depot.
-3. Ajouter les URLs et scopes valides en variables GitHub Actions si necessaire.
+3. Ajouter `FT_TOKEN_URL` et `FT_ROME_FICHES_METIERS_URL` dans les variables GitHub Actions.
 4. Lancer le workflow `Sync ROME data` manuellement.
 5. Verifier les fichiers generes dans `data/generated/`.
 6. Depuis Boussole Pro, ouvrir Donnees puis charger les donnees generees.
+
+La premiere voie automatisee utilise le scope valide :
+
+```text
+nomenclatureRome api_rome-fiches-metiersv1
+```
+
+Elle recupere quelques fiches ROME de test, par defaut :
+
+```text
+M1607, M1805, K1303, A1203
+```
+
+Le navigateur ne doit pas appeler l'OAuth France Travail comme chemin principal. Le formulaire API manuel de Boussole Pro reste un diagnostic avance, utile pour comprendre une configuration, mais le flux fiable pour GitHub Pages passe par GitHub Actions ou par un proxy securise.
 
 ## Secrets GitHub
 
@@ -27,11 +41,9 @@ Secrets requis :
 Variables possibles :
 
 - `FT_TOKEN_URL`
-- `FT_SCOPE`
-- `FT_ROME_METIERS_URL`
-- `FT_ROME_COMPETENCES_URL`
-- `FT_ROME_CONTEXTES_URL`
 - `FT_ROME_FICHES_METIERS_URL`
+- `FT_ROME_TEST_CODES`
+- `FT_RATE_LIMIT_MS`
 
 Les URLs et scopes doivent etre verifies dans la documentation France Travail IO active.
 

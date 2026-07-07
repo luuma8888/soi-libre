@@ -1,41 +1,51 @@
 export function normalizeRomeMetier(raw = {}) {
-  const id = raw.id || raw.code || raw.romeCode || raw.codeRome || raw.appellationCode || "";
-  const romeCode = raw.romeCode || raw.codeRome || raw.code || "";
-  const title = raw.title || raw.libelle || raw.intitule || raw.nom || "Metier ROME sans titre";
+  const source = unwrapFiche(raw);
+  const romeCode = firstText(source.romeCode, source.codeRome, source.code, raw.romeCode, raw.codeRome, raw.code);
+  const title = firstText(source.title, source.libelle, source.intitule, source.nom, source.appellation, source.metier?.libelle, "Metier ROME sans titre");
+  const appellations = collectLabels(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules);
+  const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques);
+  const requiredSkillLabels = collectLabels(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"]);
+  const softSkillLabels = collectLabels(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"]);
+  const knowledgeLabels = collectLabels(source.knowledge, source.savoirs, source.connaissances);
+  const contextLabels = collectLabels(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail);
+  const missingFields = [];
+  if (!requiredSkillLabels.length) missingFields.push("requiredSkills");
+  if (!contextLabels.length) missingFields.push("workContexts");
+  if (!activities.length) missingFields.push("activities");
   return {
     id: `rome-${romeCode || slug(title)}`,
     schemaVersion: "1.0.0",
     romeCode,
     title,
-    appellations: toArray(raw.appellations || raw.appellationsMetier || raw.libelles).map(String),
-    domain: raw.domain || raw.domaine || raw.grandDomaine || "ROME",
-    family: raw.family || raw.famille || raw.domaineProfessionnel || "ROME",
-    description: raw.description || raw.resume || raw.definition || "Description a verifier dans les donnees ROME.",
-    activities: toArray(raw.activities || raw.activites || raw.activitesPrincipales),
-    accessConditions: { text: raw.accessConditions || raw.conditionsAcces || "A verifier.", source: "france_travail_rome", confidence: 0.7 },
-    requiredSkills: toArray(raw.requiredSkills || raw.competences || raw.skills).map(toStableSkillId),
-    optionalSkills: toArray(raw.optionalSkills),
-    softSkills: toArray(raw.softSkills),
-    knowledge: toArray(raw.knowledge || raw.savoirs),
-    workContexts: toArray(raw.workContexts || raw.contextesTravail).map(toStableContextId),
-    physicalConstraints: raw.physicalConstraints || { level: "unknown", tags: [], source: "rome_api", confidence: 0.5 },
-    scheduleConstraints: raw.scheduleConstraints || { nightWork: "unknown", weekendWork: "unknown", irregularHours: "unknown", source: "rome_api", confidence: 0.5 },
-    mobilityConstraints: raw.mobilityConstraints || { travelFrequency: "unknown", driverLicenseRequired: false, driverLicenseTypes: [], source: "rome_api", confidence: 0.5 },
-    publicContactLevel: raw.publicContactLevel || "unknown",
-    autonomyLevel: raw.autonomyLevel || "unknown",
-    remoteCompatibility: raw.remoteCompatibility || "unknown",
-    requiredDiplomaLevel: raw.requiredDiplomaLevel ?? null,
-    recommendedDiplomaLevel: raw.recommendedDiplomaLevel ?? null,
-    requiredCertifications: toArray(raw.requiredCertifications),
-    recommendedCertifications: toArray(raw.recommendedCertifications),
-    relatedJobs: toArray(raw.relatedJobs),
-    transitionTags: toArray(raw.transitionTags || raw.tags),
-    interestTags: toArray(raw.interestTags),
-    valueTags: toArray(raw.valueTags),
-    marketIndicators: toArray(raw.marketIndicators),
+    appellations,
+    domain: firstText(source.domain, source.domaine, source.grandDomaine, "ROME / France Travail"),
+    family: firstText(source.family, source.famille, source.domaineProfessionnel, "ROME"),
+    description: firstText(source.description, source.resume, source.definition, source.presentation, "Description a verifier dans les donnees ROME."),
+    activities,
+    accessConditions: { text: firstText(source.accessConditions, source.conditionsAcces, source.accesEmploiMetier, source.accesMetier, "A verifier."), source: "france_travail_rome", confidence: 0.7 },
+    requiredSkills: requiredSkillLabels.map(toStableSkillId),
+    optionalSkills: collectLabels(source.optionalSkills, source.competencesSpecifiques).map(toStableSkillId),
+    softSkills: softSkillLabels,
+    knowledge: knowledgeLabels,
+    workContexts: contextLabels.map(toStableContextId),
+    physicalConstraints: source.physicalConstraints || { level: "unknown", tags: [], source: "rome_api", confidence: 0.5 },
+    scheduleConstraints: source.scheduleConstraints || { nightWork: "unknown", weekendWork: "unknown", irregularHours: "unknown", source: "rome_api", confidence: 0.5 },
+    mobilityConstraints: source.mobilityConstraints || { travelFrequency: "unknown", driverLicenseRequired: false, driverLicenseTypes: [], source: "rome_api", confidence: 0.5 },
+    publicContactLevel: source.publicContactLevel || "unknown",
+    autonomyLevel: source.autonomyLevel || "unknown",
+    remoteCompatibility: source.remoteCompatibility || "unknown",
+    requiredDiplomaLevel: source.requiredDiplomaLevel ?? null,
+    recommendedDiplomaLevel: source.recommendedDiplomaLevel ?? null,
+    requiredCertifications: collectLabels(source.requiredCertifications, source.certificationsObligatoires),
+    recommendedCertifications: collectLabels(source.recommendedCertifications, source.certificationsRecommandees),
+    relatedJobs: collectLabels(source.relatedJobs, source.metiersProches),
+    transitionTags: collectLabels(source.transitionTags, source.tags, source.centresInteret),
+    interestTags: collectLabels(source.interestTags),
+    valueTags: collectLabels(source.valueTags),
+    marketIndicators: toArray(source.marketIndicators),
     sourceRefs: ["france_travail_rome_generated"],
-    dataQuality: { status: "generated_to_verify", warnings: ["mapping_to_verify"], confidence: 0.65 },
-    missingFields: [],
+    dataQuality: { status: "generated_to_verify", warnings: ["mapping_to_verify", ...missingFields.map(field => `missing_${field}`)], confidence: 0.65 },
+    missingFields,
     source: "france_travail_rome",
     provenance: "generated_rome",
     confidence: 0.65
@@ -107,6 +117,45 @@ export function mergeRomeDatasets(parts = {}) {
       notes: "Normalisation technique sans secret expose dans le front-end."
     }]
   };
+}
+
+function unwrapFiche(raw = {}) {
+  if (Array.isArray(raw)) return raw[0] || {};
+  return raw.ficheMetier || raw.fiche || raw.resultat || raw.metier || raw.data || raw;
+}
+
+function firstText(...values) {
+  for (const value of values) {
+    if (value === undefined || value === null || value === "") continue;
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (typeof value === "object") {
+      const nested = firstText(value.libelle, value.intitule, value.label, value.title, value.nom, value.texte, value.description);
+      if (nested) return nested;
+    }
+  }
+  return "";
+}
+
+function collectLabels(...values) {
+  const labels = [];
+  const visit = value => {
+    if (value === undefined || value === null || value === "") return;
+    if (typeof value === "string" || typeof value === "number") {
+      labels.push(String(value));
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (typeof value === "object") {
+      const label = firstText(value.libelle, value.intitule, value.label, value.title, value.nom, value.texte);
+      if (label) labels.push(label);
+      Object.values(value).filter(Array.isArray).forEach(visit);
+    }
+  };
+  values.forEach(visit);
+  return [...new Set(labels.map(item => item.trim()).filter(Boolean))];
 }
 
 function toStableSkillId(value) {

@@ -3190,14 +3190,14 @@ function renderApiManualTestPanel() {
   const status = App.state.apiTest || {};
   return `
     <section class="results-section print-section">
-      <h2>API France Travail</h2>
+      <h2>Diagnostic API France Travail</h2>
       <div class="api-box">
         <p><strong>Statut :</strong> ${h(status.status || "non testé")}</p>
         <p>${h(status.message || "Ce mode sert seulement aux tests avancés.")}</p>
       </div>
       <details class="advanced-box no-print" style="margin-top:12px">
         <summary>Test API France Travail — avancé</summary>
-        <p class="field-help">Ce mode sert à tester manuellement l’accès API. Il n’est pas nécessaire pour utiliser Boussole Pro. Ne saisis pas de clé sur un ordinateur public.</p>
+        <p class="field-help">Ce diagnostic sert à tester manuellement l’accès API. Le flux recommandé reste GitHub Actions ou un proxy sécurisé. Ne saisis pas de clé sur un ordinateur public.</p>
         <p class="field-help">À compléter selon la documentation France Travail IO de votre application. Si un Client Secret a été partagé dans un outil externe, une conversation ou un dépôt, il est recommandé de le régénérer dans France Travail IO avant usage durable.</p>
         <div class="form-grid">
           ${apiInput("Client ID", "clientId", "password")}

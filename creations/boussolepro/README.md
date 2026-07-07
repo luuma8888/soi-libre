@@ -35,12 +35,10 @@ L’application tente alors de lire :
 ```text
 data/generated/import-manifest.rome.json
 data/generated/jobs.rome.json
-data/generated/skills.rome.json
-data/generated/work-contexts.rome.json
-data/generated/job-appellations.rome.json
-data/generated/mappings.rome.json
 data/generated/data-quality-report.rome.json
 ```
+
+Les fichiers `skills.rome.json`, `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` peuvent aussi exister, mais la première voie GitHub Actions se concentre sur les fiches métiers ROME.
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
@@ -61,11 +59,11 @@ L’API France Travail / ROME n’est pas obligatoire. La version v0.2.alpha ajo
 
 Les chemins prévus sont :
 
-- synchronisation par GitHub Actions avec secrets GitHub ;
+- synchronisation par GitHub Actions avec secrets GitHub, scope `nomenclatureRome api_rome-fiches-metiersv1` et fiches de test `M1607`, `M1805`, `K1303`, `A1203` ;
 - proxy serverless sécurisé ;
 - import manuel JSON généré ailleurs.
 
-Le panneau de test API manuel est avancé, replié par défaut, et ne stocke pas de secret en localStorage.
+Le panneau de test API manuel est avancé, replié par défaut, et ne stocke pas de secret en localStorage. Il sert seulement de diagnostic : l’application ne doit pas dépendre d’un appel OAuth navigateur depuis GitHub Pages.
 
 ## Cohérence profil / moteur
 
@@ -89,7 +87,7 @@ GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. L
 ## Déploiement GitHub Pages
 
 1. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub Actions.
-2. Configurer `FT_TOKEN_URL`, `FT_SCOPE` et les URLs ROME en variables Actions après vérification dans France Travail IO.
+2. Configurer `FT_TOKEN_URL` et `FT_ROME_FICHES_METIERS_URL` en variables Actions après vérification dans France Travail IO.
 3. Lancer le workflow `Sync ROME data`.
 4. Vérifier les fichiers `data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
