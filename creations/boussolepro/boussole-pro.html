@@ -203,6 +203,18 @@ h1 {
   background: var(--lavender);
 }
 
+.nav-button.nav-secondary {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  opacity: 0.78;
+}
+
+.nav-button.nav-action {
+  border-color: var(--opal-strong);
+  background: var(--opal);
+}
+
 .header-actions,
 .button-row,
 .inline-actions {
@@ -1107,7 +1119,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.1.alpha",
+  version: "v0.2.alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1139,12 +1151,65 @@ const I18N = {
 };
 
 const MAIN_VIEWS = [
-  { id: "home", label: "Accueil" },
-  { id: "boussole", label: "Ma Boussole" },
-  { id: "results", label: "Résultats" },
-  { id: "data", label: "Données" },
-  { id: "settings", label: "Paramètres" }
+  { id: "home", label: "Accueil", role: "main" },
+  { id: "boussole", label: "Ma Boussole", role: "main" },
+  { id: "results", label: "Résultats", role: "main" },
+  { id: "save", label: "Sauvegarder votre boussole", role: "action" },
+  { id: "settings", label: "Paramètres", role: "secondary" },
+  { id: "data", label: "Données", role: "secondary" }
 ];
+
+const DATASET_TYPES = {
+  canonical: "canonical_clairmetier",
+  romeMetiers: "rome_metiers",
+  romeCompetences: "rome_competences",
+  romeContextes: "rome_contextes",
+  romeFichesMetiers: "rome_fiches_metiers",
+  onisepMetiers: "onisep_metiers",
+  onisepFormations: "onisep_formations",
+  rncp: "rncp_rs",
+  certifInfo: "certif_info",
+  mixedOfficial: "mixed_official"
+};
+
+const DEFAULT_FRANCE_TRAVAIL_API_CONFIG = {
+  clientId: "",
+  clientSecret: "",
+  tokenUrl: "",
+  scopes: "",
+  endpoints: {
+    metiers: "",
+    competences: "",
+    contextes: "",
+    fichesMetiers: ""
+  },
+  maxItems: 20,
+  mode: "test_1_fiche",
+  rateLimitMs: 1100
+};
+
+const PROFILE_FIELD_IMPACT_MAP = {
+  ageRange: ["trainingSuggestions", "accessibilityNotes"],
+  searchHorizon: ["accessibilityScore", "trainingStatus"],
+  diplomaLevel: ["trainingScore", "feasibilityStatus"],
+  trainingOpenness: ["trainingScore", "feasibilityStatus"],
+  trainingBudget: ["trainingWarnings"],
+  driverLicenses: ["mobilityScore", "hardExclusions"],
+  mobilityRadius: ["mobilityScore", "contextScore"],
+  constraints: ["hardExclusions", "constraintScore"],
+  skillTests: ["skillScore"],
+  directSkills: ["skillScore"],
+  experienceDomains: ["skillBonus", "transitionBonus"],
+  interests: ["interestScore", "diversification"],
+  values: ["valueScore"],
+  preferredWorkStyles: ["contextScore"],
+  preferredEnvironments: ["contextScore"],
+  excludedDomains: ["hardExclusions"],
+  preferredSchedule: ["constraintScore", "contextScore"],
+  needForSecurity: ["valueScore", "marketInterpretation"],
+  needForAutonomy: ["valueScore", "contextScore"],
+  needForMeaning: ["valueScore"]
+};
 
 const BOUSSOLE_STEPS = [
   { title: "Situation", hint: "Âge, disponibilité, horizon" },
@@ -1344,7 +1409,14 @@ const App = {
     saveTimer: null,
     lastSavedAt: null,
     generatedDataStatus: "non configuré",
-    generatedDataMessage: "Aucune synchronisation ROME générée n’a encore été chargée."
+    generatedDataMessage: "Aucune synchronisation ROME générée n’a encore été chargée.",
+    apiTest: {
+      status: "non testé",
+      message: "Le test API manuel est facultatif.",
+      tokenInfo: null,
+      accessToken: "",
+      responses: {}
+    }
   },
   apiConnectorConfig: {
     schemaVersion: CONFIG.schemaVersion,
@@ -1712,7 +1784,7 @@ function loadSampleData() {
     {
       id: "sample_non_official",
       schemaVersion: CONFIG.schemaVersion,
-      name: "Corpus sample Boussole Pro v0.1.alpha",
+      name: "Corpus sample Boussole Pro v0.2.alpha",
       producer: "Lu'uma / exemple local",
       url: null,
       license: "Exemple local non officiel, a remplacer avant usage reel",
@@ -1729,8 +1801,8 @@ function loadSampleData() {
 
   const dataset = {
     schemaVersion: CONFIG.schemaVersion,
-    datasetName: "Boussole Pro - corpus sample v0.1.alpha",
-    datasetVersion: "v0.1.alpha-sample",
+    datasetName: "Boussole Pro - corpus sample v0.2.alpha",
+    datasetVersion: "v0.2.alpha-sample",
     sourceDate: "2026-07-07",
     importedAt,
     provenance: "sample",
@@ -1747,9 +1819,9 @@ function loadSampleData() {
     mappings,
     manifest: {
       schemaVersion: CONFIG.schemaVersion,
-      id: "manifest-boussole-pro-sample-v0-1-alpha",
-      datasetName: "Boussole Pro - corpus sample v0.1.alpha",
-      datasetVersion: "v0.1.alpha-sample",
+      id: "manifest-boussole-pro-sample-v0-2-alpha",
+      datasetName: "Boussole Pro - corpus sample v0.2.alpha",
+      datasetVersion: "v0.2.alpha-sample",
       sourceDate: "2026-07-07",
       importedAt,
       provenance: "sample",
@@ -1878,6 +1950,14 @@ function exportResults(format = "json") {
   showToast("Resultats exportes en JSON.");
 }
 
+function exportResultsMarkdown() {
+  exportResults("markdown");
+}
+
+function handleSaveBoussole() {
+  exportProfile();
+}
+
 function importDatasetFile(file, forcedType = App.state.pendingImportType || "corpus") {
   if (!file) return;
   readFileAsText(file)
@@ -1949,8 +2029,39 @@ function validateDataset(data, type = "corpus") {
       const rows = Array.isArray(data) ? data : data.trainings;
       if (!Array.isArray(rows)) errors.push("Le fichier formations doit contenir un tableau.");
       normalized.trainings = (rows || []).map(normalizeTraining);
+    } else if (detectedType === DATASET_TYPES.romeMetiers || detectedType === DATASET_TYPES.romeFichesMetiers) {
+      const rows = getDatasetRows(data, ["jobs", "metiers", "fichesMetiers"]);
+      if (!rows.length) errors.push("Le fichier ROME métiers ne contient aucun tableau exploitable.");
+      normalized = mergeOfficialDatasetParts({ jobs: rows.map(detectedType === DATASET_TYPES.romeFichesMetiers ? normalizeRomeApiFicheMetier : normalizeRomeApiJob) });
+      normalized.provenance = "official_rome_file";
+    } else if (detectedType === DATASET_TYPES.romeCompetences) {
+      const rows = getDatasetRows(data, ["skills", "competences"]);
+      if (!rows.length) errors.push("Le fichier ROME compétences ne contient aucun tableau exploitable.");
+      normalized = mergeOfficialDatasetParts({ skills: rows.map(normalizeRomeApiSkill) });
+      normalized.provenance = "official_rome_file";
+    } else if (detectedType === DATASET_TYPES.romeContextes) {
+      const rows = getDatasetRows(data, ["workContexts", "contextes", "contextesTravail"]);
+      if (!rows.length) errors.push("Le fichier ROME contextes ne contient aucun tableau exploitable.");
+      normalized = mergeOfficialDatasetParts({ workContexts: rows.map(normalizeRomeApiContext) });
+      normalized.provenance = "official_rome_file";
+    } else if (detectedType === DATASET_TYPES.onisepMetiers) {
+      const rows = getDatasetRows(data, ["jobs", "metiers"]);
+      normalized = mergeOfficialDatasetParts({ jobs: rows.map(normalizeOnisepJob) });
+      normalized.provenance = "onisep_import";
+    } else if (detectedType === DATASET_TYPES.onisepFormations) {
+      const rows = getDatasetRows(data, ["trainings", "formations"]);
+      normalized = mergeOfficialDatasetParts({ trainings: rows.map(normalizeOnisepTraining) });
+      normalized.provenance = "onisep_import";
+    } else if (detectedType === DATASET_TYPES.rncp) {
+      const rows = getDatasetRows(data, ["certifications", "rncp", "rs"]);
+      normalized = mergeOfficialDatasetParts({ certifications: rows.map(normalizeRncpCertification) });
+      normalized.provenance = "rncp_rs";
+    } else if (detectedType === DATASET_TYPES.certifInfo) {
+      const rows = getDatasetRows(data, ["certifications", "certifInfo"]);
+      normalized = mergeOfficialDatasetParts({ certifications: rows.map(normalizeCertifInfo) });
+      normalized.provenance = "certif_info";
     } else {
-      errors.push("Type de dataset non reconnu pour cette V0.");
+      errors.push("Type de dataset non reconnu pour cette version.");
     }
   } catch (error) {
     errors.push("Erreur pendant la normalisation du dataset.");
@@ -2126,6 +2237,161 @@ function normalizeTraining(raw) {
   };
 }
 
+function normalizeRomeApiJob(raw) {
+  return normalizeJob({
+    id: raw.id || raw.code || raw.romeCode || raw.codeRome || `rome-${slug(raw.libelle || raw.title || cryptoRandom())}`,
+    romeCode: raw.romeCode || raw.codeRome || raw.code || "",
+    title: raw.title || raw.libelle || raw.intitule || raw.nom,
+    appellations: raw.appellations || raw.appellationsMetier || raw.libelles || [],
+    domain: raw.domain || raw.domaine || raw.grandDomaine || "ROME / France Travail",
+    family: raw.family || raw.famille || raw.domaineProfessionnel || "ROME",
+    description: raw.description || raw.resume || raw.definition || "Description issue d’une réponse API à vérifier.",
+    activities: raw.activities || raw.activites || raw.activitesPrincipales || [],
+    requiredSkills: toArray(raw.requiredSkills || raw.competences || raw.skills).map(item => typeof item === "string" ? `skill-rome-${slug(item)}` : `skill-rome-${slug(item.libelle || item.code || item.id)}`),
+    workContexts: toArray(raw.workContexts || raw.contextesTravail).map(item => typeof item === "string" ? `ctx-rome-${slug(item)}` : `ctx-rome-${slug(item.libelle || item.code || item.id)}`),
+    sourceRefs: ["france_travail_rome_manual_test"],
+    provenance: "api_rome_manual",
+    source: "france_travail_rome",
+    confidence: 0.62,
+    missingFields: []
+  });
+}
+
+function normalizeRomeApiSkill(raw) {
+  return normalizeSkill({
+    id: raw.id || raw.code || `skill-rome-${slug(raw.label || raw.libelle || raw.intitule || cryptoRandom())}`,
+    label: raw.label || raw.libelle || raw.intitule || raw.nom || "Compétence ROME",
+    type: raw.type || raw.categorie || "savoir-faire",
+    category: raw.category || raw.famille || "rome",
+    source: "france_travail_rome",
+    provenance: "api_rome_manual",
+    confidence: 0.62
+  });
+}
+
+function normalizeRomeApiContext(raw) {
+  const label = raw.label || raw.libelle || raw.intitule || raw.nom || "Contexte ROME";
+  return {
+    id: raw.id || raw.code || `ctx-rome-${slug(label)}`,
+    schemaVersion: CONFIG.schemaVersion,
+    label: frText(label),
+    category: raw.category || raw.type || "rome",
+    constraintTags: toArray(raw.constraintTags || raw.tags),
+    description: raw.description || "Contexte issu d’une réponse API à vérifier.",
+    source: "france_travail_rome",
+    provenance: "api_rome_manual",
+    confidence: 0.62
+  };
+}
+
+function normalizeRomeApiFicheMetier(raw) {
+  return normalizeRomeApiJob(raw);
+}
+
+function normalizeRomeMetier(raw) {
+  return normalizeRomeApiJob(raw);
+}
+
+function normalizeRomeCompetence(raw) {
+  return normalizeRomeApiSkill(raw);
+}
+
+function normalizeRomeContexte(raw) {
+  return normalizeRomeApiContext(raw);
+}
+
+function normalizeRomeFicheMetier(raw) {
+  return normalizeRomeApiFicheMetier(raw);
+}
+
+function normalizeOnisepJob(raw) {
+  return normalizeJob({
+    id: raw.id || raw.slug || `onisep-${slug(raw.title || raw.libelle || cryptoRandom())}`,
+    romeCode: raw.romeCode || raw.codeRome || "",
+    title: raw.title || raw.libelle || raw.nom,
+    appellations: raw.appellations || [],
+    domain: raw.domain || raw.secteur || "Onisep",
+    family: raw.family || raw.famille || "Onisep",
+    description: raw.description || raw.resume,
+    sourceRefs: ["onisep_import"],
+    provenance: "onisep_import",
+    source: "onisep",
+    confidence: 0.65
+  });
+}
+
+function normalizeOnisepTraining(raw) {
+  return normalizeTraining({
+    id: raw.id || raw.slug || `onisep-training-${slug(raw.title || raw.libelle || cryptoRandom())}`,
+    title: raw.title || raw.libelle || raw.nom,
+    trainingType: raw.trainingType || raw.type || "onisep",
+    durationMonths: raw.durationMonths || raw.dureeMois || null,
+    levelTarget: raw.levelTarget || raw.niveauSortie || null,
+    certificationId: raw.certificationId || null,
+    targetJobIds: raw.targetJobIds || [],
+    targetRomeCodes: raw.targetRomeCodes || raw.codesRome || [],
+    officialUrl: raw.officialUrl || raw.url || "",
+    source: "onisep",
+    provenance: "onisep_import",
+    confidence: 0.65,
+    notes: raw.notes || "Formation Onisep importée, correspondances à vérifier."
+  });
+}
+
+function normalizeOnisepMetier(raw) {
+  return normalizeOnisepJob(raw);
+}
+
+function normalizeOnisepFormation(raw) {
+  return normalizeOnisepTraining(raw);
+}
+
+function normalizeRncpCertification(raw) {
+  return {
+    id: raw.id || raw.rncpCode || raw.rsCode || `cert-${slug(raw.title || raw.libelle || cryptoRandom())}`,
+    schemaVersion: CONFIG.schemaVersion,
+    certificationType: raw.certificationType || (raw.rncpCode ? "RNCP" : "RS"),
+    title: frText(raw.title || raw.libelle || raw.intitule || "Certification"),
+    level: numberOrNull(raw.level || raw.niveau),
+    status: raw.status || "imported",
+    targetJobIds: toArray(raw.targetJobIds),
+    targetRomeCodes: toArray(raw.targetRomeCodes || raw.codesRome),
+    vaePossible: Boolean(raw.vaePossible),
+    issuer: raw.issuer || raw.certificateur || "",
+    source: raw.source || "rncp_rs",
+    provenance: raw.provenance || "rncp_rs",
+    confidence: 0.65
+  };
+}
+
+function normalizeCertifInfo(raw) {
+  return normalizeRncpCertification({ ...raw, certificationType: raw.certificationType || "Certif Info", source: "certif_info", provenance: "certif_info" });
+}
+
+function mergeOfficialDatasetParts(parts = {}) {
+  const current = App.state.dataset || loadSampleData();
+  const merged = {
+    ...current,
+    datasetName: "Boussole Pro - corpus officiel / importé",
+    datasetVersion: `official-import-${dateStamp()}`,
+    importedAt: new Date().toISOString(),
+    provenance: "mixed_official",
+    jobs: uniqueBy([...(parts.jobs || []), ...(current.jobs || [])], "id"),
+    skills: uniqueBy([...(parts.skills || []), ...(current.skills || [])], "id"),
+    workContexts: uniqueBy([...(parts.workContexts || []), ...(current.workContexts || [])], "id"),
+    trainings: uniqueBy([...(parts.trainings || []), ...(current.trainings || [])], "id"),
+    certifications: uniqueBy([...(parts.certifications || []), ...(current.certifications || [])], "id"),
+    mappings: uniqueBy([...(parts.mappings || []), ...(current.mappings || [])], "id"),
+    jobAppellations: uniqueBy([...(parts.jobAppellations || []), ...(current.jobAppellations || [])], "id")
+  };
+  merged.qualityReport = generateDataQualityReport(merged);
+  return merged;
+}
+
+function mergeOfficialDatasets(parts = {}) {
+  return mergeOfficialDatasetParts(parts);
+}
+
 function mapUserProfileToCriteria(profile) {
   const constraints = {};
   toArray(profile.constraints).forEach(constraint => {
@@ -2137,13 +2403,17 @@ function mapUserProfileToCriteria(profile) {
   const trainingOpenness = profile.trainingOpenness || "not_specified";
   return {
     profileId: profile.id,
+    ageRange: profile.ageRange || "not_specified",
+    searchHorizon: profile.searchHorizon || "open_exploration",
     education: {
       highestLevel: Number(profile.diplomaLevel || 0),
       diplomas: toArray(profile.diplomas),
       certificationIds: toArray(profile.certifications),
       trainingOpenness,
       canDoShortTraining: allowsShortTraining(trainingOpenness),
-      canDoLongTraining: allowsLongTraining(trainingOpenness)
+      canDoLongTraining: allowsLongTraining(trainingOpenness),
+      trainingBudget: profile.trainingBudget || "unknown",
+      trainingFamilies: toArray(profile.trainingFamilies)
     },
     certifications: {
       held: toArray(profile.certifications),
@@ -2152,7 +2422,8 @@ function mapUserProfileToCriteria(profile) {
     },
     experience: {
       raw: toArray(profile.experiences),
-      domains: unique([...toArray(profile.experiences).map(item => normalizeText(item.domain || item)).filter(Boolean), ...toArray(profile.experienceDomains)])
+      domains: unique([...toArray(profile.experiences).map(item => normalizeText(item.domain || item)).filter(Boolean), ...toArray(profile.experienceDomains)]),
+      duration: profile.experienceDuration || "not_specified"
     },
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
     customSkills: toArray(profile.customSkills).map(normalizeText),
@@ -2363,10 +2634,15 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   optional.forEach(skillId => {
     if (criteria.skills[skillId] || hasRelatedCustomSkill(criteria.customSkills, skillId, datasets)) optionalMatched += 1;
   });
+  const experienceBonus = criteria.experience?.domains?.some(domain =>
+    normalizeText(job.domain).includes(domain) ||
+    normalizeText(job.family).includes(domain) ||
+    toArray(job.transitionTags).map(normalizeText).includes(domain)
+  ) ? 2 : 0;
   const requiredScore = (matched / required.length) * 20;
   const optionalScore = optional.length ? (optionalMatched / optional.length) * 5 : 2.5;
   return {
-    score: Math.round(clamp(requiredScore + optionalScore, 0, 25)),
+    score: Math.round(clamp(requiredScore + optionalScore + experienceBonus, 0, 25)),
     missingData,
     missingSkills,
     missingSkillLabels,
@@ -2398,9 +2674,10 @@ function calculateTrainingScore(criteria, job) {
   }
   const gap = targetLevel - userLevel;
   if (gap <= 0) return { score: 19, missingData, missingCertifications: [], statusHint: "now" };
-  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: 14, missingData, missingCertifications: [], statusHint: "short" };
+  const budgetPenalty = ["none", "under_300"].includes(criteria.education.trainingBudget) ? 2 : 0;
+  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: Math.max(8, 14 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short" };
   if (gap <= 3 && criteria.education.canDoLongTraining) return { score: 9, missingData, missingCertifications: [], statusHint: "long" };
-  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: 8, missingData, missingCertifications: [], statusHint: "short" };
+  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: Math.max(5, 8 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short" };
   return { score: 5, missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long" };
 }
 
@@ -2429,18 +2706,26 @@ function calculateConstraintScore(criteria, job) {
 function calculateValueScore(criteria, job) {
   const interests = Object.keys(criteria.interests || {});
   const values = Object.keys(criteria.values || {});
-  if (!interests.length && !values.length) {
+  const needValues = [];
+  if (criteria.needForSecurity === "high") needValues.push("stability", "security");
+  if (criteria.needForAutonomy === "high") needValues.push("autonomy", "freedom");
+  if (criteria.needForMeaning === "high") needValues.push("meaning", "service", "solidarity");
+  if (!interests.length && !values.length && !needValues.length) {
     return { score: 8, missingData: [missing("profile.interests", "low", "Envies et valeurs peu renseignees.")], matched: [] };
   }
   const interestScore = weightedTagScore(interests, job.interestTags, 8);
-  const valueScore = weightedTagScore(values, job.valueTags, 7);
-  const matched = [...interests.filter(item => tagMatches(item, job.interestTags)), ...values.filter(item => tagMatches(item, job.valueTags))];
+  const valueInputs = unique([...values, ...needValues]);
+  const valueScore = weightedTagScore(valueInputs, job.valueTags, 7);
+  const matched = [...interests.filter(item => tagMatches(item, job.interestTags)), ...valueInputs.filter(item => tagMatches(item, job.valueTags))];
   return { score: Math.round(clamp(interestScore + valueScore, 0, 15)), missingData: [], matched };
 }
 
 function calculateContextScore(criteria, job) {
   const preferences = [...toArray(criteria.preferredWorkStyles), ...toArray(criteria.preferredEnvironments)];
   if (criteria.preferredSchedule === "day") preferences.push("day");
+  if (criteria.preferredSchedule === "flexible") preferences.push("flexible");
+  if (criteria.needForAutonomy === "high") preferences.push("autonomous");
+  if (criteria.needForSecurity === "high") preferences.push("structured");
   if (!preferences.length) return { score: 5, missingData: [], matched: [] };
   let score = 0;
   const matched = [];
@@ -2474,6 +2759,9 @@ function calculateMarketScore(job, datasets = App.state.dataset) {
 function determineFeasibilityStatus(globalScore, scores, criteria, job, details = {}) {
   if (details.hardCheck?.confirmed?.length) return "excluded_for_now";
   if (details.training?.statusHint === "blocked") return globalScore >= 45 ? "discouraged" : "excluded_for_now";
+  if (criteria.searchHorizon === "now" && details.training?.statusHint === "long") return "explore_with_caution";
+  if (criteria.searchHorizon === "now" && details.training?.statusHint === "short" && globalScore < 68) return "difficult_but_possible";
+  if (criteria.searchHorizon === "2_3_years" && details.training?.statusHint === "long" && globalScore >= 38) return "possible_after_long_training";
   if (details.training?.statusHint === "short" && globalScore >= 45) return "possible_after_short_training";
   if (details.training?.statusHint === "long" && globalScore >= 40) return "possible_after_long_training";
   if (scores.constraints <= 8) return "discouraged";
@@ -2830,22 +3118,18 @@ function renderHomePage() {
   const readiness = getProfileReadiness(profile);
   return `
     <section class="results-section print-section">
-      <h2>Boussole Pro</h2>
-      <p>Explorer les métiers qui te correspondent vraiment, avec un moteur local explicable et sans dépendance à internet.</p>
-      <div class="metric-grid">
-        ${metric("Profil", `${Math.round(calculateProfileCompleteness(profile) * 100)}%`)}
-        ${metric("Métiers sample", App.state.dataset.jobs.length)}
-        ${metric("Mode", "offline")}
-        ${metric("Données", App.state.dataset.provenance === "sample" ? "sample" : "importées")}
-      </div>
+      <h2>Bienvenue dans Boussole Pro</h2>
+      <p>Cette application t’aide à explorer des pistes de métiers selon ta situation, tes contraintes, ce que tu sais faire et ce qui t’attire.</p>
+      <p>Tu réponds à quelques étapes simples, puis la boussole propose plusieurs directions possibles, avec les raisons de chaque résultat.</p>
+      <p>Boussole Pro fonctionne hors ligne : ton profil reste dans ton navigateur, sauf si tu décides de l’exporter.</p>
       <div class="button-row no-print">
-        <button class="primary-button" type="button" data-main-view="boussole">Ouvrir Ma Boussole</button>
-        <button class="secondary-button" type="button" data-main-view="results">Voir les résultats</button>
+        <button class="primary-button" type="button" data-main-view="boussole">Commencer ma boussole</button>
+        <button class="secondary-button" type="button" data-action="import-profile">Reprendre / importer une boussole</button>
       </div>
     </section>
     <section class="results-section print-section">
       <h2>Chemin conseillé</h2>
-      <p>La V0 évite d’afficher les résultats trop tôt : on remplit d’abord quelques repères, puis on lance une première lecture.</p>
+      <p>Commence par quelques choix simples. À la fin, Boussole Pro te propose des pistes différentes et t’explique pourquoi elles ressortent.</p>
       <ul class="data-list">
         <li>Renseigner la situation, la formation, les contraintes et les envies.</li>
         <li>Utiliser les tests rapides de compétences plutôt que de longues zones de texte.</li>
@@ -2858,7 +3142,7 @@ function renderHomePage() {
     </section>
     <section class="results-section print-section">
       <h2>Confidentialité</h2>
-      <p>Tout reste dans ce navigateur : profil, corpus importé, résultats, préférences. Aucun appel réseau, aucun CDN, aucune télémétrie.</p>
+      <p>Aucun compte n’est requis. Aucune donnée n’est envoyée automatiquement. Tu peux exporter ton profil quand tu veux.</p>
     </section>`;
 }
 
@@ -2866,10 +3150,14 @@ function renderSettingsPage() {
   return `
     <section class="results-section print-section">
       <h2>Paramètres locaux</h2>
-      <p>Ces actions concernent le profil, les exports et le mode expérimental prévu pour de futurs organismes.</p>
+      <p>Ces actions restent locales. Rien n’est envoyé automatiquement.</p>
       <div class="button-row no-print">
+        <button class="secondary-button" type="button" data-action="theme-toggle">Changer le thème</button>
         <button class="secondary-button" type="button" data-action="import-profile">Importer profil JSON</button>
         <button class="secondary-button" type="button" data-action="export-profile">Exporter profil JSON</button>
+        <button class="secondary-button" type="button" data-action="export-results-md">Exporter résultats Markdown</button>
+        <button class="secondary-button" type="button" data-action="export-results-json">Exporter résultats JSON</button>
+        <button class="danger-button" type="button" data-action="reset-profile">Réinitialiser le profil</button>
         <button class="ghost-button" type="button" data-action="print">Imprimer la vue</button>
       </div>
     </section>
@@ -2884,17 +3172,57 @@ function renderSettingsPage() {
         ${weightSlider("Contexte", "context")}
         ${weightSlider("Marché", "market")}
       </div>
+      <div class="button-row no-print" style="margin-top:12px">
+        <button class="ghost-button" type="button" data-action="reset-weights">Remettre par défaut</button>
+        <button class="secondary-button" type="button" data-action="preset-fast-access">Priorité accès rapide</button>
+        <button class="secondary-button" type="button" data-action="preset-values">Priorité valeurs</button>
+      </div>
     </section>
     <section class="results-section print-section">
-      <h2>API organisme</h2>
+      <h2>Impact des questions</h2>
+      <p>Chaque information demandée doit servir au moteur. Les champs remplis mais peu exploités sont listés ici pour garder le parcours sobre.</p>
+      ${renderProfileImpactAudit()}
+    </section>
+    ${renderApiManualTestPanel()}`;
+}
+
+function renderApiManualTestPanel() {
+  const status = App.state.apiTest || {};
+  return `
+    <section class="results-section print-section">
+      <h2>API France Travail</h2>
       <div class="api-box">
-        <p><strong>Mode expérimental désactivé.</strong></p>
-        <p>Ce mode nécessite une configuration organisme et n’est pas requis pour utiliser l’application. Aucune clé API ne doit être placée dans ce fichier HTML et aucun appel réseau réel n’est effectué dans cette version.</p>
-        <div class="form-grid">
-          <label class="form-row"><span>URL de service organisme</span><input type="text" value="${h(App.apiConnectorConfig.endpoint)}" placeholder="Désactivé dans la V0" disabled></label>
-          <label class="form-row"><span>Identifiant de configuration</span><input type="text" value="${h(App.apiConnectorConfig.clientId)}" placeholder="Non fonctionnel" disabled></label>
-        </div>
+        <p><strong>Statut :</strong> ${h(status.status || "non testé")}</p>
+        <p>${h(status.message || "Ce mode sert seulement aux tests avancés.")}</p>
       </div>
+      <details class="advanced-box no-print" style="margin-top:12px">
+        <summary>Test API France Travail — avancé</summary>
+        <p class="field-help">Ce mode sert à tester manuellement l’accès API. Il n’est pas nécessaire pour utiliser Boussole Pro. Ne saisis pas de clé sur un ordinateur public.</p>
+        <p class="field-help">À compléter selon la documentation France Travail IO de votre application. Si un Client Secret a été partagé dans un outil externe, une conversation ou un dépôt, il est recommandé de le régénérer dans France Travail IO avant usage durable.</p>
+        <div class="form-grid">
+          ${apiInput("Client ID", "clientId", "password")}
+          ${apiInput("Client Secret", "clientSecret", "password")}
+          ${apiInput("Token URL", "tokenUrl", "url")}
+          ${apiInput("Scopes", "scopes", "text")}
+          ${apiInput("URL API Métiers", "endpoints.metiers", "url")}
+          ${apiInput("URL API Compétences", "endpoints.competences", "url")}
+          ${apiInput("URL API Contextes", "endpoints.contextes", "url")}
+          ${apiInput("URL API Fiches métiers", "endpoints.fichesMetiers", "url")}
+          ${apiInput("Nombre maximum d’éléments", "maxItems", "number")}
+          ${selectField("Mode", "apiTest.mode", DEFAULT_FRANCE_TRAVAIL_API_CONFIG.mode, [["test_1_fiche", "Test 1 fiche"], ["sample", "Échantillon"], ["corpus", "Corpus"]]).replace('data-field="apiTest.mode"', 'data-api-config="mode"')}
+          <label class="form-row full tag-option"><input type="checkbox" data-api-config="keepSession" value="yes"><span><span class="tag-name">Conserver pour cette session seulement</span><span class="tag-meta">sessionStorage, jamais localStorage</span></span></label>
+        </div>
+        <div id="apiTestStatus" class="empty-state" style="margin-top:12px">${h(status.message || "Aucun test lancé.")}</div>
+        <div class="button-row" style="margin-top:12px">
+          <button class="secondary-button" type="button" data-action="test-ft-token">Tester l’obtention du token</button>
+          <button class="secondary-button" type="button" data-action="test-rome-metiers">Tester l’API Métiers</button>
+          <button class="secondary-button" type="button" data-action="test-rome-competences">Tester l’API Compétences</button>
+          <button class="secondary-button" type="button" data-action="test-rome-contextes">Tester l’API Contextes</button>
+          <button class="secondary-button" type="button" data-action="test-rome-fiches">Tester l’API Fiches métiers</button>
+          <button class="primary-button" type="button" data-action="build-api-corpus">Créer un corpus local depuis l’API</button>
+          <button class="ghost-button" type="button" data-action="clear-api-test">Effacer les identifiants de test</button>
+        </div>
+      </details>
     </section>`;
 }
 
@@ -2904,13 +3232,16 @@ function renderDataPage() {
   const manifest = dataset.manifest || {};
   const isOfficial = dataset.provenance === "official_rome" || dataset.provenance === "generated_rome";
   const source = (dataset.sources || [])[0] || {};
+  const datasetStatus = getDatasetStatusLabels(dataset);
   return `
     <section class="results-section print-section">
       <h2>Corpus actif</h2>
       <div class="data-page-grid">
         ${metric("Nom", dataset.datasetName || manifest.datasetName || "Corpus local")}
         ${metric("Version", dataset.datasetVersion || manifest.datasetVersion || "n/a")}
-        ${metric("Type", isOfficial ? "ROME généré" : "Sample / local")}
+        ${metric("Corpus actif", datasetStatus.corpus)}
+        ${metric("Données métier", datasetStatus.jobs)}
+        ${metric("Formations", datasetStatus.trainings)}
         ${metric("Qualité", report.status)}
         ${metric("Métiers", report.summary.jobs)}
         ${metric("Compétences", report.summary.skills)}
@@ -2949,17 +3280,6 @@ function renderDataPage() {
         <p>${h(App.state.generatedDataMessage)}</p>
         <p><strong>Recommandation :</strong> utiliser GitHub Actions ou un proxy sécurisé. Ne jamais exposer le Client Secret dans ce HTML, dans GitHub Pages, ni dans localStorage.</p>
       </div>
-      <details class="advanced-box no-print" style="margin-top:12px">
-        <summary>Test API manuel — avancé</summary>
-        <p class="field-help">Ne pas utiliser sur un site public avec une clé personnelle si vous ne comprenez pas le risque. Ces champs ne sont pas reliés à localStorage et ne déclenchent aucun appel API dans cette version v0.1.alpha.</p>
-        <div class="form-grid">
-          <label class="form-row"><span>Client ID temporaire</span><input type="password" autocomplete="off" data-api-test="clientId"></label>
-          <label class="form-row"><span>Client Secret temporaire</span><input type="password" autocomplete="off" data-api-test="clientSecret"></label>
-        </div>
-        <div class="button-row" style="margin-top:12px">
-          <button class="ghost-button" type="button" data-action="clear-api-test">Effacer immédiatement les identifiants de test</button>
-        </div>
-      </details>
     </section>
     <section class="results-section print-section">
       <h2>Erreurs et avertissements</h2>
@@ -2976,6 +3296,20 @@ function renderDataPage() {
         <button class="danger-button" type="button" data-action="reset-sample">Revenir aux données sample</button>
       </div>
     </section>`;
+}
+
+function getDatasetStatusLabels(dataset) {
+  const provenance = dataset.provenance || "sample";
+  if (provenance === "sample") return { corpus: "sample", jobs: "test", trainings: "test" };
+  if (["generated_rome", "official_rome", "official_rome_file", "api_rome_manual"].includes(provenance)) return { corpus: "officiel / ROME", jobs: "alignées ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
+  if (provenance === "onisep_import") return { corpus: "Onisep import", jobs: "à vérifier", trainings: "Onisep" };
+  if (["rncp_rs", "certif_info"].includes(provenance)) return { corpus: provenance, jobs: "à vérifier", trainings: provenance };
+  if (provenance === "mixed_official") return { corpus: "mixte officiel", jobs: "mixte", trainings: "mixte" };
+  return { corpus: "custom_import", jobs: "importées", trainings: "à vérifier" };
+}
+
+function hasOfficialTraining(dataset) {
+  return toArray(dataset.trainings).some(item => ["onisep_import", "rncp_rs", "certif_info", "official"].includes(item.provenance || item.source));
 }
 
 async function loadGeneratedRomeDataset() {
@@ -3079,6 +3413,299 @@ function markDatasetAsOfficialRome(dataset, manifest = {}) {
   }];
   return dataset;
 }
+
+function apiInput(label, path, type = "text") {
+  const value = getDeep(getSessionApiConfig(), path) ?? getDeep(DEFAULT_FRANCE_TRAVAIL_API_CONFIG, path) ?? "";
+  const safeValue = path === "clientSecret" ? "" : value;
+  return `<label class="form-row"><span>${h(label)}</span><input type="${h(type)}" autocomplete="off" data-api-config="${h(path)}" value="${h(safeValue)}"></label>`;
+}
+
+function getSessionApiConfig() {
+  try {
+    return JSON.parse(sessionStorage.getItem("boussole_pro_api_test") || "{}");
+  } catch (error) {
+    return {};
+  }
+}
+
+function getApiTestConfigFromForm() {
+  const config = clone(DEFAULT_FRANCE_TRAVAIL_API_CONFIG);
+  const stored = getSessionApiConfig();
+  deepMerge(config, stored);
+  document.querySelectorAll("[data-api-config]").forEach(input => {
+    const path = input.dataset.apiConfig;
+    if (path === "keepSession") return;
+    const value = input.type === "number" ? Number(input.value || 0) : input.value;
+    setDeep(config, path, value);
+  });
+  const keepSession = Boolean(document.querySelector("[data-api-config='keepSession']")?.checked);
+  if (keepSession) {
+    sessionStorage.setItem("boussole_pro_api_test", JSON.stringify(config));
+  }
+  return config;
+}
+
+function clearApiTestConfig() {
+  App.state.apiTest.accessToken = "";
+  App.state.apiTest.tokenInfo = null;
+  App.state.apiTest.responses = {};
+  App.state.apiTest.status = "effacé";
+  App.state.apiTest.message = "Identifiants et réponses de test effacés de cette session.";
+  try { sessionStorage.removeItem("boussole_pro_api_test"); } catch (error) {}
+  document.querySelectorAll("[data-api-config]").forEach(input => {
+    if (input.type === "checkbox") input.checked = false;
+    else input.value = "";
+  });
+  setApiTestStatus(App.state.apiTest.message);
+}
+
+async function requestFranceTravailToken(config) {
+  const clientId = config.clientId;
+  const clientSecret = config.clientSecret;
+  if (!clientId || !clientSecret || !config.tokenUrl) {
+    throw new Error("Client ID, Client Secret et Token URL sont requis pour tester l’API.");
+  }
+  const params = new URLSearchParams();
+  params.set("grant_type", "client_credentials");
+  params.set("client_id", clientId);
+  params.set("client_secret", clientSecret);
+  if (config.scopes) params.set("scope", config.scopes);
+  const response = await fetch(config.tokenUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: params
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Échec token France Travail : ${response.status} ${body}`);
+  }
+  return response.json();
+}
+
+async function fetchFranceTravailApi(endpointUrl, accessToken, params = {}) {
+  if (!endpointUrl) throw new Error("Endpoint API non configuré.");
+  const url = new URL(endpointUrl, window.location.href);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
+  });
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json"
+    }
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Échec API France Travail : ${response.status} ${body}`);
+  }
+  return response.json();
+}
+
+async function testFranceTravailToken() {
+  try {
+    const config = getApiTestConfigFromForm();
+    setApiTestStatus("Demande de token en cours...");
+    const token = await requestFranceTravailToken(config);
+    App.state.apiTest.accessToken = token.access_token || token.token || "";
+    App.state.apiTest.tokenInfo = { expiresIn: token.expires_in || token.expiresIn || "non renseigné" };
+    App.state.apiTest.status = "token obtenu";
+    App.state.apiTest.message = `Token obtenu. Expiration : ${App.state.apiTest.tokenInfo.expiresIn}.`;
+    setApiTestStatus(App.state.apiTest.message);
+  } catch (error) {
+    handleApiTestError(error);
+  }
+}
+
+async function testRomeMetiers() {
+  return testRomeEndpoint("metiers", "Métiers");
+}
+
+async function testRomeCompetences() {
+  return testRomeEndpoint("competences", "Compétences");
+}
+
+async function testRomeContextes() {
+  return testRomeEndpoint("contextes", "Contextes");
+}
+
+async function testRomeFichesMetiers() {
+  return testRomeEndpoint("fichesMetiers", "Fiches métiers");
+}
+
+async function testRomeEndpoint(key, label) {
+  try {
+    const config = getApiTestConfigFromForm();
+    if (!App.state.apiTest.accessToken) await testFranceTravailToken();
+    if (!App.state.apiTest.accessToken) throw new Error("Token absent après test.");
+    setApiTestStatus(`Appel API ${label} en cours...`);
+    await sleep(config.rateLimitMs || 1100);
+    const json = await fetchFranceTravailApi(config.endpoints[key], App.state.apiTest.accessToken, { limit: config.maxItems || 20 });
+    App.state.apiTest.responses[key] = json;
+    const count = extractArrayFromApiResponse(json).length;
+    App.state.apiTest.status = "appel réussi";
+    App.state.apiTest.message = `${label} : ${count} élément(s) reçus.`;
+    setApiTestStatus(App.state.apiTest.message);
+    return json;
+  } catch (error) {
+    handleApiTestError(error);
+    return null;
+  }
+}
+
+function buildApiCorpusFromManualTest() {
+  const responses = App.state.apiTest.responses || {};
+  const dataset = buildDatasetFromRomeApiResponses(responses);
+  if (!dataset.jobs.length && !dataset.skills.length && !dataset.workContexts.length) {
+    showImportError("Aucune réponse API exploitable pour créer un corpus local.");
+    return;
+  }
+  const choice = (window.prompt("Corpus API prêt. Tapez : utiliser, fusionner, exporter ou annuler.", "utiliser") || "annuler").trim().toLowerCase();
+  if (choice.startsWith("util")) {
+    App.state.dataset = dataset;
+    saveDataset(dataset);
+    calculateAndStoreResults();
+    renderAll();
+    showToast("Corpus API de test activé localement.");
+  } else if (choice.startsWith("fus")) {
+    App.state.dataset = mergeOfficialDatasetParts(dataset);
+    saveDataset(App.state.dataset);
+    calculateAndStoreResults();
+    renderAll();
+    showToast("Corpus API fusionné avec le corpus actif.");
+  } else if (choice.startsWith("exp")) {
+    downloadFile(`boussole-pro-corpus-api-test-${dateStamp()}.json`, JSON.stringify(dataset, null, 2), "application/json");
+  } else {
+    showToast("Création de corpus API annulée.");
+  }
+}
+
+function buildDatasetFromRomeApiResponses(responses = {}) {
+  const jobs = [
+    ...extractArrayFromApiResponse(responses.metiers).map(normalizeRomeApiJob),
+    ...extractArrayFromApiResponse(responses.fichesMetiers).map(normalizeRomeApiFicheMetier)
+  ];
+  const skills = extractArrayFromApiResponse(responses.competences).map(normalizeRomeApiSkill);
+  const workContexts = extractArrayFromApiResponse(responses.contextes).map(normalizeRomeApiContext);
+  const dataset = {
+    schemaVersion: CONFIG.schemaVersion,
+    datasetName: "Boussole Pro — ROME API test",
+    datasetVersion: `api-test-${new Date().toISOString()}`,
+    sourceDate: dateStamp(),
+    importedAt: new Date().toISOString(),
+    provenance: "api_rome_manual",
+    confidence: 0.62,
+    jobs: uniqueBy(jobs, "id"),
+    skills: uniqueBy(skills, "id"),
+    workContexts: uniqueBy(workContexts, "id"),
+    jobAppellations: [],
+    trainings: [],
+    certifications: [],
+    mappings: [],
+    marketIndicators: [],
+    sources: [{
+      id: "france_travail_rome_manual_test",
+      schemaVersion: CONFIG.schemaVersion,
+      name: "France Travail ROME - test manuel",
+      producer: "Test utilisateur local",
+      license: "À vérifier selon France Travail IO",
+      sourceDate: dateStamp(),
+      importedAt: new Date().toISOString(),
+      format: "JSON",
+      accessMode: "browser-manual-test",
+      provenance: "api_rome_manual",
+      confidence: 0.62,
+      redistribution: "verify_license",
+      notes: "Corpus créé depuis des réponses API de test, sans stockage local du secret."
+    }],
+    manifest: {
+      schemaVersion: CONFIG.schemaVersion,
+      datasetName: "Boussole Pro — ROME API test",
+      datasetVersion: `api-test-${dateStamp()}`,
+      provenance: "api_rome_manual",
+      warnings: ["license_to_verify", "mapping_to_verify"]
+    }
+  };
+  dataset.qualityReport = generateDataQualityReport(dataset);
+  return dataset;
+}
+
+function handleApiTestError(error) {
+  const message = String(error?.message || error || "Erreur API inconnue");
+  const corsHint = /Failed to fetch|NetworkError|CORS|Load failed/i.test(message)
+    ? " Le navigateur ne peut peut-être pas appeler cette API directement depuis GitHub Pages. Utilisez un proxy sécurisé, GitHub Actions ou un import JSON généré."
+    : "";
+  App.state.apiTest.status = "erreur";
+  App.state.apiTest.message = `${message}${corsHint}`;
+  setApiTestStatus(App.state.apiTest.message);
+}
+
+function setApiTestStatus(message) {
+  const node = document.getElementById("apiTestStatus");
+  if (node) node.textContent = message;
+  showToast(message);
+}
+
+function resetProfile() {
+  if (!window.confirm("Réinitialiser le profil local ? Le corpus actif sera conservé.")) return;
+  App.state.profile = createEmptyProfile();
+  saveProfile();
+  calculateAndStoreResults();
+  renderAll();
+  showToast("Profil réinitialisé.");
+}
+
+function applyWeightPreset(name) {
+  const presets = {
+    default: CONFIG.baseWeights,
+    fast_access: { skills: 22, training: 26, constraints: 28, values: 10, context: 9, market: 5 },
+    values: { skills: 20, training: 16, constraints: 22, values: 24, context: 13, market: 5 }
+  };
+  App.state.profile.criterionWeights = clone(presets[name] || CONFIG.baseWeights);
+  saveProfile();
+  calculateAndStoreResults();
+  renderAll();
+  showToast("Pondérations mises à jour.");
+}
+
+function renderProfileImpactAudit() {
+  const unused = getUnusedProfileFields(App.state.profile);
+  const filled = Object.keys(PROFILE_FIELD_IMPACT_MAP).filter(field => isProfileFieldFilled(App.state.profile, field));
+  return `
+    <div class="api-box">
+      <p><strong>${filled.length}</strong> repère(s) de profil renseigné(s) et relié(s) au moteur.</p>
+      ${unused.length ? `<p><strong>À vérifier :</strong> ${unused.map(h).join(", ")}</p>` : "<p>Aucun champ rempli sans impact déclaré.</p>"}
+      <details>
+        <summary>Voir les impacts connus</summary>
+        <ul class="compact-list">${Object.entries(PROFILE_FIELD_IMPACT_MAP).map(([field, impacts]) => `<li><strong>${h(field)}</strong> : ${impacts.map(h).join(", ")}</li>`).join("")}</ul>
+      </details>
+    </div>`;
+}
+
+function auditProfileFieldImpact(profile) {
+  return {
+    checkedAt: new Date().toISOString(),
+    filledFields: Object.keys(PROFILE_FIELD_IMPACT_MAP).filter(field => isProfileFieldFilled(profile, field)),
+    unusedFields: getUnusedProfileFields(profile),
+    impactMap: PROFILE_FIELD_IMPACT_MAP
+  };
+}
+
+function getUnusedProfileFields(profile) {
+  const known = new Set(Object.keys(PROFILE_FIELD_IMPACT_MAP));
+  const aliases = {
+    skillSignals: "skillTests",
+    skills: "directSkills",
+    mobility: "mobilityRadius"
+  };
+  const filled = ["ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingBudget", "driverLicenses", "mobility", "constraints", "skillSignals", "skills", "experienceDomains", "interests", "values", "preferredWorkStyles", "preferredEnvironments", "excludedDomains", "preferredSchedule", "needForSecurity", "needForAutonomy", "needForMeaning"]
+    .filter(field => isProfileFieldFilled(profile, field));
+  return filled.filter(field => !known.has(aliases[field] || field));
+}
+
+function explainProfileFieldImpact(fieldName) {
+  return PROFILE_FIELD_IMPACT_MAP[fieldName] || PROFILE_FIELD_IMPACT_MAP[{ skillSignals: "skillTests", skills: "directSkills", mobility: "mobilityRadius" }[fieldName]] || [];
+}
+
 
 function showImportError(message) {
   showToast(message || "Import impossible. Aucun changement applique.");
@@ -3191,6 +3818,10 @@ function bindGlobalEvents() {
   App.dom.mainNav.addEventListener("click", event => {
     const button = event.target.closest("[data-main-view]");
     if (!button) return;
+    if (button.dataset.mainView === "save") {
+      handleSaveBoussole();
+      return;
+    }
     App.state.mainView = button.dataset.mainView;
     renderAll();
     App.dom.workspace?.focus?.();
@@ -3251,17 +3882,24 @@ function handleActionClick(event) {
     return;
   }
   if (action === "import-profile") App.dom.profileFileInput.click();
+  if (action === "theme-toggle") toggleTheme();
   if (action === "export-profile") exportProfile();
   if (action === "export-results-json") exportResults("json");
   if (action === "export-results-md") exportResults("markdown");
+  if (action === "reset-profile") resetProfile();
+  if (action === "reset-weights") applyWeightPreset("default");
+  if (action === "preset-fast-access") applyWeightPreset("fast_access");
+  if (action === "preset-values") applyWeightPreset("values");
   if (action === "export-corpus") downloadFile(`boussole-pro-corpus-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
   if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
-  if (action === "clear-api-test") {
-    document.querySelectorAll("[data-api-test]").forEach(input => { input.value = ""; });
-    try { sessionStorage.removeItem("boussole_pro_api_test"); } catch (error) {}
-    showToast("Identifiants de test effacés de cette session.");
-  }
+  if (action === "clear-api-test") clearApiTestConfig();
+  if (action === "test-ft-token") testFranceTravailToken();
+  if (action === "test-rome-metiers") testRomeMetiers();
+  if (action === "test-rome-competences") testRomeCompetences();
+  if (action === "test-rome-contextes") testRomeContextes();
+  if (action === "test-rome-fiches") testRomeFichesMetiers();
+  if (action === "build-api-corpus") buildApiCorpusFromManualTest();
   if (action === "reset-sample") resetToSampleData();
   if (action === "print") window.print();
   if (action === "remove-compare") {
@@ -3371,7 +4009,7 @@ function renderAll() {
 
 function renderMainNav() {
   App.dom.mainNav.innerHTML = `
-    ${MAIN_VIEWS.map(view => `<button type="button" class="nav-button" data-main-view="${h(view.id)}" ${App.state.mainView === view.id ? 'aria-current="page"' : ""}>${h(view.label)}</button>`).join("")}
+    ${MAIN_VIEWS.map(view => `<button type="button" class="nav-button ${view.role === "secondary" ? "nav-secondary" : ""} ${view.role === "action" ? "nav-action" : ""}" data-main-view="${h(view.id)}" ${App.state.mainView === view.id ? 'aria-current="page"' : ""}>${h(view.label)}</button>`).join("")}
     <button type="button" class="nav-button" id="themeToggle" data-action="theme-toggle">${document.body.dataset.theme === "dark" ? "Mode jour" : "Mode nuit"}</button>`;
   App.dom.mainNav.querySelector("[data-action='theme-toggle']")?.addEventListener("click", toggleTheme);
 }
@@ -3595,16 +4233,40 @@ function resultsToMarkdown(results) {
 function detectDatasetType(data, forcedType) {
   if (forcedType && forcedType !== "corpus") return forcedType;
   const payload = data.data || data;
+  const explicitType = payload.datasetType || payload.sourceType || payload.type;
+  if (Object.values(DATASET_TYPES).includes(explicitType)) return explicitType;
   if (Array.isArray(payload)) {
     const first = payload[0] || {};
+    const source = normalizeText(first.source || first.provenance || first.type || "");
+    if (source.includes("onisep") && (first.durationMonths || first.dureeMois || first.niveauSortie)) return DATASET_TYPES.onisepFormations;
+    if (source.includes("onisep")) return DATASET_TYPES.onisepMetiers;
+    if (first.rncpCode || first.rsCode) return DATASET_TYPES.rncp;
+    if (first.certifInfo || first.codeCertifInfo) return DATASET_TYPES.certifInfo;
+    if (first.codeRome || first.romeCode || first.code) return DATASET_TYPES.romeMetiers;
     if (first.requiredSkills || first.romeCode) return "jobs";
     if (first.label && first.type) return "skills";
     if (first.trainingType || first.durationMonths) return "trainings";
   }
+  if (payload.metiers || payload.romeMetiers) return DATASET_TYPES.romeMetiers;
+  if (payload.competences || payload.romeCompetences) return DATASET_TYPES.romeCompetences;
+  if (payload.contextes || payload.contextesTravail) return DATASET_TYPES.romeContextes;
+  if (payload.fichesMetiers) return DATASET_TYPES.romeFichesMetiers;
+  if (payload.formations && normalizeText(payload.source || payload.provenance).includes("onisep")) return DATASET_TYPES.onisepFormations;
+  if (payload.rncp || payload.rs) return DATASET_TYPES.rncp;
+  if (payload.certifInfo) return DATASET_TYPES.certifInfo;
   if (payload.jobs) return "corpus";
   if (payload.skills) return "skills";
   if (payload.trainings) return "trainings";
   return forcedType || "corpus";
+}
+
+function getDatasetRows(data, keys = []) {
+  const payload = data.data || data;
+  if (Array.isArray(payload)) return payload;
+  for (const key of keys) {
+    if (Array.isArray(payload[key])) return payload[key];
+  }
+  return extractArrayFromApiResponse(payload);
 }
 
 function calculateProfileCompleteness(profile) {
@@ -3787,6 +4449,7 @@ function contextPreferenceMatches(pref, job, tags) {
   if (pref === "analytical") return job.interestTags.includes("analyser") || job.transitionTags.includes("analyse");
   if (pref === "field") return tags.includes("field") || tags.includes("travel");
   if (pref === "day") return !["frequent", "required"].includes(job.scheduleConstraints?.nightWork);
+  if (pref === "flexible") return !["required"].includes(job.scheduleConstraints?.nightWork);
   return false;
 }
 
@@ -3871,6 +4534,42 @@ function setDeep(object, path, value) {
     current = current[part];
   });
   current[parts.at(-1)] = value;
+}
+
+function getDeep(object, path) {
+  return String(path || "").split(".").reduce((current, part) => current && current[part] !== undefined ? current[part] : undefined, object);
+}
+
+function deepMerge(target, source) {
+  Object.entries(source || {}).forEach(([key, value]) => {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      target[key] = target[key] || {};
+      deepMerge(target[key], value);
+    } else if (value !== undefined) {
+      target[key] = value;
+    }
+  });
+  return target;
+}
+
+function extractArrayFromApiResponse(response) {
+  if (!response) return [];
+  if (Array.isArray(response)) return response;
+  return response.resultats || response.results || response.data || response.items || response.liste || [];
+}
+
+function sleep(ms) {
+  return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+function isProfileFieldFilled(profile, field) {
+  const value = field === "mobilityRadius" ? profile.mobility?.radiusKm : getDeep(profile, field);
+  if (field === "skillTests") return toArray(profile.skillSignals).length > 0;
+  if (field === "directSkills") return toArray(profile.skills).length > 0 || toArray(profile.customSkills).length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (field === "constraints") return toArray(profile.constraints).some(item => item.severity && item.severity !== "open");
+  if (value && typeof value === "object") return Object.values(value).some(Boolean);
+  return value !== undefined && value !== null && value !== "" && value !== "not_specified" && value !== "unknown";
 }
 
 function experiencesToText(experiences) {
