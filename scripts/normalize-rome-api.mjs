@@ -1,6 +1,7 @@
 const SOURCE_OFFICIAL = "official_rome_api";
 const SOURCE_COMPUTED = "computed";
 const SOURCE_UNKNOWN = "unknown";
+const MATCHABLE_SKILLS_LIMIT = 500;
 
 export function normalizeRomeMetier(raw = {}) {
   const source = unwrapFiche(raw);
@@ -78,7 +79,7 @@ export function normalizeRomeMetier(raw = {}) {
     activities,
     requiredSkills: requiredSkillLabels.map(toStableSkillId),
     optionalSkills: optionalSkillLabels.map(toStableSkillId),
-    softSkills: softSkillLabels,
+    softSkills: softSkillLabels.map(toStableSkillId),
     knowledge: knowledgeLabels,
     workContexts: contextLabels.map(toStableContextId),
     constraints,
@@ -127,12 +128,22 @@ export function normalizeRomeMetier(raw = {}) {
 
 export function normalizeRomeCompetence(raw = {}) {
   const label = firstText(raw.label, raw.libelle, raw.intitule, raw.nom) || "Competence ROME";
+  const classification = classifyRomeSkill(raw);
+  const rawType = firstText(raw.type, raw.categorie, raw.famille, raw.nature, raw.typeCompetence, raw.typeSavoir);
+  const matchableCandidate = isMatchableSkillCandidate(label, raw, classification);
   return {
-    id: toStableSkillId(raw.id || raw.code || label),
+    id: toStableSkillId(label),
+    rawId: firstText(raw.id, raw.code, raw.identifiant, raw.uuid) || null,
+    rawKeyOrId: firstText(raw.id, raw.code, raw.identifiant, raw.uuid) || toStableSkillId(label),
     schemaVersion: "1.0.0",
     label,
-    type: raw.type || raw.categorie || "savoir-faire",
-    category: raw.category || raw.famille || "rome",
+    type: typeForSkillClassification(classification, rawType),
+    category: raw.category || raw.famille || rawType || "rome",
+    rawType,
+    classification,
+    matchableCandidate,
+    matchingUse: matchableCandidate ? "candidate" : "excluded",
+    matchingScope: isMacroRomeSkill(raw) ? "macro" : "detail",
     aliases: toArray(raw.aliases),
     source: SOURCE_OFFICIAL,
     provenance: "generated_rome",
@@ -149,12 +160,23 @@ export function normalizeRomeFicheMetier(raw = {}) {
   return normalizeRomeMetier(raw);
 }
 
+export function classifyRomeSkill(entry = {}) {
+  const label = firstText(entry.label, entry.libelle, entry.intitule, entry.nom, entry.title);
+  const text = normalizeText(label);
+  const rawType = normalizeText(firstText(entry.type, entry.categorie, entry.famille, entry.nature, entry.typeCompetence, entry.typeSavoir));
+  if (!label) return "unknown";
+  if (isCertificationLikeLabel(text) || /(certification|diplome|habilitation|titre|permis|rncp|rs)/.test(rawType)) return "certification_like";
+  if (/(savoir.etre|savoir etre|macro.savoir.etre|savoir-etre|savoir-être|soft)/.test(rawType)) return "soft_skill";
+  if (/(savoir|connaissance|knowledge)/.test(rawType) && !/(savoir.faire|savoir faire|savoir-faire)/.test(rawType)) return "knowledge";
+  if (isJobLikeLabel(text) && !startsWithActionVerb(text)) return "job_like";
+  if (isTooSpecificSkillLabel(text)) return "too_specific";
+  if (startsWithActionVerb(text) || /(savoir.faire|savoir faire|savoir-faire|competence|macro.savoir.faire)/.test(rawType)) return "skill_action";
+  return "unknown";
+}
+
 export function mergeRomeDatasets(parts = {}) {
   const jobs = uniqueBy([...(parts.metiers || []), ...(parts.fichesMetiers || [])].map(normalizeRomeMetier), "id");
-  const skills = uniqueBy([
-    ...(parts.competences || []).map(normalizeRomeCompetence),
-    ...deriveSkillsFromJobs(jobs)
-  ], "id");
+  const skillLayers = buildRomeSkillLayers(parts.competences || [], jobs);
   const workContexts = uniqueBy([
     ...(parts.contextes || []).map(normalizeRomeContexte),
     ...deriveContextsFromJobs(jobs)
@@ -169,7 +191,11 @@ export function mergeRomeDatasets(parts = {}) {
     provenance: "generated_rome",
     confidence: average(jobs.map(job => job.dataQuality?.completenessScore ?? 0.5)),
     jobs,
-    skills,
+    rawSkills: skillLayers.rawSkills,
+    skills: skillLayers.filteredSkills,
+    knowledge: skillLayers.knowledge,
+    certificationLike: skillLayers.certificationLike,
+    matchableSkills: skillLayers.matchableSkills,
     workContexts,
     jobAppellations,
     mappings: deriveMappingsFromJobs(jobs),
@@ -189,6 +215,51 @@ export function mergeRomeDatasets(parts = {}) {
       redistribution: "verify_license",
       notes: "Synchronisation serveur sans secret expose dans le front-end."
     }]
+  };
+}
+
+function buildRomeSkillLayers(rawCompetences = [], jobs = []) {
+  const linkedSkillIds = new Set(jobs.flatMap(job => [...toArray(job.requiredSkills), ...toArray(job.optionalSkills), ...toArray(job.softSkills)]));
+  const rawSkills = uniqueBy(rawCompetences.map(normalizeRomeCompetence), "rawKeyOrId");
+  const linkedFromJobs = deriveSkillsFromJobs(jobs).map(skill => ({
+    ...skill,
+    linkedToCorpusJobs: true,
+    classification: skill.type === "savoir-etre" ? "soft_skill" : "skill_action",
+    matchableCandidate: true,
+    matchingUse: "linked_job_skill",
+    matchingScope: "linked"
+  }));
+  const rawLinked = rawSkills
+    .filter(skill => linkedSkillIds.has(skill.id))
+    .map(skill => ({ ...skill, linkedToCorpusJobs: true, matchingUse: "linked_job_skill" }));
+  const macroMatchable = rawSkills
+    .filter(skill => skill.matchableCandidate && skill.matchingScope === "macro")
+    .map(skill => ({ ...skill, matchingUse: "macro_matchable" }));
+  const filteredSkills = uniqueBy([
+    ...linkedFromJobs,
+    ...rawLinked,
+    ...macroMatchable,
+    ...rawSkills.filter(skill => skill.matchableCandidate && linkedSkillIds.has(skill.id))
+  ], "id");
+  const matchableSkills = uniqueBy([
+    ...linkedFromJobs.filter(skill => isUserFacingSkillLabel(skill.label)),
+    ...rawLinked.filter(skill => skill.matchableCandidate),
+    ...macroMatchable.filter(skill => isUserFacingSkillLabel(skill.label))
+  ], "id").slice(0, MATCHABLE_SKILLS_LIMIT);
+  const knowledge = uniqueBy([
+    ...rawSkills.filter(skill => skill.classification === "knowledge").map(skill => knowledgeFromSkill(skill)),
+    ...deriveKnowledgeFromJobs(jobs)
+  ], "id");
+  const certificationLike = uniqueBy([
+    ...rawSkills.filter(skill => skill.classification === "certification_like"),
+    ...deriveCertificationLikeFromJobs(jobs)
+  ], "id");
+  return {
+    rawSkills,
+    filteredSkills,
+    knowledge,
+    certificationLike,
+    matchableSkills
   };
 }
 
@@ -352,6 +423,100 @@ function skillFromLabel(label, type, category) {
   };
 }
 
+function deriveKnowledgeFromJobs(jobs) {
+  return jobs.flatMap(job => toArray(job.knowledge).map(label => ({
+    id: toStableKnowledgeId(label),
+    schemaVersion: "1.0.0",
+    label,
+    jobId: job.id,
+    romeCode: job.romeCode,
+    type: "knowledge",
+    source: SOURCE_OFFICIAL,
+    provenance: "generated_rome",
+    confidence: 0.7
+  })));
+}
+
+function deriveCertificationLikeFromJobs(jobs) {
+  return jobs.flatMap(job => [...toArray(job.requiredCertifications), ...toArray(job.recommendedCertifications)].map(label => ({
+    id: String(label).startsWith("cert-") ? String(label) : `cert-rome-${slug(label)}`,
+    schemaVersion: "1.0.0",
+    label,
+    jobId: job.id,
+    romeCode: job.romeCode,
+    classification: "certification_like",
+    source: SOURCE_OFFICIAL,
+    provenance: "generated_rome",
+    confidence: 0.7
+  })));
+}
+
+function knowledgeFromSkill(skill) {
+  return {
+    id: toStableKnowledgeId(skill.label),
+    schemaVersion: "1.0.0",
+    rawId: skill.rawId || null,
+    label: skill.label,
+    type: "knowledge",
+    category: skill.category || "rome",
+    source: skill.source,
+    provenance: skill.provenance,
+    confidence: skill.confidence,
+    classification: "knowledge"
+  };
+}
+
+function typeForSkillClassification(classification, rawType = "") {
+  if (classification === "soft_skill") return "savoir-etre";
+  if (classification === "knowledge") return "savoir";
+  if (classification === "certification_like") return "certification_like";
+  if (classification === "job_like") return "job_like";
+  if (classification === "too_specific") return "too_specific";
+  return rawType || "savoir-faire";
+}
+
+function isMatchableSkillCandidate(label, raw, classification) {
+  if (!["skill_action", "soft_skill"].includes(classification)) return false;
+  if (!isUserFacingSkillLabel(label)) return false;
+  if (classification === "soft_skill") return true;
+  return startsWithActionVerb(normalizeText(label)) || isMacroRomeSkill(raw);
+}
+
+function isUserFacingSkillLabel(label) {
+  const text = normalizeText(label);
+  return Boolean(text)
+    && text.length >= 8
+    && text.length <= 130
+    && !isCertificationLikeLabel(text)
+    && !isTooSpecificSkillLabel(text)
+    && !(isJobLikeLabel(text) && !startsWithActionVerb(text));
+}
+
+function isMacroRomeSkill(raw = {}) {
+  const type = normalizeText(firstText(raw.type, raw.categorie, raw.famille, raw.nature, raw.typeCompetence, raw.typeSavoir));
+  return /macro/.test(type);
+}
+
+function isCertificationLikeLabel(text) {
+  return /\b(certificat|certification|diplome|diplôme|titre professionnel|cap|bac|bts|licence|master|caces|habilitation|permis|carte professionnelle|rncp|rs|attestation|brevet)\b/.test(text);
+}
+
+function isJobLikeLabel(text) {
+  return /^(agent|assistante?|technicien(ne)?|responsable|charge de|chargee de|op[eé]rateur|operatrice|conducteur|conductrice|formateur|formatrice|conseiller|conseillere|animateur|animatrice|directeur|directrice)\b/.test(text);
+}
+
+function isTooSpecificSkillLabel(text) {
+  if (text.length > 150) return true;
+  if ((text.match(/\//g) || []).length >= 2) return true;
+  if (/\b(version|module|logiciel proprietaire|machine specifique|norme iso [0-9]+|article [0-9]+)\b/.test(text)) return true;
+  if (/\b[a-z]{1,3}[0-9]{2,}\b/.test(text)) return true;
+  return false;
+}
+
+function startsWithActionVerb(text) {
+  return /^(accueillir|accompagner|adapter|administrer|aider|alyser|analyser|animer|appliquer|assembler|assurer|classer|communiquer|concevoir|conduire|conseiller|controler|contrôler|coordonner|creer|créer|cultiver|decrire|décrire|developper|développer|diagnostiquer|ecouter|écouter|elaborer|élaborer|entretenir|evaluer|évaluer|fabriquer|faciliter|former|gerer|gérer|identifier|installer|mettre|mettre en oeuvre|nettoyer|observer|organiser|orienter|preparer|préparer|presenter|présenter|produire|realiser|réaliser|rediger|rédiger|reparer|réparer|respecter|securiser|sécuriser|servir|suivre|transmettre|trier|utiliser|verifier|vérifier)\b/.test(text);
+}
+
 function deriveContextsFromJobs(jobs) {
   return jobs.flatMap(job => toArray(job.romeWorkContextLabels).map(label => buildContextFromLabel(label)));
 }
@@ -405,9 +570,10 @@ function deriveMappingsFromJobs(jobs) {
     schemaVersion: "1.0.0",
     jobId: job.id,
     romeCode: job.romeCode,
-    skillIds: [...toArray(job.requiredSkills), ...toArray(job.optionalSkills)],
+    skillIds: [...toArray(job.requiredSkills), ...toArray(job.optionalSkills), ...toArray(job.softSkills)],
     contextIds: toArray(job.workContexts),
     appellationIds: toArray(job.appellations).map(label => `appellation-${job.romeCode || slug(job.id)}-${slug(label)}`),
+    knowledgeIds: toArray(job.knowledge).map(toStableKnowledgeId),
     relatedJobIds: toArray(job.relatedJobs),
     relatedRomeCodes: toArray(job.relatedJobs)
       .map(value => String(value).replace(/^job-/, "").replace(/^rome-/, ""))
@@ -510,6 +676,10 @@ function toStableSkillId(value) {
 
 function toStableContextId(value) {
   return String(value || "").startsWith("ctx-") ? String(value) : `ctx-rome-${slug(value || "contexte")}`;
+}
+
+function toStableKnowledgeId(value) {
+  return String(value || "").startsWith("knowledge-") ? String(value) : `knowledge-rome-${slug(value || "savoir")}`;
 }
 
 function toArray(value) {

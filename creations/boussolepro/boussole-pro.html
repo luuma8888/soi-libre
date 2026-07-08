@@ -1119,7 +1119,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.3.1.alpha",
+  version: "v0.3.2.alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1784,7 +1784,7 @@ function loadSampleData() {
     {
       id: "sample_non_official",
       schemaVersion: CONFIG.schemaVersion,
-      name: "Corpus sample Boussole Pro v0.3.1.alpha",
+      name: "Corpus sample Boussole Pro v0.3.2.alpha",
       producer: "Lu'uma / exemple local",
       url: null,
       license: "Exemple local non officiel, a remplacer avant usage reel",
@@ -1801,8 +1801,8 @@ function loadSampleData() {
 
   const dataset = {
     schemaVersion: CONFIG.schemaVersion,
-    datasetName: "Boussole Pro - corpus sample v0.3.1.alpha",
-    datasetVersion: "v0.3.1.alpha-sample",
+    datasetName: "Boussole Pro - corpus sample v0.3.2.alpha",
+    datasetVersion: "v0.3.2.alpha-sample",
     sourceDate: "2026-07-07",
     importedAt,
     provenance: "sample",
@@ -1819,9 +1819,9 @@ function loadSampleData() {
     mappings,
     manifest: {
       schemaVersion: CONFIG.schemaVersion,
-      id: "manifest-boussole-pro-sample-v0-3-1-alpha",
-      datasetName: "Boussole Pro - corpus sample v0.3.1.alpha",
-      datasetVersion: "v0.3.1.alpha-sample",
+      id: "manifest-boussole-pro-sample-v0-3-2-alpha",
+      datasetName: "Boussole Pro - corpus sample v0.3.2.alpha",
+      datasetVersion: "v0.3.2.alpha-sample",
       sourceDate: "2026-07-07",
       importedAt,
       provenance: "sample",
@@ -2080,6 +2080,8 @@ function validateDataset(data, type = "corpus") {
 function generateDataQualityReport(datasets) {
   const jobs = datasets.jobs || [];
   const skills = datasets.skills || [];
+  const rawSkills = datasets.rawSkills || [];
+  const matchableSkills = datasets.matchableSkills || [];
   const contexts = datasets.workContexts || [];
   const trainings = datasets.trainings || [];
   const certifications = datasets.certifications || [];
@@ -2103,6 +2105,7 @@ function generateDataQualityReport(datasets) {
 
   const jobsWithTraining = jobs.filter(job => trainings.some(training => (training.targetJobIds || []).includes(job.id))).length;
   const jobsWithMarket = jobs.filter(job => (job.marketIndicators || []).some(id => market.some(item => item.id === id))).length;
+  const linkedSkillIds = getLinkedSkillIdsFromJobs(jobs);
   const hasSampleSource = datasets.provenance === "sample" || (datasets.sources || []).some(source => source.id === "sample_non_official" || source.provenance === "sample");
   const baseWarnings = hasSampleSource ? [
     buildIssue("warning", "sample_data", "Dataset", datasets.datasetName || "dataset", "Les donnees actives sont des exemples ou contiennent des enrichissements manuels.", "Importer un corpus officiel normalise pour un usage professionnel.")
@@ -2119,7 +2122,13 @@ function generateDataQualityReport(datasets) {
     summary: {
       jobs: jobs.length,
       appellations: appellations.length,
+      rawSkills: rawSkills.length,
       skills: skills.length,
+      filteredSkills: skills.length,
+      linkedSkills: linkedSkillIds.size,
+      matchableSkills: matchableSkills.length,
+      knowledge: toArray(datasets.knowledge).length,
+      certificationLike: toArray(datasets.certificationLike).length,
       workContexts: contexts.length,
       trainings: trainings.length,
       certifications: certifications.length,
@@ -2127,11 +2136,26 @@ function generateDataQualityReport(datasets) {
       marketIndicators: market.length
     },
     coverage: {
-      jobsWithSkills: ratio(jobs.filter(job => (job.requiredSkills || []).length > 0).length, jobs.length),
+      jobsWithSkills: ratio(jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length, jobs.length),
       jobsWithContexts: ratio(jobs.filter(job => (job.workContexts || []).length > 0).length, jobs.length),
+      linkedJobsWithSkillsCount: jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length,
+      linkedJobsWithContextsCount: jobs.filter(job => toArray(job.workContexts).length).length,
       jobsWithTraining: ratio(jobsWithTraining, jobs.length),
       jobsWithDiplomaLevel: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== undefined).length, jobs.length),
       jobsWithMarketData: ratio(jobsWithMarket, jobs.length)
+    },
+    completeness: {
+      skills: {
+        rawCount: rawSkills.length,
+        filteredCount: skills.length,
+        linkedCount: linkedSkillIds.size,
+        matchableCount: matchableSkills.length,
+        label: `Compétences : ${linkedSkillIds.size} liées aux ${jobs.length} métiers, ${skills.length} filtrées, ${matchableSkills.length} matchables, ${rawSkills.length} brutes`
+      },
+      contexts: {
+        linkedCount: new Set(jobs.flatMap(job => toArray(job.workContexts))).size,
+        label: `Contextes : ${new Set(jobs.flatMap(job => toArray(job.workContexts))).size} liés aux ${jobs.length} métiers`
+      }
     },
     issues,
     warnings: [...baseWarnings, ...warnings].slice(0, 80),
@@ -2147,6 +2171,22 @@ function generateDataQualityReport(datasets) {
       "Conserver sources, provenance et confiance pour chaque corpus."
     ]
   };
+}
+
+function getLinkedSkillIdsFromJobs(jobs = []) {
+  return new Set(jobs.flatMap(job => [
+    ...toArray(job.requiredSkills),
+    ...toArray(job.optionalSkills),
+    ...toArray(job.softSkills)
+  ]).filter(Boolean));
+}
+
+function getProfileSkillOptions(dataset = App.state.dataset) {
+  const matchable = toArray(dataset?.matchableSkills).map(normalizeSkill);
+  if (matchable.length) return matchable;
+  return toArray(dataset?.skills).map(normalizeSkill).filter(skill =>
+    !["certification_like", "knowledge", "job_like", "too_specific"].includes(skill.classification)
+  ).slice(0, 900);
 }
 
 function normalizeJob(raw) {
@@ -2208,6 +2248,7 @@ function normalizeJob(raw) {
     source: raw.source || "sample_non_official",
     provenance: raw.provenance || "sample",
     confidence: raw.confidence ?? 0.4,
+    mappingStatus: raw.mappingStatus || null,
     marketScoreSeed: raw.market ?? raw.marketScoreSeed ?? 0.5
   };
 }
@@ -2219,6 +2260,13 @@ function normalizeSkill(raw) {
     label: frText(raw.label || "Compétence sans libellé"),
     type: raw.type || "savoir-faire",
     category: raw.category || "general",
+    rawId: raw.rawId || null,
+    rawType: raw.rawType || "",
+    classification: raw.classification || "",
+    matchableCandidate: Boolean(raw.matchableCandidate),
+    matchingUse: raw.matchingUse || "",
+    matchingScope: raw.matchingScope || "",
+    linkedToCorpusJobs: Boolean(raw.linkedToCorpusJobs),
     aliases: toArray(raw.aliases),
     source: raw.source || "sample_non_official",
     provenance: raw.provenance || "sample",
@@ -2570,6 +2618,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (job.remoteCompatibility === "high" && criteria.preferredEnvironments.includes("remote")) positive.push("Le teletravail semble plus envisageable que dans d'autres pistes.");
   if (positive.length === 0 && status !== "excluded_for_now") positive.push("Cette piste reste presente car aucune incompatibilite dure n'a ete confirmee.");
 
+  if (details.skill?.unlinkedOfficialSkills) negative.push("Les compétences officielles de ce métier ne sont pas encore reliées dans le corpus. Le score est donc moins fiable.");
   if (details.skill?.missingSkills?.length) negative.push("Certaines competences importantes ne sont pas encore declarees.");
   if (details.training?.statusHint === "short") negative.push("Une formation ou certification courte pourrait etre necessaire.");
   if (details.training?.statusHint === "long") negative.push("Le parcours d'acces semble plus long que votre niveau actuel.");
@@ -2582,6 +2631,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (negative.length === 0) negative.push("Aucune vigilance majeure n'est ressortie dans le corpus sample.");
 
   if (details.skill?.missingSkills?.length) actions.push("Ajouter ou renforcer les competences suivantes : " + details.skill.missingSkillLabels.slice(0, 3).join(", ") + ".");
+  if (details.skill?.unlinkedOfficialSkills) actions.push("Relancer la synchronisation avec une route ROME qui fournit les liens métier-compétence, ou importer un mapping structuré.");
   if (details.training?.missingCertifications?.length) actions.push("Explorer la certification associee avant de considerer cette piste comme accessible.");
   if (details.constraint?.warnings?.length) actions.push("Verifier les conditions concretes du poste : " + details.constraint.warnings.slice(0, 3).join(", ") + ".");
   if (details.market?.missingData?.length) actions.push("Importer plus tard des indicateurs marche fiables pour mieux evaluer le realisme local.");
@@ -2626,7 +2676,14 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const missingSkills = [];
   const missingSkillLabels = [];
   if (required.length === 0) {
-    return { score: 13, missingData: [missing("job.requiredSkills", "medium", "Competences requises absentes du corpus.")], missingSkills, missingSkillLabels, confidencePenalty: 0.15 };
+    return {
+      score: 12,
+      missingData: [missing("job.requiredSkills", "medium", "Compétences ROME non encore reliées à ce métier dans le corpus.")],
+      missingSkills,
+      missingSkillLabels,
+      confidencePenalty: 0.25,
+      unlinkedOfficialSkills: job.provenance === "generated_rome" || toArray(job.sourceRefs).includes("france_travail_rome_generated")
+    };
   }
   let matched = 0;
   required.forEach(skillId => {
@@ -2909,7 +2966,7 @@ function renderStep() {
       <details class="advanced-box">
         <summary>Choisir des compétences précisément</summary>
         <p class="field-help">Ces choix détaillés servent au moteur, mais ne sont pas obligatoires pour lancer une première lecture.</p>
-        <div class="tag-grid">${dataset.skills.map(skill => checkboxTag("skills", skill.id, skill.label, skill.category, profile.skills.includes(skill.id))).join("")}</div>
+        <div class="tag-grid">${getProfileSkillOptions(dataset).map(skill => checkboxTag("skills", skill.id, skill.label, skill.category || skill.matchingUse || "matchable", profile.skills.includes(skill.id))).join("")}</div>
         ${textareaField("Ajouter une compétence non listée", "customSkillsText", toArray(profile.customSkills).join(", "), "Ex. accueil, tableur, bricolage, écoute")}
       </details>
       ${stepButtons()}`;
@@ -3260,7 +3317,8 @@ function renderDataPage() {
         ${metric("Formations", datasetStatus.trainings)}
         ${metric("Qualité", report.status)}
         ${metric("Métiers", report.summary.jobs)}
-        ${metric("Compétences", report.summary.skills)}
+        ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
+        ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
         ${metric("Contextes", report.summary.workContexts)}
         ${metric("Appellations", report.summary.appellations)}
       </div>
@@ -3281,7 +3339,12 @@ function renderDataPage() {
       <h2>Comptes et couverture</h2>
       <div class="metric-grid">
         ${metric("Métiers", report.summary.jobs)}
-        ${metric("Compétences", report.summary.skills)}
+        ${metric("Compétences brutes ROME", generatedSummary.rawSkillsCount)}
+        ${metric("Compétences filtrées", generatedSummary.filteredSkillsCount)}
+        ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
+        ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
+        ${metric("Savoirs", generatedSummary.knowledgeCount)}
+        ${metric("Certification-like", generatedSummary.certificationLikeCount)}
         ${metric("Formations", report.summary.trainings)}
         ${metric("Certifications", report.summary.certifications)}
         ${metric("Contextes", report.summary.workContexts)}
@@ -3300,6 +3363,10 @@ function renderDataPage() {
         <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
         <li>Formations : ${h(generatedSummary.trainingsLabel)}</li>
         <li>Certifications : ${h(generatedSummary.certificationsLabel)}</li>
+        <li>Compétences brutes ROME : ${h(generatedSummary.rawSkillsCount)}</li>
+        <li>Compétences filtrées : ${h(generatedSummary.filteredSkillsCount)}</li>
+        <li>Compétences liées aux métiers : ${h(generatedSummary.linkedSkillsCount)}</li>
+        <li>Compétences matchables profil : ${h(generatedSummary.matchableSkillsCount)}</li>
       </ul>
     </section>
     <section class="results-section print-section">
@@ -3346,6 +3413,9 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
   const topMissingFields = toArray(report.topMissingFields).map(item => `${item.field} (${item.count})`);
   const represented = toArray(report.domainCoverage?.representedDomains);
   const completeness = report.completeness || {};
+  const summary = report.summary || {};
+  const legacyHugeSkillCount = !("rawSkills" in summary) && !("filteredSkills" in summary) && Number(summary.skills || 0) > 5000;
+  const linkedFromJobs = getLinkedSkillIdsFromJobs(dataset.jobs || []).size;
   const completenessLines = ["jobs", "skills", "contexts", "appellations", "trainings", "certifications", "global"]
     .map(key => completeness[key]?.label)
     .filter(Boolean);
@@ -3366,6 +3436,12 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
     missingLabel: topMissingFields.length ? topMissingFields.slice(0, 8).join(", ") : "aucun champ majeur signalé",
     domainLabel: represented.length ? represented.join(", ") : "non renseignés",
     completenessLines,
+    rawSkillsCount: summary.rawSkills ?? completeness.skills?.rawCount ?? (legacyHugeSkillCount ? summary.skills : 0),
+    filteredSkillsCount: summary.filteredSkills ?? completeness.skills?.filteredCount ?? (legacyHugeSkillCount ? 0 : (summary.skills || 0)),
+    linkedSkillsCount: summary.linkedSkills ?? completeness.skills?.linkedCount ?? linkedFromJobs,
+    matchableSkillsCount: summary.matchableSkills ?? completeness.skills?.matchableCount ?? toArray(dataset.matchableSkills).length,
+    knowledgeCount: summary.knowledge ?? 0,
+    certificationLikeCount: summary.certificationLike ?? 0,
     trainingsLabel: completeness.trainings?.label || ((dataset.trainings || []).length ? `${dataset.trainings.length} formation(s)` : "source non encore connectée"),
     certificationsLabel: completeness.certifications?.label || ((dataset.certifications || []).length ? `${dataset.certifications.length} certification(s)` : "source non encore connectée")
   };
@@ -3381,6 +3457,9 @@ async function loadGeneratedRomeDataset() {
     manifest: "import-manifest.rome.json",
     jobs: "jobs.rome.json",
     skills: "skills.rome.json",
+    knowledge: "knowledge.rome.json",
+    certificationLike: "certification-like.rome.json",
+    matchableSkills: "skills-matchable.rome.json",
     workContexts: "work-contexts.rome.json",
     jobAppellations: "job-appellations.rome.json",
     mappings: "mappings.rome.json",
@@ -3398,7 +3477,7 @@ async function loadGeneratedRomeDataset() {
     for (const [key, filename] of Object.entries(files)) {
       generated[key] = await fetchJsonIfExists(basePath + filename);
     }
-    const hasUsefulData = ["jobs", "skills", "workContexts", "jobAppellations", "mappings"].some(key => Array.isArray(generated[key]) && generated[key].length);
+    const hasUsefulData = ["jobs", "skills", "matchableSkills", "workContexts", "jobAppellations", "mappings"].some(key => Array.isArray(generated[key]) && generated[key].length);
     if (!hasUsefulData) {
       App.state.generatedDataStatus = "non configuré";
       App.state.generatedDataMessage = "Aucun fichier exploitable trouvé dans data/generated/ à côté de Boussole Pro. L’application reste sur le corpus local ou sample.";
@@ -3441,6 +3520,8 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   const base = options.replace ? loadSampleData() : clone(App.state.dataset || loadSampleData());
   const manifest = generated.manifest || {};
   const importedAt = new Date().toISOString();
+  const generatedSkills = Array.isArray(generated.skills) ? generated.skills.map(normalizeSkill) : [];
+  const looksLikeLegacyRawSkillDump = generatedSkills.length > 5000 && !generatedSkills.some(skill => skill.classification || skill.matchingUse || skill.matchingScope);
   const merged = {
     ...base,
     datasetName: manifest.datasetName || "Boussole Pro - données ROME générées",
@@ -3451,7 +3532,10 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     confidence: 0.75,
     manifest: { ...(base.manifest || {}), ...manifest, provenance: "generated_rome", importedAt },
     jobs: Array.isArray(generated.jobs) && generated.jobs.length ? generated.jobs.map(normalizeJob) : base.jobs,
-    skills: Array.isArray(generated.skills) && generated.skills.length ? generated.skills.map(normalizeSkill) : base.skills,
+    skills: generatedSkills.length && !looksLikeLegacyRawSkillDump ? generatedSkills : base.skills,
+    knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : (base.knowledge || []),
+    certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : (base.certificationLike || []),
+    matchableSkills: Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : (base.matchableSkills || []),
     workContexts: Array.isArray(generated.workContexts) && generated.workContexts.length ? generated.workContexts : base.workContexts,
     jobAppellations: Array.isArray(generated.jobAppellations) && generated.jobAppellations.length ? generated.jobAppellations : base.jobAppellations,
     mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings : base.mappings,
@@ -3962,7 +4046,7 @@ function handleActionClick(event) {
   if (action === "preset-fast-access") applyWeightPreset("fast_access");
   if (action === "preset-values") applyWeightPreset("values");
   if (action === "export-corpus") downloadFile(`boussole-pro-corpus-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
-  if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(generateDataQualityReport(App.state.dataset), null, 2), "application/json");
+  if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
   if (action === "clear-api-test") clearApiTestConfig();
   if (action === "test-ft-token") testFranceTravailToken();
@@ -4525,7 +4609,7 @@ function contextPreferenceMatches(pref, job, tags) {
 }
 
 function hasRelatedCustomSkill(customSkills, skillId, datasets) {
-  const skill = (datasets.skills || []).find(item => item.id === skillId);
+  const skill = getAllSkillRows(datasets).find(item => item.id === skillId);
   if (!skill) return false;
   const haystack = [skill.label, ...(skill.aliases || []), skill.category].map(normalizeText);
   return customSkills.some(input => haystack.some(text => text.includes(input) || input.includes(text)));
@@ -4563,7 +4647,15 @@ function findResult(jobId) {
 }
 
 function getSkillLabel(skillId, datasets = App.state.dataset) {
-  return (datasets.skills || []).find(skill => skill.id === skillId)?.label || skillId;
+  return getAllSkillRows(datasets).find(skill => skill.id === skillId)?.label || skillId;
+}
+
+function getAllSkillRows(datasets = App.state.dataset) {
+  return uniqueBy([
+    ...toArray(datasets?.skills),
+    ...toArray(datasets?.matchableSkills),
+    ...toArray(datasets?.certificationLike)
+  ].map(normalizeSkill), "id");
 }
 
 function getDiplomaLabel(level) {

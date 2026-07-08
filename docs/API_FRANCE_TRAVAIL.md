@@ -21,7 +21,7 @@ La premiere voie automatisee utilise le scope valide :
 nomenclatureRome api_rome-fiches-metiersv1
 ```
 
-La v0.3.1.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
+La v0.3.2.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
 
 ```text
 ROME_CODES=A1203,A1414,A1501,...
@@ -60,7 +60,18 @@ Les URLs et scopes de referentiels optionnels doivent etre verifies dans la docu
 
 Une fois le workflow execute, publier le site puis ouvrir Boussole Pro. La page Donnees propose `Charger les donnees generees`. L'application cherche les fichiers via le chemin relatif `data/generated/`, donc depuis GitHub Pages ils doivent exister dans `creations/boussolepro/data/generated/`. Si les fichiers sont absents ou si la synchronisation a echoue, l'application conserve le corpus sample.
 
-Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulCodesCount`, `failedCodesCount`, `successfulCodes`, `failedCodes`, `completionRate`, `topMissingFields`, la couverture des domaines ROME et une section `completeness` distinguant metiers, competences, contextes, appellations, formations et certifications.
+Le workflow ne charge plus le referentiel competences global comme liste directement matchable. Il separe :
+
+- `rome-raw-skills.json` : competences brutes ROME, non chargees par defaut dans Boussole Pro ;
+- `skills.rome.json` : competences filtrees ;
+- `knowledge.rome.json` : savoirs ;
+- `certification-like.rome.json` : diplomes, titres, permis, CACES, habilitations ou elements similaires ;
+- `skills-matchable.rome.json` : couche reduite pour le profil utilisateur ;
+- `mappings.rome.json` : liens effectifs metier → competences, contextes, appellations et savoirs.
+
+Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulCodesCount`, `failedCodesCount`, `successfulCodes`, `failedCodes`, `completionRate`, `topMissingFields`, la couverture des domaines ROME et une section `completeness` distinguant metiers, competences, contextes, appellations, formations et certifications. Il expose aussi `rawSkills`, `filteredSkills`, `linkedSkills`, `matchableSkills`, `linkedJobsWithSkillsCount`, `linkedJobsWithContextsCount` et `globalCompletionScore`.
+
+Si un referentiel global est charge sans lien metier → competence, le rapport signale `referential_loaded_but_unlinked`. Dans ce cas, Boussole Pro ne doit pas utiliser ces competences globales comme preuve de compatibilite.
 
 Le dossier `creations/boussolepro/data/generated/debug/` peut contenir `raw-structure-report.json`. Ce fichier liste seulement les cles et chemins candidats des reponses ROME de test pour aider la normalisation ; il ne doit jamais contenir de token, secret, client_id ou en-tete Authorization.
 

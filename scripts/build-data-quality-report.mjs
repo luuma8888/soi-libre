@@ -22,6 +22,8 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   const jobs = dataset.jobs || [];
   const skills = dataset.skills || [];
   const workContexts = dataset.workContexts || [];
+  const rawSkills = dataset.rawSkills || [];
+  const matchableSkills = dataset.matchableSkills || [];
   const issues = [];
   const warnings = [];
   const ids = new Set();
@@ -55,6 +57,13 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   }
   if (!skills.length) warnings.push(issue("warning", "empty_generated_skills", "Aucun referentiel de competences genere. Le moteur utilisera les IDs metier mais affichera moins de libelles.", "skills"));
   if (!workContexts.length) warnings.push(issue("warning", "empty_generated_contexts", "Aucun contexte de travail genere. Le score cadre ideal sera moins precis.", "workContexts"));
+  const linkedSkillIds = getLinkedSkillIds(jobs);
+  if (rawSkills.length && linkedSkillIds.size === 0) {
+    warnings.push(issue("warning", "referential_loaded_but_unlinked", "Referentiel competences charge, mais aucune competence n'est reliee aux metiers du corpus. Le matching ne doit pas utiliser ce referentiel global comme preuve.", "skills"));
+  }
+  if (matchableSkills.length > 900) {
+    warnings.push(issue("warning", "too_many_matchable_skills", `${matchableSkills.length} competences matchables : reduire la liste pour le profil utilisateur.`, "matchableSkills"));
+  }
   optionalReferentials
     .filter(item => item.status !== "ok")
     .forEach(item => warnings.push(issue("info", `optional_${item.name}_${item.status}`, item.message || `${item.name} non configure.`, item.name)));
@@ -96,7 +105,13 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
     summary: {
       jobs: jobs.length,
       appellations: (dataset.jobAppellations || []).length,
+      rawSkills: rawSkills.length,
       skills: skills.length,
+      filteredSkills: skills.length,
+      linkedSkills: linkedSkillIds.size,
+      matchableSkills: matchableSkills.length,
+      knowledge: (dataset.knowledge || []).length,
+      certificationLike: (dataset.certificationLike || []).length,
       workContexts: workContexts.length,
       trainings: (dataset.trainings || []).length,
       certifications: (dataset.certifications || []).length,
@@ -107,6 +122,8 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
     coverage: {
       jobsWithSkills: ratio(jobs.filter(job => job.requiredSkills?.length).length, jobs.length),
       jobsWithContexts: ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length),
+      linkedJobsWithSkillsCount: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length,
+      linkedJobsWithContextsCount: jobs.filter(job => job.workContexts?.length).length,
       jobsWithActivities: ratio(jobs.filter(job => job.activities?.length).length, jobs.length),
       jobsWithAppellations: ratio(jobs.filter(job => job.appellations?.length).length, jobs.length),
       jobsWithRelatedJobs: ratio(jobs.filter(job => job.relatedJobs?.length).length, jobs.length),
@@ -114,6 +131,16 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       jobsWithMarketData: ratio(jobs.filter(job => job.market?.source && job.market.source !== "unknown").length, jobs.length)
     },
     completenessScore: completionScore,
+    globalCompletionScore: completionScore,
+    missingMapping: jobs
+      .filter(job => !(job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length) || !job.workContexts?.length)
+      .map(job => ({
+        jobId: job.id,
+        romeCode: job.romeCode,
+        title: job.title,
+        missingSkills: !(job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length),
+        missingContexts: !job.workContexts?.length
+      })),
     topMissingFields: [...missingFieldCounts.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12)
@@ -124,6 +151,7 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       "Ce corpus ROME genere est utilisable pour tester la chaine officielle, mais reste partiel tant que peu de codes sont synchronises.",
       "Les tags de valeurs, envies et contraintes sont des deductions techniques : les verifier avant usage professionnel.",
       "Les donnees marche, diplomes, formations et certifications doivent etre enrichies par des sources dediees si elles ne sont pas presentes dans ROME.",
+      "Ne pas utiliser un referentiel global de competences comme preuve de compatibilite tant qu'il n'est pas relie aux metiers du corpus.",
       "Ne jamais stocker FT_CLIENT_SECRET, access_token ou bearer token dans le front-end ni dans les JSON generes."
     ]
   };
@@ -133,15 +161,17 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
   const jobs = dataset.jobs || [];
   const requested = syncMeta.requestedCodes?.length || jobs.length;
   const skills = dataset.skills || [];
+  const rawSkills = dataset.rawSkills || [];
+  const matchableSkills = dataset.matchableSkills || [];
   const contexts = dataset.workContexts || [];
   const appellations = dataset.jobAppellations || [];
   const trainings = dataset.trainings || [];
   const certifications = dataset.certifications || [];
-  const linkedSkillIds = new Set(jobs.flatMap(job => [...(job.requiredSkills || []), ...(job.optionalSkills || [])]));
+  const linkedSkillIds = getLinkedSkillIds(jobs);
   const linkedContextIds = new Set(jobs.flatMap(job => job.workContexts || []));
   const jobsWithAppellations = jobs.filter(job => job.appellations?.length).length;
   const jobsScore = jobCompleteness.length ? average(jobCompleteness) : 0;
-  const skillsScore = ratio(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length).length, jobs.length);
+  const skillsScore = ratio(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobs.length);
   const contextsScore = ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length);
   const appellationsScore = ratio(jobsWithAppellations, jobs.length);
   const globalScore = average([jobsScore, skillsScore, contextsScore, appellationsScore].filter(value => Number.isFinite(value)));
@@ -156,10 +186,13 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
     skills: {
       status: skills.length || linkedSkillIds.size ? "connected" : "missing",
       count: skills.length,
+      rawCount: rawSkills.length,
+      filteredCount: skills.length,
       linkedCount: linkedSkillIds.size,
-      jobsWithData: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length).length,
+      matchableCount: matchableSkills.length,
+      jobsWithData: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length,
       score: skillsScore,
-      label: `Compétences : ${linkedSkillIds.size || skills.length} liées aux ${jobs.length} métiers`
+      label: `Compétences : ${linkedSkillIds.size} liées aux ${jobs.length} métiers, ${skills.length} filtrées, ${matchableSkills.length} matchables, ${rawSkills.length} brutes`
     },
     contexts: {
       status: contexts.length || linkedContextIds.size ? "connected" : "missing",
@@ -193,9 +226,14 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
     global: {
       status: globalScore >= 0.7 ? "usable" : "partial",
       score: globalScore,
+      globalCompletionScore: globalScore,
       label: `Complétude globale : ${Math.round(globalScore * 100)}%`
     }
   };
+}
+
+function getLinkedSkillIds(jobs = []) {
+  return new Set(jobs.flatMap(job => [...(job.requiredSkills || []), ...(job.optionalSkills || []), ...(job.softSkills || [])]).filter(Boolean));
 }
 
 function getMissingFields(job) {

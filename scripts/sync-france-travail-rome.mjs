@@ -72,7 +72,11 @@ async function main() {
         "jobs.rome.json",
         "import-manifest.rome.json",
         "data-quality-report.rome.json",
+        "rome-raw-skills.json",
         "skills.rome.json",
+        "knowledge.rome.json",
+        "certification-like.rome.json",
+        "skills-matchable.rome.json",
         "work-contexts.rome.json",
         "job-appellations.rome.json",
         "mappings.rome.json",
@@ -91,7 +95,11 @@ async function main() {
         "license_to_verify"
       ].filter(Boolean)
     });
+    await writeGeneratedJson("rome-raw-skills.json", dataset.rawSkills || []);
     await writeGeneratedJson("skills.rome.json", dataset.skills || []);
+    await writeGeneratedJson("knowledge.rome.json", dataset.knowledge || []);
+    await writeGeneratedJson("certification-like.rome.json", dataset.certificationLike || []);
+    await writeGeneratedJson("skills-matchable.rome.json", dataset.matchableSkills || []);
     await writeGeneratedJson("work-contexts.rome.json", dataset.workContexts || []);
     await writeGeneratedJson("job-appellations.rome.json", dataset.jobAppellations || []);
     await writeGeneratedJson("mappings.rome.json", dataset.mappings || []);
