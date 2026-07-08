@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reportId": "quality-2026-07-08",
-  "generatedAt": "2026-07-08T04:50:16.704Z",
+  "generatedAt": "2026-07-08T05:03:18.794Z",
   "branch": "soi-libre-codex",
   "datasetVersion": "rome-generated-2026-07-08",
   "status": "completed_with_warnings",
@@ -104,18 +104,21 @@
   "optionalReferentials": [
     {
       "name": "metiers",
-      "status": "not_configured",
-      "message": "FT_ROME_METIERS_URL absent : referentiel optionnel ignore."
+      "status": 403,
+      "message": "",
+      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
     },
     {
       "name": "competences",
-      "status": "not_configured",
-      "message": "FT_ROME_COMPETENCES_URL absent : referentiel optionnel ignore."
+      "status": 403,
+      "message": "",
+      "endpoint": "https://api.francetravail.io/partenaire/rome-competences/v1/competences/competence"
     },
     {
       "name": "contextes",
-      "status": "not_configured",
-      "message": "FT_ROME_CONTEXTES_URL absent : referentiel optionnel ignore."
+      "status": 403,
+      "message": "",
+      "endpoint": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
     }
   ],
   "sync": {
@@ -425,25 +428,25 @@
       "message": "Aucun contexte de travail genere. Le score cadre ideal sera moins precis."
     },
     {
-      "id": "optional_metiers_not_configured-metiers",
+      "id": "optional_metiers_403-metiers",
       "severity": "info",
-      "type": "optional_metiers_not_configured",
+      "type": "optional_metiers_403",
       "target": "metiers",
-      "message": "FT_ROME_METIERS_URL absent : referentiel optionnel ignore."
+      "message": "metiers non configure."
     },
     {
-      "id": "optional_competences_not_configured-competences",
+      "id": "optional_competences_403-competences",
       "severity": "info",
-      "type": "optional_competences_not_configured",
+      "type": "optional_competences_403",
       "target": "competences",
-      "message": "FT_ROME_COMPETENCES_URL absent : referentiel optionnel ignore."
+      "message": "competences non configure."
     },
     {
-      "id": "optional_contextes_not_configured-contextes",
+      "id": "optional_contextes_403-contextes",
       "severity": "info",
-      "type": "optional_contextes_not_configured",
+      "type": "optional_contextes_403",
       "target": "contextes",
-      "message": "FT_ROME_CONTEXTES_URL absent : referentiel optionnel ignore."
+      "message": "contextes non configure."
     }
   ],
   "recommendations": [
