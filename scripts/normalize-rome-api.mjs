@@ -75,7 +75,7 @@ export function normalizeRomeMetier(raw = {}) {
     domain,
     family,
     appellations,
-    description: description || "Description non fournie par la fiche ROME synchronisee.",
+    description: description || null,
     activities,
     requiredSkills: requiredSkillLabels.map(toStableSkillId),
     optionalSkills: optionalSkillLabels.map(toStableSkillId),
@@ -83,7 +83,7 @@ export function normalizeRomeMetier(raw = {}) {
     knowledge: knowledgeLabels,
     workContexts: contextLabels.map(toStableContextId),
     constraints,
-    accessConditions: { text: accessText || "Conditions d'acces non fournies par la fiche ROME synchronisee.", source: accessText ? SOURCE_OFFICIAL : SOURCE_UNKNOWN, confidence: accessText ? 0.8 : 0.2 },
+    accessConditions: { text: accessText || null, source: accessText ? SOURCE_OFFICIAL : SOURCE_UNKNOWN, confidence: accessText ? 0.8 : 0 },
     physicalConstraints: constraints.physical,
     scheduleConstraints: constraints.schedule,
     mobilityConstraints: constraints.mobility,
@@ -275,20 +275,21 @@ function buildMissingFields(fields) {
 function inferConstraints(textPool) {
   const text = normalizeText(textPool.join(" "));
   const physicalTags = [];
-  if (/(port|charge|manutention|debout|chantier|terrain|exterieur|outil|atelier|cuisine|soin|conduite|stock|magasin)/.test(text)) physicalTags.push("standing");
-  if (/(charge|manutention|port)/.test(text)) physicalTags.push("load");
-  if (/(exterieur|plein air|jardin|chantier|terrain|agric)/.test(text)) physicalTags.push("outdoor");
-  if (/(bruit|machine|atelier|industrie|chantier)/.test(text)) physicalTags.push("noise");
-  const nightWork = /(nuit|astreinte|urgence|hospitalier|restauration|securite)/.test(text) ? "possible" : "unknown";
-  const weekendWork = /(week-end|weekend|dimanche|restauration|tourisme|animation|soin|securite)/.test(text) ? "possible" : "unknown";
-  const travelFrequency = /(deplacement|terrain|domicile|chantier|livraison|conduite|transport)/.test(text) ? "medium" : "unknown";
-  const driverLicenseRequired = /(permis|conduite|vehicule|livraison|chantier|deplacement)/.test(text);
+  if (/\b(station debout|debout|marche prolongee|manutention|chantier|terrain|exterieur|plein air|atelier|cuisine|stock|magasin)\b/.test(text)) physicalTags.push("standing");
+  if (/\b(port de charge|port de charges|charges lourdes|manutention lourde|manutention)\b/.test(text)) physicalTags.push("load");
+  if (/\b(exterieur|plein air|jardin|chantier|terrain|agricole|agriculture)\b/.test(text)) physicalTags.push("outdoor");
+  if (/\b(bruit|bruyant|machine|atelier|industrie|chantier)\b/.test(text)) physicalTags.push("noise");
+  const nightWork = /\b(nuit|travail de nuit|astreinte nocturne|urgence)\b/.test(text) ? "possible" : "unknown";
+  const weekendWork = /\b(week-end|weekend|dimanche|jours feries|jours fériés)\b/.test(text) ? "possible" : "unknown";
+  const travelFrequency = /\b(deplacement|déplacement|deplacements|déplacements|itinerance|itinérance|livraison|transport|domicile|chantier|terrain)\b/.test(text) ? "medium" : "unknown";
+  const driverLicenseRequired = /\b(permis b|permis de conduire|conduite de vehicule|conduite de véhicule|livraison|vehicule|véhicule)\b/.test(text);
   const hasSignal = physicalTags.length || nightWork !== "unknown" || weekendWork !== "unknown" || travelFrequency !== "unknown" || driverLicenseRequired;
+  const source = hasSignal ? "computed_low_confidence" : SOURCE_UNKNOWN;
   return {
-    source: hasSignal ? SOURCE_COMPUTED : SOURCE_UNKNOWN,
-    physical: { level: physicalTags.includes("load") ? "high" : physicalTags.length ? "medium" : "unknown", tags: unique(physicalTags), source: hasSignal ? SOURCE_COMPUTED : SOURCE_UNKNOWN, confidence: hasSignal ? 0.45 : 0.1 },
-    schedule: { nightWork, weekendWork, irregularHours: nightWork === "possible" || weekendWork === "possible" ? "possible" : "unknown", source: hasSignal ? SOURCE_COMPUTED : SOURCE_UNKNOWN, confidence: hasSignal ? 0.4 : 0.1 },
-    mobility: { travelFrequency, driverLicenseRequired, driverLicenseTypes: driverLicenseRequired ? ["B"] : [], source: hasSignal ? SOURCE_COMPUTED : SOURCE_UNKNOWN, confidence: hasSignal ? 0.4 : 0.1 }
+    source,
+    physical: { level: physicalTags.includes("load") ? "high" : physicalTags.length ? "medium" : "unknown", tags: unique(physicalTags), source, confidence: hasSignal ? 0.3 : 0 },
+    schedule: { nightWork, weekendWork, irregularHours: nightWork === "possible" || weekendWork === "possible" ? "possible" : "unknown", source, confidence: hasSignal ? 0.25 : 0 },
+    mobility: { travelFrequency, driverLicenseRequired, driverLicenseTypes: driverLicenseRequired ? ["B"] : [], source, confidence: hasSignal ? 0.25 : 0 }
   };
 }
 
@@ -538,16 +539,16 @@ function buildContextFromLabel(label, raw = {}) {
 function inferContextTags(label) {
   const text = normalizeText(label);
   const tags = [];
-  if (/bureau|administratif/.test(text)) tags.push("office", "quiet");
-  if (/domicile/.test(text)) tags.push("field", "travel");
-  if (/exterieur|terrain|chantier|jardin|agric/.test(text)) tags.push("outdoor", "field");
-  if (/equipe/.test(text)) tags.push("team");
-  if (/public|client|patient|usager|accueil/.test(text)) tags.push("public-contact");
-  if (/enfant|petite enfance/.test(text)) tags.push("children");
-  if (/animal/.test(text)) tags.push("animals");
-  if (/atelier|outil|manuel/.test(text)) tags.push("manual");
-  if (/bruit|machine|industrie/.test(text)) tags.push("noise");
-  if (/deplacement|livraison|transport/.test(text)) tags.push("travel");
+  if (/\b(bureau|administratif)\b/.test(text)) tags.push("office", "quiet");
+  if (/\b(domicile)\b/.test(text)) tags.push("field", "travel");
+  if (/\b(exterieur|terrain|chantier|jardin|agricole|agriculture)\b/.test(text)) tags.push("outdoor", "field");
+  if (/\b(equipe|collectif|collaboration)\b/.test(text)) tags.push("team");
+  if (/\b(public|client|patient|usager|accueil)\b/.test(text)) tags.push("public-contact");
+  if (/\b(enfant|petite enfance)\b/.test(text)) tags.push("children");
+  if (/\b(animal|animaux)\b/.test(text)) tags.push("animals");
+  if (/\b(atelier|outil|manuel)\b/.test(text)) tags.push("manual");
+  if (/\b(bruit|bruyant|machine|industrie)\b/.test(text)) tags.push("noise");
+  if (/\b(deplacement|deplacements|livraison|transport|itinerance)\b/.test(text)) tags.push("travel");
   return unique(tags);
 }
 

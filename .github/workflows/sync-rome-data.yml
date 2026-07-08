@@ -7,6 +7,10 @@ on:
         description: "Codes ROME a synchroniser, separes par des virgules. Laisser vide pour utiliser ROME_CODES ou la liste v0.3 par defaut."
         required: false
         default: ""
+      raw_debug:
+        description: "Generer debug/raw-structure-report.json pour auditer la structure brute sans valeurs sensibles."
+        required: false
+        default: "false"
   schedule:
     - cron: "0 3 1 * *"
 
@@ -39,6 +43,7 @@ jobs:
           FT_RATE_LIMIT_MS: ${{ vars.FT_RATE_LIMIT_MS || '1100' }}
           ROME_CODES: ${{ inputs.rome_codes || vars.ROME_CODES || '' }}
           ROME_DEBUG_CODES: ${{ vars.ROME_DEBUG_CODES || 'M1607,M1805,K1303,A1203' }}
+          ROME_RAW_DEBUG: ${{ inputs.raw_debug || vars.ROME_RAW_DEBUG || 'false' }}
       - name: Commit generated data
         run: |
           git config user.name "github-actions"

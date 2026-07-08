@@ -48,7 +48,8 @@ async function main() {
       optionalReferentials: optionalReferentials.diagnostics
     };
     const report = buildDataQualityReport(dataset, syncMeta);
-    await writeRawStructureReport(syncResult.rawSamples, syncMeta);
+    logSyncSummary(dataset, report, syncMeta);
+    if (isRawDebugEnabled()) await writeRawStructureReport(syncResult.rawSamples, syncMeta);
     await writeGeneratedJson("jobs.rome.json", dataset.jobs);
     await writeGeneratedJson("data-quality-report.rome.json", report);
     await writeGeneratedJson("import-manifest.rome.json", {
@@ -84,7 +85,7 @@ async function main() {
         "certifications.certifinfo.json",
         "mappings-rome-formations.json",
         "mappings-rome-certifications.json",
-        "debug/raw-structure-report.json"
+        ...(isRawDebugEnabled() ? ["debug/raw-structure-report.json"] : [])
       ],
       licenseSummary: "A verifier selon les droits d'usage France Travail IO.",
       warnings: [
@@ -95,7 +96,7 @@ async function main() {
         "license_to_verify"
       ].filter(Boolean)
     });
-    await writeGeneratedJson("rome-raw-skills.json", dataset.rawSkills || []);
+    await writeGeneratedJson("rome-raw-skills.json", dataset.rawSkills || [], { pretty: false });
     await writeGeneratedJson("skills.rome.json", dataset.skills || []);
     await writeGeneratedJson("knowledge.rome.json", dataset.knowledge || []);
     await writeGeneratedJson("certification-like.rome.json", dataset.certificationLike || []);
@@ -292,6 +293,8 @@ async function writeRawStructureReport(rawSamples = {}, syncMeta = {}) {
 
 function buildRawStructureReport(rawSamples = {}, syncMeta = {}) {
   const categories = {
+    title: ["title", "titre", "libelle", "intitule", "nom"],
+    description: ["description", "resume", "definition", "presentation"],
     competences: ["competence", "savoirfaire", "savoir-faire"],
     savoirs: ["savoirs", "connaissance", "knowledge"],
     savoirEtre: ["savoiretre", "savoir-etre", "softskill"],
@@ -317,6 +320,15 @@ function buildRawStructureReport(rawSamples = {}, syncMeta = {}) {
     branch: syncMeta.branch || process.env.GITHUB_REF_NAME || "local",
     requestedDebugCodes: Object.keys(rawSamples),
     note: "Rapport structurel sans corps brut complet et sans jeton. Les chemins indiquent uniquement les zones candidates a verifier pour la normalisation.",
+    fields: {
+      title: "Voir samples[CODE].candidates.title",
+      description: "Voir samples[CODE].candidates.description",
+      appellations: "Voir samples[CODE].candidates.appellations",
+      competences: "Voir samples[CODE].candidates.competences",
+      contextesTravail: "Voir samples[CODE].candidates.contextesTravail",
+      conditionsAcces: "Voir samples[CODE].candidates.conditionsAcces",
+      mobilites: "Voir samples[CODE].candidates.mobilites"
+    },
     samples
   };
 }
@@ -384,6 +396,31 @@ function parseList(value, fallback = []) {
   return parsed.length ? parsed : fallback;
 }
 
+function isRawDebugEnabled() {
+  return String(process.env.ROME_RAW_DEBUG || "false").toLowerCase() === "true";
+}
+
+function logSyncSummary(dataset = {}, report = {}, syncMeta = {}) {
+  const summary = report.summary || {};
+  const coverage = report.coverage || {};
+  const mappings = dataset.mappings || [];
+  const nonEmptySkillMappings = mappings.filter(item => item.skillIds?.length).length;
+  const nonEmptyContextMappings = mappings.filter(item => item.contextIds?.length).length;
+  console.log(`[Boussole Pro] Branche: ${syncMeta.branch || "local"}`);
+  console.log(`[Boussole Pro] Metiers recuperes: ${dataset.jobs?.length || 0}/${syncMeta.requestedCodes?.length || 0}`);
+  console.log(`[Boussole Pro] Competences brutes: ${summary.rawSkills || 0}`);
+  console.log(`[Boussole Pro] Competences filtrees: ${summary.filteredSkills || summary.skills || 0}`);
+  console.log(`[Boussole Pro] Competences matchables profil: ${summary.matchableSkills || 0}`);
+  console.log(`[Boussole Pro] Contextes globaux: ${summary.workContexts || 0}`);
+  console.log(`[Boussole Pro] Mappings avec skillIds: ${nonEmptySkillMappings}/${mappings.length}`);
+  console.log(`[Boussole Pro] Mappings avec contextIds: ${nonEmptyContextMappings}/${mappings.length}`);
+  console.log(`[Boussole Pro] Metiers avec competences liees: ${coverage.linkedJobsWithSkillsCount || 0}`);
+  console.log(`[Boussole Pro] Metiers avec contextes lies: ${coverage.linkedJobsWithContextsCount || 0}`);
+  (syncMeta.optionalReferentials || []).forEach(item => {
+    console.log(`[Boussole Pro] API optionnelle ${item.name}: ${item.status}${item.count !== undefined ? ` (${item.count})` : ""}`);
+  });
+}
+
 async function safeResponseText(response) {
   try {
     return shortMessage(await response.text());
@@ -407,8 +444,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export async function writeGeneratedJson(name, data) {
-  await writeFile(new URL(name, OUT_DIR), `${JSON.stringify(data, null, 2)}\n`, "utf8");
+export async function writeGeneratedJson(name, data, options = {}) {
+  const pretty = options.pretty !== false;
+  await writeFile(new URL(name, OUT_DIR), `${JSON.stringify(data, null, pretty ? 2 : 0)}\n`, "utf8");
 }
 
 main();

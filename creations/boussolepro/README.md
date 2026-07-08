@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.3.2.alpha  
+**Version :** v0.3.2-bis.alpha  
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -22,7 +22,7 @@ Si aucun fichier généré n’existe et si l’utilisateur est hors ligne, le c
 
 ## Données sample
 
-La version v0.3.2.alpha embarque toujours les métiers sample non officiels de démonstration et renforce la chaîne ROME générée : extraction récursive des champs utiles, classification des compétences, référentiels dérivés et rapport de complétude par famille.
+La version v0.3.2-bis.alpha embarque toujours les métiers sample non officiels de démonstration et stabilise la chaîne ROME générée : IDs canoniques `rome-CODE`, placeholders supprimés, classification des compétences, séparation brut/filtré/matchable et rapport de complétude plus honnête.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -51,7 +51,9 @@ Les compétences ROME sont séparées en plusieurs couches :
 
 Les fichiers `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` sont générés pour nourrir ClairMétier quand les fiches ROME contiennent les champs exploitables.
 
-La v0.3.2 prépare aussi, sans inventer de données, les fichiers futurs `formations.onisep.json`, `certifications.certifinfo.json`, `mappings-rome-formations.json` et `mappings-rome-certifications.json`.
+Tant que `mappings.rome.json` ne relie pas officiellement des compétences ou contextes à un métier, ClairMétier les affiche comme référentiels globaux mais ne les utilise pas comme preuve métier. Les compétences matchables servent au profil utilisateur, pas à affirmer qu’un métier les exige.
+
+La v0.3.2-bis prépare aussi, sans inventer de données, les fichiers futurs `formations.onisep.json`, `certifications.certifinfo.json`, `mappings-rome-formations.json` et `mappings-rome-certifications.json`. Les formations, certifications et indicateurs marché sample ne sont pas mélangés au corpus ROME généré.
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
@@ -68,7 +70,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire. La version v0.3.2.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire. La version v0.3.2-bis.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
@@ -106,9 +108,9 @@ GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. L
 4. Vérifier les fichiers `creations/boussolepro/data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
 
-Le rapport `data-quality-report.rome.json` indique la branche, les codes demandés/réussis/échoués, la complétude métiers/compétences/contextes/appellations/formations/certifications, les champs les plus absents, les avertissements de couverture et les compteurs `rawSkills`, `filteredSkills`, `linkedSkills` et `matchableSkills`.
+Le rapport `data-quality-report.rome.json` indique la branche, les codes demandés/réussis/échoués, la complétude métiers/compétences/contextes/appellations/formations/certifications, les champs les plus absents, les avertissements de couverture et les compteurs `rawSkills`, `filteredSkills`, `linkedSkills`, `linkedContexts`, `linkedAppellations` et `matchableSkills`.
 
-Le workflow écrit aussi `debug/raw-structure-report.json` avec les clés et chemins candidats de quelques fiches ROME, sans corps brut complet ni jeton.
+Le workflow peut écrire `debug/raw-structure-report.json` avec les clés et chemins candidats de quelques fiches ROME, sans corps brut complet ni jeton. Pour limiter les gros diffs, ce debug est désactivé par défaut et s’active avec l’input `raw_debug` ou la variable `ROME_RAW_DEBUG=true`.
 
 Deux contrôles GitHub Actions complètent la chaîne :
 

@@ -21,7 +21,7 @@ La premiere voie automatisee utilise le scope valide :
 nomenclatureRome api_rome-fiches-metiersv1
 ```
 
-La v0.3.2.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
+La v0.3.2-bis.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
 
 ```text
 ROME_CODES=A1203,A1414,A1501,...
@@ -52,6 +52,7 @@ Variables possibles :
 - `FT_ROME_CONTEXTES_URL`
 - `ROME_CODES`
 - `ROME_DEBUG_CODES`
+- `ROME_RAW_DEBUG`
 - `FT_RATE_LIMIT_MS`
 
 Les URLs et scopes de referentiels optionnels doivent etre verifies dans la documentation France Travail IO active. Si un endpoint optionnel n'est pas configure ou repond en erreur, la synchronisation continue avec un avertissement. Le referentiel `metiers` est teste en diagnostic seulement pour ne pas augmenter le corpus au-dela des codes ROME demandes.
@@ -73,7 +74,7 @@ Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulC
 
 Si un referentiel global est charge sans lien metier → competence, le rapport signale `referential_loaded_but_unlinked`. Dans ce cas, Boussole Pro ne doit pas utiliser ces competences globales comme preuve de compatibilite.
 
-Le dossier `creations/boussolepro/data/generated/debug/` peut contenir `raw-structure-report.json`. Ce fichier liste seulement les cles et chemins candidats des reponses ROME de test pour aider la normalisation ; il ne doit jamais contenir de token, secret, client_id ou en-tete Authorization.
+Le dossier `creations/boussolepro/data/generated/debug/` peut contenir `raw-structure-report.json` quand `ROME_RAW_DEBUG=true` ou quand l'input manuel `raw_debug` est active. Ce fichier liste seulement les cles et chemins candidats des reponses ROME de test pour aider la normalisation ; il ne doit jamais contenir de token, secret, client_id ou en-tete Authorization.
 
 ## Retour aux donnees sample
 

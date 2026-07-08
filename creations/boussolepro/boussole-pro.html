@@ -1119,7 +1119,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.3.2.alpha",
+  version: "v0.3.2-bis.alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1784,7 +1784,7 @@ function loadSampleData() {
     {
       id: "sample_non_official",
       schemaVersion: CONFIG.schemaVersion,
-      name: "Corpus sample Boussole Pro v0.3.2.alpha",
+      name: "Corpus sample Boussole Pro v0.3.2-bis.alpha",
       producer: "Lu'uma / exemple local",
       url: null,
       license: "Exemple local non officiel, a remplacer avant usage reel",
@@ -1801,8 +1801,8 @@ function loadSampleData() {
 
   const dataset = {
     schemaVersion: CONFIG.schemaVersion,
-    datasetName: "Boussole Pro - corpus sample v0.3.2.alpha",
-    datasetVersion: "v0.3.2.alpha-sample",
+    datasetName: "Boussole Pro - corpus sample v0.3.2-bis.alpha",
+    datasetVersion: "v0.3.2-bis.alpha-sample",
     sourceDate: "2026-07-07",
     importedAt,
     provenance: "sample",
@@ -1820,8 +1820,8 @@ function loadSampleData() {
     manifest: {
       schemaVersion: CONFIG.schemaVersion,
       id: "manifest-boussole-pro-sample-v0-3-2-alpha",
-      datasetName: "Boussole Pro - corpus sample v0.3.2.alpha",
-      datasetVersion: "v0.3.2.alpha-sample",
+      datasetName: "Boussole Pro - corpus sample v0.3.2-bis.alpha",
+      datasetVersion: "v0.3.2-bis.alpha-sample",
       sourceDate: "2026-07-07",
       importedAt,
       provenance: "sample",
@@ -2106,6 +2106,9 @@ function generateDataQualityReport(datasets) {
   const jobsWithTraining = jobs.filter(job => trainings.some(training => (training.targetJobIds || []).includes(job.id))).length;
   const jobsWithMarket = jobs.filter(job => (job.marketIndicators || []).some(id => market.some(item => item.id === id))).length;
   const linkedSkillIds = getLinkedSkillIdsFromJobs(jobs);
+  const linkedContextIds = new Set(jobs.flatMap(job => toArray(job.workContexts)));
+  const linkedAppellations = appellations.filter(item => item.jobId).length;
+  const officialDescriptions = jobs.filter(job => job.description && job.fieldSources?.description === "official_rome_api").length;
   const hasSampleSource = datasets.provenance === "sample" || (datasets.sources || []).some(source => source.id === "sample_non_official" || source.provenance === "sample");
   const baseWarnings = hasSampleSource ? [
     buildIssue("warning", "sample_data", "Dataset", datasets.datasetName || "dataset", "Les donnees actives sont des exemples ou contiennent des enrichissements manuels.", "Importer un corpus officiel normalise pour un usage professionnel.")
@@ -2130,6 +2133,9 @@ function generateDataQualityReport(datasets) {
       knowledge: toArray(datasets.knowledge).length,
       certificationLike: toArray(datasets.certificationLike).length,
       workContexts: contexts.length,
+      linkedContexts: linkedContextIds.size,
+      linkedAppellations,
+      officialDescriptions,
       trainings: trainings.length,
       certifications: certifications.length,
       mappings: mappings.length,
@@ -2140,6 +2146,7 @@ function generateDataQualityReport(datasets) {
       jobsWithContexts: ratio(jobs.filter(job => (job.workContexts || []).length > 0).length, jobs.length),
       linkedJobsWithSkillsCount: jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length,
       linkedJobsWithContextsCount: jobs.filter(job => toArray(job.workContexts).length).length,
+      jobsWithOfficialDescription: ratio(officialDescriptions, jobs.length),
       jobsWithTraining: ratio(jobsWithTraining, jobs.length),
       jobsWithDiplomaLevel: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== undefined).length, jobs.length),
       jobsWithMarketData: ratio(jobsWithMarket, jobs.length)
@@ -2190,8 +2197,9 @@ function getProfileSkillOptions(dataset = App.state.dataset) {
 }
 
 function normalizeJob(raw) {
-  const id = raw.id || raw.normalizedId || `job-local-${slug(raw.title || raw.romeCode || cryptoRandom())}`;
   const romeCode = raw.romeCode || raw.rawSourceId || "";
+  const isGeneratedRome = raw.provenance === "generated_rome" || raw.source === "official_rome_api" || toArray(raw.sourceRefs).includes("france_travail_rome_generated");
+  const id = isGeneratedRome && romeCode ? `rome-${romeCode}` : (raw.id || raw.normalizedId || `job-local-${slug(raw.title || romeCode || cryptoRandom())}`);
   const physical = raw.physical || [raw.physicalConstraints?.level || "unknown", raw.physicalConstraints?.tags || []];
   const schedule = raw.schedule || [
     raw.scheduleConstraints?.nightWork || "unknown",
@@ -2210,9 +2218,9 @@ function normalizeJob(raw) {
     appellations: toArray(raw.appellations).map(frText),
     domain: frText(raw.domain || "Domaine non renseigné"),
     family: frText(raw.family || "Famille non renseignée"),
-    description: frText(raw.description || "Description absente du corpus local."),
-    activities: toArray(raw.activities).length ? toArray(raw.activities).map(frText) : ["Activités à vérifier dans le corpus réel."],
-    accessConditions: raw.accessConditions || { text: "Conditions d'accès à vérifier.", source: "unknown", confidence: 0.2 },
+    description: raw.description ? frText(raw.description) : null,
+    activities: toArray(raw.activities).map(frText),
+    accessConditions: raw.accessConditions || { text: null, source: "unknown", confidence: 0 },
     requiredSkills: toArray(raw.requiredSkills),
     optionalSkills: toArray(raw.optionalSkills),
     softSkills: toArray(raw.softSkills),
@@ -2223,9 +2231,9 @@ function normalizeJob(raw) {
       schedule: raw.scheduleConstraints || { nightWork: schedule[0], weekendWork: schedule[1], irregularHours: schedule[2], source: "unknown", confidence: 0.2 },
       mobility: raw.mobilityConstraints || { travelFrequency: mobility[0], driverLicenseRequired: mobility[1], driverLicenseTypes: mobility[1] ? ["B"] : [], source: "unknown", confidence: 0.2 }
     },
-    physicalConstraints: raw.physicalConstraints || { level: physical[0], tags: physical[1], source: "manualEnrichment", confidence: 0.4 },
-    scheduleConstraints: raw.scheduleConstraints || { nightWork: schedule[0], weekendWork: schedule[1], irregularHours: schedule[2], source: "manualEnrichment", confidence: 0.4 },
-    mobilityConstraints: raw.mobilityConstraints || { travelFrequency: mobility[0], driverLicenseRequired: mobility[1], driverLicenseTypes: mobility[1] ? ["B"] : [], source: "manualEnrichment", confidence: 0.4 },
+    physicalConstraints: raw.physicalConstraints || { level: physical[0], tags: physical[1], source: raw.physical ? "sample_non_official" : "unknown", confidence: raw.physical ? 0.4 : 0 },
+    scheduleConstraints: raw.scheduleConstraints || { nightWork: schedule[0], weekendWork: schedule[1], irregularHours: schedule[2], source: raw.schedule ? "sample_non_official" : "unknown", confidence: raw.schedule ? 0.4 : 0 },
+    mobilityConstraints: raw.mobilityConstraints || { travelFrequency: mobility[0], driverLicenseRequired: mobility[1], driverLicenseTypes: mobility[1] ? ["B"] : [], source: raw.mobility ? "sample_non_official" : "unknown", confidence: raw.mobility ? 0.4 : 0 },
     publicContactLevel: raw.publicContactLevel || "unknown",
     autonomyLevel: raw.autonomyLevel || "unknown",
     remoteCompatibility: raw.remoteCompatibility || "unknown",
@@ -2302,7 +2310,7 @@ function normalizeRomeApiJob(raw) {
     appellations: raw.appellations || raw.appellationsMetier || raw.libelles || [],
     domain: raw.domain || raw.domaine || raw.grandDomaine || "ROME / France Travail",
     family: raw.family || raw.famille || raw.domaineProfessionnel || "ROME",
-    description: raw.description || raw.resume || raw.definition || "Description issue d’une réponse API à vérifier.",
+    description: raw.description || raw.resume || raw.definition || null,
     activities: raw.activities || raw.activites || raw.activitesPrincipales || [],
     requiredSkills: toArray(raw.requiredSkills || raw.competences || raw.skills).map(item => typeof item === "string" ? `skill-rome-${slug(item)}` : `skill-rome-${slug(item.libelle || item.code || item.id)}`),
     workContexts: toArray(raw.workContexts || raw.contextesTravail).map(item => typeof item === "string" ? `ctx-rome-${slug(item)}` : `ctx-rome-${slug(item.libelle || item.code || item.id)}`),
@@ -3168,8 +3176,9 @@ function renderJobCard(result) {
       </div>
       <div class="details-panel" data-details-panel>
         <div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
+        <p><strong>Description :</strong> ${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</p>
         <p><strong>Appellations :</strong> ${take(job?.appellations || [], 5).map(h).join(", ") || "Non renseignées."}</p>
-        <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "À vérifier.")}</p>
+        <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</p>
         <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
         <p><strong>Données manquantes :</strong> ${result.missingData.map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
       </div>
@@ -3319,8 +3328,9 @@ function renderDataPage() {
         ${metric("Métiers", report.summary.jobs)}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
         ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
-        ${metric("Contextes", report.summary.workContexts)}
-        ${metric("Appellations", report.summary.appellations)}
+        ${metric("Contextes globaux", generatedSummary.globalContextsCount)}
+        ${metric("Contextes liés", generatedSummary.linkedContextsCount)}
+        ${metric("Appellations liées", generatedSummary.linkedAppellationsCount)}
       </div>
       ${generatedSummary.isPartialOfficial ? `<div class="launch-box warning"><strong>Corpus officiel partiel</strong><p>Ce jeu de données sert à tester la chaîne ROME, pas encore à couvrir tous les métiers.</p></div>` : ""}
       <ul class="data-list">
@@ -3345,6 +3355,10 @@ function renderDataPage() {
         ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
         ${metric("Savoirs", generatedSummary.knowledgeCount)}
         ${metric("Certification-like", generatedSummary.certificationLikeCount)}
+        ${metric("Contextes globaux", generatedSummary.globalContextsCount)}
+        ${metric("Contextes liés", generatedSummary.linkedContextsCount)}
+        ${metric("Appellations liées", generatedSummary.linkedAppellationsCount)}
+        ${metric("Descriptions officielles", generatedSummary.officialDescriptionsCount)}
         ${metric("Formations", report.summary.trainings)}
         ${metric("Certifications", report.summary.certifications)}
         ${metric("Contextes", report.summary.workContexts)}
@@ -3367,6 +3381,10 @@ function renderDataPage() {
         <li>Compétences filtrées : ${h(generatedSummary.filteredSkillsCount)}</li>
         <li>Compétences liées aux métiers : ${h(generatedSummary.linkedSkillsCount)}</li>
         <li>Compétences matchables profil : ${h(generatedSummary.matchableSkillsCount)}</li>
+        <li>Contextes globaux : ${h(generatedSummary.globalContextsCount)}</li>
+        <li>Contextes liés aux métiers : ${h(generatedSummary.linkedContextsCount)}</li>
+        <li>Appellations liées : ${h(generatedSummary.linkedAppellationsCount)}</li>
+        <li>Descriptions officielles : ${h(generatedSummary.officialDescriptionsCount)}</li>
       </ul>
     </section>
     <section class="results-section print-section">
@@ -3416,6 +3434,8 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
   const summary = report.summary || {};
   const legacyHugeSkillCount = !("rawSkills" in summary) && !("filteredSkills" in summary) && Number(summary.skills || 0) > 5000;
   const linkedFromJobs = getLinkedSkillIdsFromJobs(dataset.jobs || []).size;
+  const linkedContextsFromJobs = new Set(toArray(dataset.jobs).flatMap(job => toArray(job.workContexts))).size;
+  const linkedAppellationsFromRows = toArray(dataset.jobAppellations).filter(item => item.jobId).length;
   const completenessLines = ["jobs", "skills", "contexts", "appellations", "trainings", "certifications", "global"]
     .map(key => completeness[key]?.label)
     .filter(Boolean);
@@ -3442,6 +3462,10 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
     matchableSkillsCount: summary.matchableSkills ?? completeness.skills?.matchableCount ?? toArray(dataset.matchableSkills).length,
     knowledgeCount: summary.knowledge ?? 0,
     certificationLikeCount: summary.certificationLike ?? 0,
+    globalContextsCount: summary.workContexts ?? toArray(dataset.workContexts).length,
+    linkedContextsCount: summary.linkedContexts ?? completeness.contexts?.linkedCount ?? linkedContextsFromJobs,
+    linkedAppellationsCount: summary.linkedAppellations ?? completeness.appellations?.count ?? linkedAppellationsFromRows,
+    officialDescriptionsCount: summary.officialDescriptions ?? 0,
     trainingsLabel: completeness.trainings?.label || ((dataset.trainings || []).length ? `${dataset.trainings.length} formation(s)` : "source non encore connectée"),
     certificationsLabel: completeness.certifications?.label || ((dataset.certifications || []).length ? `${dataset.certifications.length} certification(s)` : "source non encore connectée")
   };
@@ -3537,10 +3561,11 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : (base.certificationLike || []),
     matchableSkills: Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : (base.matchableSkills || []),
     workContexts: Array.isArray(generated.workContexts) && generated.workContexts.length ? generated.workContexts : base.workContexts,
-    jobAppellations: Array.isArray(generated.jobAppellations) && generated.jobAppellations.length ? generated.jobAppellations : base.jobAppellations,
-    mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings : base.mappings,
-    trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining) : base.trainings,
-    certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : base.certifications,
+    jobAppellations: Array.isArray(generated.jobAppellations) && generated.jobAppellations.length ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : base.jobAppellations,
+    mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings.map(normalizeGeneratedMappingIds) : base.mappings,
+    trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
+    certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : [],
+    marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : [],
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : (base.mappingsRomeFormations || []),
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : (base.mappingsRomeCertifications || [])
   };
@@ -3567,6 +3592,39 @@ function markDatasetAsOfficialRome(dataset, manifest = {}) {
     notes: "Aucun secret API n’est exposé dans l’application front-end."
   }];
   return dataset;
+}
+
+function canonicalRomeJobId(value) {
+  const text = String(value || "");
+  if (/^job-rome-[A-Z][0-9]{4}/.test(text)) return text.replace(/^job-rome-/, "rome-").slice(0, 10);
+  if (/^rome-[A-Z][0-9]{4}/.test(text)) return text.slice(0, 10);
+  return text;
+}
+
+function normalizeGeneratedMappingIds(mapping) {
+  return {
+    ...mapping,
+    jobId: canonicalRomeJobId(mapping.jobId),
+    relatedJobIds: toArray(mapping.relatedJobIds).map(canonicalRomeJobId)
+  };
+}
+
+function normalizeGeneratedAppellationIds(row) {
+  const jobId = canonicalRomeJobId(row.jobId);
+  const romeCode = row.romeCode || jobId.replace(/^rome-/, "");
+  return {
+    ...row,
+    jobId,
+    romeCode,
+    id: row.id || `appellation-${romeCode}-${slug(row.label || "appellation")}`
+  };
+}
+
+function normalizeGeneratedTargetJobIds(row) {
+  return {
+    ...row,
+    targetJobIds: toArray(row.targetJobIds).map(canonicalRomeJobId)
+  };
 }
 
 function apiInput(label, path, type = "text") {
@@ -4254,18 +4312,34 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   const base = { label: labels[value] || value, category: "constraint", status: "compatible", message: "" };
   if (value === "nightWork") return scheduleStatus(schedule.nightWork, base, "horaire", "Ce metier semble impliquer du travail de nuit.");
   if (value === "weekendWork") return scheduleStatus(schedule.weekendWork, base, "horaire", "Ce metier semble impliquer du travail le week-end.");
-  if (value === "heavyLoad") return tagStatus(physicalTags.includes("load") || job.physicalConstraints?.level === "high", base, "intensite physique", "Ce metier semble impliquer du port de charges ou une intensite physique forte.");
-  if (value === "standing") return tagStatus(physicalTags.includes("standing") || physicalTags.includes("movement") || job.physicalConstraints?.level === "high", base, "intensite physique", "Ce metier semble demander une station debout importante.");
-  if (value === "noise") return tagStatus(physicalTags.includes("noise") || job.workContexts.includes("ctx-noise") || job.workContexts.includes("ctx-factory"), base, "environnement", "Ce metier peut se derouler dans un environnement bruyant.");
-  if (value === "publicContact") return levelStatus(["medium", "high"].includes(job.publicContactLevel), base, "relationnel", "Ce metier implique un contact public notable.");
-  if (value === "travel") return levelStatus(["medium", "high"].includes(mobility.travelFrequency), base, "mobilite", "Ce metier semble demander des deplacements reguliers.");
-  if (value === "driverLicenseRequired") return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), base, "permis", "Ce metier semble demander le permis B, absent du profil.");
+  if (value === "heavyLoad") return physicalStatus(physicalTags.includes("load") || job.physicalConstraints?.level === "high", job.physicalConstraints, base, "intensite physique", "Ce metier semble impliquer du port de charges ou une intensite physique forte.");
+  if (value === "standing") return physicalStatus(physicalTags.includes("standing") || physicalTags.includes("movement") || job.physicalConstraints?.level === "high", job.physicalConstraints, base, "intensite physique", "Ce metier semble demander une station debout importante.");
+  if (value === "noise") return physicalStatus(physicalTags.includes("noise") || job.workContexts.includes("ctx-noise") || job.workContexts.includes("ctx-factory"), job.physicalConstraints, base, "environnement", "Ce metier peut se derouler dans un environnement bruyant.");
+  if (value === "publicContact") {
+    if (job.publicContactLevel === "unknown") return { ...base, status: "unknown", category: "relationnel", message: "Information officielle non disponible dans le corpus." };
+    return levelStatus(["medium", "high"].includes(job.publicContactLevel), base, "relationnel", "Ce metier implique un contact public notable.");
+  }
+  if (value === "travel") {
+    if (!mobility.source || mobility.source === "unknown" || mobility.travelFrequency === "unknown") return { ...base, status: "unknown", category: "mobilite", message: "Information officielle non disponible dans le corpus." };
+    return levelStatus(["medium", "high"].includes(mobility.travelFrequency), base, "mobilite", "Ce metier semble demander des deplacements reguliers.");
+  }
+  if (value === "driverLicenseRequired") {
+    if (!mobility.source || mobility.source === "unknown") return { ...base, status: "unknown", category: "permis", message: "Information officielle non disponible dans le corpus." };
+    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), base, "permis", "Ce metier semble demander le permis B, absent du profil.");
+  }
   if (value === "longTraining") {
     const gap = (job.requiredDiplomaLevel || job.recommendedDiplomaLevel || 0) - (criteria.education.highestLevel || 0);
+    if (!job.requiredDiplomaLevel && !job.recommendedDiplomaLevel && !toArray(job.requiredCertifications).length) return { ...base, status: "unknown", category: "formation", message: "Information officielle non disponible dans le corpus." };
     return levelStatus(gap >= 2 || toArray(job.requiredCertifications).length > 0, base, "formation", "Cette piste demande probablement une formation ou certification significative.");
   }
-  if (value === "screenWork") return tagStatus(physicalTags.includes("screen") || job.workContexts.includes("ctx-office") || job.remoteCompatibility !== "none", base, "environnement", "Ce metier peut impliquer un travail sur ecran prolonge.");
-  if (value === "remoteNeeded") return levelStatus(job.remoteCompatibility === "none" || job.remoteCompatibility === "low", base, "lieu", "Ce metier semble surtout presentiel.");
+  if (value === "screenWork") {
+    const hasScreenSignal = physicalTags.includes("screen") || job.workContexts.includes("ctx-office") || ["high", "partial"].includes(job.remoteCompatibility);
+    return physicalStatus(hasScreenSignal, job.physicalConstraints, base, "environnement", "Ce metier peut impliquer un travail sur ecran prolonge.");
+  }
+  if (value === "remoteNeeded") {
+    if (!job.remoteCompatibility || job.remoteCompatibility === "unknown") return { ...base, status: "unknown", category: "lieu", message: "Information officielle non disponible dans le corpus." };
+    return levelStatus(job.remoteCompatibility === "none" || job.remoteCompatibility === "low", base, "lieu", "Ce metier semble surtout presentiel.");
+  }
   return { ...base, status: "unknown", message: "Donnee non disponible dans le corpus." };
 }
 
@@ -4282,6 +4356,12 @@ function tagStatus(condition, base, category, message) {
 
 function levelStatus(condition, base, category, message) {
   return condition ? { ...base, status: "confirmed_incompatible", category, message } : { ...base, status: "compatible", category };
+}
+
+function physicalStatus(condition, source, base, category, message) {
+  const hasOfficialOrComputedSignal = source?.source && source.source !== "unknown" && Number(source.confidence || 0) > 0 && (toArray(source.tags).length || source.level !== "unknown");
+  if (!hasOfficialOrComputedSignal) return { ...base, status: "unknown", category, message: "Information officielle non disponible dans le corpus." };
+  return tagStatus(condition, base, category, message);
 }
 
 function calculateConfidence(criteria, job, details = [], unknown = []) {
