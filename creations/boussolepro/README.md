@@ -33,12 +33,14 @@ La page **Données** propose `Charger les données générées`.
 L’application tente alors de lire :
 
 ```text
-data/generated/import-manifest.rome.json
-data/generated/jobs.rome.json
-data/generated/data-quality-report.rome.json
+creations/boussolepro/data/generated/import-manifest.rome.json
+creations/boussolepro/data/generated/jobs.rome.json
+creations/boussolepro/data/generated/data-quality-report.rome.json
 ```
 
-Les fichiers `skills.rome.json`, `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` peuvent aussi exister, mais la première voie GitHub Actions se concentre sur les fiches métiers ROME.
+Depuis `boussole-pro.html`, ces fichiers sont chargés avec le chemin relatif `data/generated/`, donc l’URL GitHub Pages attendue est `creations/boussolepro/data/generated/`.
+
+Les fichiers `skills.rome.json`, `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` peuvent aussi exister dans ce même dossier, mais la première voie GitHub Actions se concentre sur les fiches métiers ROME.
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
@@ -82,14 +84,14 @@ Ne jamais écrire `FT_CLIENT_SECRET` dans :
 
 Si un Client Secret a été partagé dans un outil externe, une conversation ou un dépôt, il est recommandé de le régénérer dans France Travail IO avant usage durable.
 
-GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. Le workflow `.github/workflows/sync-rome-data.yml` lit les secrets GitHub côté Actions et écrit des fichiers publics dans `data/generated/`.
+GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. Le workflow `.github/workflows/sync-rome-data.yml` lit les secrets GitHub côté Actions et écrit des fichiers publics dans `creations/boussolepro/data/generated/`.
 
 ## Déploiement GitHub Pages
 
 1. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub Actions.
 2. Configurer `FT_TOKEN_URL` et `FT_ROME_FICHES_METIERS_URL` en variables Actions après vérification dans France Travail IO.
 3. Lancer le workflow `Sync ROME data`.
-4. Vérifier les fichiers `data/generated/`.
+4. Vérifier les fichiers `creations/boussolepro/data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
 
 Documentation :
@@ -110,7 +112,7 @@ Ouvrir `boussole-pro.html`, puis vérifier :
 - export/import profil ;
 - export résultats JSON et Markdown ;
 - import corpus JSON ;
-- chargement `data/generated` avec erreur douce si absent ;
+- chargement `creations/boussolepro/data/generated` avec erreur douce si absent ;
 - retour aux données sample ;
 - impression ;
 - affichage mobile ;

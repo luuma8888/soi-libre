@@ -12,7 +12,7 @@ Le chemin recommande est :
 2. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub du depot.
 3. Ajouter `FT_TOKEN_URL` et `FT_ROME_FICHES_METIERS_URL` dans les variables GitHub Actions.
 4. Lancer le workflow `Sync ROME data` manuellement.
-5. Verifier les fichiers generes dans `data/generated/`.
+5. Verifier les fichiers generes dans `creations/boussolepro/data/generated/`.
 6. Depuis Boussole Pro, ouvrir Donnees puis charger les donnees generees.
 
 La premiere voie automatisee utilise le scope valide :
@@ -49,7 +49,7 @@ Les URLs et scopes doivent etre verifies dans la documentation France Travail IO
 
 ## Test sur GitHub Pages
 
-Une fois le workflow execute, publier le site puis ouvrir Boussole Pro. La page Donnees propose `Charger les donnees generees`. Si les fichiers sont absents ou si la synchronisation a echoue, l'application conserve le corpus sample.
+Une fois le workflow execute, publier le site puis ouvrir Boussole Pro. La page Donnees propose `Charger les donnees generees`. L'application cherche les fichiers via le chemin relatif `data/generated/`, donc depuis GitHub Pages ils doivent exister dans `creations/boussolepro/data/generated/`. Si les fichiers sont absents ou si la synchronisation a echoue, l'application conserve le corpus sample.
 
 ## Retour aux donnees sample
 

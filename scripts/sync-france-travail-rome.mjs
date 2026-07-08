@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 import { mergeRomeDatasets } from "./normalize-rome-api.mjs";
 
-const OUT_DIR = new URL("../data/generated/", import.meta.url);
+const OUT_DIR = new URL("../creations/boussolepro/data/generated/", import.meta.url);
 const DEFAULT_SCOPE = "nomenclatureRome api_rome-fiches-metiersv1";
 const DEFAULT_TEST_CODES = ["M1607", "M1805", "K1303", "A1203"];
 const DEFAULT_RATE_LIMIT_MS = 1100;

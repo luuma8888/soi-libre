@@ -3325,7 +3325,7 @@ async function loadGeneratedRomeDataset() {
   };
   try {
     App.state.generatedDataStatus = "chargement en cours";
-    App.state.generatedDataMessage = "Recherche de fichiers JSON générés dans data/generated.";
+    App.state.generatedDataMessage = "Recherche de fichiers JSON générés dans data/generated/, relatif à Boussole Pro.";
     renderAll();
     const generated = {};
     for (const [key, filename] of Object.entries(files)) {
@@ -3334,7 +3334,7 @@ async function loadGeneratedRomeDataset() {
     const hasUsefulData = ["jobs", "skills", "workContexts", "jobAppellations", "mappings"].some(key => Array.isArray(generated[key]) && generated[key].length);
     if (!hasUsefulData) {
       App.state.generatedDataStatus = "non configuré";
-      App.state.generatedDataMessage = "Aucun fichier exploitable trouvé dans data/generated. L’application reste sur le corpus local ou sample.";
+      App.state.generatedDataMessage = "Aucun fichier exploitable trouvé dans data/generated/ à côté de Boussole Pro. L’application reste sur le corpus local ou sample.";
       renderAll();
       showToast("Données générées absentes. Le corpus actuel est conservé.");
       return;
@@ -3345,7 +3345,7 @@ async function loadGeneratedRomeDataset() {
     saveDataset(App.state.dataset);
     calculateAndStoreResults();
     App.state.generatedDataStatus = "disponible via données générées";
-    App.state.generatedDataMessage = "Les fichiers data/generated ont été chargés sans secret dans le navigateur.";
+    App.state.generatedDataMessage = "Les fichiers creations/boussolepro/data/generated ont été chargés sans secret dans le navigateur.";
     renderAll();
     showToast("Données générées chargées.");
   } catch (error) {
