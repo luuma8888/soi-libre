@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
   "reportId": "quality-2026-07-08",
-  "generatedAt": "2026-07-08T05:03:18.794Z",
+  "generatedAt": "2026-07-08T05:14:52.152Z",
   "branch": "soi-libre-codex",
   "datasetVersion": "rome-generated-2026-07-08",
-  "status": "completed_with_warnings",
+  "status": "completed",
   "requestedCodesCount": 72,
   "successfulCodesCount": 72,
   "failedCodesCount": 0,
@@ -104,21 +104,27 @@
   "optionalReferentials": [
     {
       "name": "metiers",
-      "status": 403,
-      "message": "",
-      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
+      "status": "ok",
+      "count": 1911,
+      "usedForDataset": false,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier",
+      "scope": "configured"
     },
     {
       "name": "competences",
-      "status": 403,
-      "message": "",
-      "endpoint": "https://api.francetravail.io/partenaire/rome-competences/v1/competences/competence"
+      "status": "ok",
+      "count": 35595,
+      "usedForDataset": true,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-competences/v1/competences/competence",
+      "scope": "configured"
     },
     {
       "name": "contextes",
-      "status": 403,
-      "message": "",
-      "endpoint": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
+      "status": "ok",
+      "count": 191,
+      "usedForDataset": true,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail",
+      "scope": "configured"
     }
   ],
   "sync": {
@@ -281,8 +287,8 @@
   "summary": {
     "jobs": 72,
     "appellations": 0,
-    "skills": 0,
-    "workContexts": 0,
+    "skills": 35595,
+    "workContexts": 191,
     "trainings": 0,
     "certifications": 0,
     "mappings": 72,
@@ -297,20 +303,20 @@
       "label": "Métiers : 72/72"
     },
     "skills": {
-      "status": "missing",
-      "count": 0,
+      "status": "connected",
+      "count": 35595,
       "linkedCount": 0,
       "jobsWithData": 0,
       "score": 0,
-      "label": "Compétences : 0 liées aux 72 métiers"
+      "label": "Compétences : 35595 liées aux 72 métiers"
     },
     "contexts": {
-      "status": "missing",
-      "count": 0,
+      "status": "connected",
+      "count": 191,
       "linkedCount": 0,
       "jobsWithData": 0,
       "score": 0,
-      "label": "Contextes : 0 liés aux 72 métiers"
+      "label": "Contextes : 191 liés aux 72 métiers"
     },
     "appellations": {
       "status": "missing",
@@ -412,43 +418,7 @@
     }
   ],
   "issues": [],
-  "warnings": [
-    {
-      "id": "empty_generated_skills-skills",
-      "severity": "warning",
-      "type": "empty_generated_skills",
-      "target": "skills",
-      "message": "Aucun referentiel de competences genere. Le moteur utilisera les IDs metier mais affichera moins de libelles."
-    },
-    {
-      "id": "empty_generated_contexts-workcontexts",
-      "severity": "warning",
-      "type": "empty_generated_contexts",
-      "target": "workContexts",
-      "message": "Aucun contexte de travail genere. Le score cadre ideal sera moins precis."
-    },
-    {
-      "id": "optional_metiers_403-metiers",
-      "severity": "info",
-      "type": "optional_metiers_403",
-      "target": "metiers",
-      "message": "metiers non configure."
-    },
-    {
-      "id": "optional_competences_403-competences",
-      "severity": "info",
-      "type": "optional_competences_403",
-      "target": "competences",
-      "message": "competences non configure."
-    },
-    {
-      "id": "optional_contextes_403-contextes",
-      "severity": "info",
-      "type": "optional_contextes_403",
-      "target": "contextes",
-      "message": "contextes non configure."
-    }
-  ],
+  "warnings": [],
   "recommendations": [
     "Ce corpus ROME genere est utilisable pour tester la chaine officielle, mais reste partiel tant que peu de codes sont synchronises.",
     "Les tags de valeurs, envies et contraintes sont des deductions techniques : les verifier avant usage professionnel.",
