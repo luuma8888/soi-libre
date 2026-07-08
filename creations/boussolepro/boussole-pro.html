@@ -1119,7 +1119,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.3.alpha",
+  version: "v0.3.1.alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1784,7 +1784,7 @@ function loadSampleData() {
     {
       id: "sample_non_official",
       schemaVersion: CONFIG.schemaVersion,
-      name: "Corpus sample Boussole Pro v0.3.alpha",
+      name: "Corpus sample Boussole Pro v0.3.1.alpha",
       producer: "Lu'uma / exemple local",
       url: null,
       license: "Exemple local non officiel, a remplacer avant usage reel",
@@ -1801,8 +1801,8 @@ function loadSampleData() {
 
   const dataset = {
     schemaVersion: CONFIG.schemaVersion,
-    datasetName: "Boussole Pro - corpus sample v0.3.alpha",
-    datasetVersion: "v0.3.alpha-sample",
+    datasetName: "Boussole Pro - corpus sample v0.3.1.alpha",
+    datasetVersion: "v0.3.1.alpha-sample",
     sourceDate: "2026-07-07",
     importedAt,
     provenance: "sample",
@@ -1819,9 +1819,9 @@ function loadSampleData() {
     mappings,
     manifest: {
       schemaVersion: CONFIG.schemaVersion,
-      id: "manifest-boussole-pro-sample-v0-3-alpha",
-      datasetName: "Boussole Pro - corpus sample v0.3.alpha",
-      datasetVersion: "v0.3.alpha-sample",
+      id: "manifest-boussole-pro-sample-v0-3-1-alpha",
+      datasetName: "Boussole Pro - corpus sample v0.3.1.alpha",
+      datasetVersion: "v0.3.1.alpha-sample",
       sourceDate: "2026-07-07",
       importedAt,
       provenance: "sample",
@@ -3273,6 +3273,7 @@ function renderDataPage() {
         <li><strong>Codes ROME chargés :</strong> ${h(generatedSummary.codesLabel)}</li>
         <li><strong>Codes ROME échoués :</strong> ${h(generatedSummary.failedLabel)}</li>
         <li><strong>Champs manquants principaux :</strong> ${h(generatedSummary.missingLabel)}</li>
+        <li><strong>Complétude par référentiel :</strong> ${generatedSummary.completenessLines.length ? `<ul class="compact-list">${generatedSummary.completenessLines.map(line => `<li>${h(line)}</li>`).join("")}</ul>` : "non renseignée"}</li>
         <li><strong>Note :</strong> ${isOfficial ? "corpus généré depuis fichiers statiques publics, sans secret dans le navigateur." : "les données sample ne sont pas des données officielles ROME, RNCP ou Onisep."}</li>
       </ul>
     </section>
@@ -3297,6 +3298,8 @@ function renderDataPage() {
         <li>Métiers avec formations : ${percent(report.coverage.jobsWithTraining)}</li>
         <li>Métiers avec marché : ${percent(report.coverage.jobsWithMarketData)}</li>
         <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
+        <li>Formations : ${h(generatedSummary.trainingsLabel)}</li>
+        <li>Certifications : ${h(generatedSummary.certificationsLabel)}</li>
       </ul>
     </section>
     <section class="results-section print-section">
@@ -3327,7 +3330,7 @@ function renderDataPage() {
 function getDatasetStatusLabels(dataset) {
   const provenance = dataset.provenance || "sample";
   if (provenance === "sample") return { corpus: "sample", jobs: "test", trainings: "test" };
-  if (provenance === "generated_rome") return { corpus: "ROME généré", jobs: "France Travail ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
+  if (provenance === "generated_rome") return { corpus: "ROME généré", jobs: "France Travail ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "source non connectée" };
   if (["official_rome", "official_rome_file", "api_rome_manual"].includes(provenance)) return { corpus: "officiel / ROME", jobs: "alignées ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
   if (provenance === "onisep_import") return { corpus: "Onisep import", jobs: "à vérifier", trainings: "Onisep" };
   if (["rncp_rs", "certif_info"].includes(provenance)) return { corpus: provenance, jobs: "à vérifier", trainings: provenance };
@@ -3342,6 +3345,10 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
   const failedCodeLabels = failedCodes.map(item => typeof item === "string" ? item : `${item.code || "?"}${item.status ? ` (${item.status})` : ""}`);
   const topMissingFields = toArray(report.topMissingFields).map(item => `${item.field} (${item.count})`);
   const represented = toArray(report.domainCoverage?.representedDomains);
+  const completeness = report.completeness || {};
+  const completenessLines = ["jobs", "skills", "contexts", "appellations", "trainings", "certifications", "global"]
+    .map(key => completeness[key]?.label)
+    .filter(Boolean);
   const requestedCodesCount = report.requestedCodesCount ?? sync.requestedCodesCount ?? manifest.requestedCodesCount ?? toArray(manifest.requestedRomeCodes).length;
   const successfulCodesCount = report.successfulCodesCount ?? sync.successfulCodesCount ?? manifest.successfulCodesCount ?? successfulCodes.length;
   const failedCodesCount = report.failedCodesCount ?? sync.failedCodesCount ?? manifest.failedCodesCount ?? failedCodes.length;
@@ -3352,12 +3359,15 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
     requestedCodesCount,
     successfulCodesCount,
     failedCodesCount,
-    completionScore: report.completenessScore ?? report.completionRate ?? manifest.completionRate ?? 0,
+    completionScore: completeness.global?.score ?? report.completenessScore ?? report.completionRate ?? manifest.completionRate ?? 0,
     isPartialOfficial: dataset.provenance === "generated_rome" && (dataset.jobs || []).length > 0 && (dataset.jobs || []).length < 50,
     codesLabel: successfulCodes.length ? successfulCodes.slice(0, 24).join(", ") + (successfulCodes.length > 24 ? "..." : "") : "non renseignés",
     failedLabel: failedCodeLabels.length ? failedCodeLabels.slice(0, 12).join(", ") : "aucun échec déclaré",
     missingLabel: topMissingFields.length ? topMissingFields.slice(0, 8).join(", ") : "aucun champ majeur signalé",
-    domainLabel: represented.length ? represented.join(", ") : "non renseignés"
+    domainLabel: represented.length ? represented.join(", ") : "non renseignés",
+    completenessLines,
+    trainingsLabel: completeness.trainings?.label || ((dataset.trainings || []).length ? `${dataset.trainings.length} formation(s)` : "source non encore connectée"),
+    certificationsLabel: completeness.certifications?.label || ((dataset.certifications || []).length ? `${dataset.certifications.length} certification(s)` : "source non encore connectée")
   };
 }
 
@@ -3374,7 +3384,11 @@ async function loadGeneratedRomeDataset() {
     workContexts: "work-contexts.rome.json",
     jobAppellations: "job-appellations.rome.json",
     mappings: "mappings.rome.json",
-    qualityReport: "data-quality-report.rome.json"
+    qualityReport: "data-quality-report.rome.json",
+    trainings: "formations.onisep.json",
+    certifications: "certifications.certifinfo.json",
+    mappingsRomeFormations: "mappings-rome-formations.json",
+    mappingsRomeCertifications: "mappings-rome-certifications.json"
   };
   try {
     App.state.generatedDataStatus = "chargement en cours";
@@ -3440,7 +3454,11 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     skills: Array.isArray(generated.skills) && generated.skills.length ? generated.skills.map(normalizeSkill) : base.skills,
     workContexts: Array.isArray(generated.workContexts) && generated.workContexts.length ? generated.workContexts : base.workContexts,
     jobAppellations: Array.isArray(generated.jobAppellations) && generated.jobAppellations.length ? generated.jobAppellations : base.jobAppellations,
-    mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings : base.mappings
+    mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings : base.mappings,
+    trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining) : base.trainings,
+    certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : base.certifications,
+    mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : (base.mappingsRomeFormations || []),
+    mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : (base.mappingsRomeCertifications || [])
   };
   merged.qualityReport = generated.qualityReport || generateDataQualityReport(merged);
   return merged;

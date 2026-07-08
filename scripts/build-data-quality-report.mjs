@@ -39,9 +39,11 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   const requestedCodes = syncMeta.requestedCodes || [];
   const successfulCodes = syncMeta.successfulCodes || jobs.map(job => job.romeCode).filter(Boolean);
   const failedCodes = syncMeta.failedCodes || [];
-  const completionScore = jobCompleteness.length ? Number((jobCompleteness.reduce((sum, value) => sum + value, 0) / jobCompleteness.length).toFixed(2)) : 0;
   const completionRate = requestedCodes.length ? Number((successfulCodes.length / requestedCodes.length).toFixed(2)) : ratio(jobs.length, jobs.length);
   const missingDomains = findMissingRomeDomains(jobs);
+  const completeness = buildCompleteness(dataset, syncMeta, jobCompleteness);
+  const completionScore = completeness.global.score;
+  const optionalReferentials = syncMeta.optionalReferentials || [];
   if (jobs.length > 0 && jobs.length < 50) {
     warnings.push(issue("warning", "partial_official_corpus", "Corpus officiel partiel : ce jeu de donnees sert a tester la chaine ROME, pas encore a couvrir tous les metiers.", "dataset"));
   }
@@ -53,6 +55,9 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   }
   if (!skills.length) warnings.push(issue("warning", "empty_generated_skills", "Aucun referentiel de competences genere. Le moteur utilisera les IDs metier mais affichera moins de libelles.", "skills"));
   if (!workContexts.length) warnings.push(issue("warning", "empty_generated_contexts", "Aucun contexte de travail genere. Le score cadre ideal sera moins precis.", "workContexts"));
+  optionalReferentials
+    .filter(item => item.status !== "ok")
+    .forEach(item => warnings.push(issue("info", `optional_${item.name}_${item.status}`, item.message || `${item.name} non configure.`, item.name)));
 
   return {
     schemaVersion: "1.0.0",
@@ -71,6 +76,7 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       representedDomains: getRepresentedRomeDomains(jobs),
       missingDomains
     },
+    optionalReferentials,
     sync: {
       requestedCodes,
       requestedCodesCount: requestedCodes.length,
@@ -97,6 +103,7 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       mappings: (dataset.mappings || []).length,
       marketIndicators: (dataset.marketIndicators || []).length
     },
+    completeness,
     coverage: {
       jobsWithSkills: ratio(jobs.filter(job => job.requiredSkills?.length).length, jobs.length),
       jobsWithContexts: ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length),
@@ -116,9 +123,78 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
     recommendations: [
       "Ce corpus ROME genere est utilisable pour tester la chaine officielle, mais reste partiel tant que peu de codes sont synchronises.",
       "Les tags de valeurs, envies et contraintes sont des deductions techniques : les verifier avant usage professionnel.",
-      "Les donnees marche, diplomes et certifications doivent etre enrichies par des sources dediees si elles ne sont pas presentes dans ROME.",
+      "Les donnees marche, diplomes, formations et certifications doivent etre enrichies par des sources dediees si elles ne sont pas presentes dans ROME.",
       "Ne jamais stocker FT_CLIENT_SECRET, access_token ou bearer token dans le front-end ni dans les JSON generes."
     ]
+  };
+}
+
+function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
+  const jobs = dataset.jobs || [];
+  const requested = syncMeta.requestedCodes?.length || jobs.length;
+  const skills = dataset.skills || [];
+  const contexts = dataset.workContexts || [];
+  const appellations = dataset.jobAppellations || [];
+  const trainings = dataset.trainings || [];
+  const certifications = dataset.certifications || [];
+  const linkedSkillIds = new Set(jobs.flatMap(job => [...(job.requiredSkills || []), ...(job.optionalSkills || [])]));
+  const linkedContextIds = new Set(jobs.flatMap(job => job.workContexts || []));
+  const jobsWithAppellations = jobs.filter(job => job.appellations?.length).length;
+  const jobsScore = jobCompleteness.length ? average(jobCompleteness) : 0;
+  const skillsScore = ratio(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length).length, jobs.length);
+  const contextsScore = ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length);
+  const appellationsScore = ratio(jobsWithAppellations, jobs.length);
+  const globalScore = average([jobsScore, skillsScore, contextsScore, appellationsScore].filter(value => Number.isFinite(value)));
+  return {
+    jobs: {
+      status: jobs.length ? "connected" : "missing",
+      count: jobs.length,
+      expected: requested,
+      score: jobsScore,
+      label: `Métiers : ${jobs.length}/${requested || jobs.length}`
+    },
+    skills: {
+      status: skills.length || linkedSkillIds.size ? "connected" : "missing",
+      count: skills.length,
+      linkedCount: linkedSkillIds.size,
+      jobsWithData: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length).length,
+      score: skillsScore,
+      label: `Compétences : ${linkedSkillIds.size || skills.length} liées aux ${jobs.length} métiers`
+    },
+    contexts: {
+      status: contexts.length || linkedContextIds.size ? "connected" : "missing",
+      count: contexts.length,
+      linkedCount: linkedContextIds.size,
+      jobsWithData: jobs.filter(job => job.workContexts?.length).length,
+      score: contextsScore,
+      label: `Contextes : ${linkedContextIds.size || contexts.length} liés aux ${jobs.length} métiers`
+    },
+    appellations: {
+      status: appellations.length || jobsWithAppellations ? "connected" : "missing",
+      count: appellations.length,
+      jobsWithData: jobsWithAppellations,
+      score: appellationsScore,
+      label: `Appellations : ${appellations.length} liées aux ${jobs.length} métiers`
+    },
+    trainings: {
+      status: trainings.length ? "connected" : "source_not_connected",
+      count: trainings.length,
+      score: null,
+      neutral: true,
+      label: trainings.length ? `Formations : ${trainings.length}` : "Formations : source non encore connectée"
+    },
+    certifications: {
+      status: certifications.length ? "connected" : "source_not_connected",
+      count: certifications.length,
+      score: null,
+      neutral: true,
+      label: certifications.length ? `Certifications : ${certifications.length}` : "Certifications : source non encore connectée"
+    },
+    global: {
+      status: globalScore >= 0.7 ? "usable" : "partial",
+      score: globalScore,
+      label: `Complétude globale : ${Math.round(globalScore * 100)}%`
+    }
   };
 }
 
@@ -145,6 +221,11 @@ function issue(severity, type, message, target) {
 
 function ratio(part, total) {
   return total ? Number((part / total).toFixed(2)) : 0;
+}
+
+function average(values) {
+  const clean = values.filter(value => typeof value === "number" && Number.isFinite(value));
+  return clean.length ? Number((clean.reduce((sum, value) => sum + value, 0) / clean.length).toFixed(2)) : 0;
 }
 
 function getRepresentedRomeDomains(jobs) {

@@ -3,6 +3,7 @@ import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 import { mergeRomeDatasets } from "./normalize-rome-api.mjs";
 
 const OUT_DIR = new URL("../creations/boussolepro/data/generated/", import.meta.url);
+const DEBUG_DIR = new URL("debug/", OUT_DIR);
 const DEFAULT_SCOPE = "nomenclatureRome api_rome-fiches-metiersv1";
 const DEFAULT_TOKEN_URL = "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire";
 const DEFAULT_FICHES_ENDPOINT = "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/{CODE_ROME}";
@@ -31,8 +32,10 @@ async function main() {
       noDataError.failedCodes = syncResult.failedCodes;
       throw noDataError;
     }
+    const optionalReferentials = await fetchOptionalRomeReferentials(token);
     const parts = {
-      fichesMetiers: syncResult.fichesMetiers
+      fichesMetiers: syncResult.fichesMetiers,
+      ...optionalReferentials.parts
     };
     const dataset = mergeRomeDatasets(parts);
     const syncMeta = {
@@ -41,9 +44,11 @@ async function main() {
       requestedCodes,
       successfulCodes: syncResult.successfulCodes,
       failedCodes: syncResult.failedCodes,
-      failures: syncResult.failedCodes
+      failures: syncResult.failedCodes,
+      optionalReferentials: optionalReferentials.diagnostics
     };
     const report = buildDataQualityReport(dataset, syncMeta);
+    await writeRawStructureReport(syncResult.rawSamples, syncMeta);
     await writeGeneratedJson("jobs.rome.json", dataset.jobs);
     await writeGeneratedJson("data-quality-report.rome.json", report);
     await writeGeneratedJson("import-manifest.rome.json", {
@@ -70,12 +75,18 @@ async function main() {
         "skills.rome.json",
         "work-contexts.rome.json",
         "job-appellations.rome.json",
-        "mappings.rome.json"
+        "mappings.rome.json",
+        "formations.onisep.json",
+        "certifications.certifinfo.json",
+        "mappings-rome-formations.json",
+        "mappings-rome-certifications.json",
+        "debug/raw-structure-report.json"
       ],
       licenseSummary: "A verifier selon les droits d'usage France Travail IO.",
       warnings: [
         dataset.jobs.length < 50 ? "official_partial_corpus_under_50_jobs" : "",
         syncResult.failedCodes.length ? "some_rome_codes_failed" : "",
+        ...optionalReferentials.diagnostics.filter(item => item.status !== "ok").map(item => `${item.name}_${item.status}`),
         "mapping_to_verify",
         "license_to_verify"
       ].filter(Boolean)
@@ -84,6 +95,10 @@ async function main() {
     await writeGeneratedJson("work-contexts.rome.json", dataset.workContexts || []);
     await writeGeneratedJson("job-appellations.rome.json", dataset.jobAppellations || []);
     await writeGeneratedJson("mappings.rome.json", dataset.mappings || []);
+    await writeGeneratedJson("formations.onisep.json", []);
+    await writeGeneratedJson("certifications.certifinfo.json", []);
+    await writeGeneratedJson("mappings-rome-formations.json", []);
+    await writeGeneratedJson("mappings-rome-certifications.json", []);
   } catch (error) {
     await writeGeneratedJson("sync-error.json", {
       generatedAt,
@@ -98,7 +113,7 @@ async function main() {
   }
 }
 
-export async function getFranceTravailAccessToken() {
+export async function getFranceTravailAccessToken(scope = getScope()) {
   const clientId = process.env.FT_CLIENT_ID;
   const clientSecret = process.env.FT_CLIENT_SECRET;
   const tokenUrl = process.env.FT_TOKEN_URL || DEFAULT_TOKEN_URL;
@@ -107,7 +122,7 @@ export async function getFranceTravailAccessToken() {
   params.set("grant_type", "client_credentials");
   params.set("client_id", clientId);
   params.set("client_secret", clientSecret);
-  params.set("scope", getScope());
+  params.set("scope", scope);
   const response = await fetch(tokenUrl, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -115,7 +130,7 @@ export async function getFranceTravailAccessToken() {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Echec token France Travail: ${response.status} ${body}`);
+    throw new Error(`Echec token France Travail: ${response.status} ${shortMessage(body)}`);
   }
   return response.json();
 }
@@ -123,15 +138,18 @@ export async function getFranceTravailAccessToken() {
 export async function fetchRomeFichesMetiers(token, codes = DEFAULT_ROME_CODES) {
   const endpointUrl = process.env.FT_ROME_FICHES_METIERS_URL || DEFAULT_FICHES_ENDPOINT;
   const accessToken = token.access_token || token.token || token;
+  const debugCodes = new Set(parseList(process.env.ROME_DEBUG_CODES, ["M1607", "M1805", "K1303", "A1203"]));
   const fichesMetiers = [];
   const successfulCodes = [];
   const failedCodes = [];
+  const rawSamples = {};
   for (const code of codes) {
     const result = await fetchRomeFicheMetier(endpointUrl, accessToken, code);
     if (result.ok) {
       const raw = result.payload;
       fichesMetiers.push({ ...raw, code: raw.code || raw.codeRome || raw.romeCode || code, romeCode: raw.romeCode || raw.codeRome || raw.code || code });
       successfulCodes.push(code);
+      if (debugCodes.has(code)) rawSamples[code] = raw;
     } else {
       failedCodes.push({
         code,
@@ -142,7 +160,7 @@ export async function fetchRomeFichesMetiers(token, codes = DEFAULT_ROME_CODES) 
     }
     await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
   }
-  return { fichesMetiers, successfulCodes, failedCodes };
+  return { fichesMetiers, successfulCodes, failedCodes, rawSamples };
 }
 
 async function fetchRomeFicheMetier(endpointUrl, accessToken, code) {
@@ -207,6 +225,143 @@ function extractFichePayload(json, code) {
   return json;
 }
 
+async function fetchOptionalRomeReferentials(mainToken) {
+  const diagnostics = [];
+  const parts = {};
+  const configs = [
+    { name: "metiers", envUrl: "FT_ROME_METIERS_URL", envScope: "FT_SCOPE_METIERS", partKey: null },
+    { name: "competences", envUrl: "FT_ROME_COMPETENCES_URL", envScope: "FT_SCOPE_COMPETENCES", partKey: "competences" },
+    { name: "contextes", envUrl: "FT_ROME_CONTEXTES_URL", envScope: "FT_SCOPE_CONTEXTES", partKey: "contextes" }
+  ];
+  for (const config of configs) {
+    const endpoint = process.env[config.envUrl];
+    if (!endpoint) {
+      diagnostics.push({ name: config.name, status: "not_configured", message: `${config.envUrl} absent : referentiel optionnel ignore.` });
+      continue;
+    }
+    const scope = process.env[config.envScope] || getScope();
+    try {
+      const token = scope === getScope() ? mainToken : await getFranceTravailAccessToken(scope);
+      const response = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${token.access_token || token.token || token}`,
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        diagnostics.push({ name: config.name, status: response.status, message: await safeResponseText(response), endpoint });
+        continue;
+      }
+      const json = await response.json();
+      const rows = extractArrayFromApiResponse(json);
+      if (config.partKey) parts[config.partKey] = rows;
+      diagnostics.push({ name: config.name, status: "ok", count: rows.length, usedForDataset: Boolean(config.partKey), endpoint, scope: scope ? "configured" : "default" });
+    } catch (error) {
+      diagnostics.push({ name: config.name, status: "error", message: shortMessage(error.message), endpoint });
+    }
+    await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
+  }
+  return { parts, diagnostics };
+}
+
+function extractArrayFromApiResponse(json) {
+  if (!json) return [];
+  if (Array.isArray(json)) return json;
+  for (const key of ["items", "resultats", "results", "data", "liste", "metiers", "competences", "contextes", "referentiels"]) {
+    if (Array.isArray(json[key])) return json[key];
+  }
+  for (const value of Object.values(json)) {
+    if (Array.isArray(value)) return value;
+  }
+  return [];
+}
+
+async function writeRawStructureReport(rawSamples = {}, syncMeta = {}) {
+  await mkdir(DEBUG_DIR, { recursive: true });
+  const report = buildRawStructureReport(rawSamples, syncMeta);
+  await writeFile(new URL("raw-structure-report.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+}
+
+function buildRawStructureReport(rawSamples = {}, syncMeta = {}) {
+  const categories = {
+    competences: ["competence", "savoirfaire", "savoir-faire"],
+    savoirs: ["savoirs", "connaissance", "knowledge"],
+    savoirEtre: ["savoiretre", "savoir-etre", "softskill"],
+    appellations: ["appellation"],
+    contextesTravail: ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"],
+    conditionsAcces: ["conditionacces", "accesemploimetier", "accesmetier"],
+    certifications: ["certification", "habilitation"],
+    mobilites: ["mobilite", "metierproche", "prochemetier"]
+  };
+  const samples = Object.fromEntries(Object.entries(rawSamples).map(([code, raw]) => [
+    code,
+    {
+      rootKeys: Object.keys(raw || {}).filter(key => !isSensitiveKey(key)).sort(),
+      candidates: Object.fromEntries(Object.entries(categories).map(([category, hints]) => [
+        category,
+        findCandidatePaths(raw, hints)
+      ]))
+    }
+  ]));
+  return {
+    schemaVersion: "1.0.0",
+    generatedAt: syncMeta.generatedAt || new Date().toISOString(),
+    branch: syncMeta.branch || process.env.GITHUB_REF_NAME || "local",
+    requestedDebugCodes: Object.keys(rawSamples),
+    note: "Rapport structurel sans corps brut complet et sans jeton. Les chemins indiquent uniquement les zones candidates a verifier pour la normalisation.",
+    samples
+  };
+}
+
+function findCandidatePaths(source, hints = []) {
+  const normalizedHints = hints.map(normalizeKey).filter(Boolean);
+  const matches = [];
+  const seen = new Set();
+  const visit = (value, path = "$", key = "", depth = 0) => {
+    if (value === undefined || value === null || depth > 8 || matches.length >= 60) return;
+    if (isSensitiveKey(key) || isSensitiveKey(path)) return;
+    const normalizedKey = normalizeKey(key);
+    if (normalizedHints.some(hint => normalizedKey.includes(hint))) {
+      matches.push(describeCandidate(path, key, value));
+      return;
+    }
+    if (typeof value !== "object") return;
+    if (seen.has(value)) return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      value.slice(0, 8).forEach((item, index) => visit(item, `${path}[${index}]`, key, depth + 1));
+      return;
+    }
+    Object.entries(value).forEach(([childKey, childValue]) => visit(childValue, `${path}.${childKey}`, childKey, depth + 1));
+  };
+  visit(source);
+  return matches;
+}
+
+function describeCandidate(path, key, value) {
+  return {
+    path,
+    key,
+    type: Array.isArray(value) ? "array" : typeof value,
+    arrayLength: Array.isArray(value) ? value.length : undefined,
+    childKeys: value && typeof value === "object" && !Array.isArray(value)
+      ? Object.keys(value).filter(childKey => !isSensitiveKey(childKey)).slice(0, 20)
+      : undefined
+  };
+}
+
+function isSensitiveKey(value = "") {
+  return /(access.?token|authorization|bearer|client.?id|client.?secret|secret|password|api.?key)/i.test(String(value));
+}
+
+function normalizeKey(value = "") {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+}
+
 function findPayloadByCode(items, code) {
   return items.find(item => [item?.code, item?.codeRome, item?.romeCode, item?.id].includes(code));
 }
@@ -233,6 +388,9 @@ function shortMessage(value) {
   return String(value || "")
     .replace(/\s+/g, " ")
     .replace(/access_token[^,\s]*/gi, "access_token_REDACTED")
+    .replace(/client_secret[^,\s]*/gi, "client_secret_REDACTED")
+    .replace(/client_id[^,\s]*/gi, "client_id_REDACTED")
+    .replace(/authorization[^,\s]*/gi, "authorization_REDACTED")
     .replace(/bearer\s+[a-z0-9._-]+/gi, "Bearer REDACTED")
     .slice(0, 220);
 }

@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.3.alpha  
+**Version :** v0.3.1.alpha  
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -22,7 +22,7 @@ Si aucun fichier généré n’existe et si l’utilisateur est hors ligne, le c
 
 ## Données sample
 
-La version v0.3.alpha embarque toujours les métiers sample non officiels de démonstration et prépare une chaîne ROME générée plus fiable.
+La version v0.3.1.alpha embarque toujours les métiers sample non officiels de démonstration et renforce la chaîne ROME générée : extraction récursive des champs utiles, référentiels dérivés et rapport de complétude par famille.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -40,7 +40,9 @@ creations/boussolepro/data/generated/data-quality-report.rome.json
 
 Depuis `boussole-pro.html`, ces fichiers sont chargés avec le chemin relatif `data/generated/`, donc l’URL GitHub Pages attendue est `creations/boussolepro/data/generated/`.
 
-Les fichiers `skills.rome.json`, `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` peuvent aussi exister dans ce même dossier, mais la première voie GitHub Actions se concentre sur les fiches métiers ROME.
+Les fichiers `skills.rome.json`, `work-contexts.rome.json`, `job-appellations.rome.json` et `mappings.rome.json` sont générés pour nourrir ClairMétier quand les fiches ROME contiennent les champs exploitables.
+
+La v0.3.1 prépare aussi, sans inventer de données, les fichiers futurs `formations.onisep.json`, `certifications.certifinfo.json`, `mappings-rome-formations.json` et `mappings-rome-certifications.json`.
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
@@ -57,11 +59,12 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire. La version v0.3.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire. La version v0.3.1.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
 - synchronisation par GitHub Actions avec secrets GitHub, scope `nomenclatureRome api_rome-fiches-metiersv1` et variable `ROME_CODES` pour synchroniser environ 72 codes représentatifs ;
+- diagnostics optionnels via `FT_SCOPE_METIERS`, `FT_SCOPE_COMPETENCES`, `FT_SCOPE_CONTEXTES`, `FT_ROME_METIERS_URL`, `FT_ROME_COMPETENCES_URL` et `FT_ROME_CONTEXTES_URL`, sans échec bloquant si ces variables ne sont pas configurées. Le référentiel métiers reste en diagnostic pour ne pas augmenter le corpus au-delà des codes ROME demandés ;
 - proxy serverless sécurisé ;
 - import manuel JSON généré ailleurs.
 
@@ -89,12 +92,14 @@ GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. L
 ## Déploiement GitHub Pages
 
 1. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub Actions.
-2. Configurer `ROME_CODES` si vous voulez remplacer la liste v0.3 par défaut.
+2. Configurer `ROME_CODES` si vous voulez remplacer la liste v0.3.1 par défaut.
 3. Lancer le workflow `Sync ROME data`.
 4. Vérifier les fichiers `creations/boussolepro/data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
 
-Le rapport `data-quality-report.rome.json` indique la branche, les codes demandés/réussis/échoués, le score de complétude, les champs les plus absents et les avertissements de couverture.
+Le rapport `data-quality-report.rome.json` indique la branche, les codes demandés/réussis/échoués, la complétude métiers/compétences/contextes/appellations/formations/certifications, les champs les plus absents et les avertissements de couverture.
+
+Le workflow écrit aussi `debug/raw-structure-report.json` avec les clés et chemins candidats de quelques fiches ROME, sans corps brut complet ni jeton.
 
 Deux contrôles GitHub Actions complètent la chaîne :
 

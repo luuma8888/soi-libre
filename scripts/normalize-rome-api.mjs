@@ -7,17 +7,17 @@ export function normalizeRomeMetier(raw = {}) {
   const romeCode = firstText(source.romeCode, source.codeRome, source.code, raw.romeCode, raw.codeRome, raw.code);
   const title = firstText(source.title, source.libelle, source.intitule, source.nom, source.appellation, source.metier?.libelle);
   const description = firstText(source.description, source.resume, source.definition, source.presentation);
-  const appellations = collectLabels(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules);
-  const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques);
-  const requiredSkillLabels = collectLabels(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"]);
-  const optionalSkillLabels = collectLabels(source.optionalSkills, source.competencesSpecifiques);
-  const softSkillLabels = collectLabels(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"]);
-  const knowledgeLabels = collectLabels(source.knowledge, source.savoirs, source.connaissances);
-  const contextLabels = collectLabels(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail);
-  const accessText = firstText(source.accessConditions, source.conditionsAcces, source.accesEmploiMetier, source.accesMetier);
-  const requiredCertifications = collectLabels(source.requiredCertifications, source.certificationsObligatoires, source.habilitationsObligatoires);
-  const recommendedCertifications = collectLabels(source.recommendedCertifications, source.certificationsRecommandees, source.habilitations);
-  const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers);
+  const appellations = collectLabels(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
+  const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques, ...findValuesByKeyHints(source, ["activite", "activites"]));
+  const requiredSkillLabels = collectLabels(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
+  const optionalSkillLabels = collectLabels(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
+  const softSkillLabels = collectLabels(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
+  const knowledgeLabels = collectLabels(source.knowledge, source.savoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
+  const contextLabels = collectLabels(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail, ...findValuesByKeyHints(source, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"]));
+  const accessText = firstText(source.accessConditions, source.conditionsAcces, source.accesEmploiMetier, source.accesMetier, ...findValuesByKeyHints(source, ["conditionacces", "accesemploimetier", "accesmetier"]));
+  const requiredCertifications = collectLabels(source.requiredCertifications, source.certificationsObligatoires, source.habilitationsObligatoires, ...findValuesByKeyHints(source, ["certificationobligatoire", "habilitationobligatoire"]));
+  const recommendedCertifications = collectLabels(source.recommendedCertifications, source.certificationsRecommandees, source.habilitations, ...findValuesByKeyHints(source, ["certification", "habilitation"]));
+  const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers, ...findValuesByKeyHints(source, ["metierproche", "mobilite", "prochemetier"]));
   const domainOfficial = firstText(source.domain, source.domaine, source.grandDomaine);
   const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
   const domain = domainOfficial || inferDomainFromRomeCode(romeCode);
@@ -407,7 +407,11 @@ function deriveMappingsFromJobs(jobs) {
     romeCode: job.romeCode,
     skillIds: [...toArray(job.requiredSkills), ...toArray(job.optionalSkills)],
     contextIds: toArray(job.workContexts),
+    appellationIds: toArray(job.appellations).map(label => `appellation-${job.romeCode || slug(job.id)}-${slug(label)}`),
     relatedJobIds: toArray(job.relatedJobs),
+    relatedRomeCodes: toArray(job.relatedJobs)
+      .map(value => String(value).replace(/^job-/, "").replace(/^rome-/, ""))
+      .filter(value => /^[A-Z][0-9]{4}/.test(value)),
     source: SOURCE_COMPUTED,
     provenance: "generated_rome",
     confidence: 0.55
@@ -474,6 +478,30 @@ function collectLabels(...values) {
   };
   values.forEach(visit);
   return unique(labels.map(item => item.trim()).filter(Boolean));
+}
+
+function findValuesByKeyHints(source, hints = []) {
+  const matches = [];
+  const normalizedHints = hints.map(normalizeText).filter(Boolean);
+  const seen = new Set();
+  const visit = (value, key = "", depth = 0) => {
+    if (value === undefined || value === null || depth > 8) return;
+    const normalizedKey = normalizeText(key).replace(/[^a-z0-9]/g, "");
+    if (normalizedHints.some(hint => normalizedKey.includes(hint.replace(/[^a-z0-9]/g, "")))) {
+      matches.push(value);
+      return;
+    }
+    if (typeof value !== "object") return;
+    if (seen.has(value)) return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      value.slice(0, 80).forEach(item => visit(item, key, depth + 1));
+      return;
+    }
+    Object.entries(value).forEach(([childKey, childValue]) => visit(childValue, childKey, depth + 1));
+  };
+  visit(source);
+  return matches;
 }
 
 function toStableSkillId(value) {

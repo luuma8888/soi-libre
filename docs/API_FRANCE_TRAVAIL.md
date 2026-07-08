@@ -21,7 +21,7 @@ La premiere voie automatisee utilise le scope valide :
 nomenclatureRome api_rome-fiches-metiersv1
 ```
 
-La v0.3.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
+La v0.3.1.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
 
 ```text
 ROME_CODES=A1203,A1414,A1501,...
@@ -44,16 +44,25 @@ Variables possibles :
 
 - `FT_TOKEN_URL`
 - `FT_ROME_FICHES_METIERS_URL`
+- `FT_SCOPE_METIERS`
+- `FT_SCOPE_COMPETENCES`
+- `FT_SCOPE_CONTEXTES`
+- `FT_ROME_METIERS_URL`
+- `FT_ROME_COMPETENCES_URL`
+- `FT_ROME_CONTEXTES_URL`
 - `ROME_CODES`
+- `ROME_DEBUG_CODES`
 - `FT_RATE_LIMIT_MS`
 
-Les URLs et scopes doivent etre verifies dans la documentation France Travail IO active.
+Les URLs et scopes de referentiels optionnels doivent etre verifies dans la documentation France Travail IO active. Si un endpoint optionnel n'est pas configure ou repond en erreur, la synchronisation continue avec un avertissement. Le referentiel `metiers` est teste en diagnostic seulement pour ne pas augmenter le corpus au-dela des codes ROME demandes.
 
 ## Test sur GitHub Pages
 
 Une fois le workflow execute, publier le site puis ouvrir Boussole Pro. La page Donnees propose `Charger les donnees generees`. L'application cherche les fichiers via le chemin relatif `data/generated/`, donc depuis GitHub Pages ils doivent exister dans `creations/boussolepro/data/generated/`. Si les fichiers sont absents ou si la synchronisation a echoue, l'application conserve le corpus sample.
 
-Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulCodesCount`, `failedCodesCount`, `successfulCodes`, `failedCodes`, `completionRate`, `topMissingFields` et la couverture des domaines ROME.
+Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulCodesCount`, `failedCodesCount`, `successfulCodes`, `failedCodes`, `completionRate`, `topMissingFields`, la couverture des domaines ROME et une section `completeness` distinguant metiers, competences, contextes, appellations, formations et certifications.
+
+Le dossier `creations/boussolepro/data/generated/debug/` peut contenir `raw-structure-report.json`. Ce fichier liste seulement les cles et chemins candidats des reponses ROME de test pour aider la normalisation ; il ne doit jamais contenir de token, secret, client_id ou en-tete Authorization.
 
 ## Retour aux donnees sample
 
