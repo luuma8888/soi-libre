@@ -21,11 +21,13 @@ La premiere voie automatisee utilise le scope valide :
 nomenclatureRome api_rome-fiches-metiersv1
 ```
 
-Elle recupere quelques fiches ROME de test, par defaut :
+La v0.3.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
 
 ```text
-M1607, M1805, K1303, A1203
+ROME_CODES=A1203,A1414,A1501,...
 ```
+
+Chaque code est traite independamment. Une erreur 404, 403, 500 ou une structure inconnue est inscrite dans `failedCodes`, puis la synchronisation continue. Le workflow ne devient bloquant que si aucune fiche exploitable n'est recuperee.
 
 Le navigateur ne doit pas appeler l'OAuth France Travail comme chemin principal. Le formulaire API manuel de Boussole Pro reste un diagnostic avance, utile pour comprendre une configuration, mais le flux fiable pour GitHub Pages passe par GitHub Actions ou par un proxy securise.
 
@@ -42,7 +44,7 @@ Variables possibles :
 
 - `FT_TOKEN_URL`
 - `FT_ROME_FICHES_METIERS_URL`
-- `FT_ROME_TEST_CODES`
+- `ROME_CODES`
 - `FT_RATE_LIMIT_MS`
 
 Les URLs et scopes doivent etre verifies dans la documentation France Travail IO active.
@@ -50,6 +52,8 @@ Les URLs et scopes doivent etre verifies dans la documentation France Travail IO
 ## Test sur GitHub Pages
 
 Une fois le workflow execute, publier le site puis ouvrir Boussole Pro. La page Donnees propose `Charger les donnees generees`. L'application cherche les fichiers via le chemin relatif `data/generated/`, donc depuis GitHub Pages ils doivent exister dans `creations/boussolepro/data/generated/`. Si les fichiers sont absents ou si la synchronisation a echoue, l'application conserve le corpus sample.
+
+Le rapport qualite genere contient notamment `requestedCodesCount`, `successfulCodesCount`, `failedCodesCount`, `successfulCodes`, `failedCodes`, `completionRate`, `topMissingFields` et la couverture des domaines ROME.
 
 ## Retour aux donnees sample
 

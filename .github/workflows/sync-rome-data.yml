@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       rome_codes:
-        description: "Codes ROME a synchroniser, separes par des virgules"
+        description: "Codes ROME a synchroniser, separes par des virgules. Laisser vide pour utiliser ROME_CODES ou la liste v0.3 par defaut."
         required: false
-        default: "M1607,M1805,K1303,A1203"
+        default: ""
   schedule:
     - cron: "0 3 1 * *"
 
@@ -17,12 +17,12 @@ jobs:
   sync-rome:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.ref_name }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "24"
       - run: node scripts/sync-france-travail-rome.mjs
         env:
           FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
@@ -30,7 +30,7 @@ jobs:
           FT_SCOPE: "nomenclatureRome api_rome-fiches-metiersv1"
           FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
           FT_ROME_FICHES_METIERS_URL: ${{ vars.FT_ROME_FICHES_METIERS_URL }}
-          FT_ROME_TEST_CODES: ${{ inputs.rome_codes || vars.FT_ROME_TEST_CODES || 'M1607,M1805,K1303,A1203' }}
+          ROME_CODES: ${{ inputs.rome_codes || vars.ROME_CODES || '' }}
       - name: Commit generated data
         run: |
           git config user.name "github-actions"

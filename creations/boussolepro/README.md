@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.2.alpha  
+**Version :** v0.3.alpha  
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -22,7 +22,7 @@ Si aucun fichier généré n’existe et si l’utilisateur est hors ligne, le c
 
 ## Données sample
 
-La version v0.2.alpha embarque au moins 80 métiers sample, non officiels, couvrant notamment santé, social, petite enfance, animation, administratif, comptabilité, numérique, data, support informatique, communication, création, artisanat, bâtiment, maintenance, industrie, restauration, hôtellerie, agriculture, environnement, animaux, logistique, transport, commerce, sécurité, laboratoire, accompagnement, formation, services et culture.
+La version v0.3.alpha embarque toujours les métiers sample non officiels de démonstration et prépare une chaîne ROME générée plus fiable.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -57,11 +57,11 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire. La version v0.2.alpha ajoute un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire. La version v0.3.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
-- synchronisation par GitHub Actions avec secrets GitHub, scope `nomenclatureRome api_rome-fiches-metiersv1` et fiches de test `M1607`, `M1805`, `K1303`, `A1203` ;
+- synchronisation par GitHub Actions avec secrets GitHub, scope `nomenclatureRome api_rome-fiches-metiersv1` et variable `ROME_CODES` pour synchroniser environ 72 codes représentatifs ;
 - proxy serverless sécurisé ;
 - import manuel JSON généré ailleurs.
 
@@ -89,10 +89,17 @@ GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. L
 ## Déploiement GitHub Pages
 
 1. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub Actions.
-2. Configurer `FT_TOKEN_URL` et `FT_ROME_FICHES_METIERS_URL` en variables Actions après vérification dans France Travail IO.
+2. Configurer `ROME_CODES` si vous voulez remplacer la liste v0.3 par défaut.
 3. Lancer le workflow `Sync ROME data`.
 4. Vérifier les fichiers `creations/boussolepro/data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
+
+Le rapport `data-quality-report.rome.json` indique la branche, les codes demandés/réussis/échoués, le score de complétude, les champs les plus absents et les avertissements de couverture.
+
+Deux contrôles GitHub Actions complètent la chaîne :
+
+- `Validate Boussole generated data` vérifie les JSON générés ;
+- `Check no secrets` scanne les fichiers publics pour éviter l’ajout accidentel de secrets.
 
 Documentation :
 

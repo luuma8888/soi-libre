@@ -1119,7 +1119,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.2.alpha",
+  version: "v0.3.alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1784,7 +1784,7 @@ function loadSampleData() {
     {
       id: "sample_non_official",
       schemaVersion: CONFIG.schemaVersion,
-      name: "Corpus sample Boussole Pro v0.2.alpha",
+      name: "Corpus sample Boussole Pro v0.3.alpha",
       producer: "Lu'uma / exemple local",
       url: null,
       license: "Exemple local non officiel, a remplacer avant usage reel",
@@ -1801,8 +1801,8 @@ function loadSampleData() {
 
   const dataset = {
     schemaVersion: CONFIG.schemaVersion,
-    datasetName: "Boussole Pro - corpus sample v0.2.alpha",
-    datasetVersion: "v0.2.alpha-sample",
+    datasetName: "Boussole Pro - corpus sample v0.3.alpha",
+    datasetVersion: "v0.3.alpha-sample",
     sourceDate: "2026-07-07",
     importedAt,
     provenance: "sample",
@@ -1819,9 +1819,9 @@ function loadSampleData() {
     mappings,
     manifest: {
       schemaVersion: CONFIG.schemaVersion,
-      id: "manifest-boussole-pro-sample-v0-2-alpha",
-      datasetName: "Boussole Pro - corpus sample v0.2.alpha",
-      datasetVersion: "v0.2.alpha-sample",
+      id: "manifest-boussole-pro-sample-v0-3-alpha",
+      datasetName: "Boussole Pro - corpus sample v0.3.alpha",
+      datasetVersion: "v0.3.alpha-sample",
       sourceDate: "2026-07-07",
       importedAt,
       provenance: "sample",
@@ -2178,6 +2178,11 @@ function normalizeJob(raw) {
     softSkills: toArray(raw.softSkills),
     knowledge: toArray(raw.knowledge),
     workContexts: toArray(raw.workContexts),
+    constraints: raw.constraints || {
+      physical: raw.physicalConstraints || { level: physical[0], tags: physical[1], source: "unknown", confidence: 0.2 },
+      schedule: raw.scheduleConstraints || { nightWork: schedule[0], weekendWork: schedule[1], irregularHours: schedule[2], source: "unknown", confidence: 0.2 },
+      mobility: raw.mobilityConstraints || { travelFrequency: mobility[0], driverLicenseRequired: mobility[1], driverLicenseTypes: mobility[1] ? ["B"] : [], source: "unknown", confidence: 0.2 }
+    },
     physicalConstraints: raw.physicalConstraints || { level: physical[0], tags: physical[1], source: "manualEnrichment", confidence: 0.4 },
     scheduleConstraints: raw.scheduleConstraints || { nightWork: schedule[0], weekendWork: schedule[1], irregularHours: schedule[2], source: "manualEnrichment", confidence: 0.4 },
     mobilityConstraints: raw.mobilityConstraints || { travelFrequency: mobility[0], driverLicenseRequired: mobility[1], driverLicenseTypes: mobility[1] ? ["B"] : [], source: "manualEnrichment", confidence: 0.4 },
@@ -2193,9 +2198,13 @@ function normalizeJob(raw) {
     interestTags: toArray(raw.interestTags),
     valueTags: toArray(raw.valueTags),
     marketIndicators: toArray(raw.marketIndicators).length ? toArray(raw.marketIndicators) : (romeCode ? [`market-${romeCode}-FR`] : []),
+    market: raw.market || { status: "unknown", source: "unknown", confidence: 0 },
     sourceRefs: toArray(raw.sourceRefs).length ? toArray(raw.sourceRefs) : ["sample_non_official"],
     dataQuality: raw.dataQuality || { status: "usable_with_warnings", warnings: ["sample_data"], confidence: 0.4 },
     missingFields: toArray(raw.missingFields),
+    fieldSources: raw.fieldSources || {},
+    romeSkillLabels: raw.romeSkillLabels || null,
+    romeWorkContextLabels: toArray(raw.romeWorkContextLabels),
     source: raw.source || "sample_non_official",
     provenance: raw.provenance || "sample",
     confidence: raw.confidence ?? 0.4,
@@ -2745,6 +2754,10 @@ function calculateContextScore(criteria, job) {
 }
 
 function calculateMarketScore(job, datasets = App.state.dataset) {
+  if (job.market && job.market.source && job.market.source !== "unknown") {
+    const tension = Number(job.market.tensionScore ?? job.market.score ?? job.market.value);
+    if (Number.isFinite(tension)) return { score: Math.round(clamp(1 + tension * 4, 1, 5)), missingData: [] };
+  }
   const indicators = toArray(job.marketIndicators)
     .map(id => (datasets.marketIndicators || []).find(item => item.id === id || item.romeCode === job.romeCode))
     .filter(Boolean);
@@ -3098,6 +3111,8 @@ function renderJobCard(result) {
       </div>
       <div class="details-panel" data-details-panel>
         <div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
+        <p><strong>Appellations :</strong> ${take(job?.appellations || [], 5).map(h).join(", ") || "Non renseignées."}</p>
+        <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "À vérifier.")}</p>
         <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
         <p><strong>Données manquantes :</strong> ${result.missingData.map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
       </div>
@@ -3233,6 +3248,7 @@ function renderDataPage() {
   const isOfficial = dataset.provenance === "official_rome" || dataset.provenance === "generated_rome";
   const source = (dataset.sources || [])[0] || {};
   const datasetStatus = getDatasetStatusLabels(dataset);
+  const generatedSummary = getGeneratedRomeSummary(dataset, report, manifest);
   return `
     <section class="results-section print-section">
       <h2>Corpus actif</h2>
@@ -3248,10 +3264,15 @@ function renderDataPage() {
         ${metric("Contextes", report.summary.workContexts)}
         ${metric("Appellations", report.summary.appellations)}
       </div>
+      ${generatedSummary.isPartialOfficial ? `<div class="launch-box warning"><strong>Corpus officiel partiel</strong><p>Ce jeu de données sert à tester la chaîne ROME, pas encore à couvrir tous les métiers.</p></div>` : ""}
       <ul class="data-list">
-        <li><strong>Source :</strong> ${h(source.name || "Source non renseignée")}</li>
-        <li><strong>Date source :</strong> ${h(dataset.sourceDate || manifest.sourceDate || "non renseignée")}</li>
+        <li><strong>Source :</strong> ${h(source.name || generatedSummary.sourceName || "Source non renseignée")}</li>
+        <li><strong>Date de génération :</strong> ${h(generatedSummary.generatedAt || dataset.sourceDate || manifest.sourceDate || "non renseignée")}</li>
         <li><strong>Licence :</strong> ${h(source.license || manifest.licenseSummary || "à vérifier")}</li>
+        <li><strong>Branche :</strong> ${h(generatedSummary.branch || "non renseignée")}</li>
+        <li><strong>Codes ROME chargés :</strong> ${h(generatedSummary.codesLabel)}</li>
+        <li><strong>Codes ROME échoués :</strong> ${h(generatedSummary.failedLabel)}</li>
+        <li><strong>Champs manquants principaux :</strong> ${h(generatedSummary.missingLabel)}</li>
         <li><strong>Note :</strong> ${isOfficial ? "corpus généré depuis fichiers statiques publics, sans secret dans le navigateur." : "les données sample ne sont pas des données officielles ROME, RNCP ou Onisep."}</li>
       </ul>
     </section>
@@ -3265,12 +3286,17 @@ function renderDataPage() {
         ${metric("Contextes", report.summary.workContexts)}
         ${metric("Mappings", report.summary.mappings)}
         ${metric("Indicateurs", report.summary.marketIndicators)}
+        ${metric("Complétude ROME", percent(generatedSummary.completionScore))}
+        ${metric("Codes demandés", generatedSummary.requestedCodesCount)}
+        ${metric("Codes réussis", generatedSummary.successfulCodesCount)}
+        ${metric("Codes échoués", generatedSummary.failedCodesCount)}
       </div>
       <ul class="compact-list">
         <li>Métiers avec compétences : ${percent(report.coverage.jobsWithSkills)}</li>
         <li>Métiers avec contextes : ${percent(report.coverage.jobsWithContexts)}</li>
         <li>Métiers avec formations : ${percent(report.coverage.jobsWithTraining)}</li>
         <li>Métiers avec marché : ${percent(report.coverage.jobsWithMarketData)}</li>
+        <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
       </ul>
     </section>
     <section class="results-section print-section">
@@ -3301,11 +3327,38 @@ function renderDataPage() {
 function getDatasetStatusLabels(dataset) {
   const provenance = dataset.provenance || "sample";
   if (provenance === "sample") return { corpus: "sample", jobs: "test", trainings: "test" };
-  if (["generated_rome", "official_rome", "official_rome_file", "api_rome_manual"].includes(provenance)) return { corpus: "officiel / ROME", jobs: "alignées ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
+  if (provenance === "generated_rome") return { corpus: "ROME généré", jobs: "France Travail ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
+  if (["official_rome", "official_rome_file", "api_rome_manual"].includes(provenance)) return { corpus: "officiel / ROME", jobs: "alignées ROME", trainings: hasOfficialTraining(dataset) ? "officielles" : "à vérifier" };
   if (provenance === "onisep_import") return { corpus: "Onisep import", jobs: "à vérifier", trainings: "Onisep" };
   if (["rncp_rs", "certif_info"].includes(provenance)) return { corpus: provenance, jobs: "à vérifier", trainings: provenance };
   if (provenance === "mixed_official") return { corpus: "mixte officiel", jobs: "mixte", trainings: "mixte" };
   return { corpus: "custom_import", jobs: "importées", trainings: "à vérifier" };
+}
+
+function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
+  const sync = report.sync || {};
+  const successfulCodes = toArray(report.successfulCodes || sync.successfulCodes || manifest.successfulCodes || manifest.requestedRomeCodes || []);
+  const failedCodes = toArray(report.failedCodes || sync.failedCodes || manifest.failedCodes || []);
+  const failedCodeLabels = failedCodes.map(item => typeof item === "string" ? item : `${item.code || "?"}${item.status ? ` (${item.status})` : ""}`);
+  const topMissingFields = toArray(report.topMissingFields).map(item => `${item.field} (${item.count})`);
+  const represented = toArray(report.domainCoverage?.representedDomains);
+  const requestedCodesCount = report.requestedCodesCount ?? sync.requestedCodesCount ?? manifest.requestedCodesCount ?? toArray(manifest.requestedRomeCodes).length;
+  const successfulCodesCount = report.successfulCodesCount ?? sync.successfulCodesCount ?? manifest.successfulCodesCount ?? successfulCodes.length;
+  const failedCodesCount = report.failedCodesCount ?? sync.failedCodesCount ?? manifest.failedCodesCount ?? failedCodes.length;
+  return {
+    sourceName: "France Travail ROME 4.0 via GitHub Actions",
+    generatedAt: report.generatedAt || manifest.importedAt || dataset.importedAt || dataset.sourceDate,
+    branch: report.branch || manifest.branch,
+    requestedCodesCount,
+    successfulCodesCount,
+    failedCodesCount,
+    completionScore: report.completenessScore ?? report.completionRate ?? manifest.completionRate ?? 0,
+    isPartialOfficial: dataset.provenance === "generated_rome" && (dataset.jobs || []).length > 0 && (dataset.jobs || []).length < 50,
+    codesLabel: successfulCodes.length ? successfulCodes.slice(0, 24).join(", ") + (successfulCodes.length > 24 ? "..." : "") : "non renseignés",
+    failedLabel: failedCodeLabels.length ? failedCodeLabels.slice(0, 12).join(", ") : "aucun échec déclaré",
+    missingLabel: topMissingFields.length ? topMissingFields.slice(0, 8).join(", ") : "aucun champ majeur signalé",
+    domainLabel: represented.length ? represented.join(", ") : "non renseignés"
+  };
 }
 
 function hasOfficialTraining(dataset) {
@@ -3398,7 +3451,7 @@ function markDatasetAsOfficialRome(dataset, manifest = {}) {
   dataset.sources = [{
     id: "france_travail_rome_generated",
     schemaVersion: CONFIG.schemaVersion,
-    name: "France Travail ROME - données générées statiques",
+    name: "France Travail ROME 4.0 via GitHub Actions",
     producer: "Synchronisation sécurisée GitHub Actions ou import manuel",
     url: null,
     license: manifest.licenseSummary || "À vérifier selon les droits d’usage France Travail IO",
