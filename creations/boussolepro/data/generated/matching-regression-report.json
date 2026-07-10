@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-10T00:00:00.000Z",
+  "datasetVersion": "v0.5.alpha",
+  "source": "local_static_diagnostic",
+  "status": "diagnostic_template",
+  "profiles": [
+    {
+      "id": "social-education-calm",
+      "expectedDirections": ["social", "education", "enfance", "aide"],
+      "checks": ["Les metiers sociaux et educatifs doivent ressortir avant industrie/logistique/batiment si les contraintes physiques sont fortes."]
+    },
+    {
+      "id": "calm-administrative",
+      "expectedDirections": ["administratif", "back-office", "bibliotheque", "documentation"],
+      "checks": ["Le contact public intense ne doit pas compenser une preference forte pour le calme."]
+    },
+    {
+      "id": "no-skills-checked",
+      "expectedDirections": ["interets", "valeurs", "contraintes"],
+      "checks": ["Les competences non cochees baissent la confiance mais ne doivent pas etre interpretees comme absentes."]
+    }
+  ],
+  "hypotheses": [
+    "competences_non_cochees_trop_penalisantes",
+    "diversification_trop_forte",
+    "marche_ou_formation_compense_trop",
+    "donnees_inconnues_score_trop_confiant"
+  ],
+  "correctionsApplied": [
+    "non coche != absent",
+    "resultats visibles limites",
+    "diversification bloquee sous bestScore - 12",
+    "score de pertinence et confiance separes"
+  ]
+}

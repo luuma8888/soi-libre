@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.4.alpha  
+**Version :** v0.5.alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,19 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.4 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.5.alpha
+
+La v0.5.alpha ajoute une couche d’exploration plus sûre sans changer le principe offline :
+
+- un onglet **Exploration** pour chercher, filtrer et trier les métiers du corpus actif ;
+- des favoris locaux exportés/importés avec le profil ;
+- une séparation plus claire entre pertinence et confiance du résultat ;
+- des listes visibles plus sobres : pistes principales, pistes à explorer, exclusions proches et pertinentes ;
+- une règle de diversification plus prudente pour ne pas promouvoir une piste trop loin du meilleur score ;
+- un scoring compétences plus juste : une compétence non cochée n’est pas considérée comme absente, elle baisse surtout la confiance ;
+- des structures locales préparées pour les indicateurs marché France / Occitanie / Aude, sans données d’offres ni appel réseau.
 
 ## Corpus local enrichi v0.4
 
@@ -34,13 +46,13 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.4.alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
 ## Mode données générées ROME
 
-L’intégration API ROME / France Travail est mise en pause pour la v0.4 locale. Les fichiers et workflows existants restent présents pour reprise ultérieure.
+L’appel API ROME / France Travail direct depuis le navigateur reste désactivé pour l’usage courant. Les fichiers générés par GitHub Actions et les workflows existants restent présents pour reprise ultérieure.
 
 La page **Données** propose `Charger les données générées`.
 
@@ -80,13 +92,14 @@ Actions disponibles :
 - exporter le rapport qualité ;
 - importer / exporter un profil JSON ;
 - exporter les résultats en JSON ou Markdown ;
+- importer / exporter les favoris avec le profil ;
 - charger le corpus local enrichi estimatif ;
 - choisir le mode de corpus : automatique, ROME généré, corpus local enrichi, sample minimal ;
 - revenir aux données sample.
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle pour cette étape. La version v0.4.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
