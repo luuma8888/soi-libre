@@ -21,7 +21,7 @@ La premiere voie automatisee utilise le scope valide :
 nomenclatureRome api_rome-fiches-metiersv1
 ```
 
-La v0.3.2-bis.alpha utilise la variable `ROME_CODES` pour synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
+Quand la synchronisation ROME sera reprise, la variable `ROME_CODES` permettra de synchroniser environ 72 codes representatifs. Si la variable est absente, le script utilise une liste integree.
 
 ```text
 ROME_CODES=A1203,A1414,A1501,...

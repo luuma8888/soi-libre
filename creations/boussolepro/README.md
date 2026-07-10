@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.3.2-bis.alpha  
+**Version :** v0.4.alpha  
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -12,21 +12,35 @@ Le fichier principal reste :
 creations/boussolepro/boussole-pro.html
 ```
 
-Il contient le HTML, le CSS, le JavaScript, le moteur local, les données sample, le mode jour/nuit, les imports/exports et le CSS d’impression.
+Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enrichi estimatif, les données sample, le mode jour/nuit, les imports/exports et le CSS d’impression.
 
 ## Mode offline par défaut
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Si aucun fichier généré n’existe et si l’utilisateur est hors ligne, le corpus sample embarqué continue de fonctionner.
+Par défaut, la v0.4 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Corpus local enrichi v0.4
+
+La v0.4.alpha ajoute un corpus local estimatif de 210 métiers, généré depuis `tmp/monde-pro/PROMPT_CODEX_BOUSSOLE_PRO_V0_4_CORPUS_LOCAL_200_METIERS.md` avec :
+
+- `scripts/build-curated-clairmetier-corpus.mjs` ;
+- `creations/boussolepro/data/curated/clairmetier-curated-v0.4.json` ;
+- `creations/boussolepro/data/curated/curated-quality-report.v0.4.json`.
+
+Ce corpus est aussi intégré dans `boussole-pro.html` pour consultation offline directe. Il est marqué `source: "curated_estimated"`, `provenance: "curated_clairmetier_ai_logic"` et `officialStatus: "not_official_to_verify"`.
+
+Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certifications indicatives, 210 mappings, des contraintes, valeurs, intérêts, contextes et indicateurs marché estimatifs. Ces données servent à orienter, pas à certifier.
 
 ## Données sample
 
-La version v0.3.2-bis.alpha embarque toujours les métiers sample non officiels de démonstration et stabilise la chaîne ROME générée : IDs canoniques `rome-CODE`, placeholders supprimés, classification des compétences, séparation brut/filtré/matchable et rapport de complétude plus honnête.
+La version v0.4.alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
-## Mode données générées
+## Mode données générées ROME
+
+L’intégration API ROME / France Travail est mise en pause pour la v0.4 locale. Les fichiers et workflows existants restent présents pour reprise ultérieure.
 
 La page **Données** propose `Charger les données générées`.
 
@@ -53,7 +67,7 @@ Les fichiers `work-contexts.rome.json`, `job-appellations.rome.json` et `mapping
 
 Tant que `mappings.rome.json` ne relie pas officiellement des compétences ou contextes à un métier, ClairMétier les affiche comme référentiels globaux mais ne les utilise pas comme preuve métier. Les compétences matchables servent au profil utilisateur, pas à affirmer qu’un métier les exige.
 
-La v0.3.2-bis prépare aussi, sans inventer de données, les fichiers futurs `formations.onisep.json`, `certifications.certifinfo.json`, `mappings-rome-formations.json` et `mappings-rome-certifications.json`. Les formations, certifications et indicateurs marché sample ne sont pas mélangés au corpus ROME généré.
+La chaîne ROME prépare aussi, sans inventer de données, les fichiers futurs `formations.onisep.json`, `certifications.certifinfo.json`, `mappings-rome-formations.json` et `mappings-rome-certifications.json`. Les formations, certifications et indicateurs marché sample ne sont pas mélangés au corpus ROME généré.
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
@@ -66,11 +80,13 @@ Actions disponibles :
 - exporter le rapport qualité ;
 - importer / exporter un profil JSON ;
 - exporter les résultats en JSON ou Markdown ;
+- charger le corpus local enrichi estimatif ;
+- choisir le mode de corpus : automatique, ROME généré, corpus local enrichi, sample minimal ;
 - revenir aux données sample.
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire. La version v0.3.2-bis.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle pour cette étape. La version v0.4.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
@@ -103,7 +119,7 @@ GitHub Pages est statique : il ne peut pas protéger un secret côté serveur. L
 ## Déploiement GitHub Pages
 
 1. Ajouter `FT_CLIENT_ID` et `FT_CLIENT_SECRET` dans les secrets GitHub Actions.
-2. Configurer `ROME_CODES` si vous voulez remplacer la liste v0.3.2 par défaut.
+2. Configurer `ROME_CODES` si vous voulez remplacer la liste v0.3.2 par défaut quand la synchronisation ROME sera reprise.
 3. Lancer le workflow `Sync ROME data`.
 4. Vérifier les fichiers `creations/boussolepro/data/generated/`.
 5. Ouvrir Boussole Pro sur GitHub Pages et charger les données générées depuis la page Données.
