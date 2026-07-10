@@ -139,7 +139,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   padding: 14px clamp(16px, 4vw, 42px);
   border-bottom: 1px solid var(--header-border);
   background: var(--header-bg);
@@ -182,19 +182,21 @@ h1 {
 
 .main-nav {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
   justify-content: flex-end;
 }
 
 .nav-button {
-  min-height: 38px;
-  padding: 8px 11px;
+  min-height: 32px;
+  padding: 6px 9px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--read-bg);
   color: var(--ink);
+  font-size: 0.86rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .nav-button[aria-current="page"],
@@ -204,9 +206,9 @@ h1 {
 }
 
 .nav-button.nav-secondary {
-  min-height: 34px;
-  padding: 7px 10px;
-  font-size: 0.84rem;
+  min-height: 30px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
   opacity: 0.78;
 }
 
@@ -444,6 +446,26 @@ textarea {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
+}
+
+.experience-domain-grid,
+.mini-grid,
+.skill-sector-list {
+  display: grid;
+  gap: 10px;
+}
+
+.experience-domain-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.mini-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-top: 8px;
+}
+
+.skill-sector-list {
+  margin-top: 12px;
 }
 
 .tag-option,
@@ -903,6 +925,11 @@ details.advanced-box summary {
     justify-content: flex-start;
   }
 
+  .main-nav {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -1119,7 +1146,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.5.alpha",
+  version: "v0.5.1-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1208,6 +1235,7 @@ const PROFILE_FIELD_IMPACT_MAP = {
   skillTests: ["skillScore"],
   directSkills: ["skillScore"],
   experienceDomains: ["skillBonus", "transitionBonus"],
+  experienceDomainDetails: ["skillBonus", "transitionBonus"],
   interests: ["interestScore", "diversification"],
   values: ["valueScore"],
   preferredWorkStyles: ["contextScore"],
@@ -1273,10 +1301,11 @@ const VALUE_OPTIONS = [
   ["beauty", "Beauté"],
   ["ecology", "Écologie"],
   ["clarity", "Clarté"],
-  ["security", "Sécurité"],
+  ["security", "Stabilité de l’emploi / revenu régulier"],
+  ["protection", "Protection / prévention / sécurité physique"],
   ["team", "Collectif"],
   ["concrete", "Concret"],
-  ["care", "Soin"]
+  ["care", "Prendre soin / attention au vivant"]
 ];
 
 const WORK_STYLE_OPTIONS = [
@@ -1287,7 +1316,8 @@ const WORK_STYLE_OPTIONS = [
   ["manual", "Manuel"],
   ["creative", "Créatif"],
   ["analytical", "Analyse"],
-  ["field", "Terrain"]
+  ["field", "Terrain concret / situations réelles"],
+  ["outdoor", "Extérieur / plein air"]
 ];
 
 const ENVIRONMENT_OPTIONS = [
@@ -1302,31 +1332,48 @@ const ENVIRONMENT_OPTIONS = [
 ];
 
 const EXPERIENCE_DOMAIN_OPTIONS = [
-  ["accueil", "Accueil"],
-  ["vente", "Vente"],
-  ["administratif", "Administratif"],
-  ["enfants", "Enfants"],
-  ["soin", "Soin"],
-  ["bricolage", "Bricolage"],
-  ["nature", "Nature"],
-  ["numerique", "Numérique"],
-  ["communication", "Communication"],
-  ["cuisine", "Cuisine"],
-  ["logistique", "Logistique"],
-  ["animation", "Animation"]
+  ["accueil", "Accueil / relation client"],
+  ["administratif", "Administratif / dossiers"],
+  ["animation", "Animation / jeunesse"],
+  ["education", "Éducation / transmission"],
+  ["social", "Social / accompagnement"],
+  ["soin", "Soin / aide à la personne"],
+  ["petite_enfance", "Petite enfance"],
+  ["proprete", "Propreté / ménage / hygiène"],
+  ["cuisine", "Cuisine / alimentation"],
+  ["numerique", "Numérique / informatique"],
+  ["communication", "Communication / création"],
+  ["nature", "Nature / espaces verts"],
+  ["animaux", "Animaux"],
+  ["bricolage", "Bricolage / réparation"],
+  ["batiment", "Bâtiment / chantier"],
+  ["logistique", "Logistique / rangement"],
+  ["transport", "Transport / conduite"],
+  ["commerce", "Commerce / vente"],
+  ["industrie", "Industrie / production"],
+  ["laboratoire", "Laboratoire / qualité"],
+  ["culture", "Culture / médiation"],
+  ["association", "Projet associatif / collectif"]
 ];
 
 const TRAINING_FAMILY_OPTIONS = [
-  ["commerce", "Commerce"],
-  ["administratif", "Administratif"],
-  ["soin", "Soin"],
-  ["social", "Social"],
-  ["batiment", "Bâtiment"],
-  ["numerique", "Numérique"],
-  ["art", "Art / création"],
-  ["industrie", "Industrie"],
-  ["agriculture", "Agriculture"],
-  ["enseignement", "Enseignement"]
+  ["administratif", "Administratif / gestion"],
+  ["numerique", "Numérique / informatique"],
+  ["social", "Social / insertion"],
+  ["education", "Éducation / animation"],
+  ["petite_enfance", "Petite enfance"],
+  ["soin", "Santé / soin"],
+  ["proprete", "Propreté / hygiène"],
+  ["hotellerie", "Hôtellerie / tourisme"],
+  ["restauration", "Restauration / alimentation"],
+  ["nature", "Nature / agriculture / animaux"],
+  ["batiment", "Bâtiment / maintenance"],
+  ["logistique", "Logistique / transport"],
+  ["industrie", "Industrie / qualité"],
+  ["commerce", "Commerce / relation client"],
+  ["culture", "Culture / communication"],
+  ["securite", "Sécurité / prévention"],
+  ["transition", "Transition écologique / territoire"]
 ];
 
 const EXCLUDED_DOMAIN_OPTIONS = [
@@ -1424,6 +1471,13 @@ const App = {
       territory: "FR",
       sort: "profile",
       favoritesOnly: false
+    },
+    skillBrowser: {
+      query: "",
+      onlySelectedSectors: true,
+      showTransversal: true,
+      showAll: false,
+      openAll: false
     },
     pendingImportType: "corpus",
     saveTimer: null,
@@ -1532,6 +1586,135 @@ const LOCAL_HUMAN_SKILLS_V05 = [
   ["skill-emotional-support", "Présence rassurante auprès d’une personne", "savoir-être", "aide"],
   ["skill-team-transmission", "Transmettre une information à une équipe", "savoir-faire", "soin"],
   ["skill-privacy-respect", "Respecter l’intimité et la confidentialité", "savoir-être", "soin"]
+];
+
+const SKILL_SECTOR_OPTIONS_V051 = [
+  ["transversal", "Compétences transversales"],
+  ["animation", "Animation / jeunesse"],
+  ["social", "Social / accompagnement"],
+  ["education", "Éducation / transmission"],
+  ["care", "Soin / aide à la personne"],
+  ["children", "Petite enfance"],
+  ["cleaning", "Propreté / hygiène"],
+  ["digital", "Numérique / informatique"],
+  ["administrative", "Administratif / dossiers"],
+  ["creative", "Communication / création"],
+  ["nature", "Nature / espaces verts"],
+  ["animals", "Animaux"],
+  ["food", "Cuisine / alimentation"],
+  ["building", "Bâtiment / artisanat"],
+  ["logistics", "Logistique / transport"],
+  ["security", "Sécurité / prévention"],
+  ["hospitality", "Accueil / tourisme"],
+  ["commerce", "Commerce / relation client"],
+  ["industry", "Industrie / qualité"],
+  ["culture", "Culture / médiation"]
+];
+
+const SKILL_SECTOR_MAP_V051 = {
+  "skill-active-listening": ["transversal", "social", "education", "care", "children", "commerce", "animation"],
+  "skill-communication": ["transversal", "administrative", "social", "education", "commerce", "hospitality", "culture"],
+  "skill-organisation": ["transversal", "administrative", "logistics", "food", "cleaning"],
+  "skill-writing": ["transversal", "administrative", "creative", "culture", "education"],
+  "skill-project": ["transversal", "administrative", "social", "creative", "culture"],
+  "skill-analysis": ["transversal", "digital", "industry", "administrative"],
+  "skill-data": ["digital", "administrative", "industry"],
+  "skill-code": ["digital"],
+  "skill-network": ["digital"],
+  "skill-support-user": ["digital", "social", "education"],
+  "skill-phone-support": ["commerce", "administrative", "social"],
+  "skill-design": ["creative", "digital", "culture"],
+  "skill-photo-video": ["creative", "culture"],
+  "skill-marketing": ["creative", "commerce"],
+  "skill-cultural": ["culture", "education", "creative"],
+  "skill-teaching": ["education", "children", "transversal"],
+  "skill-learning-support": ["education", "children", "social"],
+  "skill-pedagogy": ["education", "transversal"],
+  "skill-classroom-support": ["education", "children"],
+  "skill-child-safety": ["children", "education", "animation", "care"],
+  "skill-child-development": ["children", "education", "care"],
+  "skill-early-childhood": ["children", "care", "education"],
+  "skill-animation": ["animation", "children", "culture", "social"],
+  "skill-activity-design": ["animation", "education", "children", "culture"],
+  "skill-group-facilitation": ["animation", "social", "education", "transversal"],
+  "skill-mediation": ["social", "commerce", "security", "transversal"],
+  "skill-social-support": ["social", "care", "administrative"],
+  "skill-care-basic": ["care", "children", "social"],
+  "skill-daily-life-support": ["care", "social"],
+  "skill-care-hygiene-comfort": ["care", "cleaning"],
+  "skill-observation-alert": ["care", "security", "animals"],
+  "skill-health-protocols": ["care", "cleaning"],
+  "skill-cleanliness": ["cleaning", "care", "food", "hospitality"],
+  "skill-cleaning": ["cleaning", "hospitality", "care"],
+  "skill-cleaning-protocol": ["cleaning", "care", "hospitality"],
+  "skill-disinfection": ["cleaning", "care", "food"],
+  "skill-hygiene-rules": ["cleaning", "care", "food"],
+  "skill-hygiene-food": ["food", "cleaning"],
+  "skill-cooking": ["food"],
+  "skill-hospitality": ["hospitality", "commerce"],
+  "skill-sales": ["commerce", "hospitality"],
+  "skill-logistics": ["logistics", "commerce", "industry"],
+  "skill-transport": ["logistics"],
+  "skill-driving": ["logistics", "care", "nature", "animals"],
+  "skill-security": ["security"],
+  "skill-craft": ["building", "creative", "nature"],
+  "skill-repair": ["building", "digital", "industry"],
+  "skill-building": ["building"],
+  "skill-quality": ["industry", "food", "cleaning"],
+  "skill-industry": ["industry"],
+  "skill-lab": ["industry"],
+  "skill-gardening": ["nature"],
+  "skill-environment": ["nature"],
+  "skill-animal-care": ["animals", "nature"],
+  "skill-animal-observation": ["animals", "nature"]
+};
+
+const SKILL_JOB_MAP_V051 = {
+  "skill-child-safety": ["K1303", "G1202", "K2104", "J1304"],
+  "skill-code": ["M1805", "M1802", "M1810"],
+  "skill-cleanliness": ["K2204", "J1501", "G1602", "G1501", "K1302"],
+  "skill-care-basic": ["J1501", "K1302", "K1301", "J1304"],
+  "skill-social-support": ["K1204", "K1801", "K1302", "K1103"],
+  "skill-admin-doc": ["M1607", "M1605", "M1609", "M1501"],
+  "skill-gardening": ["A1203", "A1414", "A1405"],
+  "skill-animal-care": ["A1501", "A1407"],
+  "skill-cleaning": ["K2204", "G1501"],
+  "skill-hygiene-food": ["G1602", "G1803"]
+};
+
+const LOCAL_TRAINING_PATHS_V051 = [
+  ["training-local-assistant-administratif", "Bases assistant administratif / dossiers", "courte", 3, 4, null, ["M1607", "M1605", "M1601"]],
+  ["training-local-secretaire-medico-social", "Secrétariat médico-social à vérifier", "certifiante", 6, 4, null, ["M1609"]],
+  ["training-local-gestionnaire-paie", "Gestionnaire paie junior", "certifiante", 8, 5, null, ["M1501"]],
+  ["training-local-mediation-numerique", "Médiation numérique et inclusion", "courte", 3, 4, null, ["K1204", "M1810"]],
+  ["training-local-support-informatique", "Support informatique utilisateur", "certifiante", 6, 4, null, ["M1810"]],
+  ["training-local-developpement-web", "Développement web junior", "certifiante", 9, 5, "cert-rncp-dev", ["M1805"]],
+  ["training-local-no-code", "No-code / automatisation : bases", "courte", 2, 4, null, ["M1805", "M1802"]],
+  ["training-local-mediateur-social", "Médiation sociale", "certifiante", 5, 4, null, ["K1204", "K1801"]],
+  ["training-local-cip", "Conseiller insertion professionnelle : préparation", "longue", 10, 5, null, ["K1801"]],
+  ["training-local-vae-parcours", "Accompagnement VAE / parcours", "vae", 4, 5, null, ["K1801", "K1204"]],
+  ["training-local-projet-associatif", "Coordination de projet associatif", "courte", 4, 4, null, ["K1204", "M1605"]],
+  ["training-local-bafa", "BAFA / animation volontaire", "courte", 1, 3, "cert-bafa", ["G1202"]],
+  ["training-local-bafd", "BAFD / direction d’accueil collectif", "certifiante", 2, 4, null, ["G1202"]],
+  ["training-local-cap-aepe", "CAP AEPE", "diplomante", 12, 3, "cert-cap-aepe", ["K1303", "J1304"]],
+  ["training-local-auxiliaire-puericulture", "Diplôme d’État auxiliaire de puériculture", "diplomante", 12, 4, null, ["J1304"]],
+  ["training-local-aide-soignant", "Diplôme d’État aide-soignant", "diplomante", 12, 4, "cert-de-aide-soignant", ["J1501"]],
+  ["training-local-aes", "Diplôme d’État AES", "diplomante", 12, 3, null, ["K1301", "K1302"]],
+  ["training-local-assistant-dentaire", "Assistant dentaire : parcours à vérifier", "certifiante", 12, 4, null, ["J1303"]],
+  ["training-local-preparateur-pharmacie", "Préparateur en pharmacie : parcours à vérifier", "longue", 24, 4, null, ["J1307"]],
+  ["training-local-agent-proprete", "Agent de propreté et d’hygiène", "courte", 2, 3, null, ["K2204"]],
+  ["training-local-gouvernant", "Gouvernant / entretien hébergement", "courte", 4, 4, null, ["G1501"]],
+  ["training-local-espaces-verts", "Espaces verts : bases pratiques", "courte", 4, 3, null, ["A1203"]],
+  ["training-local-maraichage", "Maraîchage biologique : initiation", "courte", 6, 3, null, ["A1414"]],
+  ["training-local-soigneur-animalier", "Soigneur animalier : parcours à vérifier", "certifiante", 8, 3, null, ["A1501"]],
+  ["training-local-caces", "CACES / magasinage", "courte", 1, null, "cert-caces", ["N1103"]],
+  ["training-local-haccp", "HACCP / hygiène alimentaire", "courte", 1, null, "cert-haccp", ["G1602", "G1803"]],
+  ["training-local-carte-securite", "Carte professionnelle sécurité", "certifiante", 3, 3, "cert-agent-securite", ["K2503"]],
+  ["training-local-sst", "SST prévention secours", "courte", 1, null, "cert-sst", ["K2503", "J1501", "K1302"]],
+  ["training-local-habilitation-electrique", "Habilitation électrique : selon poste", "courte", 1, null, null, ["F1602", "I1304"]],
+  ["training-local-mediation-culturelle", "Médiation culturelle", "courte", 4, 5, null, ["G1202", "K1601"]],
+  ["training-local-community-management", "Community management local", "courte", 3, 5, null, ["E1103", "M1705"]],
+  ["training-local-video-redaction", "Vidéo / rédaction web : bases", "courte", 4, 5, null, ["E1104", "E1106"]]
 ];
 
 const SAMPLE_CONTEXTS = [
@@ -1902,7 +2085,7 @@ function loadSampleData() {
     apiConnectorConfig: App.apiConnectorConfig
   };
   dataset.qualityReport = generateDataQualityReport(dataset);
-  return dataset;
+  return finalizeDatasetForV051(dataset);
 }
 
 function loadDefaultLocalDataset() {
@@ -1932,6 +2115,200 @@ function getLocalHumanSkills() {
 
 function mergeLocalHumanSkills(skills = []) {
   return uniqueBy([...toArray(skills), ...getLocalHumanSkills()], "id");
+}
+
+const LOCAL_VARIANT_ROME_MAP_V051 = {
+  "curated-coordinateur-administratif-associatif": "M1605",
+  "curated-ux-ui-designer-junior": "E1205",
+  "curated-conseiller-mediation-numerique": "K1204",
+  "curated-analyste-cybersecurite-junior": "M1802",
+  "curated-createur-no-code-automatisation": "M1805",
+  "curated-charge-de-projet-associatif": "K1204",
+  "curated-accompagnant-vae-parcours": "K1801",
+  "curated-intervenant-socio-educatif": "K1207",
+  "curated-referent-handicap-insertion": "K1801",
+  "curated-accompagnant-administratif-social": "K1205",
+  "curated-conseiller-budget-familial": "K1102",
+  "curated-animateur-prevention-sante-social": "K1204",
+  "curated-sophrologue-praticien-bien-etre": "K1103",
+  "curated-masseur-bien-etre-non-medical": "K1103",
+  "curated-coordinateur-parcours-sante": "K1403",
+  "curated-moniteur-atelier-creatif-enfants": "G1202",
+  "curated-agent-refuge-animaux": "A1501",
+  "curated-technicien-riviere-milieux-aquatiques": "A1204",
+  "curated-charge-mission-biodiversite": "A1303",
+  "curated-crepier-restauration-rapide-qualitative": "G1602",
+  "curated-preparateur-snacking-sain": "G1603",
+  "curated-coordinateur-chambres-d-hotes": "G1502",
+  "curated-gestionnaire-conciergerie-locale": "G1703",
+  "curated-operateur-impression-3d": "H2906",
+  "curated-facilitateur-de-tiers-lieu": "K1204",
+  "curated-coordinateur-jardin-partage": "A1203",
+  "curated-animateur-cooperatif": "G1202",
+  "curated-mediateur-numerique-itinerant": "K1204",
+  "curated-conseiller-transition-ecologique-locale": "K1801",
+  "curated-concierge-solidaire": "K1302",
+  "curated-coordinateur-benevoles": "K1204",
+  "curated-organisateur-evenements-citoyens": "E1107",
+  "curated-artisan-reparateur-reemploi": "I1304",
+  "curated-animateur-bien-etre-au-travail": "K1103",
+  "curated-accompagnant-autonomie-administrative": "K1205",
+  "curated-createur-d-ateliers-pedagogiques": "G1202",
+  "curated-coordinateur-ressourcerie": "K2304"
+};
+
+const CURATED_JOB_REPAIRS_V051 = {
+  "curated-auxiliaire-de-vie": {
+    requiredSkills: ["skill-care-basic", "skill-daily-life-support", "skill-active-listening", "skill-care-hygiene-comfort"],
+    optionalSkills: ["skill-cleanliness", "skill-emotional-stability", "skill-driving", "skill-privacy-respect"],
+    workContexts: ["ctx-home-care", "ctx-public-contact", "ctx-field", "ctx-emotional-load"]
+  },
+  "curated-auxiliaire-de-puericulture": {
+    requiredSkills: ["skill-early-childhood", "skill-child-safety", "skill-care-basic", "skill-child-development"],
+    optionalSkills: ["skill-cleanliness", "skill-active-listening", "skill-care-hygiene-comfort", "skill-team-transmission"],
+    workContexts: ["ctx-children", "ctx-care-setting", "ctx-team", "ctx-emotional-load"]
+  },
+  "curated-teleconseiller-administratif": {
+    requiredSkills: ["skill-admin-doc", "skill-phone-support", "skill-communication"],
+    optionalSkills: ["skill-organisation", "skill-active-listening"],
+    workContexts: ["ctx-phone", "ctx-office", "ctx-team"]
+  },
+  "curated-analyste-cybersecurite-junior": {
+    requiredSkills: ["skill-analysis", "skill-network", "skill-security"],
+    optionalSkills: ["skill-data", "skill-writing", "skill-support-user"],
+    workContexts: ["ctx-office", "ctx-remote", "ctx-quiet"]
+  },
+  "curated-accompagnant-administratif-social": {
+    requiredSkills: ["skill-admin-doc", "skill-social-support", "skill-active-listening"],
+    optionalSkills: ["skill-organisation", "skill-orientation-referral", "skill-writing"],
+    workContexts: ["ctx-public-contact", "ctx-office", "ctx-association", "ctx-emotional-load"]
+  },
+  "curated-animateur-nature-enfants": {
+    requiredSkills: ["skill-environment", "skill-animation", "skill-child-safety"],
+    optionalSkills: ["skill-gardening", "skill-pedagogy", "skill-activity-design"],
+    workContexts: ["ctx-outdoor", "ctx-children", "ctx-team"]
+  },
+  "curated-gestionnaire-conciergerie-locale": {
+    requiredSkills: ["skill-organisation", "skill-hospitality", "skill-admin-doc"],
+    optionalSkills: ["skill-communication", "skill-local-network"],
+    workContexts: ["ctx-public-contact", "ctx-office", "ctx-field"]
+  },
+  "curated-artisan-d-art-polyvalent": {
+    requiredSkills: ["skill-craft", "skill-design", "skill-cultural"],
+    optionalSkills: ["skill-sales", "skill-communication"],
+    workContexts: ["ctx-workshop", "ctx-cultural-place", "ctx-public-contact"]
+  },
+  "curated-artisan-reparateur-reemploi": {
+    requiredSkills: ["skill-repair", "skill-craft", "skill-cleaning"],
+    optionalSkills: ["skill-customer-care", "skill-waste-sorting", "skill-environment"],
+    workContexts: ["ctx-recycling", "ctx-workshop", "ctx-public-contact"]
+  }
+};
+
+function getLocalTrainingPaths() {
+  return LOCAL_TRAINING_PATHS_V051.map(row => normalizeTraining({
+    id: row[0],
+    title: row[1],
+    trainingType: row[2],
+    durationMonths: row[3],
+    levelTarget: row[4],
+    certificationId: row[5],
+    targetRomeCodes: row[6],
+    targetJobIds: [],
+    modalities: row[2] === "courte" ? ["presentiel", "distance_possible"] : ["presentiel", "alternance_possible"],
+    notes: "Parcours local indicatif non officiel, à vérifier auprès des organismes et référentiels.",
+    source: "curated_estimated",
+    provenance: "local_training_path_v051",
+    confidence: 0.4,
+    officialStatus: "to_verify"
+  }));
+}
+
+function finalizeDatasetForV051(dataset, options = {}) {
+  if (!dataset) return dataset;
+  const finalized = {
+    ...dataset,
+    skills: mergeLocalHumanSkills(toArray(dataset.skills).map(normalizeSkill)),
+    matchableSkills: mergeLocalHumanSkills(toArray(dataset.matchableSkills || dataset.skills).map(normalizeSkill)),
+    trainings: uniqueBy([...toArray(dataset.trainings).map(normalizeTraining), ...getLocalTrainingPaths()], "id")
+  };
+  finalized.jobs = toArray(dataset.jobs).map(job => repairJobForV051(normalizeJob(job)));
+  const jobById = new Map(finalized.jobs.map(job => [job.id, job]));
+  finalized.mappings = toArray(dataset.mappings).map(mapping => {
+    const job = jobById.get(mapping.jobId);
+    return {
+      ...mapping,
+      romeCode: mapping.romeCode || job?.romeCode || job?.localVariantOfRomeCode || null,
+      relatedJobIds: toArray(mapping.relatedJobIds).map(id => jobById.get(id)?.id || id)
+    };
+  });
+  finalized.jobAppellations = toArray(dataset.jobAppellations).map(appellation => {
+    const job = jobById.get(appellation.jobId);
+    return { ...appellation, romeCode: appellation.romeCode || job?.romeCode || job?.localVariantOfRomeCode || null };
+  });
+  finalized.marketIndicators = toArray(dataset.marketIndicators).map(indicator => ({
+    ...indicator,
+    source: indicator.source || "curated_estimated",
+    provenance: indicator.provenance || finalized.provenance || "sample",
+    isEstimated: indicator.source !== "bmo" && indicator.source !== "dataemploi",
+    national: indicator.national || {
+      tensionLevel: marketLevelFromScore(indicator.tensionScore),
+      recruitmentTrend: indicator.trend || "unknown",
+      source: indicator.source || "curated_estimated",
+      confidence: indicator.confidence ?? 0.4
+    },
+    local: indicator.local || {
+      regionCode: "76",
+      departmentCode: "11",
+      tensionLevel: "unknown",
+      source: "not_connected",
+      confidence: 0
+    }
+  }));
+  finalized.datasetVersion = finalized.datasetVersion || CONFIG.version;
+  if (options.regenerateReport !== false && finalized.provenance !== "generated_rome") {
+    finalized.qualityReport = generateDataQualityReport(finalized);
+  }
+  return finalized;
+}
+
+function repairJobForV051(job) {
+  const repair = CURATED_JOB_REPAIRS_V051[job.id];
+  if (repair) {
+    job.requiredSkills = repair.requiredSkills;
+    job.optionalSkills = repair.optionalSkills;
+    job.softSkills = unique([...toArray(job.softSkills), ...repair.optionalSkills.filter(id => normalizeText(id).includes("stability") || normalizeText(id).includes("privacy"))]);
+    job.workContexts = unique([...repair.workContexts, ...toArray(job.workContexts)]);
+    job.evidenceNotes = unique([...toArray(job.evidenceNotes), "Correction v0.5.1 : compétences réalignées avec la famille soin/enfance."]);
+  }
+  const isCareOrChild = normalizeText(`${job.title} ${job.domain} ${job.family}`).match(/auxiliaire|puericulture|petite enfance|soin|aide a la personne|services a la personne/);
+  const badUxSkills = ["skill-user-research", "skill-design"];
+  if (isCareOrChild && toArray(job.requiredSkills).some(id => badUxSkills.includes(id))) {
+    job.requiredSkills = unique(["skill-care-basic", "skill-active-listening", "skill-cleanliness", ...toArray(job.requiredSkills).filter(id => !badUxSkills.includes(id))]);
+    job.evidenceNotes = unique([...toArray(job.evidenceNotes), "Correction v0.5.1 : retrait de compétences UX/design non justifiées pour un métier de soin/enfance."]);
+  }
+  const variantCode = job.romeCode || job.localVariantOfRomeCode || LOCAL_VARIANT_ROME_MAP_V051[job.id];
+  if (variantCode && !job.romeCode) {
+    job.romeCode = variantCode;
+    job.localVariantOfRomeCode = variantCode;
+    job.localVariantTitle = job.title;
+    job.isLocalVariant = true;
+    job.sourceRefs = unique([...toArray(job.sourceRefs), "local_variant_of_rome_to_verify"]);
+    job.dataQuality = {
+      ...(job.dataQuality || {}),
+      warnings: unique([...toArray(job.dataQuality?.warnings), "local_variant_rome_code_to_verify"])
+    };
+  }
+  if (job.romeCode) job.canonicalId = canonicalJobId(job.romeCode);
+  return job;
+}
+
+function marketLevelFromScore(score) {
+  const value = Number(score);
+  if (!Number.isFinite(value)) return "unknown";
+  if (value >= 0.66) return "high";
+  if (value >= 0.45) return "medium";
+  return "low";
 }
 
 function loadCuratedData(raw = CURATED_CORPUS_V04) {
@@ -1978,7 +2355,7 @@ function loadCuratedData(raw = CURATED_CORPUS_V04) {
     }
   };
   dataset.qualityReport = raw.qualityReport || generateDataQualityReport(dataset);
-  return dataset;
+  return finalizeDatasetForV051(dataset);
 }
 
 function normalizeCuratedJobSeed(row) {
@@ -2466,7 +2843,7 @@ function getProfileSkillOptions(dataset = App.state.dataset) {
 }
 
 function normalizeJob(raw) {
-  const romeCode = raw.romeCode || raw.rawSourceId || "";
+  const romeCode = raw.romeCode || raw.localVariantOfRomeCode || raw.rawSourceId || "";
   const isGeneratedRome = raw.provenance === "generated_rome" || raw.source === "official_rome_api" || toArray(raw.sourceRefs).includes("france_travail_rome_generated");
   const canonicalId = romeCode ? canonicalJobId(romeCode) : canonicalJobId(raw.id || raw.normalizedId);
   const legacyRomeId = /^job-rome-[A-Z][0-9]{4}/.test(String(raw.id || ""));
@@ -2486,6 +2863,9 @@ function normalizeJob(raw) {
     canonicalId,
     schemaVersion: raw.schemaVersion || CONFIG.schemaVersion,
     romeCode,
+    localVariantTitle: raw.localVariantTitle || null,
+    localVariantOfRomeCode: raw.localVariantOfRomeCode || null,
+    isLocalVariant: Boolean(raw.isLocalVariant),
     title: frText(raw.title || "Métier sans titre"),
     appellations: toArray(raw.appellations).map(frText),
     domain: frText(raw.domain || "Domaine non renseigné"),
@@ -2569,12 +2949,14 @@ function normalizeTraining(raw) {
     prerequisites: raw.prerequisites || "A verifier localement",
     certificationId: raw.certificationId || null,
     targetJobIds: toArray(raw.targetJobIds),
+    targetRomeCodes: toArray(raw.targetRomeCodes || raw.codesRome),
     modalities: toArray(raw.modalities),
     costCategory: raw.costCategory || "unknown",
     notes: raw.notes || "Donnee formation a verifier.",
     source: raw.source || "sample_non_official",
     provenance: raw.provenance || "sample",
-    confidence: raw.confidence ?? 0.4
+    confidence: raw.confidence ?? 0.4,
+    officialStatus: raw.officialStatus || "to_verify"
   };
 }
 
@@ -2755,7 +3137,7 @@ function mapUserProfileToCriteria(profile) {
     education: {
       highestLevel: Number(profile.diplomaLevel || 0),
       diplomas: toArray(profile.diplomas),
-      certificationIds: toArray(profile.certifications),
+      certificationIds: unique([...toArray(profile.certifications), ...toArray(profile.freeCertifications)]),
       trainingOpenness,
       canDoShortTraining: allowsShortTraining(trainingOpenness),
       canDoLongTraining: allowsLongTraining(trainingOpenness),
@@ -2763,14 +3145,15 @@ function mapUserProfileToCriteria(profile) {
       trainingFamilies: toArray(profile.trainingFamilies)
     },
     certifications: {
-      held: toArray(profile.certifications),
+      held: unique([...toArray(profile.certifications), ...toArray(profile.freeCertifications)]),
       licenses: toArray(profile.driverLicenses),
       willingToObtain: trainingOpenness === "none" ? [] : ["short_certification", allowsLongTraining(trainingOpenness) ? "long_certification" : ""].filter(Boolean)
     },
     experience: {
       raw: toArray(profile.experiences),
       domains: unique([...toArray(profile.experiences).map(item => normalizeText(item.domain || item)).filter(Boolean), ...toArray(profile.experienceDomains)]),
-      duration: profile.experienceDuration || "not_specified"
+      duration: profile.experienceDuration || "not_specified",
+      domainDetails: normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains)
     },
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
     skillEvidence,
@@ -2848,6 +3231,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     const scores = { skills: skill.score, training: training.score, constraints: 0, values: value.score, context: context.score, market: market.score };
     const relevanceScore = weightedGlobalScore({ ...scores, constraints: CONFIG.baseWeights.constraints }, criteria.criterionWeights);
     const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market], hardCheck.unknown);
+    const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, hardCheck });
     const result = {
       schemaVersion: CONFIG.schemaVersion,
       id: `match-${criteria.profileId}-${job.id}`,
@@ -2862,6 +3246,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
       dataReliability: reliabilityLabel(confidence),
       status: "excluded_for_now",
       scores,
+      scoreDetails,
       positiveReasons: [],
       negativeReasons: [],
       exclusionReasons: hardCheck.confirmed,
@@ -2892,8 +3277,10 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     market: market.score
   };
   const globalScore = weightedGlobalScore(scores, criteria.criterionWeights);
+  const confidence = calculateConfidence(criteria, job, [skill, training, constraint, value, context, market], hardCheck.unknown);
   const status = determineFeasibilityStatus(globalScore, scores, criteria, job, { training, constraint, hardCheck });
   const explanation = explainMatch(criteria, job, scores, status, { skill, training, constraint, value, context, market, hardCheck });
+  const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint, value, context, market, hardCheck });
   return {
     schemaVersion: CONFIG.schemaVersion,
     id: `match-${criteria.profileId}-${job.id}`,
@@ -2903,10 +3290,11 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     title: job.title,
     globalScore,
     scorePertinence: globalScore,
-    confidenceScore: calculateConfidence(criteria, job, [skill, training, constraint, value, context, market], hardCheck.unknown),
-    dataReliability: reliabilityLabel(calculateConfidence(criteria, job, [skill, training, constraint, value, context, market], hardCheck.unknown)),
+    confidenceScore: confidence,
+    dataReliability: reliabilityLabel(confidence),
     status,
     scores,
+    scoreDetails,
     positiveReasons: explanation.positive,
     negativeReasons: explanation.negative,
     exclusionReasons: [],
@@ -2924,6 +3312,49 @@ function reliabilityLabel(score) {
   if (score >= 75) return "high";
   if (score >= 50) return "medium";
   return "low";
+}
+
+function buildScoreDetails(criteria, job, details = {}) {
+  const skill = details.skill || {};
+  const context = details.context || {};
+  const constraint = details.constraint || {};
+  const training = details.training || {};
+  const market = details.market || {};
+  const hardCheck = details.hardCheck || {};
+  return {
+    skills: {
+      matchedRequiredSkills: toArray(skill.matchedRequiredSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      matchedOptionalSkills: toArray(skill.matchedOptionalSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      unassessedRequiredSkills: toArray(skill.unassessedSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      explicitlyWeakSkills: toArray(skill.weakSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      profileSkillsUsed: toArray(skill.profileSkillsUsed).map(id => ({ id, label: getSkillLabel(id) })),
+      confidenceOnlyWarnings: toArray(skill.confidenceOnlyWarnings)
+    },
+    context: {
+      profilePreferences: toArray(context.profilePreferences),
+      matchedPreferences: toArray(context.matched),
+      unmatchedPreferences: toArray(context.unmatchedPreferences),
+      jobContextTags: toArray(context.jobContextTags)
+    },
+    constraints: {
+      matchedConstraints: toArray(constraint.matchedConstraints),
+      warnings: toArray(constraint.warnings),
+      exclusions: toArray(hardCheck.confirmed)
+    },
+    training: {
+      currentDiplomaLevel: criteria.education?.highestLevel ?? 0,
+      requiredDiplomaLevel: job.requiredDiplomaLevel,
+      recommendedDiplomaLevel: job.recommendedDiplomaLevel,
+      missingCertifications: toArray(training.missingCertifications),
+      statusHint: training.statusHint || "unknown"
+    },
+    market: {
+      level: market.level || getJobMarketLevel(job),
+      source: market.source || job.market?.source || "unknown",
+      confidence: market.confidence ?? job.market?.confidence ?? 0,
+      isEstimated: market.isEstimated ?? true
+    }
+  };
 }
 
 function buildEvidenceSummary(criteria, job, result = {}, details = {}) {
@@ -2967,14 +3398,17 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (positive.length === 0 && status !== "excluded_for_now") positive.push("Cette piste reste presente car aucune incompatibilite dure n'a ete confirmee.");
 
   if (details.skill?.unlinkedOfficialSkills) negative.push("Les compétences officielles de ce métier ne sont pas encore reliées dans le corpus. Le score est donc moins fiable.");
-  if (details.skill?.unassessedSkills?.length) negative.push("Certaines compétences utiles ne sont pas encore évaluées dans votre profil. Elles baissent la confiance, pas directement le score.");
+  if (details.skill?.unassessedSkills?.length) negative.push(`Compétences utiles à vérifier : ${details.skill.unassessedSkillLabels.slice(0, 3).join(", ")}. Non coché ne signifie pas absent : cela baisse surtout la confiance.`);
   if (details.skill?.missingSkills?.length) negative.push("Certaines competences importantes ne sont pas encore declarees.");
   if (details.training?.statusHint === "short") negative.push("Une formation ou certification courte pourrait etre necessaire.");
   if (details.training?.statusHint === "long") negative.push("Le parcours d'acces semble plus long que votre niveau actuel.");
   if (details.constraint?.warnings?.length) negative.push("Certaines contraintes sont a verifier dans les conditions reelles d'emploi.");
   if (details.market?.missingData?.length) negative.push("Les donnees marche sont sample ou incompletes dans ce corpus.");
   if (isCurated) negative.push("Cette piste repose sur un corpus local estimatif. Elle sert à orienter, pas à certifier.");
-  if (scores.context < 5) negative.push("Le contexte de travail semble moins proche de vos preferences.");
+  if (scores.context < 5) {
+    const unmatched = toArray(details.context?.unmatchedPreferences).slice(0, 3).map(preferenceLabel);
+    negative.push(unmatched.length ? `Préférences de contexte non retrouvées : ${unmatched.join(", ")}.` : "Le contexte de travail semble moins proche de vos préférences.");
+  }
   if (status === "excluded_for_now") {
     negative.push("Cette piste est ecartee pour l'instant a cause d'un critere non negociable.");
   }
@@ -3030,6 +3464,10 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const unassessedSkills = [];
   const unassessedSkillLabels = [];
   const weakSkills = [];
+  const matchedRequiredSkills = [];
+  const matchedOptionalSkills = [];
+  const profileSkillsUsed = [];
+  const confidenceOnlyWarnings = [];
   if (required.length === 0) {
     return {
       score: 12,
@@ -3038,6 +3476,10 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
       missingSkillLabels,
       unassessedSkills,
       unassessedSkillLabels,
+      matchedRequiredSkills,
+      matchedOptionalSkills,
+      profileSkillsUsed,
+      confidenceOnlyWarnings: ["Compétences officielles non reliées : confiance réduite, score conservé neutre."],
       confidencePenalty: 0.25,
       unlinkedOfficialSkills: job.provenance === "generated_rome" || toArray(job.sourceRefs).includes("france_travail_rome_generated")
     };
@@ -3049,8 +3491,11 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   required.forEach(skillId => {
     if (strong.has(skillId) || criteria.skills[skillId]) {
       matched += levelCoefficient(criteria.skills[skillId]?.level || "basic");
+      matchedRequiredSkills.push(skillId);
+      profileSkillsUsed.push(skillId);
     } else if (hasRelatedCustomSkill(criteria.customSkills, skillId, datasets)) {
       matched += 0.45;
+      matchedRequiredSkills.push(skillId);
     } else if (weak.has(skillId)) {
       explicitWeak += 1;
       weakSkills.push(skillId);
@@ -3063,21 +3508,23 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   });
   let optionalMatched = 0;
   optional.forEach(skillId => {
-    if (strong.has(skillId) || criteria.skills[skillId] || hasRelatedCustomSkill(criteria.customSkills, skillId, datasets)) optionalMatched += 1;
+    if (strong.has(skillId) || criteria.skills[skillId] || hasRelatedCustomSkill(criteria.customSkills, skillId, datasets)) {
+      optionalMatched += 1;
+      matchedOptionalSkills.push(skillId);
+      if (strong.has(skillId) || criteria.skills[skillId]) profileSkillsUsed.push(skillId);
+    }
   });
-  const experienceBonus = criteria.experience?.domains?.some(domain =>
-    normalizeText(job.domain).includes(domain) ||
-    normalizeText(job.family).includes(domain) ||
-    toArray(job.transitionTags).map(normalizeText).includes(domain)
-  ) ? 2 : 0;
+  const experienceBonus = experienceBonusForJob(criteria, job);
   const positiveRatio = matched / required.length;
   const optionalRatio = optional.length ? optionalMatched / optional.length : 0.5;
-  const neutralSkillScore = criteria.hasEnoughSkillEvidence ? 13 : 14;
-  const positiveBonus = positiveRatio * 8;
-  const optionalBonus = optionalRatio * 3;
-  const weakPenalty = explicitWeak * 4;
+  const neutralSkillScore = criteria.hasEnoughSkillEvidence ? 11 : 12;
+  const positiveBonus = positiveRatio * 10;
+  const optionalBonus = optionalRatio * 2;
+  const weakPenalty = explicitWeak * 5;
   if (unassessedSkills.length) {
-    missingData.push(missing("profile.skillEvidence", "medium", "Compétences à vérifier : non cochées ne signifie pas absentes."));
+    const label = "Compétences à vérifier : non cochées ne signifie pas absentes.";
+    missingData.push(missing("profile.skillEvidence", "medium", label));
+    confidenceOnlyWarnings.push(label);
   }
   return {
     score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + experienceBonus - weakPenalty, 0, 25)),
@@ -3087,8 +3534,55 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     unassessedSkills,
     unassessedSkillLabels,
     weakSkills,
+    matchedRequiredSkills: unique(matchedRequiredSkills),
+    matchedOptionalSkills: unique(matchedOptionalSkills),
+    profileSkillsUsed: unique(profileSkillsUsed),
+    confidenceOnlyWarnings,
     confidencePenalty: (criteria.hasEnoughSkillEvidence ? 0 : 0.18) + (unassessedSkills.length / Math.max(required.length, 1) * 0.08) + (explicitWeak * 0.04)
   };
+}
+
+function experienceBonusForJob(criteria, job) {
+  const details = criteria.experience?.domainDetails || {};
+  const matchedDomains = getExperienceDomainsForJob(job).filter(domain => criteria.experience?.domains?.includes(domain));
+  if (!matchedDomains.length) return 0;
+  const weights = { under_3_months: 0.25, "3_12_months": 0.45, "1_2_years": 0.65, "2_5_years": 0.85, "5_years_plus": 1 };
+  const recency = { old: 0.65, recent: 0.85, current: 1, not_specified: 0.7 };
+  const confidence = { low: 0.7, medium: 0.85, high: 1 };
+  const best = matchedDomains.reduce((max, domain) => {
+    const detail = details[domain] || {};
+    const duration = detail.duration && detail.duration !== "not_specified" ? detail.duration : criteria.experience?.duration;
+    const score = (weights[duration] || 0.35) * (recency[detail.recency] || 0.7) * (confidence[detail.confidence] || 0.85);
+    return Math.max(max, score);
+  }, 0);
+  return Math.round(best * 2);
+}
+
+function getExperienceDomainsForJob(job) {
+  const text = normalizeText(`${job.domain} ${job.family} ${job.title} ${toArray(job.transitionTags).join(" ")} ${toArray(job.interestTags).join(" ")}`);
+  const pairs = [
+    ["administratif", /admin|bureau|dossier|gestion/],
+    ["numerique", /numerique|informatique|web|data|support/],
+    ["animation", /animation|jeunesse|animateur/],
+    ["education", /education|enseignement|transmission|scolaire/],
+    ["social", /social|insertion|accompagnement|mediation/],
+    ["soin", /soin|sante|aide|care/],
+    ["petite_enfance", /enfant|petite enfance|puericulture/],
+    ["proprete", /proprete|nettoyage|hygiene|entretien/],
+    ["cuisine", /cuisine|restauration|aliment/],
+    ["communication", /communication|creation|culture|redaction|media/],
+    ["nature", /nature|environnement|espaces verts|agri/],
+    ["animaux", /animal|animaux/],
+    ["batiment", /batiment|chantier|maintenance|artisan/],
+    ["logistique", /logistique|stock|rangement/],
+    ["transport", /transport|conduite|livraison/],
+    ["commerce", /commerce|vente|client/],
+    ["industrie", /industrie|production|qualite/],
+    ["laboratoire", /laboratoire|analyse/],
+    ["culture", /culture|bibliotheque|patrimoine/],
+    ["association", /association|collectif|tiers-lieu|benevole/]
+  ];
+  return pairs.filter(([, pattern]) => pattern.test(text)).map(([domain]) => domain);
 }
 
 function calculateTrainingScore(criteria, job) {
@@ -3096,13 +3590,18 @@ function calculateTrainingScore(criteria, job) {
   const heldCerts = criteria.certifications.held;
   const requiredCerts = toArray(job.requiredCertifications);
   const missingCertifications = requiredCerts.filter(certId => !heldCerts.includes(certId));
+  const base = {
+    currentDiplomaLevel: Number(criteria.education.highestLevel || 0),
+    requiredDiplomaLevel: numberOrNull(job.requiredDiplomaLevel),
+    recommendedDiplomaLevel: numberOrNull(job.recommendedDiplomaLevel)
+  };
   if (requiredCerts.length && missingCertifications.length === 0) {
-    return { score: 20, missingData, missingCertifications: [], statusHint: "now" };
+    return { score: 20, missingData, missingCertifications: [], statusHint: "now", ...base };
   }
   if (missingCertifications.length > 0) {
-    if (criteria.education.canDoShortTraining) return { score: 12, missingData, missingCertifications, statusHint: "short" };
-    if (criteria.education.canDoLongTraining) return { score: 8, missingData, missingCertifications, statusHint: "long" };
-    return { score: 0, missingData, missingCertifications, statusHint: "blocked" };
+    if (criteria.education.canDoShortTraining) return { score: 12, missingData, missingCertifications, statusHint: "short", ...base };
+    if (criteria.education.canDoLongTraining) return { score: 8, missingData, missingCertifications, statusHint: "long", ...base };
+    return { score: 0, missingData, missingCertifications, statusHint: "blocked", ...base };
   }
 
   const userLevel = Number(criteria.education.highestLevel || 0);
@@ -3111,21 +3610,22 @@ function calculateTrainingScore(criteria, job) {
   const targetLevel = requiredLevel ?? recommendedLevel;
   if (targetLevel === null || targetLevel === 0) {
     missingData.push(missing("job.requiredDiplomaLevel", "low", "Niveau de diplome requis absent ou non obligatoire dans le corpus."));
-    return { score: 16, missingData, missingCertifications: [], statusHint: "now" };
+    return { score: 16, missingData, missingCertifications: [], statusHint: "now", ...base };
   }
   const gap = targetLevel - userLevel;
-  if (gap <= 0) return { score: 19, missingData, missingCertifications: [], statusHint: "now" };
+  if (gap <= 0) return { score: 19, missingData, missingCertifications: [], statusHint: "now", ...base };
   const budgetPenalty = ["none", "under_300"].includes(criteria.education.trainingBudget) ? 2 : 0;
-  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: Math.max(8, 14 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short" };
-  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: 9, missingData, missingCertifications: [], statusHint: "long" };
-  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: Math.max(5, 8 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short" };
-  return { score: 5, missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long" };
+  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: Math.max(8, 14 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short", ...base };
+  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: 9, missingData, missingCertifications: [], statusHint: "long", ...base };
+  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: Math.max(5, 8 - budgetPenalty), missingData, missingCertifications: [], statusHint: "short", ...base };
+  return { score: 5, missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long", ...base };
 }
 
 function calculateConstraintScore(criteria, job) {
   let score = 25;
   const missingData = [];
   const warnings = [];
+  const matchedConstraints = [];
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity === "open") return;
     const compatibility = evaluateConstraintAgainstJob(value, job, criteria);
@@ -3139,9 +3639,11 @@ function calculateConstraintScore(criteria, job) {
       if (severity === "conditional") score -= 6;
       if (severity === "excluding") score -= 25;
       warnings.push(compatibility.label);
+    } else {
+      matchedConstraints.push(compatibility.label);
     }
   });
-  return { score: Math.round(clamp(score, 0, 25)), missingData, warnings };
+  return { score: Math.round(clamp(score, 0, 25)), missingData, warnings, matchedConstraints };
 }
 
 function calculateValueScore(criteria, job) {
@@ -3167,7 +3669,7 @@ function calculateContextScore(criteria, job) {
   if (criteria.preferredSchedule === "flexible") preferences.push("flexible");
   if (criteria.needForAutonomy === "high") preferences.push("autonomous");
   if (criteria.needForSecurity === "high") preferences.push("structured");
-  if (!preferences.length) return { score: 5, missingData: [], matched: [] };
+  if (!preferences.length) return { score: 5, missingData: [], matched: [], profilePreferences: [], unmatchedPreferences: [], jobContextTags: collectJobContextTags(job) };
   let score = 0;
   const matched = [];
   const jobContextTags = collectJobContextTags(job);
@@ -3181,26 +3683,29 @@ function calculateContextScore(criteria, job) {
   return {
     score: Math.round(clamp((score / preferences.length) * 10, 0, 10)),
     missingData: job.workContexts.length ? [] : [missing("job.workContexts", "medium", "Contextes de travail absents du corpus.")],
-    matched
+    matched,
+    profilePreferences: preferences,
+    unmatchedPreferences: preferences.filter(pref => !matched.includes(pref)),
+    jobContextTags
   };
 }
 
 function calculateMarketScore(job, datasets = App.state.dataset) {
   if (job.market && job.market.source && job.market.source !== "unknown") {
     const tension = Number(job.market.tensionScore ?? job.market.score ?? job.market.value);
-    if (Number.isFinite(tension) && job.provenance === "curated_clairmetier_ai_logic") return { score: Math.round(clamp(2 + tension * 2, 2, 4)), missingData: [] };
-    if (Number.isFinite(tension)) return { score: Math.round(clamp(1 + tension * 4, 1, 5)), missingData: [] };
+    if (Number.isFinite(tension) && job.provenance === "curated_clairmetier_ai_logic") return { score: Math.round(clamp(2 + tension * 2, 2, 4)), missingData: [], level: marketLevelFromScore(tension), source: job.market.source, confidence: job.market.confidence ?? 0.35, isEstimated: true };
+    if (Number.isFinite(tension)) return { score: Math.round(clamp(1 + tension * 4, 1, 5)), missingData: [], level: marketLevelFromScore(tension), source: job.market.source, confidence: job.market.confidence ?? 0.5, isEstimated: job.market.source !== "bmo" && job.market.source !== "dataemploi" };
   }
   const indicators = toArray(job.marketIndicators)
     .map(id => (datasets.marketIndicators || []).find(item => item.id === id || item.romeCode === job.romeCode))
     .filter(Boolean);
   if (indicators.length === 0) {
-    return { score: 3, missingData: [missing("job.marketIndicators", "low", "Donnees marche non disponibles dans ce corpus local.")] };
+    return { score: 3, missingData: [missing("job.marketIndicators", "low", "Donnees marche non disponibles dans ce corpus local.")], level: "unknown", source: "unknown", confidence: 0, isEstimated: true };
   }
   const tension = indicators[0].tensionScore;
-  if (typeof tension !== "number") return { score: 3, missingData: [missing("market.tensionScore", "low", "Indicateur marche partiel.")] };
-  if (job.provenance === "curated_clairmetier_ai_logic") return { score: Math.round(clamp(2 + tension * 2, 2, 4)), missingData: [] };
-  return { score: Math.round(clamp(1 + tension * 4, 1, 5)), missingData: [] };
+  if (typeof tension !== "number") return { score: 3, missingData: [missing("market.tensionScore", "low", "Indicateur marche partiel.")], level: "unknown", source: indicators[0].source || "unknown", confidence: indicators[0].confidence ?? 0, isEstimated: true };
+  if (job.provenance === "curated_clairmetier_ai_logic") return { score: Math.round(clamp(2 + tension * 2, 2, 4)), missingData: [], level: marketLevelFromScore(tension), source: indicators[0].source || "curated_estimated", confidence: indicators[0].confidence ?? 0.35, isEstimated: true };
+  return { score: Math.round(clamp(1 + tension * 4, 1, 5)), missingData: [], level: marketLevelFromScore(tension), source: indicators[0].source || "unknown", confidence: indicators[0].confidence ?? 0.5, isEstimated: indicators[0].source !== "bmo" && indicators[0].source !== "dataemploi" };
 }
 
 function determineFeasibilityStatus(globalScore, scores, criteria, job, details = {}) {
@@ -3261,27 +3766,27 @@ function diversifyTopResults(results) {
   const selected = [];
   const variantsByJob = {};
   const bestScore = compatible[0]?.globalScore || 0;
-  for (const candidate of compatible) {
-    if (selected.length === 5) break;
-    if (candidate.globalScore < bestScore - 12 && selected.length >= 3) continue;
+  const tryAddCandidate = (candidate, mode = "strict") => {
+    if (selected.length >= 5 || selected.some(item => item.jobId === candidate.jobId)) return false;
+    if (candidate.globalScore < bestScore - 12 && selected.length >= 3) return false;
     const variantParent = selected.find(item => isVariantOf(candidate, item));
     if (variantParent) {
       variantsByJob[variantParent.jobId] = variantsByJob[variantParent.jobId] || [];
       variantsByJob[variantParent.jobId].push(candidate);
-      continue;
+      return false;
     }
+    const sameDomain = selected.some(item => item.job.domain === candidate.job.domain);
+    const sameFamily = selected.some(item => item.job.family === candidate.job.family);
+    if (mode === "strict" && (sameDomain || sameFamily)) return false;
+    if (mode === "soft" && sameDomain && sameFamily) return false;
     const diversityScore = calculateDiversityScore(candidate, selected);
-    if (diversityScore >= 45 || selected.length < 3) {
-      candidate.diversityScore = diversityScore;
-      selected.push(candidate);
-    }
-  }
-  if (selected.length < 5) {
-    compatible.forEach(candidate => {
-      if (selected.length >= 5) return;
-      if (!selected.some(item => item.jobId === candidate.jobId)) selected.push(candidate);
-    });
-  }
+    candidate.diversityScore = diversityScore;
+    selected.push(candidate);
+    return true;
+  };
+  compatible.forEach(candidate => tryAddCandidate(candidate, "strict"));
+  compatible.forEach(candidate => tryAddCandidate(candidate, "soft"));
+  compatible.forEach(candidate => tryAddCandidate(candidate, "fill"));
   return {
     top5: selected.slice(0, 5),
     variantsByJob,
@@ -3309,6 +3814,163 @@ function findRelatedVariants(job, datasets = App.state.dataset) {
   }));
 }
 
+function renderExperienceDomainDetails(profile) {
+  const domains = toArray(profile.experienceDomains);
+  if (!domains.length) return "";
+  profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, domains);
+  const durationOptions = [["not_specified", "Durée ?"], ["under_3_months", "< 3 mois"], ["3_12_months", "3–12 mois"], ["1_2_years", "1–2 ans"], ["2_5_years", "2–5 ans"], ["5_years_plus", "5 ans et +"]];
+  const recencyOptions = [["not_specified", "Récence ?"], ["old", "Ancien"], ["recent", "Récent"], ["current", "Actuel"]];
+  const confidenceOptions = [["low", "Confiance faible"], ["medium", "Confiance moyenne"], ["high", "Confiance forte"]];
+  return `
+    <div class="form-row full">
+      <span class="field-label">Durée par domaine, optionnel</span>
+      <p class="field-help">Cela évite d’appliquer la même expérience à tous les domaines cochés.</p>
+      <div class="experience-domain-grid">
+        ${domains.map(domain => {
+          const detail = profile.experienceDomainDetails[domain] || {};
+          const label = optionLabel(EXPERIENCE_DOMAIN_OPTIONS, domain);
+          return `
+            <div class="summary-box">
+              <strong>${h(label)}</strong>
+              <div class="mini-grid">
+                ${selectMini("Durée", domain, "duration", detail.duration || "not_specified", durationOptions)}
+                ${selectMini("Récence", domain, "recency", detail.recency || "not_specified", recencyOptions)}
+                ${selectMini("Confiance", domain, "confidence", detail.confidence || "medium", confidenceOptions)}
+              </div>
+            </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+}
+
+function selectMini(label, domain, field, value, options) {
+  return `<label class="form-row"><span>${h(label)}</span><select data-experience-domain="${h(domain)}" data-experience-field="${h(field)}">${options.map(([id, text]) => `<option value="${h(id)}" ${value === id ? "selected" : ""}>${h(text)}</option>`).join("")}</select></label>`;
+}
+
+function renderSkillBrowser(profile, dataset) {
+  const browser = App.state.skillBrowser;
+  const groups = getSkillSectorGroups(profile, dataset);
+  return `
+    <details class="advanced-box" open>
+      <summary>Choisir des compétences par secteurs</summary>
+      <p class="field-help">Les compétences peuvent apparaître dans plusieurs groupes, mais elles ne sont stockées qu’une seule fois.</p>
+      <div class="form-grid">
+        ${inputField("Rechercher une compétence", "skillBrowser.query", browser.query, "search", "Ex. enfant, écoute, nettoyage").replace('data-field="skillBrowser.query"', 'data-skill-browser="query"')}
+        <label class="tag-option"><input type="checkbox" data-skill-browser="onlySelectedSectors" value="yes" ${browser.onlySelectedSectors ? "checked" : ""}><span><span class="tag-name">Afficher seulement mes secteurs</span><span class="tag-meta">Selon les domaines déjà explorés</span></span></label>
+        <label class="tag-option"><input type="checkbox" data-skill-browser="showTransversal" value="yes" ${browser.showTransversal ? "checked" : ""}><span><span class="tag-name">Voir les compétences transversales</span><span class="tag-meta">Écoute, organisation, rédaction, sécurité...</span></span></label>
+        <label class="tag-option"><input type="checkbox" data-skill-browser="showAll" value="yes" ${browser.showAll ? "checked" : ""}><span><span class="tag-name">Afficher toutes les compétences</span><span class="tag-meta">Option avancée</span></span></label>
+      </div>
+      <div class="button-row no-print" style="margin-top:12px">
+        <button class="tiny-button" type="button" data-action="skills-expand-all">Tout déplier</button>
+        <button class="tiny-button" type="button" data-action="skills-collapse-all">Tout replier</button>
+      </div>
+      ${renderSkillSectorList(profile, dataset)}
+      ${textareaField("Ajouter une compétence non listée", "customSkillsText", toArray(profile.customSkills).join(", "), "Ex. accueil, tableur, bricolage, écoute")}
+    </details>`;
+}
+
+function renderSkillSectorList(profile = App.state.profile, dataset = App.state.dataset) {
+  const groups = getSkillSectorGroups(profile, dataset);
+  return `<div class="skill-sector-list" data-skill-sector-list>${groups.map(group => renderSkillSectorGroup(group, profile)).join("") || emptyState("Aucune compétence ne correspond à ces filtres.")}</div>`;
+}
+
+function getSkillSectorGroups(profile, dataset) {
+  const query = normalizeText(App.state.skillBrowser.query);
+  const selectedSectors = getSelectedSkillSectors(profile);
+  const optionsById = new Map(SKILL_SECTOR_OPTIONS_V051);
+  const groups = new Map();
+  getProfileSkillOptions(dataset).forEach(skill => {
+    if (query && !normalizeText(`${skill.label} ${skill.category} ${skill.id}`).includes(query)) return;
+    const sectors = getSkillSectors(skill);
+    sectors.forEach(sector => {
+      const isSelected = selectedSectors.has(sector);
+      const canShow = App.state.skillBrowser.showAll ||
+        (sector === "transversal" && App.state.skillBrowser.showTransversal) ||
+        !App.state.skillBrowser.onlySelectedSectors ||
+        isSelected ||
+        profile.skills.includes(skill.id);
+      if (!canShow) return;
+      if (!groups.has(sector)) groups.set(sector, { id: sector, label: optionsById.get(sector) || sector, selected: isSelected, skills: [] });
+      groups.get(sector).skills.push(skill);
+    });
+  });
+  return [...groups.values()]
+    .map(group => ({ ...group, skills: uniqueBy(group.skills, "id").sort((a, b) => a.label.localeCompare(b.label, "fr")) }))
+    .sort((a, b) => Number(b.selected) - Number(a.selected) || (a.id === "transversal" ? -1 : b.id === "transversal" ? 1 : a.label.localeCompare(b.label, "fr")));
+}
+
+function renderSkillSectorGroup(group, profile) {
+  const checkedCount = group.skills.filter(skill => profile.skills.includes(skill.id)).length;
+  const open = App.state.skillBrowser.openAll || group.selected || checkedCount > 0 || group.id === "transversal";
+  return `
+    <details class="advanced-box skill-sector" ${open ? "open" : ""}>
+      <summary>${h(group.label)} <span class="badge outline">${group.skills.length}</span>${checkedCount ? ` <span class="badge sage">${checkedCount} cochée(s)</span>` : ""}</summary>
+      <div class="tag-grid">${group.skills.map(skill => checkboxTag("skills", skill.id, skill.label, skill.category || "compétence", profile.skills.includes(skill.id))).join("")}</div>
+    </details>`;
+}
+
+function getSkillSectors(skill) {
+  const mapped = SKILL_SECTOR_MAP_V051[skill.id];
+  if (mapped?.length) return mapped;
+  const category = normalizeText(skill.category || skill.type || "");
+  const inferred = [];
+  if (/(social|mediation|accompagnement|relation)/.test(category)) inferred.push("social");
+  if (/(education|transmission|enseignement|enfance|animation)/.test(category)) inferred.push("education");
+  if (/(soin|aide|sante)/.test(category)) inferred.push("care");
+  if (/(proprete|nettoyage|hygiene|qualite)/.test(category)) inferred.push("cleaning");
+  if (/(numerique|support|data|web|code|informatique)/.test(category)) inferred.push("digital");
+  if (/(admin|gestion|organisation)/.test(category)) inferred.push("administrative");
+  if (/(culture|creation|communication|image)/.test(category)) inferred.push("creative");
+  if (/(nature|environnement|agriculture)/.test(category)) inferred.push("nature");
+  if (/animaux/.test(category)) inferred.push("animals");
+  if (/(cuisine|restauration|aliment)/.test(category)) inferred.push("food");
+  if (/(batiment|artisan|maintenance|manuel)/.test(category)) inferred.push("building");
+  if (/(logistique|transport|mobilite)/.test(category)) inferred.push("logistics");
+  if (/securite/.test(category)) inferred.push("security");
+  return inferred.length ? unique(inferred) : ["transversal"];
+}
+
+function getSelectedSkillSectors(profile) {
+  const sectorMap = {
+    accueil: ["commerce", "hospitality", "social"],
+    administratif: ["administrative"],
+    animation: ["animation", "children", "education"],
+    education: ["education", "children"],
+    social: ["social", "care"],
+    soin: ["care", "social", "cleaning"],
+    petite_enfance: ["children", "education", "care"],
+    proprete: ["cleaning"],
+    cuisine: ["food", "cleaning"],
+    numerique: ["digital"],
+    communication: ["creative", "culture"],
+    nature: ["nature"],
+    animaux: ["animals", "nature"],
+    bricolage: ["building"],
+    batiment: ["building"],
+    logistique: ["logistics"],
+    transport: ["logistics"],
+    commerce: ["commerce"],
+    industrie: ["industry"],
+    laboratoire: ["industry"],
+    culture: ["culture", "creative"],
+    association: ["social", "administrative", "education"]
+  };
+  return new Set(toArray(profile.experienceDomains).flatMap(domain => sectorMap[domain] || []));
+}
+
+function optionLabel(options, value) {
+  return options.find(item => item[0] === value)?.[1] || value;
+}
+
+function preferenceLabel(value) {
+  const pools = [WORK_STYLE_OPTIONS, ENVIRONMENT_OPTIONS, [["day", "Jour régulier"], ["flexible", "Horaires flexibles"], ["autonomous", "Autonomie"], ["structured", "Cadre structuré"]]];
+  for (const options of pools) {
+    const found = options.find(item => item[0] === value);
+    if (found) return found[1];
+  }
+  return value;
+}
+
 function renderStep() {
   const profile = App.state.profile;
   const dataset = App.state.dataset;
@@ -3326,6 +3988,7 @@ function renderStep() {
           <span class="field-label">Domaines déjà explorés</span>
           <div class="tag-grid">${EXPERIENCE_DOMAIN_OPTIONS.map(item => checkboxTag("experienceDomains", item[0], item[1], "expérience", profile.experienceDomains.includes(item[0]))).join("")}</div>
         </div>
+        ${renderExperienceDomainDetails(profile)}
         ${selectField("Durée d’expérience dominante", "experienceDuration", profile.experienceDuration || "not_specified", [["not_specified", "Non renseigné"], ["under_3_months", "Moins de 3 mois"], ["3_12_months", "3–12 mois"], ["1_2_years", "1–2 ans"], ["2_5_years", "2–5 ans"], ["5_years_plus", "5 ans et +"]])}
       </div>
       ${stepButtons()}`;
@@ -3345,6 +4008,9 @@ function renderStep() {
         <div class="form-row full">
           <span class="field-label">Certifications ou permis détenus</span>
           <div class="tag-grid">${dataset.certifications.map(cert => checkboxTag("certifications", cert.id, cert.title, cert.certificationType || "certification", profile.certifications.includes(cert.id))).join("")}</div>
+        </div>
+        <div class="form-row full">
+          ${textareaField("Autres certifications, titres ou permis", "freeCertificationsText", toArray(profile.freeCertifications).join("\\n"), "Ex. Permis AM, habilitation, titre RNCP, autre certification")}
         </div>
       </div>
       ${stepButtons()}`;
@@ -3376,12 +4042,7 @@ function renderStep() {
           <span class="field-label">${h(group.title)}</span>
           <div class="tag-grid">${group.questions.map((question, index) => checkboxTag("skillSignals", `${group.id}:${index}`, question, "test rapide", profile.skillSignals.includes(`${group.id}:${index}`))).join("")}</div>
         </div>`).join("")}
-      <details class="advanced-box">
-        <summary>Choisir des compétences précisément</summary>
-        <p class="field-help">Ces choix détaillés servent au moteur, mais ne sont pas obligatoires pour lancer une première lecture.</p>
-        <div class="tag-grid">${getProfileSkillOptions(dataset).map(skill => checkboxTag("skills", skill.id, skill.label, skill.category || skill.matchingUse || "matchable", profile.skills.includes(skill.id))).join("")}</div>
-        ${textareaField("Ajouter une compétence non listée", "customSkillsText", toArray(profile.customSkills).join(", "), "Ex. accueil, tableur, bricolage, écoute")}
-      </details>
+      ${renderSkillBrowser(profile, dataset)}
       ${stepButtons()}`;
   }
   if (step === 4) {
@@ -3495,7 +4156,9 @@ function renderResults() {
     App.dom.resultsContainer.innerHTML = `<div class="results-section"><div class="empty-state">Complétez le profil pour lancer une première analyse.</div></div>`;
     return;
   }
-  const primary = toArray(results.visibleRecommended).length ? results.visibleRecommended : toArray(results.top5);
+  const top5 = toArray(results.top5).slice(0, 5);
+  const topIds = new Set(top5.map(result => result.jobId));
+  const primary = (toArray(results.visibleRecommended).length ? results.visibleRecommended : top5).filter(result => !topIds.has(result.jobId));
   const exploratory = toArray(results.visibleSecondary);
   const excluded = toArray(results.visibleExcludedButRelevant);
   App.dom.resultsContainer.innerHTML = `
@@ -3511,9 +4174,14 @@ function renderResults() {
       ${renderComparePanel()}
     </section>
     <section class="results-section print-section">
-      <h2>Pistes principales</h2>
+      <h2>Top 5 diversifié</h2>
+      <p>Ces cinq pistes maximum sont choisies pour éviter de répéter trop de métiers proches. Les variantes restent sous chaque métier principal.</p>
+      <div class="job-list">${top5.map(result => renderJobCard(result, { featured: true, showVariants: true })).join("") || emptyState("Aucun Top 5 disponible avec le profil actuel.")}</div>
+    </section>
+    <section class="results-section print-section">
+      <h2>Autres pistes principales</h2>
       <p>Ces métiers sont les plus utiles à regarder maintenant. La diversité n’est appliquée qu’entre pistes proches en pertinence.</p>
-      <div class="job-list">${primary.map(result => renderJobCard(result, { featured: true })).join("") || emptyState("Aucune piste principale disponible avec le profil actuel.")}</div>
+      <div class="job-list">${primary.map(result => renderJobCard(result)).join("") || emptyState("Aucune autre piste principale à ajouter pour l’instant.")}</div>
     </section>
     ${exploratory.length ? `<section class="results-section print-section"><h2>Pistes à explorer</h2><p>Ces pistes ne remplacent pas les principales, mais elles apportent une direction différente ou une hypothèse à vérifier.</p><div class="job-list">${exploratory.map(renderJobCard).join("")}</div></section>` : ""}
     ${renderExcludedJobs(excluded)}
@@ -3529,7 +4197,7 @@ function renderResults() {
     </section>`;
 }
 
-function renderJobCard(result) {
+function renderJobCard(result, options = {}) {
   const job = result.job || findJob(result.jobId);
   const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
   const vigilances = result.status === "excluded_for_now" ? result.exclusionReasons.map(item => item.message) : result.negativeReasons;
@@ -3543,7 +4211,7 @@ function renderJobCard(result) {
       <div class="job-head">
         <div>
           <h3 class="job-title">${h(result.title)}</h3>
-          <p class="job-subtitle">${h(result.romeCode || "Code local")} - ${h(job?.domain || "")} - ${h(job?.family || "")}</p>
+          <p class="job-subtitle">${h(getJobCodeLabel(job || result))} - ${h(job?.domain || "")} - ${h(job?.family || "")}</p>
           <div class="badge-row">
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
@@ -3564,6 +4232,7 @@ function renderJobCard(result) {
           <ul>${take(vigilances, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans ce corpus.</li>"}</ul>
         </div>
       </div>
+      ${options.showVariants && variants.length ? `<div class="summary-box"><strong>Variantes proches :</strong> ${variants.map(item => `<span class="badge outline">${h(item.title)}</span>`).join(" ")}</div>` : ""}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-result-action="details">Détails</button>
         <button class="tiny-button" type="button" data-result-action="variants">Variantes</button>
@@ -3580,6 +4249,7 @@ function renderJobCard(result) {
         <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
         <p><strong>Données manquantes :</strong> ${result.missingData.map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
         ${renderEvidenceSummary(result.evidenceSummary)}
+        ${renderScoreDetails(result.scoreDetails)}
       </div>
     </article>`;
 }
@@ -3608,6 +4278,32 @@ function renderEvidenceSummary(summary = {}) {
         <li><strong>Signaux positifs :</strong> ${positives.map(h).join(", ") || "aucun signal fort renseigné."}</li>
         <li><strong>À vérifier :</strong> ${vigilances.slice(0, 5).map(h).join(" ") || "aucune vigilance de donnée majeure."}</li>
         <li><strong>Provenance :</strong> ${sources.slice(0, 5).map(h).join(", ") || "source à vérifier."}</li>
+      </ul>
+    </div>`;
+}
+
+function renderScoreDetails(details = {}) {
+  const skills = details.skills || {};
+  const context = details.context || {};
+  const constraints = details.constraints || {};
+  const training = details.training || {};
+  const market = details.market || {};
+  const listLabels = items => toArray(items).map(item => h(item.label || item)).join(", ") || "aucun élément renseigné";
+  return `
+    <div class="summary-box">
+      <h3>Détail du score</h3>
+      <ul class="compact-list">
+        <li><strong>Compétences cœur cochées :</strong> ${listLabels(skills.matchedRequiredSkills)}</li>
+        <li><strong>Compétences optionnelles cochées :</strong> ${listLabels(skills.matchedOptionalSkills)}</li>
+        <li><strong>Compétences à vérifier :</strong> ${listLabels(skills.unassessedRequiredSkills)}</li>
+        <li><strong>Compétences explicitement faibles :</strong> ${listLabels(skills.explicitlyWeakSkills)}</li>
+        <li><strong>Préférences de contexte reconnues :</strong> ${toArray(context.matchedPreferences).map(preferenceLabel).map(h).join(", ") || "aucune"}</li>
+        <li><strong>Préférences non retrouvées :</strong> ${toArray(context.unmatchedPreferences).map(preferenceLabel).map(h).join(", ") || "aucune"}</li>
+        <li><strong>Tags contexte métier :</strong> ${toArray(context.jobContextTags).map(h).join(", ") || "non renseignés"}</li>
+        <li><strong>Contraintes compatibles :</strong> ${toArray(constraints.matchedConstraints).map(h).join(", ") || "aucune contrainte active ou renseignée"}</li>
+        <li><strong>Contraintes à vérifier :</strong> ${toArray(constraints.warnings).map(h).join(", ") || "aucune"}</li>
+        <li><strong>Formation :</strong> profil ${h(getDiplomaLabel(training.currentDiplomaLevel || 0))}, requis ${h(getDiplomaLabel(training.requiredDiplomaLevel || 0))}, conseillé ${h(getDiplomaLabel(training.recommendedDiplomaLevel || 0))}, statut ${h(training.statusHint || "à vérifier")}</li>
+        <li><strong>Marché :</strong> ${h(marketLabel(market.level))}. Indicateur marché : estimation locale non officielle. Ce n’est pas une statistique France Travail.</li>
       </ul>
     </div>`;
 }
@@ -3667,8 +4363,8 @@ function renderExplorationPage() {
         ${selectField("Domaine", "exploration.domain", filters.domain, domainOptions).replace('data-field="exploration.domain"', 'data-exploration-filter="domain"')}
         ${selectField("Diplôme / accès", "exploration.diplomaLevel", filters.diplomaLevel, [["all", "Tous niveaux"], ["quick", "Accès rapide / formation courte"], ["0_3", "Sans diplôme à CAP/BEP"], ["4", "Bac"], ["5_plus", "Bac +2 et plus"]]).replace('data-field="exploration.diplomaLevel"', 'data-exploration-filter="diplomaLevel"')}
         ${selectField("Contrainte à limiter", "exploration.constraint", filters.constraint, [["all", "Toutes contraintes"], ["low_physical", "Physique faible"], ["no_night", "Sans nuit fréquente"], ["no_weekend", "Sans week-end fréquent"], ["no_driver_license", "Sans permis obligatoire"], ["remote", "Télétravail possible"]]).replace('data-field="exploration.constraint"', 'data-exploration-filter="constraint"')}
-        ${selectField("Contexte", "exploration.context", filters.context, [["all", "Tous contextes"], ["office", "Bureau"], ["quiet", "Calme"], ["outdoor", "Extérieur"], ["home", "Domicile"], ["children", "Enfants"], ["animals", "Animaux"], ["team", "Équipe"], ["remote", "Télétravail"]]).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
-        ${selectField("Marché", "exploration.market", filters.market, [["all", "Tous marchés"], ["high", "Indicateur fort"], ["medium", "Indicateur moyen"], ["low", "Indicateur faible ou incertain"]]).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
+        ${selectField("Contexte", "exploration.context", filters.context, buildExplorationContextOptions()).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
+        ${selectField("Marché", "exploration.market", filters.market, [["all", "Tous marchés"], ["high", "Marché favorable estimé"], ["medium", "Marché moyen estimé"], ["low", "Marché faible ou inconnu"]]).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
         ${selectField("Territoire", "exploration.territory", filters.territory, TERRITORIES.map(item => [item.id, item.label])).replace('data-field="exploration.territory"', 'data-exploration-filter="territory"')}
         ${selectField("Tri", "exploration.sort", filters.sort, [["profile", "Pertinence profil"], ["title", "Titre"], ["domain", "Domaine"], ["quick_access", "Accès rapide"], ["market", "Marché"], ["low_constraints", "Contraintes faibles"], ["remote", "Télétravail"]]).replace('data-field="exploration.sort"', 'data-exploration-filter="sort"')}
         <label class="form-row full tag-option"><input type="checkbox" data-exploration-filter="favoritesOnly" value="yes" ${filters.favoritesOnly ? "checked" : ""}><span><span class="tag-name">Afficher seulement les favoris</span><span class="tag-meta">${App.state.favoriteJobs.length} favori(s) localement</span></span></label>
@@ -3688,6 +4384,17 @@ function updateExplorationFilter(target) {
   const key = target.dataset.explorationFilter;
   if (!key) return;
   App.state.explorationFilters[key] = target.type === "checkbox" ? target.checked : target.value;
+}
+
+function updateSkillBrowser(target) {
+  const key = target.dataset.skillBrowser;
+  if (!key) return;
+  App.state.skillBrowser[key] = target.type === "checkbox" ? target.checked : target.value;
+}
+
+function renderSkillSectorListInPlace() {
+  const container = App.dom.stepContainer?.querySelector("[data-skill-sector-list]");
+  if (container) container.outerHTML = renderSkillSectorList(App.state.profile, App.state.dataset);
 }
 
 function getFilteredExplorationJobs() {
@@ -3716,10 +4423,10 @@ function renderExplorationJobCard(job) {
       <div class="job-head">
         <div>
           <h3 class="job-title">${h(job.title)}</h3>
-          <p class="job-subtitle">${h(job.romeCode || "Code local")} - ${h(job.domain)} - ${h(job.family)}</p>
+          <p class="job-subtitle">${h(getJobCodeLabel(job))} - ${h(job.domain)} - ${h(job.family)}</p>
           <div class="badge-row">
             <span class="badge outline">${h(job.provenance || "local")}</span>
-            <span class="badge opal">Marché ${h(market)}</span>
+            <span class="badge opal">${h(marketLabel(market))}</span>
             ${result ? `<span class="badge gold">Profil ${Math.round(result.globalScore)}/100</span>` : ""}
             ${isFavorite ? `<span class="badge sage">Favori</span>` : ""}
           </div>
@@ -3770,6 +4477,7 @@ function explorationContextMatches(job, filter) {
   if (filter === "all") return true;
   const contexts = new Set(toArray(job.workContexts));
   const tags = collectJobContextTags(job);
+  if (filter.startsWith("ctx:")) return contexts.has(filter.slice(4));
   if (filter === "office") return contexts.has("ctx-office");
   if (filter === "quiet") return contexts.has("ctx-quiet") || tags.includes("quiet");
   if (filter === "outdoor") return contexts.has("ctx-outdoor") || tags.includes("outdoor");
@@ -3779,6 +4487,17 @@ function explorationContextMatches(job, filter) {
   if (filter === "team") return contexts.has("ctx-team");
   if (filter === "remote") return ["high", "partial"].includes(job.remoteCompatibility);
   return true;
+}
+
+function buildExplorationContextOptions() {
+  const base = [["all", "Tous contextes"], ["office", "Bureau"], ["quiet", "Calme"], ["outdoor", "Extérieur"], ["home", "Domicile"], ["children", "Enfants"], ["animals", "Animaux"], ["team", "Équipe"], ["remote", "Télétravail"]];
+  const baseContextIds = new Set(["ctx-office", "ctx-quiet", "ctx-outdoor", "ctx-home-care", "ctx-children", "ctx-animal", "ctx-team", "ctx-remote"]);
+  const extra = toArray(App.state.dataset?.workContexts)
+    .filter(context => context?.id && !baseContextIds.has(context.id))
+    .filter(context => toArray(App.state.dataset?.jobs).some(job => toArray(job.workContexts).includes(context.id)))
+    .slice(0, 14)
+    .map(context => [`ctx:${context.id}`, context.label || context.id]);
+  return [...base, ...extra];
 }
 
 function explorationMarketMatches(job, filter) {
@@ -3801,6 +4520,19 @@ function getJobMarketLevel(job) {
   if (value >= 0.66) return "high";
   if (value >= 0.45) return "medium";
   return "low";
+}
+
+function marketLabel(level) {
+  if (level === "high") return "Marché favorable estimé";
+  if (level === "medium") return "Marché moyen estimé";
+  if (level === "low") return "Marché faible ou inconnu";
+  return "Marché non renseigné";
+}
+
+function getJobCodeLabel(job = {}) {
+  const code = job.romeCode || job.localVariantOfRomeCode;
+  if (!code) return "Code ROME à relier";
+  return job.isLocalVariant ? `Variante locale de ROME ${code}` : `Code ROME ${code}`;
 }
 
 function marketLevelWeight(level) {
@@ -3828,7 +4560,7 @@ function openExplorationJobDialog(jobId) {
   const variants = findRelatedVariants(job, App.state.dataset);
   App.dom.jobDialogContent.innerHTML = `
     <h2>${h(job.title)}</h2>
-    <p><strong>Code :</strong> ${h(job.romeCode || "Code local")} · <strong>Domaine :</strong> ${h(job.domain)} · <strong>Famille :</strong> ${h(job.family)}</p>
+    <p><strong>Code :</strong> ${h(getJobCodeLabel(job))} · <strong>Domaine :</strong> ${h(job.domain)} · <strong>Famille :</strong> ${h(job.family)}</p>
     <p>${h(job.description || "Information officielle non encore disponible dans le corpus.")}</p>
     <h3>Appellations</h3>
     <p>${take(job.appellations, 8).map(h).join(", ") || "Non renseignées."}</p>
@@ -4291,7 +5023,7 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : (base.mappingsRomeCertifications || [])
   };
   merged.qualityReport = generated.qualityReport || generateDataQualityReport(merged);
-  return merged;
+  return finalizeDatasetForV051(merged, { regenerateReport: false });
 }
 
 function markDatasetAsOfficialRome(dataset, manifest = {}) {
@@ -4678,11 +5410,13 @@ function createEmptyProfile() {
     certifications: [],
     experiences: [],
     experienceDomains: [],
+    experienceDomainDetails: {},
     experienceDuration: "not_specified",
     skills: [],
     skillSignals: [],
     softSkills: [],
     customSkills: [],
+    freeCertifications: [],
     interests: [],
     values: [],
     constraints: CONSTRAINT_OPTIONS.map(option => ({ id: `constraint-${option.value}`, type: option.type, label: option.label, value: option.value, severity: "open" })),
@@ -4719,11 +5453,13 @@ function normalizeProfile(raw) {
   merged.certifications = toArray(raw.certifications);
   merged.experiences = Array.isArray(raw.experiences) ? raw.experiences : [];
   merged.experienceDomains = toArray(raw.experienceDomains);
+  merged.experienceDomainDetails = normalizeExperienceDomainDetails(raw.experienceDomainDetails, merged.experienceDomains);
   merged.experienceDuration = raw.experienceDuration || base.experienceDuration;
   merged.skills = toArray(raw.skills);
   merged.skillSignals = toArray(raw.skillSignals);
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
+  merged.freeCertifications = toArray(raw.freeCertifications);
   merged.interests = toArray(raw.interests);
   merged.values = toArray(raw.values);
   merged.constraints = mergeConstraints(raw.constraints || []);
@@ -4746,6 +5482,23 @@ function normalizeProfile(raw) {
   merged.preferredEnvironments = toArray(raw.preferredEnvironments);
   merged.criterionWeights = { ...CONFIG.baseWeights, ...(raw.criterionWeights || {}) };
   return merged;
+}
+
+function normalizeExperienceDomainDetails(raw = {}, selectedDomains = []) {
+  const details = {};
+  const selected = new Set(toArray(selectedDomains));
+  Object.entries(raw || {}).forEach(([domain, value]) => {
+    if (!selected.has(domain) && toArray(selectedDomains).length) return;
+    details[domain] = {
+      duration: value?.duration || "not_specified",
+      recency: value?.recency || "not_specified",
+      confidence: value?.confidence || "medium"
+    };
+  });
+  selected.forEach(domain => {
+    details[domain] = details[domain] || { duration: "not_specified", recency: "not_specified", confidence: "medium" };
+  });
+  return details;
 }
 
 function bindGlobalEvents() {
@@ -4799,7 +5552,13 @@ function handleProfileInput(event) {
     App.dom.resultsContainer.innerHTML = renderExplorationPage();
     return;
   }
+  if (target.dataset.skillBrowser !== undefined) {
+    updateSkillBrowser(target);
+    renderSkillSectorListInPlace();
+    return;
+  }
   updateProfileFromTarget(target);
+  if (target.dataset.array === "skills") syncSkillCheckboxes(target.value, target.checked);
   if (target.type === "range") {
     const output = target.parentElement?.querySelector("[data-range-output]");
     if (output) output.textContent = target.value;
@@ -4848,6 +5607,16 @@ function handleActionClick(event) {
   if (action === "export-corpus") downloadFile(`boussole-pro-corpus-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
   if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
+  if (action === "skills-expand-all") {
+    App.state.skillBrowser.openAll = true;
+    renderSkillSectorListInPlace();
+    return;
+  }
+  if (action === "skills-collapse-all") {
+    App.state.skillBrowser.openAll = false;
+    renderSkillSectorListInPlace();
+    return;
+  }
   if (action === "load-curated-corpus") loadCuratedCorpusDataset({ replace: true });
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
   if (action === "clear-api-test") clearApiTestConfig();
@@ -4899,6 +5668,9 @@ function updateProfileFromTarget(target) {
     if (target.checked) set.add(target.value);
     else set.delete(target.value);
     profile[key] = Array.from(set);
+    if (key === "experienceDomains") {
+      profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
+    }
     return;
   }
   if (target.dataset.constraint) {
@@ -4907,6 +5679,15 @@ function updateProfileFromTarget(target) {
   }
   if (target.dataset.weight) {
     profile.criterionWeights[target.dataset.weight] = Number(target.value);
+    return;
+  }
+  if (target.dataset.experienceDomain && target.dataset.experienceField) {
+    const domain = target.dataset.experienceDomain;
+    profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
+    profile.experienceDomainDetails[domain] = {
+      ...(profile.experienceDomainDetails[domain] || { duration: "not_specified", recency: "not_specified", confidence: "medium" }),
+      [target.dataset.experienceField]: target.value
+    };
     return;
   }
   const field = target.dataset.field;
@@ -4918,12 +5699,21 @@ function updateProfileFromTarget(target) {
     profile.diplomas = lines(target.value);
   } else if (field === "customSkillsText") {
     profile.customSkills = splitLooseList(target.value);
+  } else if (field === "freeCertificationsText") {
+    profile.freeCertifications = lines(target.value);
   } else if (field === "exclusionsDomainsText") {
     profile.exclusions = profile.exclusions || { jobIds: [], domains: [], tags: [] };
     profile.exclusions.domains = lines(target.value);
   } else {
     setDeep(profile, field, value);
   }
+}
+
+function syncSkillCheckboxes(skillId, checked) {
+  if (!skillId) return;
+  document.querySelectorAll(`input[data-array="skills"][value="${cssEscape(skillId)}"]`).forEach(input => {
+    input.checked = checked;
+  });
 }
 
 function scheduleSaveAndMatch() {
@@ -5057,7 +5847,7 @@ function openJobDialog(result, mode) {
     content = `<h2>Variantes proches</h2><ul class="data-list">${variants.map(item => `<li><strong>${h(item.title)}</strong> - ${h(item.romeCode || "")} - ${h(item.family || "")}</li>`).join("") || "<li>Aucune variante proche dans le corpus sample.</li>"}</ul>`;
   }
   if (mode === "why") {
-    content = `<h2>Pourquoi cette piste ?</h2><h3>Raisons positives</h3><ul class="data-list">${result.positiveReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Vigilances</h3><ul class="data-list">${result.negativeReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Scores</h3><div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>`;
+    content = `<h2>Pourquoi cette piste ?</h2><h3>Raisons positives</h3><ul class="data-list">${result.positiveReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Vigilances</h3><ul class="data-list">${result.negativeReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Scores</h3><div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>${renderScoreDetails(result.scoreDetails)}`;
   }
   if (mode === "trainings") {
     const trainings = findSuggestedTrainings(job, App.state.dataset);
@@ -5257,6 +6047,8 @@ function weightedGlobalScore(scores, criterionWeights = CONFIG.baseWeights) {
 function findSuggestedTrainings(job, datasets) {
   return (datasets.trainings || []).filter(training =>
     toArray(training.targetJobIds).includes(job.id) ||
+    toArray(training.targetRomeCodes).includes(job.romeCode) ||
+    toArray(training.targetRomeCodes).includes(job.localVariantOfRomeCode) ||
     toArray(job.requiredCertifications).includes(training.certificationId) ||
     toArray(job.recommendedCertifications).includes(training.certificationId)
   ).slice(0, 5);
@@ -5283,7 +6075,9 @@ function prepareResultsForExport(results) {
 }
 
 function resultsToMarkdown(results) {
-  const mainResults = toArray(results.visibleRecommended).length ? results.visibleRecommended : toArray(results.top5);
+  const topResults = toArray(results.top5).slice(0, 5);
+  const topIds = new Set(topResults.map(result => result.jobId));
+  const mainResults = toArray(results.visibleRecommended).filter(result => !topIds.has(result.jobId));
   const secondaryResults = toArray(results.visibleSecondary);
   const excludedRelevant = toArray(results.visibleExcludedButRelevant).length ? results.visibleExcludedButRelevant : toArray(results.excluded);
   const linesOut = [
@@ -5292,11 +6086,17 @@ function resultsToMarkdown(results) {
     `Generation : ${results.generatedAt}`,
     `Corpus : ${results.datasetVersion || "non renseigne"}`,
     ``,
-    `## Pistes principales`
+    `## Top 5 diversifié`
   ];
-  mainResults.forEach((result, index) => {
+  topResults.forEach((result, index) => {
     linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Score : ${Math.round(result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Raisons : ${result.positiveReasons.slice(0, 3).join(" ; ")}`, `- Vigilances : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
   });
+  if (mainResults.length) {
+    linesOut.push(``, `## Autres pistes principales`);
+    mainResults.slice(0, 12).forEach(result => {
+      linesOut.push(`- ${result.title} (${result.romeCode || "n/a"}) : ${Math.round(result.globalScore)}/100, ${statusLabel(result.status)}`);
+    });
+  }
   if (secondaryResults.length) {
     linesOut.push(``, `## Pistes à explorer`);
     secondaryResults.slice(0, 12).forEach(result => {
@@ -5777,6 +6577,11 @@ function h(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function cssEscape(value) {
+  if (window.CSS && typeof window.CSS.escape === "function") return window.CSS.escape(String(value));
+  return String(value).replace(/["\\]/g, "\\$&");
 }
 
 function emptyState(message) {

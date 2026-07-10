@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.alpha
+**Version :** v0.5.1-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,16 +18,23 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5.1 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
 
-## Nouveautés v0.5.alpha
+## Nouveautés v0.5.1-alpha
 
-La v0.5.alpha ajoute une couche d’exploration plus sûre sans changer le principe offline :
+La v0.5.1-alpha ajoute un recalibrage d’usage sans changer le principe offline :
 
+- le bloc **Top 5 diversifié** est restauré visuellement avant les autres pistes ;
+- le bouton **Pourquoi** détaille compétences cochées, compétences à vérifier, contexte, contraintes, formation et marché ;
+- les compétences sont organisées par secteurs avec recherche, accordéons et doublons visuels sûrs ;
+- la durée d’expérience peut être précisée par domaine ;
+- les métiers locaux sans code direct sont rattachés à une variante locale de code ROME à vérifier ;
+- les métiers d’aide / puériculture incohérents sont réalignés avec des compétences de soin, enfant, hygiène et écoute ;
+- des parcours de formation locaux indicatifs sont ajoutés avec `source: "curated_estimated"` et `officialStatus: "to_verify"` ;
 - un onglet **Exploration** pour chercher, filtrer et trier les métiers du corpus actif ;
 - des favoris locaux exportés/importés avec le profil ;
 - une séparation plus claire entre pertinence et confiance du résultat ;
-- des listes visibles plus sobres : pistes principales, pistes à explorer, exclusions proches et pertinentes ;
+- des listes visibles plus sobres : Top 5, autres pistes principales, pistes à explorer, exclusions proches et pertinentes ;
 - une règle de diversification plus prudente pour ne pas promouvoir une piste trop loin du meilleur score ;
 - un scoring compétences plus juste : une compétence non cochée n’est pas considérée comme absente, elle baisse surtout la confiance ;
 - des structures locales préparées pour les indicateurs marché France / Occitanie / Aude, sans données d’offres ni appel réseau.
@@ -46,7 +53,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.1-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -99,7 +106,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.1-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
