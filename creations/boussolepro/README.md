@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.2-alpha
+**Version :** v0.5.3-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,22 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5.2 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5.3 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.5.3-alpha
+
+La v0.5.3-alpha recalibre le moteur ClairMétier :
+
+- intentions de recherche avec pondérations automatiques ;
+- passage en pondération personnalisée dès qu’un curseur est ajusté ;
+- contraintes traitées comme risque/filtre plutôt que bonus massif ;
+- marché inconnu ou estimatif affiché comme donnée à confirmer et peu pondéré ;
+- score formation plus discriminant selon diplôme, certification, budget, horizon et ouverture à la formation ;
+- score de confiance plus variable, notamment pour les profils minimalistes ;
+- affinité de domaine pour éviter qu’un métier hors sujet monte seulement grâce aux contraintes ;
+- Top 5 complété avec les meilleures pistes utiles si la diversité stricte donne moins de cinq résultats ;
+- exclusions de domaine par table explicite plutôt que correspondance textuelle vague ;
+- diagnostic JSON enrichi avec intention, pondérations, affinité, fiabilité marché, plafonds de score et distributions d’audit.
 
 ## Nouveautés v0.5.2-alpha
 
@@ -67,7 +82,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.2-alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.3-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -122,7 +137,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.2-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.3-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
