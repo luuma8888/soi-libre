@@ -697,6 +697,12 @@ details.advanced-box summary {
   box-shadow: var(--shadow-soft);
 }
 
+.results-section.top-results-section {
+  border-color: #e3c76c;
+  background: linear-gradient(180deg, var(--gold-soft), var(--content-bg));
+  box-shadow: 0 12px 28px rgba(139, 94, 25, 0.12);
+}
+
 .results-section h2 {
   margin: 0 0 8px;
   font-size: 1.28rem;
@@ -720,6 +726,16 @@ details.advanced-box summary {
   border-radius: var(--radius);
   background: var(--read-bg);
   box-shadow: 0 8px 16px rgba(50, 41, 96, 0.04);
+}
+
+.job-card.featured {
+  border-color: #e3c76c;
+  background: linear-gradient(180deg, #fffdf8, #fff7df);
+  box-shadow: 0 12px 24px rgba(139, 94, 25, 0.13);
+}
+
+.job-card.featured .score-pill {
+  background: var(--primary-soft);
 }
 
 .job-card.excluded {
@@ -1146,7 +1162,7 @@ body[data-theme="dark"] .toast {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.5.1-alpha",
+  version: "v0.5.2-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1356,6 +1372,22 @@ const EXPERIENCE_DOMAIN_OPTIONS = [
   ["association", "Projet associatif / collectif"]
 ];
 
+const EXPERIENCE_DOMAIN_ALIASES = {
+  enfant: "petite_enfance",
+  enfants: "petite_enfance",
+  enfance: "petite_enfance",
+  children: "petite_enfance",
+  child: "petite_enfance",
+  jeunesse: "animation",
+  scolaire: "education",
+  ecole: "education",
+  informatique: "numerique",
+  digital: "numerique",
+  hygiene: "proprete",
+  menage: "proprete",
+  mediation: "social"
+};
+
 const TRAINING_FAMILY_OPTIONS = [
   ["administratif", "Administratif / gestion"],
   ["numerique", "Numérique / informatique"],
@@ -1452,6 +1484,101 @@ const SKILL_TESTS = [
   }
 ];
 
+const DIAGNOSTIC_TEST_PROFILES_V052 = [
+  {
+    id: "admin-calme",
+    title: "Administratif calme",
+    description: "Teste les métiers de bureau avec fortes contraintes physiques et bruit à éviter.",
+    profile: {
+      profileName: "Profil test - administratif calme",
+      diplomaLevel: 4,
+      skills: ["skill-admin-doc", "skill-organisation", "skill-writing", "skill-data"],
+      weakSkills: ["skill-sales"],
+      interests: ["organiser", "analyser", "aider"],
+      values: ["stability", "clarity", "service"],
+      preferredWorkStyles: ["structured"],
+      preferredEnvironments: ["office", "quiet"],
+      preferredSchedule: "day",
+      needForSecurity: "high",
+      needForAutonomy: "medium",
+      needForMeaning: "medium",
+      trainingOpenness: "short_2_weeks_3_months",
+      searchHorizon: "now",
+      constraintSeverities: { heavyLoad: "excluding", standing: "avoid", noise: "avoid", nightWork: "avoid", weekendWork: "avoid" },
+      criterionWeights: { skills: 24, training: 18, constraints: 30, values: 13, context: 10, market: 5 }
+    }
+  },
+  {
+    id: "enfance-relation",
+    title: "Enfance et relation",
+    description: "Teste les pistes d’animation, transmission et soin avec attention à la charge physique.",
+    profile: {
+      profileName: "Profil test - enfance et relation",
+      diplomaLevel: 3,
+      skills: ["skill-animation", "skill-early-childhood", "skill-active-listening", "skill-communication"],
+      weakSkills: ["skill-data"],
+      interests: ["enfants", "transmettre", "accompagner"],
+      values: ["care", "meaning", "service"],
+      preferredWorkStyles: ["team"],
+      preferredEnvironments: ["public_contact"],
+      preferredSchedule: "day",
+      needForSecurity: "medium",
+      needForAutonomy: "medium",
+      needForMeaning: "high",
+      trainingOpenness: "open_if_meaningful",
+      searchHorizon: "open_exploration",
+      constraintSeverities: { nightWork: "avoid", heavyLoad: "conditional", noise: "conditional" },
+      criterionWeights: { skills: 25, training: 18, constraints: 22, values: 20, context: 10, market: 5 }
+    }
+  },
+  {
+    id: "numerique-distance",
+    title: "Numérique à distance",
+    description: "Teste les métiers numériques avec besoin fort de télétravail et peu de déplacements.",
+    profile: {
+      profileName: "Profil test - numérique à distance",
+      diplomaLevel: 5,
+      skills: ["skill-code", "skill-data", "skill-analysis", "skill-writing", "skill-support-user"],
+      absentSkills: ["skill-driving"],
+      interests: ["numerique", "analyser", "technique"],
+      values: ["autonomy", "clarity", "freedom"],
+      preferredWorkStyles: ["autonomous"],
+      preferredEnvironments: ["remote", "quiet"],
+      preferredSchedule: "flexible",
+      needForSecurity: "medium",
+      needForAutonomy: "high",
+      needForMeaning: "medium",
+      trainingOpenness: "short_2_weeks_3_months",
+      searchHorizon: "now",
+      constraintSeverities: { remoteNeeded: "excluding", travel: "avoid", driverLicenseRequired: "avoid" },
+      criterionWeights: { skills: 28, training: 18, constraints: 26, values: 12, context: 11, market: 5 }
+    }
+  },
+  {
+    id: "terrain-nature-prudent",
+    title: "Terrain nature prudent",
+    description: "Teste les métiers nature avec intérêt fort, mais prudence sur charges, horaires et mobilité.",
+    profile: {
+      profileName: "Profil test - terrain nature prudent",
+      diplomaLevel: 3,
+      skills: ["skill-environment", "skill-gardening", "skill-animal-care", "skill-writing"],
+      weakSkills: ["skill-driving"],
+      interests: ["nature", "animaux", "proteger"],
+      values: ["ecology", "meaning", "concrete"],
+      preferredWorkStyles: ["autonomous"],
+      preferredEnvironments: ["outdoor", "small_structure"],
+      preferredSchedule: "day",
+      needForSecurity: "medium",
+      needForAutonomy: "high",
+      needForMeaning: "high",
+      trainingOpenness: "open_if_meaningful",
+      searchHorizon: "open_exploration",
+      constraintSeverities: { heavyLoad: "conditional", weekendWork: "conditional", travel: "conditional" },
+      criterionWeights: { skills: 24, training: 16, constraints: 25, values: 20, context: 10, market: 5 }
+    }
+  }
+];
+
 const App = {
   state: {
     mainView: "home",
@@ -1459,6 +1586,8 @@ const App = {
     dataset: null,
     profile: null,
     results: null,
+    resultDiagnosticsEnabled: false,
+    resultsDirty: false,
     compareIds: [],
     favoriteJobs: [],
     explorationFilters: {
@@ -2547,10 +2676,17 @@ function saveFavorites() {
 
 function exportProfile() {
   const profile = App.state.profile || createEmptyProfile();
+  const enginePreferences = {
+    criterionWeights: clone(profile.criterionWeights || CONFIG.baseWeights),
+    baseWeights: clone(CONFIG.baseWeights),
+    exportedWithProfile: true,
+    note: "Ces pondérations font partie du profil : elles peuvent changer le classement des métiers."
+  };
   const envelope = {
     app: "boussole-pro-profile",
     version: CONFIG.version,
     exportedAt: new Date().toISOString(),
+    enginePreferences,
     profile,
     favoriteJobs: App.state.favoriteJobs
   };
@@ -2562,7 +2698,12 @@ function importProfile(fileOrText) {
   const handleText = text => {
     try {
       const parsed = JSON.parse(text);
-      const profile = normalizeProfile(parsed.data || parsed.profile || parsed);
+      const rawProfile = parsed.data || parsed.profile || parsed;
+      const profile = normalizeProfile(rawProfile);
+      const importedWeights = parsed.enginePreferences?.criterionWeights || rawProfile.enginePreferences?.criterionWeights || rawProfile.criterionWeights;
+      if (importedWeights && typeof importedWeights === "object") {
+        profile.criterionWeights = { ...CONFIG.baseWeights, ...importedWeights };
+      }
       App.state.profile = profile;
       if (Array.isArray(parsed.favoriteJobs)) {
         App.state.favoriteJobs = parsed.favoriteJobs.map(normalizeFavoriteJob).filter(Boolean);
@@ -2598,6 +2739,13 @@ function exportResults(format = "json") {
 
 function exportResultsMarkdown() {
   exportResults("markdown");
+}
+
+function exportResultDiagnostics() {
+  if (!App.state.results) calculateAndStoreResults({ force: true, persist: false });
+  const payload = buildResultDiagnosticExport(App.state.results);
+  downloadFile(`boussole-pro-diagnostic-resultats-${dateStamp()}.json`, JSON.stringify(payload, null, 2), "application/json");
+  showToast("Diagnostic des résultats exporté en JSON.");
 }
 
 function handleSaveBoussole() {
@@ -3123,9 +3271,11 @@ function mapUserProfileToCriteria(profile) {
   const derivedSkillIds = getSkillIdsFromSignals(profile);
   const directSkillIds = unique([...toArray(profile.skills), ...derivedSkillIds]);
   const weakSkillIds = unique([...toArray(profile.weakSkills), ...toArray(profile.exclusions?.skills), ...toArray(profile.avoidedSkills)]);
+  const absentSkillIds = unique([...toArray(profile.absentSkills), ...toArray(profile.exclusions?.absentSkills)]);
   const skillEvidence = {
     strong: directSkillIds,
     weak: weakSkillIds.filter(id => !directSkillIds.includes(id)),
+    absent: absentSkillIds.filter(id => !directSkillIds.includes(id)),
     notAssessed: []
   };
   const excludedDomains = unique([...toArray(profile.exclusions?.domains), ...toArray(profile.excludedDomains)]);
@@ -3151,7 +3301,10 @@ function mapUserProfileToCriteria(profile) {
     },
     experience: {
       raw: toArray(profile.experiences),
-      domains: unique([...toArray(profile.experiences).map(item => normalizeText(item.domain || item)).filter(Boolean), ...toArray(profile.experienceDomains)]),
+      domains: unique([
+        ...toArray(profile.experiences).map(item => normalizeExperienceDomainId(item.domain || item)).filter(Boolean),
+        ...normalizeExperienceDomains(profile.experienceDomains)
+      ]),
       duration: profile.experienceDuration || "not_specified",
       domainDetails: normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains)
     },
@@ -3192,8 +3345,11 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
   const diversified = diversifyTopResults(compatible);
   const visibleRecommended = buildVisibleRecommended(compatible, diversified.top5);
   const visibleSecondary = buildVisibleSecondary(compatible, visibleRecommended);
-  const visibleExcludedButRelevant = excluded.filter(result => isRelevantExcludedResult(result)).slice(0, 6);
-  return {
+  const visibleExcludedButRelevant = excluded
+    .filter(result => isRelevantExcludedResult(result))
+    .sort((a, b) => (b.relevanceWithoutExclusion || b.scorePertinence || 0) - (a.relevanceWithoutExclusion || a.scorePertinence || 0))
+    .slice(0, 6);
+  const output = {
     schemaVersion: CONFIG.schemaVersion,
     generatedAt: new Date().toISOString(),
     profileId: profile.id,
@@ -3218,6 +3374,8 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
       afterTraining: compatible.filter(result => result.status.includes("training")).length
     }
   };
+  output.calibrationAudit = buildCalibrationAudit(output);
+  return output;
 }
 
 function calculateMatch(criteria, job, datasets = App.state.dataset) {
@@ -3259,6 +3417,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     };
     result.evidenceSummary = buildEvidenceSummary(criteria, job, result, { skill, training, value, context, market, hardCheck });
     result.negativeReasons = explainMatch(criteria, job, scores, result.status, { skill, training, value, context, market, hardCheck }).negative;
+    result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, hardCheck });
     return result;
   }
 
@@ -3281,7 +3440,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
   const status = determineFeasibilityStatus(globalScore, scores, criteria, job, { training, constraint, hardCheck });
   const explanation = explainMatch(criteria, job, scores, status, { skill, training, constraint, value, context, market, hardCheck });
   const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint, value, context, market, hardCheck });
-  return {
+  const result = {
     schemaVersion: CONFIG.schemaVersion,
     id: `match-${criteria.profileId}-${job.id}`,
     jobId: job.id,
@@ -3306,6 +3465,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     sourceRefs: job.sourceRefs,
     job
   };
+  result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, hardCheck });
+  return result;
 }
 
 function reliabilityLabel(score) {
@@ -3326,8 +3487,16 @@ function buildScoreDetails(criteria, job, details = {}) {
       matchedRequiredSkills: toArray(skill.matchedRequiredSkills).map(id => ({ id, label: getSkillLabel(id) })),
       matchedOptionalSkills: toArray(skill.matchedOptionalSkills).map(id => ({ id, label: getSkillLabel(id) })),
       unassessedRequiredSkills: toArray(skill.unassessedSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      missingNonPenalizingSkills: toArray(skill.missingNonPenalizingSkills || skill.unassessedSkills).map(id => ({ id, label: getSkillLabel(id) })),
       explicitlyWeakSkills: toArray(skill.weakSkills).map(id => ({ id, label: getSkillLabel(id) })),
+      explicitlyAbsentSkills: toArray(skill.explicitlyAbsentSkills).map(id => ({ id, label: getSkillLabel(id) })),
       profileSkillsUsed: toArray(skill.profileSkillsUsed).map(id => ({ id, label: getSkillLabel(id) })),
+      skillStates: {
+        strong: toArray(skill.skillStates?.strong || [...toArray(skill.matchedRequiredSkills), ...toArray(skill.matchedOptionalSkills)]).map(id => ({ id, label: getSkillLabel(id) })),
+        weak: toArray(skill.skillStates?.weak || skill.weakSkills).map(id => ({ id, label: getSkillLabel(id) })),
+        absent: toArray(skill.skillStates?.absent || skill.explicitlyAbsentSkills).map(id => ({ id, label: getSkillLabel(id) })),
+        unassessed: toArray(skill.skillStates?.unassessed || skill.unassessedSkills).map(id => ({ id, label: getSkillLabel(id) }))
+      },
       confidenceOnlyWarnings: toArray(skill.confidenceOnlyWarnings)
     },
     context: {
@@ -3381,6 +3550,183 @@ function buildEvidenceSummary(criteria, job, result = {}, details = {}) {
     unknownImportantFields,
     officialEvidence: toArray(job.sourceRefs).filter(ref => normalizeText(ref).includes("rome") || normalizeText(ref).includes("official")),
     estimatedEvidence: [job.source, job.provenance, ...(job.dataQuality?.warnings || [])].filter(value => normalizeText(value).includes("estimate") || normalizeText(value).includes("sample") || normalizeText(value).includes("local"))
+  };
+}
+
+function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
+  const scores = result.scores || {};
+  const subScores = Object.keys(CONFIG.baseWeights).map(key => buildSubScoreDiagnostic(key, scores[key], criteria, job, result, details));
+  const skillStates = details.skill?.skillStates || {};
+  const missingNonPenalizingSkills = toArray(details.skill?.missingNonPenalizingSkills || details.skill?.unassessedSkills)
+    .map(id => ({ id, label: getSkillLabel(id) }));
+  const exclusionControl = buildExclusionControl(result, details);
+  return {
+    schemaVersion: CONFIG.schemaVersion,
+    version: CONFIG.version,
+    jobId: result.jobId,
+    romeCode: result.romeCode,
+    title: result.title,
+    globalScore: result.globalScore,
+    confidenceScore: result.confidenceScore,
+    status: result.status,
+    weights: clone(criteria.criterionWeights || CONFIG.baseWeights),
+    subScores,
+    skillStates: {
+      strong: toArray(skillStates.strong).map(id => ({ id, label: getSkillLabel(id) })),
+      weak: toArray(skillStates.weak).map(id => ({ id, label: getSkillLabel(id) })),
+      absent: toArray(skillStates.absent).map(id => ({ id, label: getSkillLabel(id) })),
+      unassessed: toArray(skillStates.unassessed).map(id => ({ id, label: getSkillLabel(id) }))
+    },
+    missingNonPenalizingSkills,
+    whyItRanks: buildWhyItRanks(result, details),
+    rankingLimits: buildRankingLimits(result, details),
+    changeLevers: buildChangeLevers(result, details),
+    exclusionControl,
+    calibrationFlags: [
+      exclusionControl.triggered ? exclusionControl.message : "",
+      result.globalScore >= 70 && result.confidenceScore < 55 ? "Score élevé avec confiance réduite : résultat à relire avant décision." : "",
+      details.skill?.unlinkedOfficialSkills ? "Compétences officielles non reliées : le score compétences reste neutre et moins fiable." : ""
+    ].filter(Boolean)
+  };
+}
+
+function buildSubScoreDiagnostic(key, value = 0, criteria, job, result, details = {}) {
+  const max = CONFIG.baseWeights[key] || 0;
+  const score = Math.round(Number(value || 0));
+  const detailKey = { skills: "skill", constraints: "constraint", values: "value" }[key] || key;
+  const sourceDetail = details[detailKey] || {};
+  const notEvaluated = isSubScoreNotEvaluated(key, sourceDetail, job);
+  const state = notEvaluated ? "not_evaluated" : subScoreState(score, max);
+  return {
+    key,
+    label: scoreLabel(key),
+    score,
+    max,
+    state,
+    stateLabel: diagnosticStateLabel(state),
+    explanation: subScoreExplanation(key, state, sourceDetail, job, result),
+    positiveSignals: subScorePositiveSignals(key, sourceDetail, job),
+    limits: subScoreLimits(key, sourceDetail, job)
+  };
+}
+
+function isSubScoreNotEvaluated(key, detail = {}, job = {}) {
+  if (key === "skills") return Boolean(detail.unlinkedOfficialSkills) || (toArray(job.requiredSkills).length === 0 && toArray(job.optionalSkills).length === 0);
+  if (key === "context") return toArray(job.workContexts).length === 0;
+  if (key === "market") return detail.level === "unknown" || detail.source === "unknown";
+  if (key === "training") return toArray(detail.missingData).some(item => item.field === "job.requiredDiplomaLevel") && !toArray(job.requiredCertifications).length;
+  return false;
+}
+
+function subScoreState(score, max) {
+  if (!max) return "not_evaluated";
+  const ratio = score / max;
+  if (ratio <= 0.15) return "absent";
+  if (ratio < 0.55) return "weak";
+  return "strong";
+}
+
+function diagnosticStateLabel(state) {
+  if (state === "not_evaluated") return "non évalué";
+  if (state === "weak") return "faible";
+  if (state === "absent") return "absent";
+  if (state === "strong") return "fort";
+  return "à vérifier";
+}
+
+function subScoreExplanation(key, state, detail = {}, job = {}, result = {}) {
+  if (state === "not_evaluated") {
+    if (key === "skills") return "Les compétences métier ne sont pas assez reliées dans le corpus : elles réduisent la confiance sans créer de preuve négative.";
+    if (key === "context") return "Le cadre de travail officiel n’est pas assez renseigné pour conclure.";
+    if (key === "market") return "Les données marché sont absentes ou seulement estimatives.";
+    if (key === "training") return "Le niveau d’accès au métier est partiellement inconnu.";
+  }
+  if (key === "constraints" && toArray(detail.warnings).length) return "Des contraintes déclarées rencontrent un signal à vérifier ou une pénalité.";
+  if (key === "training" && detail.statusHint === "short") return "Une marche de formation courte pourrait changer la faisabilité.";
+  if (key === "training" && detail.statusHint === "long") return "L’accès semble demander une marche de formation plus longue.";
+  if (key === "skills" && toArray(detail.weakSkills).length) return "Certaines compétences utiles ont été signalées comme faibles.";
+  return `${scoreLabel(key)} : niveau ${diagnosticStateLabel(state)} dans l'analyse actuelle.`;
+}
+
+function subScorePositiveSignals(key, detail = {}, job = {}) {
+  if (key === "skills") return [
+    ...toArray(detail.matchedRequiredSkills).map(id => getSkillLabel(id)),
+    ...toArray(detail.matchedOptionalSkills).map(id => getSkillLabel(id))
+  ].slice(0, 5);
+  if (key === "context") return toArray(detail.matched).map(preferenceLabel).slice(0, 5);
+  if (key === "constraints") return toArray(detail.matchedConstraints).slice(0, 5);
+  if (key === "training" && detail.statusHint === "now") return ["niveau d'accès proche du profil"];
+  if (key === "values") return toArray(detail.matched).slice(0, 5);
+  if (key === "market" && detail.level && detail.level !== "unknown") return [marketLabel(detail.level)];
+  return [];
+}
+
+function subScoreLimits(key, detail = {}, job = {}) {
+  if (key === "skills") return [
+    ...toArray(detail.weakSkills).map(id => `faible : ${getSkillLabel(id)}`),
+    ...toArray(detail.explicitlyAbsentSkills).map(id => `absent : ${getSkillLabel(id)}`),
+    ...toArray(detail.unassessedSkills).slice(0, 5).map(id => `non évalué : ${getSkillLabel(id)}`)
+  ];
+  if (key === "context") return toArray(detail.unmatchedPreferences).map(preferenceLabel);
+  if (key === "constraints") return toArray(detail.warnings);
+  if (key === "training") return toArray(detail.missingCertifications).map(id => `certification à vérifier : ${id}`);
+  return toArray(detail.missingData).map(item => item.message || item.field);
+}
+
+function buildWhyItRanks(result = {}, details = {}) {
+  const reasons = [];
+  if ((result.scores?.skills || 0) >= 15) reasons.push("les compétences déclarées créent un signal favorable");
+  if ((result.scores?.constraints || 0) >= 18) reasons.push("les contraintes renseignées restent plutôt compatibles");
+  if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
+  if ((result.scores?.values || 0) >= 10) reasons.push("les envies ou valeurs rejoignent cette direction");
+  if ((result.scores?.context || 0) >= 7) reasons.push("le cadre de travail correspond à plusieurs préférences");
+  if (!reasons.length && result.status !== "excluded_for_now") reasons.push("aucune incompatibilité forte n’a été confirmée");
+  if (details.skill?.unlinkedOfficialSkills) reasons.push("le score compétences reste volontairement neutre car les liens métier-compétence manquent");
+  return unique(reasons).slice(0, 6);
+}
+
+function buildRankingLimits(result = {}, details = {}) {
+  const limits = [];
+  if (result.status === "excluded_for_now") limits.push("une contrainte excluante bloque ce métier pour l’instant");
+  if (details.skill?.unlinkedOfficialSkills) limits.push("compétences officielles non reliées : confiance réduite");
+  if (toArray(details.skill?.weakSkills).length) limits.push("compétences explicitement faibles");
+  if (toArray(details.skill?.explicitlyAbsentSkills).length) limits.push("compétences explicitement absentes");
+  if (toArray(details.skill?.unassessedSkills).length) limits.push("compétences utiles non évaluées, non pénalisantes mais moins fiables");
+  if (toArray(details.constraint?.warnings).length) limits.push("contraintes à vérifier : " + details.constraint.warnings.slice(0, 3).join(", "));
+  if (["short", "long", "blocked"].includes(details.training?.statusHint)) limits.push("marche de formation ou certification à clarifier");
+  if (details.market?.source === "unknown" || details.market?.isEstimated) limits.push("réalisme marché encore estimatif");
+  return unique(limits).slice(0, 7);
+}
+
+function buildChangeLevers(result = {}, details = {}) {
+  const levers = [];
+  if (toArray(details.skill?.unassessedSkills).length) levers.push("évaluer les compétences non renseignées avant de conclure");
+  if (toArray(details.skill?.weakSkills).length || toArray(details.skill?.explicitlyAbsentSkills).length) levers.push("renforcer une compétence cœur ou vérifier une variante moins exigeante");
+  if (details.training?.statusHint === "short") levers.push("identifier une formation courte ou une certification ciblée");
+  if (details.training?.statusHint === "long") levers.push("changer l’horizon de recherche ou explorer une passerelle progressive");
+  if (toArray(details.constraint?.warnings).length) levers.push("chercher des postes avec conditions plus compatibles");
+  if (details.skill?.unlinkedOfficialSkills) levers.push("importer un mapping métier-compétence fiable pour recalibrer le score");
+  if (!levers.length) levers.push("comparer avec les variantes proches et vérifier le terrain local");
+  return unique(levers).slice(0, 6);
+}
+
+function buildExclusionControl(result = {}, details = {}) {
+  const hardExclusions = toArray(details.hardCheck?.confirmed || result.exclusionReasons);
+  const warnings = toArray(details.constraint?.warnings);
+  const relevance = Math.round(result.relevanceWithoutExclusion || result.scorePertinence || result.globalScore || 0);
+  const hardTriggered = hardExclusions.length > 0 && relevance >= 58;
+  const softTriggered = result.status !== "excluded_for_now" && result.globalScore >= 72 && warnings.length > 0 && (result.scores?.constraints || 0) < 16;
+  return {
+    triggered: hardTriggered || softTriggered,
+    type: hardTriggered ? "hard_exclusion_high_relevance" : softTriggered ? "soft_constraint_high_score" : "none",
+    relevanceWithoutExclusion: relevance,
+    hardExclusions,
+    constraintWarnings: warnings,
+    message: hardTriggered
+      ? "Métier potentiellement pertinent mais gardé hors classement principal à cause d’une exclusion dure."
+      : softTriggered
+        ? "Métier haut placé malgré une contrainte forte : à relire avant décision."
+        : "Aucun score anormal malgré exclusion ou contrainte forte."
   };
 }
 
@@ -3464,6 +3810,8 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const unassessedSkills = [];
   const unassessedSkillLabels = [];
   const weakSkills = [];
+  const explicitlyAbsentSkills = [];
+  const explicitlyAbsentSkillLabels = [];
   const matchedRequiredSkills = [];
   const matchedOptionalSkills = [];
   const profileSkillsUsed = [];
@@ -3479,6 +3827,11 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
       matchedRequiredSkills,
       matchedOptionalSkills,
       profileSkillsUsed,
+      explicitlyAbsentSkills,
+      explicitlyAbsentSkillLabels,
+      missingNonPenalizingSkills: [],
+      missingNonPenalizingSkillLabels: [],
+      skillStates: { strong: [], weak: [], absent: [], unassessed: [] },
       confidenceOnlyWarnings: ["Compétences officielles non reliées : confiance réduite, score conservé neutre."],
       confidencePenalty: 0.25,
       unlinkedOfficialSkills: job.provenance === "generated_rome" || toArray(job.sourceRefs).includes("france_travail_rome_generated")
@@ -3486,8 +3839,10 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   }
   const strong = new Set(toArray(criteria.skillEvidence?.strong));
   const weak = new Set(toArray(criteria.skillEvidence?.weak));
+  const absent = new Set(toArray(criteria.skillEvidence?.absent));
   let matched = 0;
   let explicitWeak = 0;
+  let explicitAbsent = 0;
   required.forEach(skillId => {
     if (strong.has(skillId) || criteria.skills[skillId]) {
       matched += levelCoefficient(criteria.skills[skillId]?.level || "basic");
@@ -3501,6 +3856,10 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
       weakSkills.push(skillId);
       missingSkills.push(skillId);
       missingSkillLabels.push(getSkillLabel(skillId, datasets));
+    } else if (absent.has(skillId)) {
+      explicitAbsent += 1;
+      explicitlyAbsentSkills.push(skillId);
+      explicitlyAbsentSkillLabels.push(getSkillLabel(skillId, datasets));
     } else {
       unassessedSkills.push(skillId);
       unassessedSkillLabels.push(getSkillLabel(skillId, datasets));
@@ -3521,24 +3880,35 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const positiveBonus = positiveRatio * 10;
   const optionalBonus = optionalRatio * 2;
   const weakPenalty = explicitWeak * 5;
+  const absentPenalty = explicitAbsent * 7;
   if (unassessedSkills.length) {
     const label = "Compétences à vérifier : non cochées ne signifie pas absentes.";
     missingData.push(missing("profile.skillEvidence", "medium", label));
     confidenceOnlyWarnings.push(label);
   }
   return {
-    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + experienceBonus - weakPenalty, 0, 25)),
+    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + experienceBonus - weakPenalty - absentPenalty, 0, 25)),
     missingData,
     missingSkills,
     missingSkillLabels,
     unassessedSkills,
     unassessedSkillLabels,
     weakSkills,
+    explicitlyAbsentSkills,
+    explicitlyAbsentSkillLabels,
+    missingNonPenalizingSkills: unassessedSkills,
+    missingNonPenalizingSkillLabels: unassessedSkillLabels,
     matchedRequiredSkills: unique(matchedRequiredSkills),
     matchedOptionalSkills: unique(matchedOptionalSkills),
     profileSkillsUsed: unique(profileSkillsUsed),
+    skillStates: {
+      strong: unique([...matchedRequiredSkills, ...matchedOptionalSkills]),
+      weak: unique(weakSkills),
+      absent: unique(explicitlyAbsentSkills),
+      unassessed: unique(unassessedSkills)
+    },
     confidenceOnlyWarnings,
-    confidencePenalty: (criteria.hasEnoughSkillEvidence ? 0 : 0.18) + (unassessedSkills.length / Math.max(required.length, 1) * 0.08) + (explicitWeak * 0.04)
+    confidencePenalty: (criteria.hasEnoughSkillEvidence ? 0 : 0.18) + (unassessedSkills.length / Math.max(required.length, 1) * 0.08) + (explicitWeak * 0.04) + (explicitAbsent * 0.06)
   };
 }
 
@@ -3759,6 +4129,56 @@ function isRelevantExcludedResult(result) {
     isCloseToFavorite(result.job);
 }
 
+function buildCalibrationAudit(results = {}) {
+  const complete = toArray(results.completeList);
+  const compatible = complete.filter(result => result.status !== "excluded_for_now");
+  const excluded = complete.filter(result => result.status === "excluded_for_now");
+  const highExcluded = excluded
+    .filter(result => (result.relevanceWithoutExclusion || result.scorePertinence || 0) >= 58)
+    .sort((a, b) => (b.relevanceWithoutExclusion || b.scorePertinence || 0) - (a.relevanceWithoutExclusion || a.scorePertinence || 0))
+    .map(result => ({
+      jobId: result.jobId,
+      title: result.title,
+      relevanceWithoutExclusion: Math.round(result.relevanceWithoutExclusion || result.scorePertinence || 0),
+      reasons: toArray(result.exclusionReasons).map(item => item.message || item.label || item.code).slice(0, 3)
+    }));
+  const highScoreWithConstraintWarnings = compatible
+    .filter(result => result.globalScore >= 72 && (result.scores?.constraints || 0) < 16)
+    .map(result => ({
+      jobId: result.jobId,
+      title: result.title,
+      score: Math.round(result.globalScore),
+      constraintScore: Math.round(result.scores?.constraints || 0),
+      warnings: toArray(result.diagnostic?.exclusionControl?.constraintWarnings).slice(0, 3)
+    }));
+  const highScoreLowConfidence = compatible
+    .filter(result => result.globalScore >= 70 && result.confidenceScore < 55)
+    .map(result => ({ jobId: result.jobId, title: result.title, score: Math.round(result.globalScore), confidence: Math.round(result.confidenceScore) }));
+  const top5 = toArray(results.top5);
+  const families = countBy(top5.map(result => result.job?.family || result.title || "inconnu"));
+  const domains = countBy(top5.map(result => result.job?.domain || "inconnu"));
+  const scores = complete.map(result => result.globalScore).filter(value => Number.isFinite(value));
+  const scoreSpread = scores.length ? Math.round(Math.max(...scores) - Math.min(...scores)) : 0;
+  const warnings = [
+    highExcluded.length ? `${highExcluded.length} métier(s) exclus auraient une pertinence élevée si la contrainte changeait.` : "",
+    highScoreWithConstraintWarnings.length ? `${highScoreWithConstraintWarnings.length} métier(s) montent haut malgré un score contraintes réduit.` : "",
+    highScoreLowConfidence.length ? `${highScoreLowConfidence.length} métier(s) ont un score élevé avec une confiance faible.` : "",
+    Object.values(families).some(count => count >= 3) ? "Le Top 5 reste concentré sur une même famille : diversité à surveiller." : ""
+  ].filter(Boolean);
+  return {
+    version: CONFIG.version,
+    generatedAt: results.generatedAt || new Date().toISOString(),
+    checkedResults: complete.length,
+    scoreSpread,
+    top5Diversity: { families, domains },
+    highExcluded,
+    highScoreWithConstraintWarnings,
+    highScoreLowConfidence,
+    warnings,
+    status: warnings.length ? "to_review" : "ok"
+  };
+}
+
 function diversifyTopResults(results) {
   const compatible = results
     .filter(result => result.status !== "excluded_for_now" && result.globalScore >= 50)
@@ -3815,16 +4235,18 @@ function findRelatedVariants(job, datasets = App.state.dataset) {
 }
 
 function renderExperienceDomainDetails(profile) {
-  const domains = toArray(profile.experienceDomains);
+  const domains = normalizeExperienceDomains(profile.experienceDomains);
+  profile.experienceDomains = domains;
   if (!domains.length) return "";
   profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, domains);
   const durationOptions = [["not_specified", "Durée ?"], ["under_3_months", "< 3 mois"], ["3_12_months", "3–12 mois"], ["1_2_years", "1–2 ans"], ["2_5_years", "2–5 ans"], ["5_years_plus", "5 ans et +"]];
-  const recencyOptions = [["not_specified", "Récence ?"], ["old", "Ancien"], ["recent", "Récent"], ["current", "Actuel"]];
-  const confidenceOptions = [["low", "Confiance faible"], ["medium", "Confiance moyenne"], ["high", "Confiance forte"]];
+  const recencyOptions = [["not_specified", "Moment ?"], ["old", "Plutôt ancienne"], ["recent", "Récente"], ["current", "Actuelle / en cours"]];
+  const confidenceOptions = [["low", "Aisance faible"], ["medium", "Aisance moyenne"], ["high", "Aisance forte"]];
   return `
-    <div class="form-row full">
+    <div class="experience-domain-details">
       <span class="field-label">Durée par domaine, optionnel</span>
       <p class="field-help">Cela évite d’appliquer la même expérience à tous les domaines cochés.</p>
+      <p class="field-help">La période situe l’expérience dans le temps. L’aisance décrit votre maîtrise ressentie dans ce domaine, pas une confiance en vous globale.</p>
       <div class="experience-domain-grid">
         ${domains.map(domain => {
           const detail = profile.experienceDomainDetails[domain] || {};
@@ -3834,8 +4256,8 @@ function renderExperienceDomainDetails(profile) {
               <strong>${h(label)}</strong>
               <div class="mini-grid">
                 ${selectMini("Durée", domain, "duration", detail.duration || "not_specified", durationOptions)}
-                ${selectMini("Récence", domain, "recency", detail.recency || "not_specified", recencyOptions)}
-                ${selectMini("Confiance", domain, "confidence", detail.confidence || "medium", confidenceOptions)}
+                ${selectMini("Période", domain, "recency", detail.recency || "not_specified", recencyOptions)}
+                ${selectMini("Aisance", domain, "confidence", detail.confidence || "medium", confidenceOptions)}
               </div>
             </div>`;
         }).join("")}
@@ -3845,6 +4267,12 @@ function renderExperienceDomainDetails(profile) {
 
 function selectMini(label, domain, field, value, options) {
   return `<label class="form-row"><span>${h(label)}</span><select data-experience-domain="${h(domain)}" data-experience-field="${h(field)}">${options.map(([id, text]) => `<option value="${h(id)}" ${value === id ? "selected" : ""}>${h(text)}</option>`).join("")}</select></label>`;
+}
+
+function renderExperienceDomainDetailsInPlace() {
+  const container = App.dom.stepContainer?.querySelector("[data-experience-domain-details]");
+  if (!container) return;
+  container.innerHTML = renderExperienceDomainDetails(App.state.profile);
 }
 
 function renderSkillBrowser(profile, dataset) {
@@ -3988,7 +4416,7 @@ function renderStep() {
           <span class="field-label">Domaines déjà explorés</span>
           <div class="tag-grid">${EXPERIENCE_DOMAIN_OPTIONS.map(item => checkboxTag("experienceDomains", item[0], item[1], "expérience", profile.experienceDomains.includes(item[0]))).join("")}</div>
         </div>
-        ${renderExperienceDomainDetails(profile)}
+        <div class="form-row full" data-experience-domain-details>${renderExperienceDomainDetails(profile)}</div>
         ${selectField("Durée d’expérience dominante", "experienceDuration", profile.experienceDuration || "not_specified", [["not_specified", "Non renseigné"], ["under_3_months", "Moins de 3 mois"], ["3_12_months", "3–12 mois"], ["1_2_years", "1–2 ans"], ["2_5_years", "2–5 ans"], ["5_years_plus", "5 ans et +"]])}
       </div>
       ${stepButtons()}`;
@@ -4136,7 +4564,7 @@ function renderProfileSummary() {
 }
 
 function renderResults() {
-  const results = App.state.results;
+  let results = App.state.results;
   const profile = App.state.profile;
   if (!profile?.hasRequestedResults) {
     App.dom.resultsContainer.innerHTML = `
@@ -4151,6 +4579,9 @@ function renderResults() {
         </div>
       </section>`;
     return;
+  }
+  if (App.state.resultsDirty || !results) {
+    results = calculateAndStoreResults();
   }
   if (!results) {
     App.dom.resultsContainer.innerHTML = `<div class="results-section"><div class="empty-state">Complétez le profil pour lancer une première analyse.</div></div>`;
@@ -4171,9 +4602,14 @@ function renderResults() {
         ${metric("Après formation", results.stats.afterTraining)}
         ${metric("Exclus", results.stats.excluded)}
       </div>
+      <div class="button-row no-print" style="margin-top:12px">
+        <button class="secondary-button" type="button" data-action="toggle-result-diagnostics">${App.state.resultDiagnosticsEnabled ? "Masquer le diagnostic" : "Activer le diagnostic"}</button>
+        <button class="ghost-button" type="button" data-action="export-diagnostic-json">Exporter diagnostic JSON</button>
+      </div>
+      ${App.state.resultDiagnosticsEnabled ? renderResultsDiagnosticPanel(results) : ""}
       ${renderComparePanel()}
     </section>
-    <section class="results-section print-section">
+    <section class="results-section top-results-section print-section">
       <h2>Top 5 diversifié</h2>
       <p>Ces cinq pistes maximum sont choisies pour éviter de répéter trop de métiers proches. Les variantes restent sous chaque métier principal.</p>
       <div class="job-list">${top5.map(result => renderJobCard(result, { featured: true, showVariants: true })).join("") || emptyState("Aucun Top 5 disponible avec le profil actuel.")}</div>
@@ -4191,6 +4627,7 @@ function renderResults() {
       <div class="button-row no-print">
         <button class="secondary-button" type="button" data-action="export-results-json">Exporter résultats JSON</button>
         <button class="secondary-button" type="button" data-action="export-results-md">Exporter résultats Markdown</button>
+        <button class="secondary-button" type="button" data-action="export-diagnostic-json">Exporter diagnostic JSON</button>
         <button class="ghost-button" type="button" data-action="print">Imprimer la vue</button>
       </div>
       <p class="field-help">${results.completeList.length} métiers ont été calculés en interne. L’interface n’affiche que les pistes utiles à mentionner pour éviter une liste trop large.</p>
@@ -4207,12 +4644,13 @@ function renderJobCard(result, options = {}) {
   const displayedScore = result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : result.globalScore;
   const scoreLabelText = result.status === "excluded_for_now" ? "si contrainte ajustée" : "/100";
   return `
-    <article class="job-card ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
+    <article class="job-card ${options.featured ? "featured" : ""} ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
       <div class="job-head">
         <div>
           <h3 class="job-title">${h(result.title)}</h3>
           <p class="job-subtitle">${h(getJobCodeLabel(job || result))} - ${h(job?.domain || "")} - ${h(job?.family || "")}</p>
           <div class="badge-row">
+            ${options.featured ? `<span class="badge gold">Top 5</span>` : ""}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
             <span class="badge outline">Fiabilité ${h(reliabilityText(result.dataReliability))}</span>
@@ -4250,6 +4688,7 @@ function renderJobCard(result, options = {}) {
         <p><strong>Données manquantes :</strong> ${result.missingData.map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
         ${renderEvidenceSummary(result.evidenceSummary)}
         ${renderScoreDetails(result.scoreDetails)}
+        ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}
       </div>
     </article>`;
 }
@@ -4295,8 +4734,10 @@ function renderScoreDetails(details = {}) {
       <ul class="compact-list">
         <li><strong>Compétences cœur cochées :</strong> ${listLabels(skills.matchedRequiredSkills)}</li>
         <li><strong>Compétences optionnelles cochées :</strong> ${listLabels(skills.matchedOptionalSkills)}</li>
-        <li><strong>Compétences à vérifier :</strong> ${listLabels(skills.unassessedRequiredSkills)}</li>
+        <li><strong>Compétences non évaluées :</strong> ${listLabels(skills.unassessedRequiredSkills)}</li>
+        <li><strong>Compétences manquantes non pénalisantes :</strong> ${listLabels(skills.missingNonPenalizingSkills)}</li>
         <li><strong>Compétences explicitement faibles :</strong> ${listLabels(skills.explicitlyWeakSkills)}</li>
+        <li><strong>Compétences explicitement absentes :</strong> ${listLabels(skills.explicitlyAbsentSkills)}</li>
         <li><strong>Préférences de contexte reconnues :</strong> ${toArray(context.matchedPreferences).map(preferenceLabel).map(h).join(", ") || "aucune"}</li>
         <li><strong>Préférences non retrouvées :</strong> ${toArray(context.unmatchedPreferences).map(preferenceLabel).map(h).join(", ") || "aucune"}</li>
         <li><strong>Tags contexte métier :</strong> ${toArray(context.jobContextTags).map(h).join(", ") || "non renseignés"}</li>
@@ -4305,6 +4746,56 @@ function renderScoreDetails(details = {}) {
         <li><strong>Formation :</strong> profil ${h(getDiplomaLabel(training.currentDiplomaLevel || 0))}, requis ${h(getDiplomaLabel(training.requiredDiplomaLevel || 0))}, conseillé ${h(getDiplomaLabel(training.recommendedDiplomaLevel || 0))}, statut ${h(training.statusHint || "à vérifier")}</li>
         <li><strong>Marché :</strong> ${h(marketLabel(market.level))}. Indicateur marché : estimation locale non officielle. Ce n’est pas une statistique France Travail.</li>
       </ul>
+    </div>`;
+}
+
+function renderResultsDiagnosticPanel(results = App.state.results) {
+  const audit = results?.calibrationAudit || {};
+  const warnings = toArray(audit.warnings);
+  return `
+    <div class="summary-box" style="margin-top:12px">
+      <h3>Diagnostic de calibration</h3>
+      <ul class="compact-list">
+        <li><strong>État :</strong> ${audit.status === "ok" ? "aucune anomalie majeure détectée" : "points à relire"}</li>
+        <li><strong>Résultats contrôlés :</strong> ${h(audit.checkedResults || 0)} · écart des scores : ${h(audit.scoreSpread || 0)} points</li>
+        <li><strong>Métiers exclus mais pertinents si contrainte ajustée :</strong> ${toArray(audit.highExcluded).length}</li>
+        <li><strong>Scores élevés avec contraintes fortes :</strong> ${toArray(audit.highScoreWithConstraintWarnings).length}</li>
+        <li><strong>Scores élevés avec confiance réduite :</strong> ${toArray(audit.highScoreLowConfidence).length}</li>
+      </ul>
+      ${warnings.length ? `<p class="field-help">${warnings.map(h).join(" ")}</p>` : `<p class="field-help">Le diagnostic ne remplace pas la vérification terrain, mais aucun signal de calibrage gênant n’est remonté.</p>`}
+    </div>`;
+}
+
+function renderResultDiagnostic(result = {}) {
+  const diagnostic = result.diagnostic || {};
+  const subScores = toArray(diagnostic.subScores);
+  const list = items => toArray(items).map(item => `<li>${h(item.label || item)}</li>`).join("") || "<li>Aucun élément renseigné.</li>";
+  return `
+    <div class="summary-box">
+      <h3>Diagnostic du résultat</h3>
+      <div class="score-grid">
+        ${subScores.map(item => `<div class="score-line"><strong>${h(item.label)}</strong>${h(item.score)}/${h(item.max)} · ${h(item.stateLabel)}</div>`).join("")}
+      </div>
+      <ul class="compact-list">
+        ${subScores.map(item => `<li><strong>${h(item.label)} :</strong> ${h(item.explanation)}${toArray(item.positiveSignals).length ? ` Signal(s) positif(s) : ${toArray(item.positiveSignals).slice(0, 3).map(h).join(", ")}.` : ""}${toArray(item.limits).length ? ` Limite(s) : ${toArray(item.limits).slice(0, 3).map(h).join(", ")}.` : ""}</li>`).join("")}
+      </ul>
+      <h3>Pourquoi ce métier ressort</h3>
+      <ul class="compact-list">${list(diagnostic.whyItRanks)}</ul>
+      <h3>Ce qui l’empêche d’être mieux classé</h3>
+      <ul class="compact-list">${list(diagnostic.rankingLimits)}</ul>
+      <h3>Ce qui pourrait changer le résultat</h3>
+      <ul class="compact-list">${list(diagnostic.changeLevers)}</ul>
+      <h3>Compétences manquantes non pénalisantes</h3>
+      <ul class="compact-list">${list(diagnostic.missingNonPenalizingSkills)}</ul>
+      <h3>États des compétences</h3>
+      <ul class="compact-list">
+        <li><strong>Fort :</strong> ${toArray(diagnostic.skillStates?.strong).map(item => h(item.label)).join(", ") || "aucune"}</li>
+        <li><strong>Faible :</strong> ${toArray(diagnostic.skillStates?.weak).map(item => h(item.label)).join(", ") || "aucune"}</li>
+        <li><strong>Absent :</strong> ${toArray(diagnostic.skillStates?.absent).map(item => h(item.label)).join(", ") || "aucune"}</li>
+        <li><strong>Non évalué :</strong> ${toArray(diagnostic.skillStates?.unassessed).map(item => h(item.label)).join(", ") || "aucune"}</li>
+      </ul>
+      ${diagnostic.exclusionControl?.triggered ? `<p class="field-help"><strong>Contrôle exclusion :</strong> ${h(diagnostic.exclusionControl.message)}</p>` : ""}
+      ${toArray(diagnostic.calibrationFlags).length ? `<p class="field-help">${diagnostic.calibrationFlags.map(h).join(" ")}</p>` : ""}
     </div>`;
 }
 
@@ -4616,6 +5107,18 @@ function renderSettingsPage() {
         <button class="ghost-button" type="button" data-action="reset-weights">Remettre par défaut</button>
         <button class="secondary-button" type="button" data-action="preset-fast-access">Priorité accès rapide</button>
         <button class="secondary-button" type="button" data-action="preset-values">Priorité valeurs</button>
+      </div>
+    </section>
+    <section class="results-section print-section">
+      <h2>Profils tests intégrés</h2>
+      <p>Ces profils servent à auditer le calibrage : exclusions, pondérations, confiance et métiers qui remontent trop haut.</p>
+      <div class="job-list">
+        ${DIAGNOSTIC_TEST_PROFILES_V052.map(test => `
+          <div class="summary-box">
+            <h3>${h(test.title)}</h3>
+            <p>${h(test.description)}</p>
+            <button class="secondary-button no-print" type="button" data-test-profile="${h(test.id)}">Charger ce profil test</button>
+          </div>`).join("")}
       </div>
     </section>
     <section class="results-section print-section">
@@ -5343,6 +5846,29 @@ function applyWeightPreset(name) {
   showToast("Pondérations mises à jour.");
 }
 
+function loadIntegratedTestProfile(testId) {
+  const test = DIAGNOSTIC_TEST_PROFILES_V052.find(item => item.id === testId);
+  if (!test) return;
+  const profile = normalizeProfile({
+    ...createEmptyProfile(),
+    ...test.profile,
+    id: `profile-test-${test.id}-${Date.now()}`,
+    hasRequestedResults: true,
+    completedBoussole: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
+  Object.entries(test.profile.constraintSeverities || {}).forEach(([value, severity]) => setConstraintSeverity(profile, value, severity));
+  profile.criterionWeights = { ...CONFIG.baseWeights, ...(test.profile.criterionWeights || {}) };
+  App.state.profile = profile;
+  App.state.resultDiagnosticsEnabled = true;
+  saveProfile(profile);
+  calculateAndStoreResults();
+  App.state.mainView = "results";
+  renderAll();
+  showToast("Profil test chargé et diagnostic activé.");
+}
+
 function renderProfileImpactAudit() {
   const unused = getUnusedProfileFields(App.state.profile);
   const filled = Object.keys(PROFILE_FIELD_IMPACT_MAP).filter(field => isProfileFieldFilled(App.state.profile, field));
@@ -5413,6 +5939,9 @@ function createEmptyProfile() {
     experienceDomainDetails: {},
     experienceDuration: "not_specified",
     skills: [],
+    weakSkills: [],
+    absentSkills: [],
+    avoidedSkills: [],
     skillSignals: [],
     softSkills: [],
     customSkills: [],
@@ -5452,10 +5981,13 @@ function normalizeProfile(raw) {
   merged.diplomas = toArray(raw.diplomas);
   merged.certifications = toArray(raw.certifications);
   merged.experiences = Array.isArray(raw.experiences) ? raw.experiences : [];
-  merged.experienceDomains = toArray(raw.experienceDomains);
+  merged.experienceDomains = normalizeExperienceDomains(raw.experienceDomains);
   merged.experienceDomainDetails = normalizeExperienceDomainDetails(raw.experienceDomainDetails, merged.experienceDomains);
   merged.experienceDuration = raw.experienceDuration || base.experienceDuration;
   merged.skills = toArray(raw.skills);
+  merged.weakSkills = toArray(raw.weakSkills);
+  merged.absentSkills = toArray(raw.absentSkills);
+  merged.avoidedSkills = toArray(raw.avoidedSkills);
   merged.skillSignals = toArray(raw.skillSignals);
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
@@ -5486,19 +6018,39 @@ function normalizeProfile(raw) {
 
 function normalizeExperienceDomainDetails(raw = {}, selectedDomains = []) {
   const details = {};
-  const selected = new Set(toArray(selectedDomains));
+  const selectedList = normalizeExperienceDomains(selectedDomains);
+  const selected = new Set(selectedList);
   Object.entries(raw || {}).forEach(([domain, value]) => {
-    if (!selected.has(domain) && toArray(selectedDomains).length) return;
-    details[domain] = {
+    const normalizedDomain = normalizeExperienceDomainId(domain);
+    if (!normalizedDomain) return;
+    if (!selected.has(normalizedDomain) && selectedList.length) return;
+    details[normalizedDomain] = {
       duration: value?.duration || "not_specified",
       recency: value?.recency || "not_specified",
       confidence: value?.confidence || "medium"
     };
   });
-  selected.forEach(domain => {
+  selectedList.forEach(domain => {
     details[domain] = details[domain] || { duration: "not_specified", recency: "not_specified", confidence: "medium" };
   });
   return details;
+}
+
+function normalizeExperienceDomainId(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const allowed = EXPERIENCE_DOMAIN_OPTIONS.map(item => item[0]);
+  if (allowed.includes(raw)) return raw;
+  const normalized = normalizeText(raw);
+  const byId = EXPERIENCE_DOMAIN_OPTIONS.find(item => normalizeText(item[0]) === normalized);
+  if (byId) return byId[0];
+  const byLabel = EXPERIENCE_DOMAIN_OPTIONS.find(item => normalizeText(item[1]) === normalized);
+  if (byLabel) return byLabel[0];
+  return EXPERIENCE_DOMAIN_ALIASES[normalized] || "";
+}
+
+function normalizeExperienceDomains(values) {
+  return unique(toArray(values).map(normalizeExperienceDomainId).filter(Boolean));
 }
 
 function bindGlobalEvents() {
@@ -5557,8 +6109,10 @@ function handleProfileInput(event) {
     renderSkillSectorListInPlace();
     return;
   }
+  const updatesExperienceDomains = target.dataset.array === "experienceDomains";
   updateProfileFromTarget(target);
   if (target.dataset.array === "skills") syncSkillCheckboxes(target.value, target.checked);
+  if (updatesExperienceDomains) renderExperienceDomainDetailsInPlace();
   if (target.type === "range") {
     const output = target.parentElement?.querySelector("[data-range-output]");
     if (output) output.textContent = target.value;
@@ -5578,6 +6132,10 @@ function handleActionClick(event) {
   if (target.dataset.importType) {
     App.state.pendingImportType = target.dataset.importType;
     App.dom.datasetFileInput.click();
+    return;
+  }
+  if (target.dataset.testProfile) {
+    loadIntegratedTestProfile(target.dataset.testProfile);
     return;
   }
   const action = target.dataset.action;
@@ -5600,6 +6158,12 @@ function handleActionClick(event) {
   if (action === "export-profile") exportProfile();
   if (action === "export-results-json") exportResults("json");
   if (action === "export-results-md") exportResults("markdown");
+  if (action === "export-diagnostic-json") exportResultDiagnostics();
+  if (action === "toggle-result-diagnostics") {
+    App.state.resultDiagnosticsEnabled = !App.state.resultDiagnosticsEnabled;
+    renderAll();
+    return;
+  }
   if (action === "reset-profile") resetProfile();
   if (action === "reset-weights") applyWeightPreset("default");
   if (action === "preset-fast-access") applyWeightPreset("fast_access");
@@ -5667,7 +6231,7 @@ function updateProfileFromTarget(target) {
     const set = new Set(toArray(profile[key]));
     if (target.checked) set.add(target.value);
     else set.delete(target.value);
-    profile[key] = Array.from(set);
+    profile[key] = key === "experienceDomains" ? normalizeExperienceDomains(Array.from(set)) : Array.from(set);
     if (key === "experienceDomains") {
       profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
     }
@@ -5682,7 +6246,8 @@ function updateProfileFromTarget(target) {
     return;
   }
   if (target.dataset.experienceDomain && target.dataset.experienceField) {
-    const domain = target.dataset.experienceDomain;
+    const domain = normalizeExperienceDomainId(target.dataset.experienceDomain);
+    if (!domain) return;
     profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
     profile.experienceDomainDetails[domain] = {
       ...(profile.experienceDomainDetails[domain] || { duration: "not_specified", recency: "not_specified", confidence: "medium" }),
@@ -5720,7 +6285,16 @@ function scheduleSaveAndMatch() {
   clearTimeout(App.state.saveTimer);
   App.state.saveTimer = setTimeout(() => {
     saveProfile();
-    calculateAndStoreResults();
+    const canRefreshVisibleResults = shouldCalculateResults() && ["results", "data"].includes(App.state.mainView);
+    if (canRefreshVisibleResults) {
+      calculateAndStoreResults();
+    } else if (shouldCalculateResults()) {
+      App.state.resultsDirty = true;
+    } else {
+      App.state.results = null;
+      App.state.resultsDirty = false;
+      clearStoredResults();
+    }
     renderProfileSummary();
     if (App.state.mainView === "results") renderResults();
     if (App.state.mainView === "data") App.dom.resultsContainer.innerHTML = renderDataPage();
@@ -5745,10 +6319,12 @@ function calculateAndStoreResults(options = {}) {
   const persist = options.persist !== false;
   if (!force && !shouldCalculateResults()) {
     App.state.results = null;
+    App.state.resultsDirty = false;
     clearStoredResults();
     return null;
   }
   App.state.results = calculateAllMatches(App.state.profile, App.state.dataset);
+  App.state.resultsDirty = false;
   if (!persist) return App.state.results;
   try {
     localStorage.setItem(CONFIG.storageKeys.results, JSON.stringify({
@@ -5847,7 +6423,7 @@ function openJobDialog(result, mode) {
     content = `<h2>Variantes proches</h2><ul class="data-list">${variants.map(item => `<li><strong>${h(item.title)}</strong> - ${h(item.romeCode || "")} - ${h(item.family || "")}</li>`).join("") || "<li>Aucune variante proche dans le corpus sample.</li>"}</ul>`;
   }
   if (mode === "why") {
-    content = `<h2>Pourquoi cette piste ?</h2><h3>Raisons positives</h3><ul class="data-list">${result.positiveReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Vigilances</h3><ul class="data-list">${result.negativeReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Scores</h3><div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>${renderScoreDetails(result.scoreDetails)}`;
+    content = `<h2>Pourquoi cette piste ?</h2><h3>Raisons positives</h3><ul class="data-list">${result.positiveReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Vigilances</h3><ul class="data-list">${result.negativeReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Scores</h3><div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>${renderScoreDetails(result.scoreDetails)}${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
   }
   if (mode === "trainings") {
     const trainings = findSuggestedTrainings(job, App.state.dataset);
@@ -6071,6 +6647,42 @@ function prepareResultsForExport(results) {
     compatibleWeak: results.compatibleWeak.map(stripResult),
     excluded: results.excluded.map(stripResult),
     completeList: results.completeList.map(stripResult)
+  };
+}
+
+function buildResultDiagnosticExport(results = App.state.results) {
+  const stripDiagnosticResult = result => ({
+    jobId: result.jobId,
+    romeCode: result.romeCode,
+    title: result.title,
+    globalScore: result.globalScore,
+    confidenceScore: result.confidenceScore,
+    status: result.status,
+    scores: result.scores,
+    exclusionReasons: result.exclusionReasons,
+    missingData: result.missingData,
+    diagnostic: result.diagnostic
+  });
+  return {
+    app: "boussole-pro-result-diagnostic",
+    version: CONFIG.version,
+    exportedAt: new Date().toISOString(),
+    profileId: App.state.profile?.id || null,
+    profileName: App.state.profile?.profileName || "",
+    enginePreferences: {
+      criterionWeights: clone(App.state.profile?.criterionWeights || CONFIG.baseWeights),
+      baseWeights: clone(CONFIG.baseWeights)
+    },
+    dataset: {
+      name: App.state.dataset?.datasetName || "",
+      version: App.state.dataset?.datasetVersion || "",
+      provenance: App.state.dataset?.provenance || ""
+    },
+    calibrationAudit: results?.calibrationAudit || {},
+    top5: toArray(results?.top5).map(stripDiagnosticResult),
+    visibleRecommended: toArray(results?.visibleRecommended).map(stripDiagnosticResult),
+    visibleExcludedButRelevant: toArray(results?.visibleExcludedButRelevant).map(stripDiagnosticResult),
+    completeDiagnostics: toArray(results?.completeList).map(stripDiagnosticResult)
   };
 }
 
@@ -6492,6 +7104,14 @@ function toArray(value) {
 
 function unique(values) {
   return Array.from(new Set(toArray(values)));
+}
+
+function countBy(values) {
+  return toArray(values).reduce((acc, value) => {
+    const key = value || "inconnu";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 }
 
 function uniqueBy(items, key) {

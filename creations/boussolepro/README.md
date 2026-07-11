@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.1-alpha
+**Version :** v0.5.2-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,21 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5.1 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5.2 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.5.2-alpha
+
+La v0.5.2-alpha stabilise le calibrage des résultats :
+
+- un mode diagnostic de résultat activable depuis la page Résultats ;
+- une explication détaillée par sous-score ;
+- une distinction claire entre compétence forte, faible, absente et non évaluée ;
+- une liste des compétences manquantes non pénalisantes ;
+- des sections “pourquoi ce métier ressort”, “ce qui l’empêche d’être mieux classé” et “ce qui pourrait changer le résultat” ;
+- un contrôle des métiers qui resteraient hautement pertinents malgré une exclusion ;
+- un export diagnostic JSON ;
+- des profils tests intégrés pour auditer rapidement le moteur ;
+- l’export profil inclut explicitement les préférences du moteur et les pondérations.
 
 ## Nouveautés v0.5.1-alpha
 
@@ -53,7 +67,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.1-alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.2-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -99,14 +113,16 @@ Actions disponibles :
 - exporter le rapport qualité ;
 - importer / exporter un profil JSON ;
 - exporter les résultats en JSON ou Markdown ;
+- exporter un diagnostic JSON des résultats ;
 - importer / exporter les favoris avec le profil ;
+- charger des profils tests intégrés depuis Paramètres ;
 - charger le corpus local enrichi estimatif ;
 - choisir le mode de corpus : automatique, ROME généré, corpus local enrichi, sample minimal ;
 - revenir aux données sample.
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.1-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.2-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
