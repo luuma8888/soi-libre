@@ -1121,6 +1121,152 @@ body[data-theme="dark"] .loading-overlay {
   background: rgba(27, 25, 43, 0.78);
 }
 
+body[data-theme="dark"] .results-section,
+body[data-theme="dark"] .job-card,
+body[data-theme="dark"] .summary-box,
+body[data-theme="dark"] .reason-box,
+body[data-theme="dark"] .details-panel,
+body[data-theme="dark"] .metric,
+body[data-theme="dark"] .empty-state,
+body[data-theme="dark"] .api-box,
+body[data-theme="dark"] .compare-table-wrapper,
+body[data-theme="dark"] details.advanced-box,
+body[data-theme="dark"] .launch-box,
+body[data-theme="dark"] .tag-option,
+body[data-theme="dark"] .choice-option,
+body[data-theme="dark"] .constraint-item {
+  color: var(--ink);
+}
+
+body[data-theme="dark"] .results-section {
+  background: #1d1a2f;
+  border-color: #5a5078;
+}
+
+body[data-theme="dark"] .results-section.top-results-section {
+  border-color: #9d8744;
+  background: linear-gradient(180deg, #332d25, #211d31);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme="dark"] .job-card {
+  background: #25223a;
+  border-color: #5a5078;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+body[data-theme="dark"] .job-card.featured {
+  border-color: #a98f44;
+  background: linear-gradient(180deg, #342d24, #2a2537);
+}
+
+body[data-theme="dark"] .job-card.excluded {
+  border-color: #9c6273;
+  background: #2b2233;
+}
+
+body[data-theme="dark"] .summary-box,
+body[data-theme="dark"] .reason-box,
+body[data-theme="dark"] .details-panel,
+body[data-theme="dark"] .metric,
+body[data-theme="dark"] .empty-state,
+body[data-theme="dark"] .api-box,
+body[data-theme="dark"] details.advanced-box,
+body[data-theme="dark"] .launch-box,
+body[data-theme="dark"] .tag-option,
+body[data-theme="dark"] .choice-option,
+body[data-theme="dark"] .constraint-item {
+  background: #2a263e;
+  border-color: #5a5078;
+}
+
+body[data-theme="dark"] .reason-box,
+body[data-theme="dark"] .score-line {
+  background: #312b45;
+}
+
+body[data-theme="dark"] .launch-box.warning {
+  background: #4c4224;
+  border-color: #9d8744;
+}
+
+body[data-theme="dark"] .results-section > p,
+body[data-theme="dark"] .job-subtitle,
+body[data-theme="dark"] .field-help,
+body[data-theme="dark"] .summary-list,
+body[data-theme="dark"] .metric span,
+body[data-theme="dark"] .tag-meta,
+body[data-theme="dark"] .empty-state {
+  color: #d8d0ec;
+}
+
+body[data-theme="dark"] .badge {
+  background: #3b3457;
+  color: #f7f2ff;
+  border-color: #625783;
+}
+
+body[data-theme="dark"] .badge.opal {
+  background: #244e58;
+  border-color: #3d7c88;
+}
+
+body[data-theme="dark"] .badge.gold {
+  background: #6c5d2e;
+  border-color: #a99143;
+  color: #fff7d7;
+}
+
+body[data-theme="dark"] .badge.sage {
+  background: #2f563f;
+  border-color: #57916a;
+  color: #e3f8e7;
+}
+
+body[data-theme="dark"] .badge.rose {
+  background: #6b3848;
+  border-color: #a45f73;
+  color: #ffe5ec;
+}
+
+body[data-theme="dark"] .badge.outline {
+  background: #252139;
+  border-color: #746894;
+  color: #f1ebff;
+}
+
+body[data-theme="dark"] .score-pill,
+body[data-theme="dark"] .job-card.featured .score-pill {
+  background: #f4efff;
+  color: #211a42;
+}
+
+body[data-theme="dark"] .secondary-button,
+body[data-theme="dark"] .ghost-button,
+body[data-theme="dark"] .tiny-button {
+  background: #2a263e;
+  border-color: #675c88;
+  color: #f4efff;
+}
+
+body[data-theme="dark"] .tiny-button.is-active {
+  background: #3a3157;
+  border-color: #9b88d8;
+}
+
+body[data-theme="dark"] .tag-option:hover,
+body[data-theme="dark"] .choice-option:hover,
+body[data-theme="dark"] .tag-option:has(input:checked),
+body[data-theme="dark"] .choice-option:has(input:checked) {
+  background: #342e4b;
+  border-color: #9b88d8;
+}
+
+body[data-theme="dark"] .compare-table th,
+body[data-theme="dark"] .compare-table td {
+  border-color: #5a5078;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1228,6 +1374,7 @@ body[data-theme="dark"] .loading-overlay {
 
   <input type="file" id="profileFileInput" class="visually-hidden" accept="application/json,.json">
   <input type="file" id="datasetFileInput" class="visually-hidden" accept="application/json,.json">
+  <input type="file" id="testProfilesFileInput" class="visually-hidden" accept="application/json,.json" multiple>
 
   <noscript>
     <div class="noscript">
@@ -1240,7 +1387,7 @@ body[data-theme="dark"] .loading-overlay {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.5.4-alpha",
+  version: "v0.5.5-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1278,6 +1425,17 @@ const ENGINE_INTENT_WEIGHTS = {
   comfortAndConstraints: { skills: 18, training: 12, constraints: 35, values: 15, context: 15, market: 5 },
   exploration: { skills: 20, training: 15, constraints: 15, values: 20, context: 15, market: 15 }
 };
+
+const DOMAIN_ORIENTATION_OPTIONS = [
+  ["heart", "Mon cœur actuel"],
+  ["current", "Domaine vivant maintenant"],
+  ["support", "Soutien utile"],
+  ["tool", "Outil au service d’autre chose"],
+  ["secondary", "Piste secondaire"],
+  ["past", "Expérience passée"],
+  ["avoid_main", "À éviter comme métier principal"],
+  ["exclude", "À exclure complètement"]
+];
 
 const I18N = {
   fr: {
@@ -1350,6 +1508,9 @@ const PROFILE_FIELD_IMPACT_MAP = {
   directSkills: ["skillScore"],
   experienceDomains: ["skillBonus", "transitionBonus"],
   experienceDomainDetails: ["skillBonus", "transitionBonus"],
+  domainOrientation: ["coreProfileScore", "top5Selection", "hardExclusions"],
+  trainingFamilies: ["trainingFeasibility", "easeOfEntry"],
+  desiredTrainingFamilies: ["coreProfileScore", "trainingIntent"],
   interests: ["interestScore", "diversification"],
   values: ["valueScore"],
   preferredWorkStyles: ["contextScore"],
@@ -1481,9 +1642,15 @@ const EXPERIENCE_DOMAIN_ALIASES = {
   ecole: "education",
   informatique: "numerique",
   digital: "numerique",
+  creation: "communication",
   hygiene: "proprete",
   menage: "proprete",
-  mediation: "social"
+  mediation: "social",
+  hotellerie: "accueil",
+  tourisme: "accueil",
+  restauration: "cuisine",
+  securite: "logistique",
+  transition: "nature"
 };
 
 const TRAINING_FAMILY_OPTIONS = [
@@ -1841,6 +2008,44 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
       constraintSeverities: { nightWork: "avoid", weekendWork: "conditional" },
       criterionWeights: { skills: 25, training: 18, constraints: 22, values: 22, context: 8, market: 5 }
     }
+  },
+  {
+    id: "education-numerique-outil",
+    title: "Éducation avec numérique outil",
+    description: "Vérifie que des compétences numériques fortes restent un outil au service de l’éducation, sans dominer comme voie informatique pure.",
+    expectedFamilies: ["Transmission et enfance", "Social et accompagnement", "Relation d'aide"],
+    unexpectedFamilies: ["Numérique et données"],
+    mustNotContain: ["Administrateur systèmes", "Technicien support"],
+    profile: {
+      profileName: "Profil test - éducation numérique outil",
+      diplomaLevel: 5,
+      experienceDomains: ["education", "animation", "social", "numerique", "communication"],
+      experienceDomainDetails: {
+        education: { duration: "2_5_years", recency: "current", confidence: "high" },
+        animation: { duration: "1_2_years", recency: "recent", confidence: "high" },
+        social: { duration: "1_2_years", recency: "recent", confidence: "medium" },
+        numerique: { duration: "5_years_plus", recency: "current", confidence: "high" },
+        communication: { duration: "2_5_years", recency: "current", confidence: "high" }
+      },
+      domainOrientation: {
+        education: "heart",
+        animation: "heart",
+        social: "heart",
+        numerique: "tool",
+        communication: "support"
+      },
+      skills: ["skill-code", "skill-data", "skill-design", "skill-writing", "skill-teaching", "skill-animation", "skill-active-listening", "skill-communication"],
+      interests: ["transmettre", "enfants", "accompagner", "creer"],
+      values: ["meaning", "service", "solidarity", "clarity"],
+      preferredWorkStyles: ["team", "relational"],
+      preferredEnvironments: ["children", "human-scale", "quiet"],
+      trainingFamilies: ["numerique"],
+      desiredTrainingFamilies: ["education", "social"],
+      trainingOpenness: "open_if_meaningful",
+      searchHorizon: "open_exploration",
+      constraintSeverities: { nightWork: "avoid", travel: "conditional" },
+      criterionWeights: { skills: 24, training: 16, constraints: 20, values: 24, context: 11, market: 5 }
+    }
   }
 ];
 
@@ -1853,6 +2058,8 @@ const App = {
     results: null,
     resultDiagnosticsEnabled: false,
     resultsDirty: false,
+    testBenchProfiles: [],
+    testBenchReport: null,
     resultIndex: null,
     jobIndex: null,
     skillRowIndex: null,
@@ -2302,7 +2509,8 @@ function initApp() {
     jobDialog: document.getElementById("jobDialog"),
     jobDialogContent: document.getElementById("jobDialogContent"),
     profileFileInput: document.getElementById("profileFileInput"),
-    datasetFileInput: document.getElementById("datasetFileInput")
+    datasetFileInput: document.getElementById("datasetFileInput"),
+    testProfilesFileInput: document.getElementById("testProfilesFileInput")
   };
 
   showLoading("Préparation de Boussole Pro", "Chargement du corpus local et reprise du profil. Cela peut prendre quelques secondes.");
@@ -3593,7 +3801,8 @@ function mapUserProfileToCriteria(profile) {
       canDoShortTraining: allowsShortTraining(trainingOpenness),
       canDoLongTraining: allowsLongTraining(trainingOpenness),
       trainingBudget: profile.trainingBudget || "unknown",
-      trainingFamilies: toArray(profile.trainingFamilies)
+      trainingFamilies: toArray(profile.trainingFamilies),
+      desiredTrainingFamilies: toArray(profile.desiredTrainingFamilies)
     },
     certifications: {
       held: unique([...toArray(profile.certifications), ...toArray(profile.freeCertifications)]),
@@ -3607,7 +3816,8 @@ function mapUserProfileToCriteria(profile) {
         ...normalizeExperienceDomains(profile.experienceDomains)
       ]),
       duration: profile.experienceDuration || "not_specified",
-      domainDetails: normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains)
+      domainDetails: normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains),
+      domainOrientation: normalizeDomainOrientation(profile.domainOrientation, profile.experienceDomains, profile.experienceDomainDetails)
     },
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
     skillEvidence,
@@ -3639,6 +3849,12 @@ function mapUserProfileToCriteria(profile) {
     requestedCriterionWeights: normalizeWeights(profile.criterionWeights || ENGINE_INTENT_WEIGHTS[engineIntent] || CONFIG.baseWeights),
     marketPreference,
     profileSectors: getProfileSectorIds(profile),
+    heartSectors: getProfileSectorIdsByOrientation(profile, ["heart", "current"]),
+    supportSectors: getProfileSectorIdsByOrientation(profile, ["support", "tool"]),
+    secondarySectors: getProfileSectorIdsByOrientation(profile, ["secondary"]),
+    pastSectors: getProfileSectorIdsByOrientation(profile, ["past"]),
+    avoidMainSectors: getProfileSectorIdsByOrientation(profile, ["avoid_main"]),
+    excludedSectors: getProfileSectorIdsByOrientation(profile, ["exclude"]),
     completeness,
     completenessLevel: profileCompletenessLevel(completeness)
   };
@@ -3740,6 +3956,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     result.evidenceSummary = buildEvidenceSummary(criteria, job, result, { skill, training, value, context, market, affinity, core, hardCheck });
     result.negativeReasons = explainMatch(criteria, job, scores, result.status, { skill, training, value, context, market, affinity, hardCheck }).negative;
     result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, value, context, market, affinity, core, hardCheck });
+    result.resultFoundation = result.resultInterpretation.resultFoundation;
     if (includeDiagnostic) {
       result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, core, weightAdjustment, scoreCaps: { caps: [] }, hardCheck });
     }
@@ -3800,6 +4017,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     job
   };
   result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, scoreCaps, hardCheck });
+  result.resultFoundation = result.resultInterpretation.resultFoundation;
   if (includeDiagnostic) {
     result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, weightAdjustment, scoreCaps, hardCheck });
   }
@@ -3820,7 +4038,13 @@ function calculateSelectionScore(globalScore, scores = {}, details = {}) {
   score += (affinityScore - 35) * 0.12;
   if ((scores.constraints || 0) < 10) score -= 12;
   if (details.training?.statusHint === "blocked") score -= 18;
-  if (details.core?.level === "core") score += 6;
+  if (details.core?.coreProfileLevel === "heart_current") score += 10;
+  else if (details.core?.coreProfileLevel === "heart_secondary") score += 5;
+  else if (details.core?.coreProfileLevel === "support_tool") score -= 3;
+  else if (details.core?.coreProfileLevel === "past_transferable") score -= 5;
+  else if (details.core?.coreProfileLevel === "avoid_main") score -= 22;
+  else if (details.core?.coreProfileLevel === "excluded") score -= 40;
+  else if (details.core?.level === "core") score += 6;
   if (details.core?.level === "weak") score -= 8;
   return Math.round(clamp(score, 0, 100));
 }
@@ -3867,21 +4091,32 @@ function buildResultInterpretation(criteria, job, result = {}, details = {}) {
   if (depth === "low") whatToCheckNext.push("Renseigner quelques compétences, domaines ou contraintes pour confirmer la piste.");
   if (market.isEstimated || market.rankingUse === "limited") whatToCheckNext.push("Vérifier les débouchés locaux avec des sources terrain ou statistiques.");
   if (details.constraint?.warnings?.length) whatToCheckNext.push("Comparer les conditions réelles des postes avant décision.");
-  const mainReason = core.level === "core"
-    ? "Ce métier ressort comme cœur possible du profil."
-    : core.level === "compatible"
-      ? "Ce métier ressort comme piste compatible et cohérente."
-      : core.level === "exploratory"
-        ? "Ce métier ressort comme piste exploratoire à confirmer."
-        : "Ce métier ressort surtout comme alternative compatible.";
+  const foundation = depth === "high" ? "rich" : depth === "medium" ? "medium" : "light";
+  const mainReason = core.coreProfileLevel === "heart_current"
+    ? "Ce métier ressort comme cœur actuel possible du profil."
+    : core.coreProfileLevel === "heart_secondary"
+      ? "Ce métier ressort comme branche secondaire cohérente."
+      : core.coreProfileLevel === "support_tool"
+        ? "Ce métier utilise un domaine indiqué comme outil ou support."
+        : core.coreProfileLevel === "avoid_main"
+          ? "Ce métier reste lisible, mais le domaine est à éviter comme voie principale."
+          : core.level === "core"
+            ? "Ce métier ressort comme cœur possible du profil."
+            : core.level === "compatible"
+              ? "Ce métier ressort comme piste compatible et cohérente."
+              : core.level === "exploratory"
+                ? "Ce métier ressort comme piste exploratoire à confirmer."
+                : "Ce métier ressort surtout comme alternative compatible.";
   return {
     mainReason,
     qualitativeLevel: core.level || "unknown",
+    coreProfileLevel: core.coreProfileLevel || core.level || "unknown",
     strongestSignals,
     weakSignals,
     blockingOrRiskSignals,
     dataConfidenceExplanation: `Ce résultat est fondé sur ${informationDepthLabel(depth)}.`,
     informationDepth: depth,
+    resultFoundation: foundation,
     whatToCheckNext
   };
 }
@@ -3930,7 +4165,8 @@ function buildScoreDetails(criteria, job, details = {}) {
       recommendedDiplomaLevel: job.recommendedDiplomaLevel,
       missingCertifications: toArray(training.missingCertifications),
       statusHint: training.statusHint || "unknown",
-      feasibility: training.feasibility || "unknown"
+      feasibility: training.feasibility || "unknown",
+      knownTrainingFamily: Boolean(training.knownTrainingFamily)
     },
     market: {
       level: market.level || getJobMarketLevel(job),
@@ -3999,6 +4235,8 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     domainAffinity: details.affinity || null,
     coreProfileMatch: details.core || null,
     coreProfileMatchScore: details.core?.score ?? result.coreProfileMatchScore ?? 0,
+    coreProfileLevel: details.core?.coreProfileLevel || result.coreProfileMatch?.coreProfileLevel || "",
+    resultFoundation: result.resultFoundation || result.resultInterpretation?.resultFoundation || "",
     constraintRisk: {
       score: details.constraint?.score ?? result.scores?.constraints ?? 0,
       riskScore: details.constraint?.riskScore ?? 0,
@@ -4008,6 +4246,7 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     trainingFeasibility: {
       statusHint: details.training?.statusHint || "unknown",
       feasibility: details.training?.feasibility || "unknown",
+      knownTrainingFamily: Boolean(details.training?.knownTrainingFamily),
       missingCertifications: toArray(details.training?.missingCertifications)
     },
     marketReliability: {
@@ -4254,6 +4493,11 @@ function applyHardExclusions(criteria, job) {
   if (matchedExcludedDomain) {
     confirmed.push(exclusion("voluntary_domain", "Domaine exclu volontairement.", "secteur", `Le secteur ${optionLabel(EXCLUDED_DOMAIN_OPTIONS, matchedExcludedDomain)} fait partie de vos exclusions.`));
   }
+  const jobSectors = getJobSectorProfile(job).allSectorIds;
+  const excludedByOrientation = toArray(criteria.excludedSectors).find(sectorId => jobSectors.includes(sectorId));
+  if (excludedByOrientation) {
+    confirmed.push(exclusion("domain_orientation_exclude", "Domaine exclu dans le profil.", "secteur", `Le secteur ${sectorLabel(excludedByOrientation)} est marqué à exclure complètement.`));
+  }
 
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity !== "excluding") return;
@@ -4377,13 +4621,21 @@ function experienceDomainToSectors(domainId) {
 
 function getProfileSectorIds(profile = App.state.profile) {
   const domains = normalizeExperienceDomains(profile?.experienceDomains);
-  const trainingFamilies = toArray(profile?.trainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
+  const desiredTrainingFamilies = toArray(profile?.desiredTrainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
   const interestSectors = toArray(profile?.interests).flatMap(interest => experienceDomainToSectors(normalizeExperienceDomainId(interest)));
   return unique([
     ...domains.flatMap(experienceDomainToSectors),
-    ...trainingFamilies.flatMap(experienceDomainToSectors),
+    ...desiredTrainingFamilies.flatMap(experienceDomainToSectors),
     ...interestSectors
   ]);
+}
+
+function getProfileSectorIdsByOrientation(profile = App.state.profile, orientations = []) {
+  const wanted = new Set(toArray(orientations));
+  const domainOrientation = normalizeDomainOrientation(profile?.domainOrientation, profile?.experienceDomains, profile?.experienceDomainDetails);
+  return unique(Object.entries(domainOrientation)
+    .filter(([, value]) => wanted.has(value))
+    .flatMap(([domain]) => experienceDomainToSectors(domain)));
 }
 
 function profileCompletenessLevel(value) {
@@ -4554,28 +4806,32 @@ function calculateDomainAffinityScore(criteria, job, datasets = App.state.datase
   const jobDomains = unique(getExperienceDomainsForJob(job));
   const profileDomains = toArray(criteria.experience?.domains);
   const trainingFamilies = toArray(criteria.education?.trainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
+  const desiredTrainingFamilies = toArray(criteria.education?.desiredTrainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
   const interests = Object.keys(criteria.interests || {});
   const values = Object.keys(criteria.values || {});
   const skillIds = Object.keys(criteria.skills || {});
-  const matchedDomains = jobDomains.filter(domain => profileDomains.includes(domain) || trainingFamilies.includes(domain));
+  const matchedDomains = jobDomains.filter(domain => profileDomains.includes(domain) || desiredTrainingFamilies.includes(domain));
+  const familiarDomains = jobDomains.filter(domain => trainingFamilies.includes(domain));
   const matchedInterests = interests.filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
   const matchedValues = values.filter(item => tagMatches(item, job.valueTags));
   const matchedSkills = skillIds.filter(id => toArray(job.requiredSkills).includes(id) || toArray(job.optionalSkills).includes(id));
   const contextSignals = toArray(criteria.preferredEnvironments).filter(pref => contextPreferenceMatches(pref, job, collectJobContextTags(job)));
   let score = 0;
   score += Math.min(matchedDomains.length, 2) * 22;
+  score += Math.min(familiarDomains.length, 1) * 6;
   score += Math.min(matchedInterests.length, 3) * 10;
   score += Math.min(matchedValues.length, 2) * 8;
   score += Math.min(matchedSkills.length, 3) * 9;
   score += Math.min(contextSignals.length, 2) * 6;
-  if (!profileDomains.length && !trainingFamilies.length && !interests.length && !values.length && !skillIds.length) {
-    return { score: 35, level: "unknown", matchedDomains, matchedInterests, matchedValues, matchedSkills, contextSignals, missingData: [missing("profile.domainAffinity", "medium", "Affinité métier peu renseignée dans le profil.")] };
+  if (!profileDomains.length && !desiredTrainingFamilies.length && !trainingFamilies.length && !interests.length && !values.length && !skillIds.length) {
+    return { score: 35, level: "unknown", matchedDomains, familiarDomains, matchedInterests, matchedValues, matchedSkills, contextSignals, missingData: [missing("profile.domainAffinity", "medium", "Affinité métier peu renseignée dans le profil.")] };
   }
   const normalizedScore = Math.round(clamp(score, 0, 100));
   return {
     score: normalizedScore,
     level: normalizedScore >= 65 ? "strong" : normalizedScore >= 35 ? "medium" : "weak",
     matchedDomains,
+    familiarDomains,
     matchedInterests,
     matchedValues,
     matchedSkills,
@@ -4587,9 +4843,24 @@ function calculateDomainAffinityScore(criteria, job, datasets = App.state.datase
 function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.dataset, details = {}) {
   const jobSector = getJobSectorProfile(job);
   const profileSectors = toArray(criteria.profileSectors);
-  const trainingSectors = toArray(criteria.education?.trainingFamilies).flatMap(domain => experienceDomainToSectors(normalizeExperienceDomainId(domain)));
-  const matchedPrimarySector = profileSectors.includes(jobSector.primarySectorId) || trainingSectors.includes(jobSector.primarySectorId);
-  const matchedSecondarySectors = jobSector.secondarySectorIds.filter(id => profileSectors.includes(id) || trainingSectors.includes(id));
+  const heartSectors = toArray(criteria.heartSectors);
+  const supportSectors = toArray(criteria.supportSectors);
+  const secondarySectors = toArray(criteria.secondarySectors);
+  const pastSectors = toArray(criteria.pastSectors);
+  const avoidMainSectors = toArray(criteria.avoidMainSectors);
+  const excludedSectors = toArray(criteria.excludedSectors);
+  const knownTrainingSectors = toArray(criteria.education?.trainingFamilies).flatMap(domain => experienceDomainToSectors(normalizeExperienceDomainId(domain)));
+  const desiredTrainingSectors = toArray(criteria.education?.desiredTrainingFamilies).flatMap(domain => experienceDomainToSectors(normalizeExperienceDomainId(domain)));
+  const jobSectors = jobSector.allSectorIds.length ? jobSector.allSectorIds : [jobSector.primarySectorId].filter(Boolean);
+  const hasSector = sectors => jobSectors.some(id => toArray(sectors).includes(id));
+  const matchedPrimarySector = hasSector(heartSectors) || hasSector(desiredTrainingSectors);
+  const matchedSecondarySectors = jobSector.secondarySectorIds.filter(id => [...heartSectors, ...desiredTrainingSectors, ...secondarySectors].includes(id));
+  const supportToolMatch = hasSector(supportSectors);
+  const secondaryMatch = hasSector(secondarySectors);
+  const pastMatch = hasSector(pastSectors);
+  const avoidMainMatch = hasSector(avoidMainSectors);
+  const excludedMatch = hasSector(excludedSectors);
+  const knownTrainingMatch = hasSector(knownTrainingSectors);
   const matchedExperienceDomains = getExperienceDomainsForJob(job).filter(domain => toArray(criteria.experience?.domains).includes(domain));
   const matchedInterests = Object.keys(criteria.interests || {}).filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
   const matchedValues = Object.keys(criteria.values || {}).filter(item => tagMatches(item, job.valueTags));
@@ -4599,25 +4870,62 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
   ]);
   const matchedContexts = toArray(details.context?.matched);
   let score = 0;
-  if (matchedPrimarySector) score += 36;
-  score += Math.min(matchedSecondarySectors.length, 2) * 12;
-  score += Math.min(matchedExperienceDomains.length, 2) * 18;
-  score += Math.min(matchedSkills.length, 4) * 6;
-  score += Math.min(matchedInterests.length, 3) * 5;
-  score += Math.min(matchedValues.length, 2) * 4;
+  if (matchedPrimarySector) score += 30;
+  score += Math.min(matchedSecondarySectors.length, 2) * 8;
+  score += Math.min(matchedExperienceDomains.length, 2) * 12;
+  if (supportToolMatch) score += 14;
+  if (secondaryMatch) score += 12;
+  if (pastMatch) score += 6;
+  if (knownTrainingMatch) score += 4;
+  score += Math.min(matchedSkills.length, 4) * 4;
+  score += Math.min(matchedInterests.length, 3) * 4;
+  score += Math.min(matchedValues.length, 2) * 3;
   score += Math.min(matchedContexts.length, 2) * 3;
+  if (avoidMainMatch) score = Math.min(score, 55);
+  if (excludedMatch) score = Math.min(score, 15);
   const normalizedScore = Math.round(clamp(score, 0, 100));
-  const level = normalizedScore >= 68 ? "core" : normalizedScore >= 42 ? "compatible" : normalizedScore >= 24 ? "exploratory" : "weak";
+  const coreProfileLevel = determineCoreProfileLevel({
+    score: normalizedScore,
+    matchedPrimarySector,
+    supportToolMatch,
+    secondaryMatch,
+    pastMatch,
+    avoidMainMatch,
+    excludedMatch,
+    matchedInterests,
+    matchedValues,
+    matchedExperienceDomains
+  });
+  const level = ["heart_current", "heart_secondary"].includes(coreProfileLevel)
+    ? "core"
+    : coreProfileLevel === "support_tool" || coreProfileLevel === "past_transferable" || coreProfileLevel === "compatible"
+      ? "compatible"
+      : coreProfileLevel === "exploratory" || coreProfileLevel === "avoid_main"
+        ? "exploratory"
+        : "weak";
   return {
     score: normalizedScore,
     level,
+    coreProfileLevel,
     primarySectorId: jobSector.primarySectorId,
     primarySectorLabel: sectorLabel(jobSector.primarySectorId),
     matchedPrimarySector,
+    supportToolMatch,
+    secondaryMatch,
+    pastMatch,
+    avoidMainMatch,
+    excludedMatch,
+    knownTrainingMatch,
     matchedSecondarySectors,
     matchedSecondarySectorLabels: matchedSecondarySectors.map(sectorLabel),
     profileSectors,
     jobSectors: jobSector.allSectorIds,
+    heartSectors,
+    supportSectors,
+    secondarySectors,
+    pastSectors,
+    avoidMainSectors,
+    excludedSectors,
     matchedExperienceDomains,
     matchedInterests,
     matchedValues,
@@ -4625,6 +4933,19 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
     matchedContexts,
     source: jobSector.source
   };
+}
+
+function determineCoreProfileLevel(input = {}) {
+  if (input.excludedMatch) return "excluded";
+  if (input.avoidMainMatch) return "avoid_main";
+  if (input.matchedPrimarySector && input.score >= 68) return "heart_current";
+  if (input.matchedPrimarySector && input.score >= 48) return "heart_secondary";
+  if (input.supportToolMatch && input.score >= 46) return "support_tool";
+  if (input.secondaryMatch && input.score >= 42) return "heart_secondary";
+  if (input.pastMatch && input.score >= 36) return "past_transferable";
+  if (input.score >= 45) return "compatible";
+  if (input.score >= 24) return "exploratory";
+  return "compatible";
 }
 
 function applyScoreCaps(globalScore, scores, criteria, job, details = {}) {
@@ -4648,6 +4969,18 @@ function applyScoreCaps(globalScore, scores, criteria, job, details = {}) {
     cappedScore = Math.min(cappedScore, 42);
     caps.push({ code: "training_blocked", cap: 42, message: "Accès formation ou certification bloqué avec les préférences actuelles." });
   }
+  if (details.core?.coreProfileLevel === "support_tool") {
+    cappedScore = Math.min(cappedScore, 74);
+    caps.push({ code: "support_tool_domain", cap: 74, message: "Domaine indiqué comme outil/support : piste gardée en hybride ou secondaire." });
+  }
+  if (details.core?.coreProfileLevel === "avoid_main") {
+    cappedScore = Math.min(cappedScore, 58);
+    caps.push({ code: "avoid_main_domain", cap: 58, message: "Domaine à éviter comme métier principal : piste gardée hors cœur du Top 5." });
+  }
+  if (details.core?.coreProfileLevel === "excluded") {
+    cappedScore = Math.min(cappedScore, 30);
+    caps.push({ code: "excluded_domain_orientation", cap: 30, message: "Domaine exclu dans l’orientation du profil." });
+  }
   return { score: Math.round(cappedScore), caps };
 }
 
@@ -4661,13 +4994,14 @@ function calculateTrainingScore(criteria, job) {
     requiredDiplomaLevel: numberOrNull(job.requiredDiplomaLevel),
     recommendedDiplomaLevel: numberOrNull(job.recommendedDiplomaLevel)
   };
+  const knownFamilyBonus = jobMatchesKnownTrainingFamily(criteria, job) ? 2 : 0;
   if (requiredCerts.length && missingCertifications.length === 0) {
-    return { score: 17, missingData, missingCertifications: [], statusHint: "now", feasibility: "certification_held", ...base };
+    return { score: clamp(17 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "certification_held", knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   if (missingCertifications.length > 0) {
-    if (criteria.education.canDoShortTraining) return { score: 11, missingData, missingCertifications, statusHint: "short", feasibility: "certification_short", ...base };
-    if (criteria.education.canDoLongTraining) return { score: 7, missingData, missingCertifications, statusHint: "long", feasibility: "certification_long", ...base };
-    return { score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", ...base };
+    if (criteria.education.canDoShortTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "short", feasibility: "certification_short", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (criteria.education.canDoLongTraining) return { score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "certification_long", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    return { score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
 
   const userLevel = Number(criteria.education.highestLevel || 0);
@@ -4676,24 +5010,31 @@ function calculateTrainingScore(criteria, job) {
   const targetLevel = requiredLevel ?? recommendedLevel;
   if (targetLevel === null || targetLevel === 0) {
     missingData.push(missing("job.requiredDiplomaLevel", "low", "Niveau de diplôme requis absent, non obligatoire ou non précisé dans le corpus."));
-    return { score: 13, missingData, missingCertifications: [], statusHint: "unknown", feasibility: "access_unknown_or_open", ...base };
+    return { score: clamp(13 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "unknown", feasibility: "access_unknown_or_open", knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   const hasMandatoryLevel = requiredLevel !== null && requiredLevel > 0;
   if (!hasMandatoryLevel && recommendedLevel !== null && recommendedLevel > userLevel) {
     const recommendedGap = recommendedLevel - userLevel;
     missingData.push(missing("job.recommendedDiplomaLevel", "low", "Niveau conseillé supérieur au profil, sans indication d’obligation réglementaire."));
-    if (recommendedGap === 1 && criteria.education.canDoShortTraining) return { score: 13, missingData, missingCertifications: [], statusHint: "short", feasibility: "recommended_short_gap", ...base };
-    if (recommendedGap <= 3 && criteria.education.canDoLongTraining) return { score: 11, missingData, missingCertifications: [], statusHint: "long", feasibility: "recommended_long_gap", ...base };
-    return { score: criteria.education.trainingOpenness === "none" ? 9 : 10, missingData, missingCertifications: [], statusHint: "recommended_gap", feasibility: "recommended_not_blocking", ...base };
+    if (recommendedGap === 1 && criteria.education.canDoShortTraining) return { score: clamp(13 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "recommended_short_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (recommendedGap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "recommended_long_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    return { score: clamp((criteria.education.trainingOpenness === "none" ? 9 : 10) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "recommended_gap", feasibility: "recommended_not_blocking", knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   const gap = targetLevel - userLevel;
-  if (gap <= 0) return { score: requiredLevel ? 17 : 16, missingData, missingCertifications: [], statusHint: "now", feasibility: "level_ok", ...base };
+  if (gap <= 0) return { score: clamp((requiredLevel ? 17 : 16) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "level_ok", knownTrainingFamily: knownFamilyBonus > 0, ...base };
   const budgetPenalty = ["none", "under_300"].includes(criteria.education.trainingBudget) ? 3 : 0;
   const horizonPenalty = criteria.searchHorizon === "now" ? 2 : 0;
-  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: Math.max(7, 13 - budgetPenalty - horizonPenalty), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_short_gap", ...base };
-  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: Math.max(5, 9 - budgetPenalty - horizonPenalty), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_medium_gap_short_possible", ...base };
-  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: Math.max(5, 8 - budgetPenalty), missingData, missingCertifications: [], statusHint: "long", feasibility: "level_long_gap", ...base };
-  return { score: criteria.education.trainingOpenness === "none" ? 2 : 5, missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long", feasibility: "level_gap_difficult", ...base };
+  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: clamp(Math.max(7, 13 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_short_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: clamp(Math.max(5, 9 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_medium_gap_short_possible", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(Math.max(5, 8 - budgetPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "level_long_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  return { score: clamp((criteria.education.trainingOpenness === "none" ? 2 : 5) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long", feasibility: "level_gap_difficult", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+}
+
+function jobMatchesKnownTrainingFamily(criteria, job) {
+  const known = toArray(criteria.education?.trainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
+  if (!known.length) return false;
+  const jobDomains = getExperienceDomainsForJob(job);
+  return known.some(domain => jobDomains.includes(domain));
 }
 
 function calculateConstraintScore(criteria, job) {
@@ -4822,6 +5163,7 @@ function determineFeasibilityStatus(globalScore, scores, criteria, job, details 
   if (details.training?.statusHint === "blocked") return globalScore >= 45 ? "discouraged" : "excluded_for_now";
   if (scores.constraints <= 6) return "discouraged";
   if (toArray(details.scoreCaps?.caps).some(cap => cap.code === "low_domain_affinity")) return "explore_with_caution";
+  if (details.core?.coreProfileLevel === "avoid_main") return "explore_with_caution";
   if ((criteria.completeness || 0) < 0.35 && globalScore >= 55) return "explore_with_caution";
   if (criteria.searchHorizon === "now" && details.training?.statusHint === "long") return "explore_with_caution";
   if (criteria.searchHorizon === "now" && details.training?.statusHint === "short" && globalScore < 68) return "difficult_but_possible";
@@ -5028,9 +5370,13 @@ function diversifyTopResults(results) {
 }
 
 function top5SelectionReasonCode(result, mode) {
-  if (result.coreProfileMatch?.level === "core" && mode !== "fill" && mode !== "relaxed") return "core_match";
+  const level = result.coreProfileMatch?.coreProfileLevel || result.coreProfileMatch?.level;
+  if (result.coreProfileMatch?.supportToolMatch && mode !== "relaxed") return "support_hybrid";
+  if (level === "heart_current" && mode !== "fill" && mode !== "relaxed") return "heart_current";
+  if (level === "heart_secondary" && mode !== "fill" && mode !== "relaxed") return "secondary_branch";
+  if (level === "support_tool" && mode !== "relaxed") return "support_hybrid";
   if (mode === "strict" || mode === "soft") return "diversity_pick";
-  if (result.coreProfileMatch?.level === "weak" || result.status === "explore_with_caution" || mode === "relaxed") return "exploratory";
+  if (["weak", "exploratory", "avoid_main", "past_transferable"].includes(level) || result.status === "explore_with_caution" || mode === "relaxed") return "exploratory";
   return "fallback_useful";
 }
 
@@ -5057,12 +5403,29 @@ function jobDirectionKey(job = {}) {
 
 function top5SelectionLabel(code) {
   const labels = {
+    heart_current: "cœur du profil",
+    secondary_branch: "branche secondaire",
+    support_hybrid: "métier hybride",
     core_match: "cœur du profil",
     diversity_pick: "diversité",
-    fallback_useful: "complément utile",
+    fallback_useful: "alternative utile",
     exploratory: "exploratoire"
   };
   return labels[code] || "sélection qualitative";
+}
+
+function coreProfileLevelLabel(level) {
+  const labels = {
+    heart_current: "Cœur actuel",
+    heart_secondary: "Branche secondaire",
+    support_tool: "Outil / support",
+    past_transferable: "Acquis transférable",
+    compatible: "Compatible",
+    exploratory: "Exploratoire",
+    avoid_main: "À éviter en principal",
+    excluded: "Exclu"
+  };
+  return labels[level] || "À situer";
 }
 
 function findRelatedVariants(job, datasets = App.state.dataset) {
@@ -5096,6 +5459,7 @@ function renderExperienceDomainDetails(profile) {
   profile.experienceDomains = domains;
   if (!domains.length) return "";
   profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, domains);
+  profile.domainOrientation = normalizeDomainOrientation(profile.domainOrientation, domains, profile.experienceDomainDetails);
   const durationOptions = [["not_specified", "Durée ?"], ["under_3_months", "< 3 mois"], ["3_12_months", "3–12 mois"], ["1_2_years", "1–2 ans"], ["2_5_years", "2–5 ans"], ["5_years_plus", "5 ans et +"]];
   const recencyOptions = [["not_specified", "Moment ?"], ["old", "Plutôt ancienne"], ["recent", "Récente"], ["current", "Actuelle / en cours"]];
   const confidenceOptions = [["low", "Aisance faible"], ["medium", "Aisance moyenne"], ["high", "Aisance forte"]];
@@ -5112,6 +5476,7 @@ function renderExperienceDomainDetails(profile) {
             <div class="summary-box">
               <strong>${h(label)}</strong>
               <div class="mini-grid">
+                ${selectMini("Intention", domain, "orientation", profile.domainOrientation[domain] || "current", DOMAIN_ORIENTATION_OPTIONS)}
                 ${selectMini("Durée", domain, "duration", detail.duration || "not_specified", durationOptions)}
                 ${selectMini("Période", domain, "recency", detail.recency || "not_specified", recencyOptions)}
                 ${selectMini("Aisance", domain, "confidence", detail.confidence || "medium", confidenceOptions)}
@@ -5288,7 +5653,12 @@ function renderStep() {
         ${selectField("Budget formation", "trainingBudget", profile.trainingBudget, [["unknown", "Je ne sais pas"], ["none", "Aucun budget"], ["under_300", "Moins de 300 €"], ["300_1000", "300–1 000 €"], ["1000_3000", "1 000–3 000 €"], ["over_3000", "Plus de 3 000 €"], ["funding_possible", "Financement possible / CPF / organisme"]])}
         <div class="form-row full">
           <span class="field-label">Famille de formation déjà connue</span>
+          <p class="field-help">Ce choix signale des repères ou acquis déjà présents. Il ne signifie pas automatiquement que vous voulez en faire votre voie principale.</p>
           <div class="tag-grid">${TRAINING_FAMILY_OPTIONS.map(item => checkboxTag("trainingFamilies", item[0], item[1], "formation", profile.trainingFamilies.includes(item[0]))).join("")}</div>
+        </div>
+        <div class="form-row full">
+          <span class="field-label">Familles de formation que j’aimerais explorer</span>
+          <div class="tag-grid">${TRAINING_FAMILY_OPTIONS.map(item => checkboxTag("desiredTrainingFamilies", item[0], item[1], "souhait", profile.desiredTrainingFamilies.includes(item[0]))).join("")}</div>
         </div>
         <div class="form-row full">
           <span class="field-label">Certifications ou permis détenus</span>
@@ -5510,7 +5880,7 @@ function renderJobCard(result, options = {}) {
           <div class="badge-row">
             ${options.featured ? `<span class="badge gold">Top 5</span>` : ""}
             ${options.featured && result.top5SelectionLabel ? `<span class="badge sage">${h(result.top5SelectionLabel)}</span>` : ""}
-            ${result.coreProfileMatch?.level === "core" ? `<span class="badge sage">Cœur du profil</span>` : result.coreProfileMatch?.level === "exploratory" ? `<span class="badge outline">Exploratoire</span>` : ""}
+            ${result.coreProfileMatch?.coreProfileLevel ? `<span class="badge outline">${h(coreProfileLevelLabel(result.coreProfileMatch.coreProfileLevel))}</span>` : result.coreProfileMatch?.level === "core" ? `<span class="badge sage">Cœur du profil</span>` : result.coreProfileMatch?.level === "exploratory" ? `<span class="badge outline">Exploratoire</span>` : ""}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
             ${result.resultInterpretation?.informationDepth ? `<span class="badge outline">${h(informationDepthLabel(result.resultInterpretation.informationDepth))}</span>` : ""}
@@ -5620,7 +5990,7 @@ function renderScoreDetails(details = {}) {
         <li><strong>Tags contexte métier :</strong> ${toArray(context.jobContextTags).map(h).join(", ") || "non renseignés"}</li>
         <li><strong>Contraintes compatibles :</strong> ${toArray(constraints.matchedConstraints).map(h).join(", ") || "aucune contrainte active ou renseignée"}</li>
         <li><strong>Contraintes à vérifier :</strong> ${toArray(constraints.warnings).map(h).join(", ") || "aucune"}</li>
-        <li><strong>Formation :</strong> profil ${h(getDiplomaLabel(training.currentDiplomaLevel || 0))}, requis ${h(getDiplomaLabel(training.requiredDiplomaLevel || 0))}, conseillé ${h(getDiplomaLabel(training.recommendedDiplomaLevel || 0))}, statut ${h(training.statusHint || "à vérifier")}</li>
+        <li><strong>Formation :</strong> profil ${h(getDiplomaLabel(training.currentDiplomaLevel || 0))}, requis ${h(getDiplomaLabel(training.requiredDiplomaLevel || 0))}, conseillé ${h(getDiplomaLabel(training.recommendedDiplomaLevel || 0))}, statut ${h(training.statusHint || "à vérifier")}${training.knownTrainingFamily ? ". Famille déjà connue : facilite l’entrée, sans signaler un désir principal." : ""}</li>
         <li><strong>Marché :</strong> ${h(market.isEstimated || market.source === "unknown" ? "donnée à confirmer" : marketLabel(market.level))}. ${market.isEstimated ? "Marché estimatif, non utilisé fortement dans le classement." : "Indicateur marché exploitable selon la source disponible."}</li>
       </ul>
     </div>`;
@@ -5639,7 +6009,7 @@ function renderResultsDiagnosticPanel(results = App.state.results) {
         <li><strong>Scores élevés avec contraintes fortes :</strong> ${toArray(audit.highScoreWithConstraintWarnings).length}</li>
         <li><strong>Scores élevés avec confiance réduite :</strong> ${toArray(audit.highScoreLowConfidence).length}</li>
         <li><strong>Top 5 :</strong> ${h(audit.top5Count || 0)} piste(s), dont ${h(audit.top5FilledByFallback || 0)} complément(s) utile(s).</li>
-        <li><strong>Sélection Top 5 :</strong> cœur ${h(audit.top5SelectionReasons?.core_match || 0)}, diversité ${h(audit.top5SelectionReasons?.diversity_pick || 0)}, complément ${h(audit.top5SelectionReasons?.fallback_useful || 0)}, exploratoire ${h(audit.top5SelectionReasons?.exploratory || 0)}.</li>
+        <li><strong>Sélection Top 5 :</strong> cœur ${h((audit.top5SelectionReasons?.heart_current || 0) + (audit.top5SelectionReasons?.core_match || 0))}, branche ${h(audit.top5SelectionReasons?.secondary_branch || 0)}, hybride ${h(audit.top5SelectionReasons?.support_hybrid || 0)}, diversité ${h(audit.top5SelectionReasons?.diversity_pick || 0)}, alternative ${h(audit.top5SelectionReasons?.fallback_useful || 0)}, exploratoire ${h(audit.top5SelectionReasons?.exploratory || 0)}.</li>
         <li><strong>Distribution scores :</strong> bas ${h(audit.scoreDistribution?.low || 0)}, moyens ${h(audit.scoreDistribution?.medium || 0)}, hauts ${h(audit.scoreDistribution?.high || 0)}.</li>
         <li><strong>Distribution cœur de profil :</strong> faible ${h(audit.coreProfileDistribution?.low || 0)}, moyenne ${h(audit.coreProfileDistribution?.medium || 0)}, forte ${h(audit.coreProfileDistribution?.high || 0)}.</li>
         <li><strong>Distribution confiance :</strong> basse ${h(audit.confidenceDistribution?.low || 0)}, moyenne ${h(audit.confidenceDistribution?.medium || 0)}, haute ${h(audit.confidenceDistribution?.high || 0)}.</li>
@@ -5678,7 +6048,7 @@ function renderResultDiagnostic(result = {}) {
       <div class="score-grid">
         ${subScores.map(item => `<div class="score-line"><strong>${h(item.label)}</strong>${h(item.score)}/${h(item.max)} · ${h(item.stateLabel)}</div>`).join("")}
       </div>
-      <p class="field-help">Cœur de profil : ${Math.round(diagnostic.coreProfileMatchScore || 0)}/100 (${h(diagnostic.coreProfileMatch?.primarySectorLabel || "secteur à préciser")}). Affinité domaine : ${Math.round(diagnostic.domainAffinity?.score || 0)}/100.</p>
+      <p class="field-help">Cœur de profil : ${Math.round(diagnostic.coreProfileMatchScore || 0)}/100 · ${h(coreProfileLevelLabel(diagnostic.coreProfileLevel || diagnostic.coreProfileMatch?.coreProfileLevel))} (${h(diagnostic.coreProfileMatch?.primarySectorLabel || "secteur à préciser")}). Affinité domaine : ${Math.round(diagnostic.domainAffinity?.score || 0)}/100.</p>
       <p class="field-help">Marché : ${h(diagnostic.marketReliability?.isEstimated ? "estimatif / à confirmer" : diagnostic.marketReliability?.level || "inconnu")} · ${diagnostic.marketReliability?.marketDiscriminant ? "discriminant" : "non discriminant dans cette version"} · poids appliqué ${h(diagnostic.marketReliability?.marketWeightApplied ?? 0)}.</p>
       ${diagnostic.confidenceBasis ? `<p class="field-help">Confiance : profil ${h(diagnostic.confidenceBasis.profileSignals)}, compétences ${h(diagnostic.confidenceBasis.skillEvidence)}, métier ${h(diagnostic.confidenceBasis.jobDataQuality)}, marché ${h(diagnostic.confidenceBasis.marketEvidence)}.</p>` : ""}
       ${toArray(diagnostic.scoreCapsApplied).length ? `<p class="field-help"><strong>Plafonds appliqués :</strong> ${toArray(diagnostic.scoreCapsApplied).map(cap => h(cap.message)).join(" ")}</p>` : ""}
@@ -6036,6 +6406,13 @@ function renderSettingsPage() {
     <section class="results-section print-section">
       <h2>Profils tests intégrés</h2>
       <p>Ces profils servent à auditer le calibrage : exclusions, pondérations, confiance et métiers qui remontent trop haut.</p>
+      <div class="button-row no-print" style="margin-bottom:12px">
+        <button class="primary-button" type="button" data-action="run-test-bench-integrated">Lancer le banc intégré</button>
+        <button class="secondary-button" type="button" data-action="import-test-profiles">Importer plusieurs profils JSON</button>
+        <button class="secondary-button" type="button" data-action="export-test-bench-json" ${App.state.testBenchReport ? "" : "disabled"}>Exporter rapport JSON</button>
+        <button class="secondary-button" type="button" data-action="export-test-bench-md" ${App.state.testBenchReport ? "" : "disabled"}>Exporter rapport Markdown</button>
+      </div>
+      ${renderTestBenchSummary()}
       <div class="job-list">
         ${DIAGNOSTIC_TEST_PROFILES_V052.map(test => `
           <div class="summary-box">
@@ -6053,6 +6430,169 @@ function renderSettingsPage() {
       ${renderProfileImpactAudit()}
     </section>
     ${renderApiManualTestPanel()}`;
+}
+
+function renderTestBenchSummary() {
+  const report = App.state.testBenchReport;
+  if (!report) {
+    return `<div class="empty-state">Aucun rapport lancé dans cette session. Le banc de test aide à repérer les Top 5 trop concentrés, les scores identiques et les métiers non centraux qui montent trop haut.</div>`;
+  }
+  return `
+    <div class="summary-box">
+      <h3>Dernier rapport</h3>
+      <ul class="compact-list">
+        <li><strong>Profils testés :</strong> ${h(report.summary?.profilesCount || 0)}</li>
+        <li><strong>Anomalies :</strong> ${h(report.summary?.anomaliesCount || 0)}</li>
+        <li><strong>Scores identiques :</strong> ${h(report.summary?.sameScoreGroups || 0)}</li>
+        <li><strong>Marché uniforme :</strong> ${report.summary?.uniformMarket ? "oui" : "non"}</li>
+      </ul>
+      ${toArray(report.anomalies).length ? `<p class="field-help">${take(report.anomalies, 5).map(item => h(item.message)).join(" ")}</p>` : `<p class="field-help">Aucune anomalie majeure détectée dans le dernier passage.</p>`}
+    </div>`;
+}
+
+async function importTestProfilesBatch(files = []) {
+  if (!files.length) return;
+  showLoading("Lecture des profils tests", "Boussole Pro prépare le banc de test local.");
+  try {
+    const profiles = [];
+    for (const file of files) {
+      const text = await readFileAsText(file);
+      const parsed = JSON.parse(text);
+      const rows = Array.isArray(parsed) ? parsed : Array.isArray(parsed.profiles) ? parsed.profiles : [parsed.data || parsed.profile || parsed];
+      rows.forEach((row, index) => {
+        profiles.push({
+          id: row.id || `imported-${slug(file.name)}-${index}`,
+          title: row.profileName || row.title || file.name,
+          description: "Profil importé pour banc de test local.",
+          profile: normalizeProfile(row)
+        });
+      });
+    }
+    App.state.testBenchProfiles = profiles;
+    App.state.testBenchReport = runDiagnosticProfiles(profiles);
+    renderAll();
+    showToast(`${profiles.length} profil(s) testé(s).`);
+  } catch (error) {
+    showImportError("Profils tests illisibles. Vérifiez les fichiers JSON.");
+  } finally {
+    hideLoading();
+  }
+}
+
+function runIntegratedTestBench() {
+  showLoading("Banc de test", "Calcul des profils intégrés en mémoire.");
+  deferWork(() => {
+    try {
+      App.state.testBenchReport = runDiagnosticProfiles(DIAGNOSTIC_TEST_PROFILES_V052);
+      renderAll();
+      showToast("Banc de test intégré terminé.");
+    } finally {
+      hideLoading({ delay: 80 });
+    }
+  });
+}
+
+function runDiagnosticProfiles(testProfiles = []) {
+  const previousProfile = App.state.profile;
+  const previousResults = App.state.results;
+  const previousDirty = App.state.resultsDirty;
+  const rows = toArray(testProfiles).map(test => {
+    const profile = normalizeProfile({
+      ...createEmptyProfile(),
+      ...(test.profile || test),
+      profileName: test.title || test.profile?.profileName || test.profileName || "Profil test",
+      hasRequestedResults: true,
+      completedBoussole: true
+    });
+    Object.entries(test.profile?.constraintSeverities || test.constraintSeverities || {}).forEach(([value, severity]) => setConstraintSeverity(profile, value, severity));
+    const results = calculateAllMatches(profile, App.state.dataset, { skipAudit: true });
+    const anomalies = detectTestBenchAnomalies(results, test);
+    return {
+      id: test.id || profile.id,
+      title: test.title || profile.profileName,
+      top5: toArray(results.top5).map(result => ({
+        jobId: result.jobId,
+        title: result.title,
+        score: result.globalScore,
+        selection: result.top5SelectionReason || "",
+        coreProfileLevel: result.coreProfileMatch?.coreProfileLevel || "",
+        family: result.job?.family || ""
+      })),
+      anomalies,
+      marketUniform: results.calibrationAudit?.marketContext?.uniformScore ?? !results.marketContext?.marketDiscriminant
+    };
+  });
+  App.state.profile = previousProfile;
+  App.state.results = previousResults;
+  App.state.resultsDirty = previousDirty;
+  invalidateResultIndexes();
+  const anomalies = rows.flatMap(row => row.anomalies.map(item => ({ ...item, profileId: row.id, profileTitle: row.title })));
+  return {
+    app: "boussole-pro-test-bench",
+    version: CONFIG.version,
+    generatedAt: new Date().toISOString(),
+    datasetVersion: App.state.dataset?.datasetVersion || "",
+    rows,
+    anomalies,
+    summary: {
+      profilesCount: rows.length,
+      anomaliesCount: anomalies.length,
+      sameScoreGroups: anomalies.filter(item => item.type === "same_score_group").length,
+      uniformMarket: rows.some(row => row.marketUniform)
+    }
+  };
+}
+
+function detectTestBenchAnomalies(results = {}, test = {}) {
+  const top = toArray(results.top5);
+  const anomalies = [];
+  const familyCounts = countBy(top.map(result => result.job?.family || "inconnu"));
+  if (Object.values(familyCounts).some(count => count >= 4)) anomalies.push({ type: "top5_family_concentration", severity: "warning", message: "Top 5 concentré sur une seule famille." });
+  const scoreCounts = countBy(top.map(result => String(Math.round(result.globalScore || 0))));
+  Object.entries(scoreCounts).filter(([, count]) => count >= 3).forEach(([score, count]) => anomalies.push({ type: "same_score_group", severity: "info", message: `${count} métiers du Top 5 ont le même score (${score}).` }));
+  if (top.some(result => result.status === "discouraged" && ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel))) anomalies.push({ type: "heart_discouraged", severity: "warning", message: "Un métier de cœur est classé découragé." });
+  const firstHeartIndex = top.findIndex(result => ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel));
+  const firstNonCentralIndex = top.findIndex(result => ["support_tool", "avoid_main", "past_transferable", "exploratory"].includes(result.coreProfileMatch?.coreProfileLevel));
+  if (firstNonCentralIndex >= 0 && firstHeartIndex >= 0 && firstNonCentralIndex < firstHeartIndex) anomalies.push({ type: "non_central_before_heart", severity: "warning", message: "Un métier non central passe devant une piste de cœur." });
+  if (!results.marketContext?.marketDiscriminant) anomalies.push({ type: "uniform_market", severity: "info", message: "Score marché visible mais non départageant." });
+  if (top.filter(result => result.coreProfileMatchScore >= 98).length >= 3) anomalies.push({ type: "core_saturation", severity: "warning", message: "Trop de métiers saturent le score cœur." });
+  return anomalies;
+}
+
+function exportTestBench(format = "json") {
+  const report = App.state.testBenchReport;
+  if (!report) {
+    showToast("Aucun rapport de banc de test à exporter.");
+    return;
+  }
+  if (format === "markdown") {
+    downloadFile(`boussole-pro-banc-test-${dateStamp()}.md`, testBenchToMarkdown(report), "text/markdown");
+    showToast("Rapport de banc de test exporté en Markdown.");
+    return;
+  }
+  downloadFile(`boussole-pro-banc-test-${dateStamp()}.json`, JSON.stringify(report, null, 2), "application/json");
+  showToast("Rapport de banc de test exporté en JSON.");
+}
+
+function testBenchToMarkdown(report = {}) {
+  const lines = [
+    `# Banc de test Boussole Pro`,
+    ``,
+    `Version : ${CONFIG.version}`,
+    `Profils testés : ${report.summary?.profilesCount || 0}`,
+    `Anomalies : ${report.summary?.anomaliesCount || 0}`,
+    ``
+  ];
+  toArray(report.rows).forEach(row => {
+    lines.push(`## ${row.title}`, ``);
+    toArray(row.top5).forEach((item, index) => lines.push(`${index + 1}. ${item.title} — ${item.score}/100 — ${top5SelectionLabel(item.selection)} — ${coreProfileLevelLabel(item.coreProfileLevel)}`));
+    if (row.anomalies?.length) {
+      lines.push(``, `Anomalies :`);
+      row.anomalies.forEach(item => lines.push(`- ${item.message}`));
+    }
+    lines.push(``);
+  });
+  return lines.join("\n");
 }
 
 function renderApiManualTestPanel() {
@@ -6836,7 +7376,7 @@ function getUnusedProfileFields(profile) {
     skills: "directSkills",
     mobility: "mobilityRadius"
   };
-  const filled = ["ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingBudget", "driverLicenses", "mobility", "constraints", "skillSignals", "skills", "experienceDomains", "interests", "values", "preferredWorkStyles", "preferredEnvironments", "excludedDomains", "preferredSchedule", "needForSecurity", "needForAutonomy", "needForMeaning"]
+  const filled = ["ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingBudget", "trainingFamilies", "desiredTrainingFamilies", "driverLicenses", "mobility", "constraints", "skillSignals", "skills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "interests", "values", "preferredWorkStyles", "preferredEnvironments", "excludedDomains", "preferredSchedule", "needForSecurity", "needForAutonomy", "needForMeaning"]
     .filter(field => isProfileFieldFilled(profile, field));
   return filled.filter(field => !known.has(aliases[field] || field));
 }
@@ -6874,6 +7414,7 @@ function createEmptyProfile() {
     experiences: [],
     experienceDomains: [],
     experienceDomainDetails: {},
+    domainOrientation: {},
     experienceDuration: "not_specified",
     skills: [],
     weakSkills: [],
@@ -6894,6 +7435,7 @@ function createEmptyProfile() {
     trainingBudget: "unknown",
     trainingOpenness: "not_specified",
     trainingFamilies: [],
+    desiredTrainingFamilies: [],
     preferredWorkStyles: [],
     preferredEnvironments: [],
     preferredSchedule: "not_specified",
@@ -6936,6 +7478,7 @@ function normalizeProfile(raw) {
   merged.experiences = Array.isArray(raw.experiences) ? raw.experiences : [];
   merged.experienceDomains = normalizeExperienceDomains(raw.experienceDomains);
   merged.experienceDomainDetails = normalizeExperienceDomainDetails(raw.experienceDomainDetails, merged.experienceDomains);
+  merged.domainOrientation = normalizeDomainOrientation(raw.domainOrientation, merged.experienceDomains, merged.experienceDomainDetails);
   merged.experienceDuration = raw.experienceDuration || base.experienceDuration;
   merged.skills = toArray(raw.skills);
   merged.weakSkills = toArray(raw.weakSkills);
@@ -6956,6 +7499,7 @@ function normalizeProfile(raw) {
   if (merged.availability.hoursPerWeek === "fullTime") merged.availability.hoursPerWeek = "full_time";
   merged.trainingOpenness = migrateTrainingOpenness(raw.trainingOpenness || base.trainingOpenness);
   merged.trainingFamilies = toArray(raw.trainingFamilies);
+  merged.desiredTrainingFamilies = toArray(raw.desiredTrainingFamilies || raw.targetTrainingFamilies);
   merged.searchHorizon = raw.searchHorizon || raw.objective || base.searchHorizon;
   merged.preferredSchedule = raw.preferredSchedule || base.preferredSchedule;
   merged.needForSecurity = raw.needForSecurity || base.needForSecurity;
@@ -7003,6 +7547,27 @@ function normalizeMarketPreference(raw = {}, engineIntent = "balanced") {
       radiusKm: raw.territory?.radiusKm || null
     }
   };
+}
+
+function normalizeDomainOrientation(raw = {}, selectedDomains = [], details = {}) {
+  const allowed = new Set(DOMAIN_ORIENTATION_OPTIONS.map(item => item[0]));
+  const selected = normalizeExperienceDomains(selectedDomains);
+  const output = {};
+  Object.entries(raw || {}).forEach(([domain, value]) => {
+    const normalizedDomain = normalizeExperienceDomainId(domain);
+    if (!normalizedDomain) return;
+    output[normalizedDomain] = allowed.has(value) ? value : "current";
+  });
+  selected.forEach(domain => {
+    if (output[domain]) return;
+    const recency = details?.[domain]?.recency || "not_specified";
+    output[domain] = recency === "old" ? "past" : recency === "current" ? "current" : "current";
+  });
+  return output;
+}
+
+function domainOrientationLabel(value) {
+  return optionLabel(DOMAIN_ORIENTATION_OPTIONS, value || "current");
 }
 
 function normalizeExperienceDomainDetails(raw = {}, selectedDomains = []) {
@@ -7053,6 +7618,10 @@ function bindGlobalEvents() {
   });
   App.dom.datasetFileInput.addEventListener("change", event => {
     importDatasetFile(event.target.files[0], App.state.pendingImportType);
+    event.target.value = "";
+  });
+  App.dom.testProfilesFileInput?.addEventListener("change", event => {
+    importTestProfilesBatch(Array.from(event.target.files || []));
     event.target.value = "";
   });
   App.dom.mainNav.addEventListener("click", event => {
@@ -7176,6 +7745,10 @@ function handleActionClick(event) {
   if (action === "export-results-json") exportResults("json");
   if (action === "export-results-md") exportResults("markdown");
   if (action === "export-diagnostic-json") exportResultDiagnostics();
+  if (action === "run-test-bench-integrated") runIntegratedTestBench();
+  if (action === "import-test-profiles") App.dom.testProfilesFileInput?.click();
+  if (action === "export-test-bench-json") exportTestBench("json");
+  if (action === "export-test-bench-md") exportTestBench("markdown");
   if (action === "reset-balanced-weights") {
     App.state.profile.engineIntent = "balanced";
     App.state.profile.engineWeightsMode = "intent";
@@ -7269,6 +7842,7 @@ function updateProfileFromTarget(target) {
     profile[key] = key === "experienceDomains" ? normalizeExperienceDomains(Array.from(set)) : Array.from(set);
     if (key === "experienceDomains") {
       profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
+      profile.domainOrientation = normalizeDomainOrientation(profile.domainOrientation, profile.experienceDomains, profile.experienceDomainDetails);
     }
     return;
   }
@@ -7285,6 +7859,16 @@ function updateProfileFromTarget(target) {
   if (target.dataset.experienceDomain && target.dataset.experienceField) {
     const domain = normalizeExperienceDomainId(target.dataset.experienceDomain);
     if (!domain) return;
+    if (target.dataset.experienceField === "orientation") {
+      profile.domainOrientation = normalizeDomainOrientation(profile.domainOrientation, profile.experienceDomains, profile.experienceDomainDetails);
+      profile.domainOrientation[domain] = DOMAIN_ORIENTATION_OPTIONS.some(item => item[0] === target.value) ? target.value : "current";
+      if (target.value === "exclude") {
+        profile.excludedDomains = unique([...toArray(profile.excludedDomains), domain]);
+      } else {
+        profile.excludedDomains = toArray(profile.excludedDomains).filter(item => normalizeExperienceDomainId(item) !== domain);
+      }
+      return;
+    }
     profile.experienceDomainDetails = normalizeExperienceDomainDetails(profile.experienceDomainDetails, profile.experienceDomains);
     profile.experienceDomainDetails[domain] = {
       ...(profile.experienceDomainDetails[domain] || { duration: "not_specified", recency: "not_specified", confidence: "medium" }),
@@ -7771,8 +8355,9 @@ function calculateConfidence(criteria, job, details = [], unknown = []) {
     penalties
   ) * 100;
   let confidenceCap = job.provenance === "curated_clairmetier_ai_logic" ? 82 : 96;
-  if ((profileCompleteness < 0.35 || profileSkillCount < 2) && coreDetail.level !== "core") confidenceCap = Math.min(confidenceCap, 70);
-  if (!criteria.hasEnoughSkillEvidence && coreDetail.level !== "core") confidenceCap = Math.min(confidenceCap, 72);
+  const hasCoherentCoreSignal = ["core", "compatible"].includes(coreDetail.level) || ["heart_current", "heart_secondary", "support_tool"].includes(coreDetail.coreProfileLevel);
+  if ((profileCompleteness < 0.25 || profileSkillCount === 0) && !hasCoherentCoreSignal) confidenceCap = Math.min(confidenceCap, 76);
+  if (!criteria.hasEnoughSkillEvidence && !hasCoherentCoreSignal) confidenceCap = Math.min(confidenceCap, 78);
   if (marketDetail.source === "unknown") confidenceCap = Math.min(confidenceCap, 84);
   return Math.round(clamp(raw, 25, confidenceCap));
 }
@@ -7993,8 +8578,10 @@ function buildResultDiagnosticExport(results = App.state.results) {
     top5SelectionLabel: result.top5SelectionLabel || "",
     coreProfileMatchScore: result.coreProfileMatchScore || 0,
     coreProfileMatch: result.coreProfileMatch || null,
+    coreProfileLevel: result.coreProfileMatch?.coreProfileLevel || "",
     selectionScore: result.selectionScore || result.globalScore || 0,
     resultInterpretation: result.resultInterpretation || null,
+    resultFoundation: result.resultInterpretation?.resultFoundation || "",
     exclusionReasons: result.exclusionReasons,
     missingData: result.missingData,
     diagnostic: ensureResultDiagnostic(result)

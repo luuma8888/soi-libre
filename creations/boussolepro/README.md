@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.4-alpha
+**Version :** v0.5.5-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,20 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5.4 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5.5 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.5.5-alpha
+
+La v0.5.5-alpha affine la lecture humaine du profil :
+
+- orientation par domaine : cœur actuel, domaine vivant, support, outil, secondaire, passé, à éviter en principal ou à exclure ;
+- distinction claire entre compétence possédée et désir professionnel principal ;
+- `trainingFamilies` traité comme famille de formation déjà connue, avec un effet de familiarité/accessibilité, pas comme souhait de reconversion ;
+- ajout de `desiredTrainingFamilies` pour les familles de formation réellement souhaitées ;
+- Top 5 qualifié : cœur, branche secondaire, métier hybride, alternative utile ou exploratoire ;
+- numérique utilisable comme outil/support sans pousser automatiquement les métiers informatiques purs ;
+- diagnostic enrichi avec fondation du résultat et niveau de cœur de profil ;
+- banc de test local : profils intégrés, import multi-profils JSON, export JSON ou Markdown.
 
 ## Nouveautés v0.5.4-alpha
 
@@ -95,7 +108,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.4-alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.5-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -150,7 +163,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.4-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.5-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 
