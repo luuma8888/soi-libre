@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.3-alpha
+**Version :** v0.5.4-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,20 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5.3 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.5.4 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.5.4-alpha
+
+La v0.5.4-alpha améliore la sélection qualitative :
+
+- taxonomie stable des secteurs, notamment propreté distincte de bâtiment ;
+- score de cœur de profil pour distinguer métier central, compatible et exploratoire ;
+- qualification du Top 5 : cœur du profil, diversité, complément utile ou exploratoire ;
+- marché préparé comme critère intentionnel, avec indication quand il reste estimatif ou non discriminant ;
+- origine des pondérations explicitée : défaut, intention, manuel, importé ou ancien profil ;
+- affichage du niveau d’informations fondant un résultat ;
+- comparaison simple des intentions moteur sans modifier le profil ;
+- profils tests ajoutés pour propreté/hôtellerie, minimal et social/éducation.
 
 ## Nouveautés v0.5.3-alpha
 
@@ -82,7 +95,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.3-alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.5.4-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -137,7 +150,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.3-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.4-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 

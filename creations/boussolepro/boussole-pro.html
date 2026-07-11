@@ -1240,7 +1240,7 @@ body[data-theme="dark"] .loading-overlay {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.5.3-alpha",
+  version: "v0.5.4-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1523,19 +1523,94 @@ const EXCLUDED_DOMAIN_OPTIONS = [
 ];
 
 const DOMAIN_EXCLUSION_MAP = {
-  commerce: ["commerce", "vente", "relation_client_vente", "relation client", "relation_client", "shop"],
-  restauration: ["restauration", "cuisine", "alimentation", "hotellerie restauration"],
-  securite: ["securite", "prevention", "surveillance"],
-  soin: ["soin", "sante", "care", "aide a la personne"],
-  social: ["social", "insertion", "accompagnement", "mediation", "action sociale"],
-  education: ["education", "enseignement", "transmission", "enfance", "petite_enfance", "scolaire"],
-  proprete: ["proprete", "nettoyage", "entretien", "hygiene"],
-  hotellerie: ["hotellerie", "hebergement", "tourisme", "accueil hotelier"],
-  industrie: ["industrie", "production", "production_industrielle", "factory"],
-  batiment: ["batiment", "construction", "chantier", "maintenance batiment"],
-  logistique: ["logistique", "stock", "transport", "warehouse"],
-  animaux: ["animaux", "animal", "soin animalier"],
-  numerique: ["numerique", "informatique", "data", "web", "support informatique"]
+  commerce: ["commerce_vente"],
+  restauration: ["restauration_alimentation"],
+  securite: ["securite_prevention"],
+  soin: ["sante_soin"],
+  social: ["social_insertion"],
+  education: ["education_enfance"],
+  proprete: ["proprete_entretien"],
+  hotellerie: ["hotellerie_hebergement"],
+  industrie: ["industrie_production"],
+  batiment: ["batiment_construction"],
+  logistique: ["logistique_transport"],
+  animaux: ["nature_agriculture", "animaux"],
+  numerique: ["numerique"]
+};
+
+const SECTOR_TAXONOMY = {
+  administratif_support: {
+    label: "Administratif / support",
+    includes: ["administration", "administratif", "bureau", "dossier", "gestion", "secretariat", "paie", "comptable"]
+  },
+  numerique: {
+    label: "Numérique",
+    includes: ["numerique", "informatique", "web", "data", "logiciel", "support informatique", "developpeur", "no-code"]
+  },
+  social_insertion: {
+    label: "Social / insertion",
+    includes: ["social", "insertion", "accompagnement", "mediation", "autonomie", "tiers-lieu"]
+  },
+  education_enfance: {
+    label: "Éducation / enfance",
+    includes: ["education", "enseignement", "transmission", "enfance", "petite enfance", "animation", "scolaire", "atsem"]
+  },
+  sante_soin: {
+    label: "Santé / soin",
+    includes: ["sante", "soin", "aide a la personne", "hospitalier", "bien-etre"]
+  },
+  proprete_entretien: {
+    label: "Propreté / entretien",
+    includes: ["proprete", "nettoyage", "entretien", "hygiene", "agent de service", "employe d'etage", "femme de chambre", "valet de chambre"]
+  },
+  hotellerie_hebergement: {
+    label: "Hôtellerie / hébergement",
+    includes: ["hotellerie", "hebergement", "tourisme", "accueil hotelier", "hotel", "chambre"]
+  },
+  restauration_alimentation: {
+    label: "Restauration / alimentation",
+    includes: ["restauration", "cuisine", "aliment", "traiteur", "service en salle"]
+  },
+  commerce_vente: {
+    label: "Commerce / vente",
+    includes: ["commerce", "vente", "relation client", "caisse", "magasin", "clientele"]
+  },
+  nature_agriculture: {
+    label: "Nature / agriculture",
+    includes: ["nature", "environnement", "agriculture", "espaces verts", "jardin", "maraicher", "animal", "animaux"]
+  },
+  batiment_construction: {
+    label: "Bâtiment / construction",
+    includes: ["batiment", "construction", "chantier", "macon", "couvreur", "plombier", "electricien", "peintre en batiment"]
+  },
+  industrie_production: {
+    label: "Industrie / production",
+    includes: ["industrie", "production", "qualite", "laboratoire", "controle", "usinage"]
+  },
+  logistique_transport: {
+    label: "Logistique / transport",
+    includes: ["logistique", "stock", "transport", "livraison", "conduite", "preparateur de commandes"]
+  },
+  securite_prevention: {
+    label: "Sécurité / prévention",
+    includes: ["securite", "surveillance", "prevention", "gardiennage"]
+  },
+  culture_communication: {
+    label: "Culture / communication",
+    includes: ["culture", "communication", "creation", "redaction", "media", "bibliotheque", "patrimoine", "design"]
+  },
+  services_aux_collectivites: {
+    label: "Services aux collectivités",
+    includes: ["collectivite", "collectivites", "service public", "mairie"]
+  },
+  animaux: {
+    label: "Animaux",
+    includes: ["animal", "animaux", "soin animalier", "refuge"]
+  },
+  maintenance: {
+    label: "Maintenance",
+    includes: ["maintenance", "reparation", "depannage"]
+  }
 };
 
 const SKILL_TESTS = [
@@ -1705,6 +1780,67 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
       constraintSeverities: { heavyLoad: "conditional", weekendWork: "conditional", travel: "conditional" },
       criterionWeights: { skills: 24, training: 16, constraints: 25, values: 20, context: 10, market: 5 }
     }
+  },
+  {
+    id: "proprete-hotellerie-accessible",
+    title: "Propreté / hôtellerie accessible",
+    description: "Vérifie que la propreté et l’hôtellerie ne sont pas confondues avec bâtiment.",
+    expectedFamilies: ["Accueil et tourisme", "Cuisine et alimentation", "Services", "Manuel et technique"],
+    unexpectedFamilies: ["Bâtiment", "Administration et support"],
+    mustNotContain: ["Maçon", "Couvreur"],
+    profile: {
+      profileName: "Profil test - propreté hôtellerie",
+      diplomaLevel: 0,
+      experienceDomains: ["proprete", "accueil"],
+      skills: ["skill-cleaning", "skill-customer-care", "skill-organisation"],
+      interests: ["nourrir", "organiser", "aider"],
+      values: ["stability", "service", "concrete"],
+      preferredWorkStyles: ["structured", "manual"],
+      preferredEnvironments: ["human-scale", "movement"],
+      trainingOpenness: "micro_0_2_weeks",
+      searchHorizon: "now",
+      excludedDomains: ["batiment"],
+      constraintSeverities: { nightWork: "avoid", heavyLoad: "conditional" },
+      criterionWeights: { skills: 24, training: 24, constraints: 24, values: 12, context: 10, market: 6 }
+    }
+  },
+  {
+    id: "minimal-exploratoire",
+    title: "Minimal exploratoire",
+    description: "Vérifie que les pistes restent prudentes et bien expliquées quand le profil est court.",
+    expectedFamilies: ["Administration et support", "Accueil et tourisme", "Vente et conseil"],
+    unexpectedFamilies: [],
+    mustNotContain: [],
+    profile: {
+      profileName: "Profil test - minimal",
+      diplomaLevel: 0,
+      interests: ["organiser"],
+      trainingOpenness: "not_specified",
+      searchHorizon: "open_exploration",
+      criterionWeights: { skills: 25, training: 20, constraints: 20, values: 15, context: 10, market: 10 }
+    }
+  },
+  {
+    id: "social-education-commerce-exclu",
+    title: "Social / éducation, commerce évité",
+    description: "Vérifie que social, animation et éducation restent prioritaires quand le commerce est exclu.",
+    expectedFamilies: ["Relation d'aide", "Transmission et enfance", "Social et accompagnement"],
+    unexpectedFamilies: ["Commerce et relation client"],
+    mustNotContain: ["Hôte de caisse", "Vendeur"],
+    profile: {
+      profileName: "Profil test - social éducation",
+      diplomaLevel: 4,
+      experienceDomains: ["social", "education", "animation"],
+      skills: ["skill-active-listening", "skill-animation", "skill-teaching", "skill-communication"],
+      interests: ["accompagner", "transmettre", "enfants"],
+      values: ["solidarity", "meaning", "service"],
+      preferredWorkStyles: ["team", "relational"],
+      preferredEnvironments: ["human-scale", "children"],
+      trainingOpenness: "open_if_meaningful",
+      excludedDomains: ["commerce"],
+      constraintSeverities: { nightWork: "avoid", weekendWork: "conditional" },
+      criterionWeights: { skills: 25, training: 18, constraints: 22, values: 22, context: 8, market: 5 }
+    }
   }
 ];
 
@@ -1717,7 +1853,17 @@ const App = {
     results: null,
     resultDiagnosticsEnabled: false,
     resultsDirty: false,
+    resultIndex: null,
+    jobIndex: null,
+    skillRowIndex: null,
+    skillLabelIndex: null,
+    contextLabelIndex: null,
+    explorationHaystackCache: new Map(),
+    relatedVariantsCache: new Map(),
+    jobDerivedCache: new Map(),
+    intentComparisonCache: null,
     compareIds: [],
+    intentComparisonIntent: "quickEmployment",
     favoriteJobs: [],
     explorationFilters: {
       query: "",
@@ -2180,6 +2326,7 @@ function initApp() {
   }
 
   applyStoredTheme();
+  invalidateDatasetIndexes();
   calculateAndStoreResults();
   bindGlobalEvents();
   renderAll();
@@ -2732,6 +2879,7 @@ function isEmbeddedDataset(dataset) {
 
 function saveDataset(dataset = App.state.dataset) {
   try {
+    invalidateDatasetIndexes();
     const updatedAt = new Date().toISOString();
     const envelope = {
       app: CONFIG.appName,
@@ -2813,6 +2961,7 @@ function exportProfile() {
   const enginePreferences = {
     engineIntent: profile.engineIntent || "balanced",
     engineWeightsMode: profile.engineWeightsMode || "intent",
+    engineWeightsOrigin: normalizeEngineWeightsOrigin(profile.engineWeightsOrigin, profile),
     criterionWeights: getEffectiveCriterionWeights(profile),
     baseWeights: clone(CONFIG.baseWeights),
     exportedWithProfile: true,
@@ -2842,6 +2991,7 @@ function importProfile(fileOrText) {
         if (importedWeights && typeof importedWeights === "object") {
           profile.criterionWeights = normalizeWeights(importedWeights);
           profile.engineWeightsMode = rawProfile.engineWeightsMode || parsed.enginePreferences?.engineWeightsMode || "custom";
+          profile.engineWeightsOrigin = parsed.enginePreferences?.engineWeightsOrigin || rawProfile.engineWeightsOrigin || "imported_custom";
         }
         App.state.profile = profile;
         if (Array.isArray(parsed.favoriteJobs)) {
@@ -3413,6 +3563,8 @@ function mapUserProfileToCriteria(profile) {
   const engineIntent = ENGINE_INTENTS[profile.engineIntent] ? profile.engineIntent : "balanced";
   const weightMode = profile.engineWeightsMode === "custom" ? "custom" : "intent";
   const criterionWeights = getEffectiveCriterionWeights(profile);
+  const completeness = calculateProfileCompleteness(profile);
+  const marketPreference = normalizeMarketPreference(profile.marketPreference, engineIntent);
   const constraints = {};
   toArray(profile.constraints).forEach(constraint => {
     constraints[constraint.value] = constraint.severity || "open";
@@ -3482,14 +3634,19 @@ function mapUserProfileToCriteria(profile) {
     needForMeaning: profile.needForMeaning || "not_specified",
     engineIntent,
     weightMode,
+    weightOrigin: normalizeEngineWeightsOrigin(profile.engineWeightsOrigin, profile),
     criterionWeights,
     requestedCriterionWeights: normalizeWeights(profile.criterionWeights || ENGINE_INTENT_WEIGHTS[engineIntent] || CONFIG.baseWeights),
-    completeness: calculateProfileCompleteness(profile)
+    marketPreference,
+    profileSectors: getProfileSectorIds(profile),
+    completeness,
+    completenessLevel: profileCompletenessLevel(completeness)
   };
 }
 
-function calculateAllMatches(profile = App.state.profile, datasets = App.state.dataset) {
+function calculateAllMatches(profile = App.state.profile, datasets = App.state.dataset, options = {}) {
   const criteria = mapUserProfileToCriteria(profile);
+  criteria.marketContext = assessMarketContext(datasets, criteria);
   const results = (datasets.jobs || []).map(job => calculateMatch(criteria, job, datasets));
   const sorted = results.slice().sort((a, b) => b.globalScore - a.globalScore);
   const compatible = sorted.filter(result => result.status !== "excluded_for_now");
@@ -3509,7 +3666,9 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
     engineIntent: criteria.engineIntent,
     engineIntentLabel: ENGINE_INTENTS[criteria.engineIntent] || ENGINE_INTENTS.balanced,
     weightMode: criteria.weightMode,
+    weightOrigin: criteria.weightOrigin,
     criterionWeights: criteria.criterionWeights,
+    marketContext: criteria.marketContext,
     top5: diversified.top5,
     variantsByJob: diversified.variantsByJob,
     diversityExplanation: diversified.diversityExplanation,
@@ -3530,11 +3689,12 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
       afterTraining: compatible.filter(result => result.status.includes("training")).length
     }
   };
-  output.calibrationAudit = buildCalibrationAudit(output);
+  output.calibrationAudit = options.skipAudit ? null : buildCalibrationAudit(output);
   return output;
 }
 
-function calculateMatch(criteria, job, datasets = App.state.dataset) {
+function calculateMatch(criteria, job, datasets = App.state.dataset, options = {}) {
+  const includeDiagnostic = Boolean(options.includeDiagnostic);
   const hardCheck = applyHardExclusions(criteria, job);
   if (hardCheck.confirmed.length > 0) {
     const skill = calculateSkillScore(criteria, job, datasets);
@@ -3543,10 +3703,11 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     const context = calculateContextScore(criteria, job, datasets);
     const market = calculateMarketScore(job, datasets);
     const affinity = calculateDomainAffinityScore(criteria, job, datasets);
-    const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market);
+    const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity });
+    const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
     const scores = { skills: skill.score, training: training.score, constraints: 0, values: value.score, context: context.score, market: market.score };
     const relevanceScore = weightedGlobalScore({ ...scores, constraints: 15 }, weightAdjustment.weights);
-    const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market, affinity], hardCheck.unknown);
+    const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market, affinity, core], hardCheck.unknown);
     const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, hardCheck });
     const result = {
       schemaVersion: CONFIG.schemaVersion,
@@ -3558,6 +3719,9 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
       globalScore: 0,
       scorePertinence: relevanceScore,
       relevanceWithoutExclusion: relevanceScore,
+      coreProfileMatchScore: core.score,
+      coreProfileMatch: core,
+      selectionScore: 0,
       confidenceScore: confidence,
       dataReliability: reliabilityLabel(confidence),
       status: "excluded_for_now",
@@ -3573,9 +3737,12 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
       sourceRefs: job.sourceRefs,
       job
     };
-    result.evidenceSummary = buildEvidenceSummary(criteria, job, result, { skill, training, value, context, market, affinity, hardCheck });
+    result.evidenceSummary = buildEvidenceSummary(criteria, job, result, { skill, training, value, context, market, affinity, core, hardCheck });
     result.negativeReasons = explainMatch(criteria, job, scores, result.status, { skill, training, value, context, market, affinity, hardCheck }).negative;
-    result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, weightAdjustment, scoreCaps: { caps: [] }, hardCheck });
+    result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, value, context, market, affinity, core, hardCheck });
+    if (includeDiagnostic) {
+      result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, core, weightAdjustment, scoreCaps: { caps: [] }, hardCheck });
+    }
     return result;
   }
 
@@ -3586,7 +3753,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
   const context = calculateContextScore(criteria, job, datasets);
   const market = calculateMarketScore(job, datasets);
   const affinity = calculateDomainAffinityScore(criteria, job, datasets);
-  const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market);
+  const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity });
+  const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
   const scores = {
     skills: skill.score,
     training: training.score,
@@ -3598,8 +3766,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
   const rawGlobalScore = weightedGlobalScore(scores, weightAdjustment.weights);
   const scoreCaps = applyScoreCaps(rawGlobalScore, scores, criteria, job, { skill, training, constraint, affinity });
   const globalScore = scoreCaps.score;
-  const confidence = calculateConfidence(criteria, job, [skill, training, constraint, value, context, market, affinity], hardCheck.unknown);
-  const status = determineFeasibilityStatus(globalScore, scores, criteria, job, { training, constraint, affinity, scoreCaps, hardCheck });
+  const confidence = calculateConfidence(criteria, job, [skill, training, constraint, value, context, market, affinity, core], hardCheck.unknown);
+  const status = determineFeasibilityStatus(globalScore, scores, criteria, job, { training, constraint, affinity, core, scoreCaps, hardCheck });
   const explanation = explainMatch(criteria, job, scores, status, { skill, training, constraint, value, context, market, affinity, scoreCaps, hardCheck });
   const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint, value, context, market, hardCheck });
   const result = {
@@ -3612,6 +3780,9 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     globalScore,
     rawGlobalScore,
     scorePertinence: globalScore,
+    coreProfileMatchScore: core.score,
+    coreProfileMatch: core,
+    selectionScore: calculateSelectionScore(globalScore, scores, { core, affinity, constraint, training }),
     confidenceScore: confidence,
     dataReliability: reliabilityLabel(confidence),
     status,
@@ -3624,11 +3795,14 @@ function calculateMatch(criteria, job, datasets = App.state.dataset) {
     actionsToImprove: explanation.actions,
     suggestedTrainings: findSuggestedTrainings(job, datasets),
     relatedVariants: findRelatedVariants(job, datasets),
-    evidenceSummary: buildEvidenceSummary(criteria, job, { globalScore, status, scores, missingData: [] }, { skill, training, constraint, value, context, market, affinity, scoreCaps, hardCheck }),
+    evidenceSummary: buildEvidenceSummary(criteria, job, { globalScore, status, scores, missingData: [] }, { skill, training, constraint, value, context, market, affinity, core, scoreCaps, hardCheck }),
     sourceRefs: job.sourceRefs,
     job
   };
-  result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, weightAdjustment, scoreCaps, hardCheck });
+  result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, scoreCaps, hardCheck });
+  if (includeDiagnostic) {
+    result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, weightAdjustment, scoreCaps, hardCheck });
+  }
   return result;
 }
 
@@ -3636,6 +3810,80 @@ function reliabilityLabel(score) {
   if (score >= 75) return "high";
   if (score >= 50) return "medium";
   return "low";
+}
+
+function calculateSelectionScore(globalScore, scores = {}, details = {}) {
+  const coreScore = Number(details.core?.score || 0);
+  const affinityScore = Number(details.affinity?.score || 0);
+  let score = Number(globalScore || 0);
+  score += (coreScore - 50) * 0.55;
+  score += (affinityScore - 35) * 0.12;
+  if ((scores.constraints || 0) < 10) score -= 12;
+  if (details.training?.statusHint === "blocked") score -= 18;
+  if (details.core?.level === "core") score += 6;
+  if (details.core?.level === "weak") score -= 8;
+  return Math.round(clamp(score, 0, 100));
+}
+
+function informationDepthLabel(level) {
+  if (level === "high") return "beaucoup d’informations";
+  if (level === "medium") return "moyennement d’informations";
+  return "peu d’informations";
+}
+
+function resultInformationDepth(criteria, details = {}) {
+  const positiveSignals = [
+    criteria.completenessLevel !== "low",
+    toArray(details.skill?.profileSkillsUsed).length >= 2,
+    toArray(details.core?.matchedExperienceDomains).length > 0 || toArray(details.core?.matchedInterests).length > 0,
+    details.training?.statusHint && details.training.statusHint !== "unknown",
+    details.market?.source && details.market.source !== "unknown" && !details.market.isEstimated
+  ].filter(Boolean).length;
+  if (positiveSignals >= 4) return "high";
+  if (positiveSignals >= 2) return "medium";
+  return "low";
+}
+
+function buildResultInterpretation(criteria, job, result = {}, details = {}) {
+  const core = details.core || {};
+  const market = details.market || {};
+  const depth = resultInformationDepth(criteria, details);
+  const strongestSignals = [];
+  const weakSignals = [];
+  const blockingOrRiskSignals = [];
+  const whatToCheckNext = [];
+  if (core.level === "core") strongestSignals.push(`Secteur central : ${core.primarySectorLabel}.`);
+  if (toArray(core.matchedExperienceDomains).length) strongestSignals.push("Domaine déjà exploré ou proche de votre parcours.");
+  if (toArray(details.skill?.matchedRequiredSkills).length) strongestSignals.push("Compétences cœur déclarées présentes.");
+  if (toArray(details.value?.matched).length) strongestSignals.push("Envies ou valeurs reconnues.");
+  if (toArray(details.context?.matched).length) strongestSignals.push("Contexte de travail proche de vos préférences.");
+  if (core.level === "weak") weakSignals.push("Le métier est compatible, mais peu central dans les secteurs indiqués.");
+  if (criteria.completenessLevel === "low") weakSignals.push("Le profil contient encore peu d’informations : la piste reste à confirmer.");
+  if (market.isEstimated || market.rankingUse === "limited") weakSignals.push("Marché estimatif ou non localisé : à vérifier sur le territoire.");
+  if (details.constraint?.warnings?.length) blockingOrRiskSignals.push("Contraintes à vérifier : " + details.constraint.warnings.slice(0, 3).join(", ") + ".");
+  if (details.training?.statusHint === "short") blockingOrRiskSignals.push("Une marche courte de formation ou certification peut être nécessaire.");
+  if (details.training?.statusHint === "long") blockingOrRiskSignals.push("Une marche de formation plus longue peut être nécessaire.");
+  if (result.status === "excluded_for_now") blockingOrRiskSignals.push("Une contrainte excluante bloque cette piste pour l’instant.");
+  if (depth === "low") whatToCheckNext.push("Renseigner quelques compétences, domaines ou contraintes pour confirmer la piste.");
+  if (market.isEstimated || market.rankingUse === "limited") whatToCheckNext.push("Vérifier les débouchés locaux avec des sources terrain ou statistiques.");
+  if (details.constraint?.warnings?.length) whatToCheckNext.push("Comparer les conditions réelles des postes avant décision.");
+  const mainReason = core.level === "core"
+    ? "Ce métier ressort comme cœur possible du profil."
+    : core.level === "compatible"
+      ? "Ce métier ressort comme piste compatible et cohérente."
+      : core.level === "exploratory"
+        ? "Ce métier ressort comme piste exploratoire à confirmer."
+        : "Ce métier ressort surtout comme alternative compatible.";
+  return {
+    mainReason,
+    qualitativeLevel: core.level || "unknown",
+    strongestSignals,
+    weakSignals,
+    blockingOrRiskSignals,
+    dataConfidenceExplanation: `Ce résultat est fondé sur ${informationDepthLabel(depth)}.`,
+    informationDepth: depth,
+    whatToCheckNext
+  };
 }
 
 function buildScoreDetails(criteria, job, details = {}) {
@@ -3738,15 +3986,19 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     globalScore: result.globalScore,
     rawGlobalScore: result.rawGlobalScore ?? result.globalScore,
     confidenceScore: result.confidenceScore,
+    confidenceBasis: buildConfidenceBasis(criteria, job, details),
     status: result.status,
     engineIntent: criteria.engineIntent || "balanced",
     engineIntentLabel: ENGINE_INTENTS[criteria.engineIntent] || ENGINE_INTENTS.balanced,
     weightMode: criteria.weightMode || "intent",
+    weightOrigin: criteria.weightOrigin || "default",
     appliedWeights: clone(details.weightAdjustment?.weights || criteria.criterionWeights || CONFIG.baseWeights),
     requestedWeights: clone(criteria.requestedCriterionWeights || criteria.criterionWeights || CONFIG.baseWeights),
     weights: clone(details.weightAdjustment?.weights || criteria.criterionWeights || CONFIG.baseWeights),
     profileCompleteness: criteria.completeness || 0,
     domainAffinity: details.affinity || null,
+    coreProfileMatch: details.core || null,
+    coreProfileMatchScore: details.core?.score ?? result.coreProfileMatchScore ?? 0,
     constraintRisk: {
       score: details.constraint?.score ?? result.scores?.constraints ?? 0,
       riskScore: details.constraint?.riskScore ?? 0,
@@ -3764,10 +4016,17 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
       confidence: details.market?.confidence ?? 0,
       isEstimated: details.market?.isEstimated ?? true,
       rankingUse: details.market?.rankingUse || "limited",
-      note: details.market?.note || ""
+      note: details.market?.note || "",
+      marketDiscriminant: details.weightAdjustment?.marketDiscriminant ?? criteria.marketContext?.marketDiscriminant ?? false,
+      marketWeightApplied: details.weightAdjustment?.marketWeightApplied ?? 0,
+      marketWeightRedistributedTo: toArray(details.weightAdjustment?.marketWeightRedistributedTo),
+      marketDataLevel: details.weightAdjustment?.marketDataLevel || criteria.marketContext?.marketDataLevel || "estimated",
+      marketGoal: details.weightAdjustment?.marketGoal || criteria.marketContext?.marketGoal || "balanced"
     },
     scoreCapsApplied: toArray(details.scoreCaps?.caps),
     top5SelectionReason: result.top5SelectionReason || "",
+    top5SelectionLabel: result.top5SelectionLabel || "",
+    resultInterpretation: result.resultInterpretation || null,
     marketWeightWarning: details.weightAdjustment?.warning || "",
     subScores,
     skillStates: {
@@ -3878,6 +4137,8 @@ function subScoreLimits(key, detail = {}, job = {}) {
 
 function buildWhyItRanks(result = {}, details = {}) {
   const reasons = [];
+  if (details.core?.level === "core") reasons.push(`le secteur ${details.core.primarySectorLabel} est au cœur du profil`);
+  if (details.core?.level === "compatible") reasons.push(`le secteur ${details.core.primarySectorLabel} est compatible avec plusieurs signaux`);
   if ((result.scores?.skills || 0) >= 15) reasons.push("les compétences déclarées créent un signal favorable");
   if ((result.scores?.constraints || 0) >= 18) reasons.push("les contraintes renseignées restent plutôt compatibles");
   if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
@@ -3891,6 +4152,8 @@ function buildWhyItRanks(result = {}, details = {}) {
 function buildRankingLimits(result = {}, details = {}) {
   const limits = [];
   if (result.status === "excluded_for_now") limits.push("une contrainte excluante bloque ce métier pour l’instant");
+  if (details.core?.level === "weak") limits.push("le métier est compatible, mais reste éloigné du cœur de profil renseigné");
+  if (details.core?.level === "exploratory") limits.push("la proximité avec le cœur de profil reste à confirmer");
   if (details.skill?.unlinkedOfficialSkills) limits.push("compétences officielles non reliées : confiance réduite");
   if (toArray(details.skill?.weakSkills).length) limits.push("compétences explicitement faibles");
   if (toArray(details.skill?.explicitlyAbsentSkills).length) limits.push("compétences explicitement absentes");
@@ -3905,6 +4168,7 @@ function buildRankingLimits(result = {}, details = {}) {
 
 function buildChangeLevers(result = {}, details = {}) {
   const levers = [];
+  if (details.core?.level === "weak" || details.core?.level === "exploratory") levers.push("ajouter des domaines d’expérience ou familles de formation pour confirmer cette direction");
   if (toArray(details.skill?.unassessedSkills).length) levers.push("évaluer les compétences non renseignées avant de conclure");
   if (toArray(details.skill?.weakSkills).length || toArray(details.skill?.explicitlyAbsentSkills).length) levers.push("renforcer une compétence cœur ou vérifier une variante moins exigeante");
   if (details.training?.statusHint === "short") levers.push("identifier une formation courte ou une certification ciblée");
@@ -4010,28 +4274,123 @@ function applyHardExclusions(criteria, job) {
 
 function domainExclusionMatchesJob(domainId, job) {
   const normalizedDomainId = normalizeText(domainId);
-  const mapped = toArray(DOMAIN_EXCLUSION_MAP[domainId] || DOMAIN_EXCLUSION_MAP[normalizedDomainId]).map(normalizeText);
+  const mapped = toArray(DOMAIN_EXCLUSION_MAP[domainId] || DOMAIN_EXCLUSION_MAP[normalizedDomainId]);
   if (!mapped.length) return false;
-  const jobIds = getJobDomainExclusionIds(job);
-  return mapped.some(item => jobIds.includes(item));
+  const jobSector = getJobSectorProfile(job);
+  return mapped.some(item => jobSector.allSectorIds.includes(item));
 }
 
 function getJobDomainExclusionIds(job) {
-  const direct = [
+  return getJobSectorProfile(job).allSectorIds;
+}
+
+function getJobDerivedCache(job = {}) {
+  const key = job.id || job.canonicalId || job.title || "";
+  if (!key) return {};
+  if (!App.state.jobDerivedCache) App.state.jobDerivedCache = new Map();
+  if (!App.state.jobDerivedCache.has(key)) App.state.jobDerivedCache.set(key, {});
+  return App.state.jobDerivedCache.get(key);
+}
+
+function getJobSectorProfile(job = {}) {
+  const cache = getJobDerivedCache(job);
+  if (cache.sectorProfile) return cache.sectorProfile;
+  const explicitPrimary = job.primarySectorId || job.primarySector || "";
+  const explicitSecondary = unique([...toArray(job.secondarySectorIds), ...toArray(job.sectorIds)]).filter(Boolean);
+  const inferred = inferJobSectorIds(job);
+  const primarySectorId = explicitPrimary || inferred[0] || "unknown";
+  const secondarySectorIds = unique([...explicitSecondary, ...inferred.slice(1)]).filter(id => id && id !== primarySectorId);
+  cache.sectorProfile = {
+    primarySectorId,
+    secondarySectorIds,
+    allSectorIds: unique([primarySectorId, ...secondarySectorIds]).filter(id => id && id !== "unknown"),
+    source: explicitPrimary || explicitSecondary.length ? "explicit_or_imported" : "computed"
+  };
+  return cache.sectorProfile;
+}
+
+function inferJobSectorIds(job = {}) {
+  const cache = getJobDerivedCache(job);
+  if (cache.inferredSectorIds) return cache.inferredSectorIds;
+  const text = normalizeText([
+    job.title,
     job.domain,
     job.family,
     job.marketDomain,
-    ...(job.sectorIds || []),
-    ...(job.transitionTags || []),
-    ...(job.interestTags || [])
-  ].map(normalizeText).filter(Boolean);
-  const inferred = [];
-  const text = normalizeText(`${job.domain} ${job.family} ${job.title}`);
-  Object.entries(DOMAIN_EXCLUSION_MAP).forEach(([domainId, tokens]) => {
-    const normalizedTokens = tokens.map(normalizeText);
-    if (normalizedTokens.some(token => direct.includes(token) || text.includes(token))) inferred.push(normalizeText(domainId));
-  });
-  return unique([...direct, ...inferred]);
+    ...toArray(job.appellations),
+    ...toArray(job.transitionTags),
+    ...toArray(job.interestTags)
+  ].join(" "));
+  const scores = Object.entries(SECTOR_TAXONOMY).map(([sectorId, config]) => {
+    const score = toArray(config.includes).reduce((sum, token) => {
+      const normalizedToken = normalizeText(token);
+      if (!normalizedToken) return sum;
+      return sum + (text.includes(normalizedToken) ? (normalizedToken.length > 8 ? 2 : 1) : 0);
+    }, 0);
+    return { sectorId, score };
+  }).filter(item => item.score > 0);
+  const byScore = scores.sort((a, b) => b.score - a.score || a.sectorId.localeCompare(b.sectorId));
+  const sectorIds = byScore.map(item => item.sectorId);
+  if (sectorIds.includes("hotellerie_hebergement") && sectorIds.includes("proprete_entretien")) {
+    cache.inferredSectorIds = unique(["hotellerie_hebergement", "proprete_entretien", ...sectorIds.filter(id => !["hotellerie_hebergement", "proprete_entretien", "batiment_construction"].includes(id))]);
+    return cache.inferredSectorIds;
+  }
+  if (sectorIds.includes("proprete_entretien")) {
+    cache.inferredSectorIds = unique(["proprete_entretien", ...sectorIds.filter(id => id !== "batiment_construction")]);
+    return cache.inferredSectorIds;
+  }
+  cache.inferredSectorIds = unique(sectorIds);
+  return cache.inferredSectorIds;
+}
+
+function sectorLabel(sectorId) {
+  return SECTOR_TAXONOMY[sectorId]?.label || sectorId || "secteur non précisé";
+}
+
+function experienceDomainToSectors(domainId) {
+  const map = {
+    accueil: ["commerce_vente", "hotellerie_hebergement"],
+    administratif: ["administratif_support"],
+    animation: ["education_enfance", "social_insertion"],
+    education: ["education_enfance"],
+    social: ["social_insertion"],
+    soin: ["sante_soin", "social_insertion"],
+    petite_enfance: ["education_enfance", "sante_soin"],
+    proprete: ["proprete_entretien"],
+    cuisine: ["restauration_alimentation"],
+    numerique: ["numerique"],
+    communication: ["culture_communication"],
+    nature: ["nature_agriculture"],
+    animaux: ["animaux", "nature_agriculture"],
+    bricolage: ["maintenance", "batiment_construction"],
+    batiment: ["batiment_construction"],
+    logistique: ["logistique_transport"],
+    transport: ["logistique_transport"],
+    commerce: ["commerce_vente"],
+    industrie: ["industrie_production"],
+    laboratoire: ["industrie_production"],
+    culture: ["culture_communication"],
+    association: ["social_insertion", "services_aux_collectivites"]
+  };
+  return map[domainId] || [];
+}
+
+function getProfileSectorIds(profile = App.state.profile) {
+  const domains = normalizeExperienceDomains(profile?.experienceDomains);
+  const trainingFamilies = toArray(profile?.trainingFamilies).map(normalizeExperienceDomainId).filter(Boolean);
+  const interestSectors = toArray(profile?.interests).flatMap(interest => experienceDomainToSectors(normalizeExperienceDomainId(interest)));
+  return unique([
+    ...domains.flatMap(experienceDomainToSectors),
+    ...trainingFamilies.flatMap(experienceDomainToSectors),
+    ...interestSectors
+  ]);
+}
+
+function profileCompletenessLevel(value) {
+  const score = Number(value || 0);
+  if (score < 0.35) return "low";
+  if (score < 0.68) return "medium";
+  return "high";
 }
 
 function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
@@ -4162,6 +4521,8 @@ function experienceBonusForJob(criteria, job) {
 }
 
 function getExperienceDomainsForJob(job) {
+  const cache = getJobDerivedCache(job);
+  if (cache.experienceDomains) return cache.experienceDomains;
   const text = normalizeText(`${job.domain} ${job.family} ${job.title} ${toArray(job.transitionTags).join(" ")} ${toArray(job.interestTags).join(" ")}`);
   const pairs = [
     ["administratif", /admin|bureau|dossier|gestion/],
@@ -4185,7 +4546,8 @@ function getExperienceDomainsForJob(job) {
     ["culture", /culture|bibliotheque|patrimoine/],
     ["association", /association|collectif|tiers-lieu|benevole/]
   ];
-  return pairs.filter(([, pattern]) => pattern.test(text)).map(([domain]) => domain);
+  cache.experienceDomains = pairs.filter(([, pattern]) => pattern.test(text)).map(([domain]) => domain);
+  return cache.experienceDomains;
 }
 
 function calculateDomainAffinityScore(criteria, job, datasets = App.state.dataset) {
@@ -4219,6 +4581,49 @@ function calculateDomainAffinityScore(criteria, job, datasets = App.state.datase
     matchedSkills,
     contextSignals,
     missingData: []
+  };
+}
+
+function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.dataset, details = {}) {
+  const jobSector = getJobSectorProfile(job);
+  const profileSectors = toArray(criteria.profileSectors);
+  const trainingSectors = toArray(criteria.education?.trainingFamilies).flatMap(domain => experienceDomainToSectors(normalizeExperienceDomainId(domain)));
+  const matchedPrimarySector = profileSectors.includes(jobSector.primarySectorId) || trainingSectors.includes(jobSector.primarySectorId);
+  const matchedSecondarySectors = jobSector.secondarySectorIds.filter(id => profileSectors.includes(id) || trainingSectors.includes(id));
+  const matchedExperienceDomains = getExperienceDomainsForJob(job).filter(domain => toArray(criteria.experience?.domains).includes(domain));
+  const matchedInterests = Object.keys(criteria.interests || {}).filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
+  const matchedValues = Object.keys(criteria.values || {}).filter(item => tagMatches(item, job.valueTags));
+  const matchedSkills = unique([
+    ...toArray(details.skill?.matchedRequiredSkills),
+    ...toArray(details.skill?.matchedOptionalSkills)
+  ]);
+  const matchedContexts = toArray(details.context?.matched);
+  let score = 0;
+  if (matchedPrimarySector) score += 36;
+  score += Math.min(matchedSecondarySectors.length, 2) * 12;
+  score += Math.min(matchedExperienceDomains.length, 2) * 18;
+  score += Math.min(matchedSkills.length, 4) * 6;
+  score += Math.min(matchedInterests.length, 3) * 5;
+  score += Math.min(matchedValues.length, 2) * 4;
+  score += Math.min(matchedContexts.length, 2) * 3;
+  const normalizedScore = Math.round(clamp(score, 0, 100));
+  const level = normalizedScore >= 68 ? "core" : normalizedScore >= 42 ? "compatible" : normalizedScore >= 24 ? "exploratory" : "weak";
+  return {
+    score: normalizedScore,
+    level,
+    primarySectorId: jobSector.primarySectorId,
+    primarySectorLabel: sectorLabel(jobSector.primarySectorId),
+    matchedPrimarySector,
+    matchedSecondarySectors,
+    matchedSecondarySectorLabels: matchedSecondarySectors.map(sectorLabel),
+    profileSectors,
+    jobSectors: jobSector.allSectorIds,
+    matchedExperienceDomains,
+    matchedInterests,
+    matchedValues,
+    matchedSkills,
+    matchedContexts,
+    source: jobSector.source
   };
 }
 
@@ -4312,7 +4717,7 @@ function calculateConstraintScore(criteria, job) {
     }
     if (compatibility.status === "confirmed_incompatible") {
       if (severity === "avoid") riskScore += 12;
-      if (severity === "conditional") riskScore += 5;
+      if (severity === "conditional") riskScore += isTerrainOrManualProfile(criteria, job) ? 2 : 5;
       if (severity === "excluding") riskScore += 25;
       warnings.push(compatibility.label);
     } else {
@@ -4322,6 +4727,18 @@ function calculateConstraintScore(criteria, job) {
   });
   score = score + Math.min(compatibilityBonus, 5) - riskScore;
   return { score: Math.round(clamp(score, 0, 25)), missingData, warnings, matchedConstraints, riskScore, compatibilityBonus, activeCount };
+}
+
+function isTerrainOrManualProfile(criteria, job = {}) {
+  const profileSignals = [
+    ...toArray(criteria.preferredWorkStyles),
+    ...toArray(criteria.preferredEnvironments),
+    ...toArray(criteria.profileSectors)
+  ].map(normalizeText);
+  const terrainProfile = profileSignals.some(item => ["field", "outdoor", "manual", "movement", "nature_agriculture", "animaux", "proprete_entretien", "batiment_construction"].includes(item));
+  const jobSector = getJobSectorProfile(job);
+  const terrainJob = ["nature_agriculture", "animaux", "proprete_entretien", "batiment_construction", "logistique_transport"].includes(jobSector.primarySectorId);
+  return terrainProfile && terrainJob;
 }
 
 function calculateValueScore(criteria, job) {
@@ -4411,7 +4828,12 @@ function determineFeasibilityStatus(globalScore, scores, criteria, job, details 
   if (criteria.searchHorizon === "2_3_years" && details.training?.statusHint === "long" && globalScore >= 38) return "possible_after_long_training";
   if (details.training?.statusHint === "short" && globalScore >= 45) return "possible_after_short_training";
   if (details.training?.statusHint === "long" && globalScore >= 40) return "possible_after_long_training";
-  if (scores.constraints <= 9) return "discouraged";
+  if (scores.constraints <= 9) {
+    if (details.core?.level === "core" && toArray(details.constraint?.warnings).length) {
+      return globalScore >= 45 ? "difficult_but_possible" : "explore_with_caution";
+    }
+    return "discouraged";
+  }
   const confidenceRisk = details.hardCheck?.unknown?.length || (job.missingFields || []).length > 5;
   if (confidenceRisk && globalScore < 65) return "explore_with_caution";
   if (globalScore >= 78 && scores.skills >= 15 && scores.training >= 15 && scores.constraints >= 18) return "possible_now";
@@ -4472,7 +4894,7 @@ function buildCalibrationAudit(results = {}) {
       title: result.title,
       score: Math.round(result.globalScore),
       constraintScore: Math.round(result.scores?.constraints || 0),
-      warnings: toArray(result.diagnostic?.exclusionControl?.constraintWarnings).slice(0, 3)
+      warnings: toArray(result.scoreDetails?.constraints?.warnings || result.negativeReasons).slice(0, 3)
     }));
   const highScoreLowConfidence = compatible
     .filter(result => result.globalScore >= 70 && result.confidenceScore < 55)
@@ -4480,9 +4902,10 @@ function buildCalibrationAudit(results = {}) {
   const top5 = toArray(results.top5);
   const families = countBy(top5.map(result => result.job?.family || result.title || "inconnu"));
   const domains = countBy(top5.map(result => result.job?.domain || "inconnu"));
+  const top5Reasons = countBy(top5.map(result => result.top5SelectionReason || "unqualified"));
   const scores = complete.map(result => result.globalScore).filter(value => Number.isFinite(value));
   const scoreSpread = scores.length ? Math.round(Math.max(...scores) - Math.min(...scores)) : 0;
-  const top5FilledByFallback = top5.filter(result => result.top5SelectionReason === "complément utile pour remplir le Top 5").length;
+  const top5FilledByFallback = top5.filter(result => ["fallback_useful", "exploratory"].includes(result.top5SelectionReason)).length;
   const profilesWarnings = evaluateCurrentTestProfileExpectations(results);
   const warnings = [
     highExcluded.length ? `${highExcluded.length} métier(s) exclus auraient une pertinence élevée si la contrainte changeait.` : "",
@@ -4503,6 +4926,9 @@ function buildCalibrationAudit(results = {}) {
     constraintScoreDistribution: scoreDistribution(complete.map(result => result.scores?.constraints), 25),
     top5Count: top5.length,
     top5FilledByFallback,
+    top5SelectionReasons: top5Reasons,
+    coreProfileDistribution: scoreDistribution(complete.map(result => result.coreProfileMatchScore)),
+    marketContext: results.marketContext || {},
     profilesWarnings,
     top5Diversity: { families, domains },
     highExcluded,
@@ -4551,15 +4977,23 @@ function evaluateCurrentTestProfileExpectations(results = {}) {
 function diversifyTopResults(results) {
   const compatible = results
     .filter(result => result.status !== "excluded_for_now" && result.status !== "discouraged" && result.globalScore >= 45 && (result.scores?.constraints || 0) > 6)
-    .sort((a, b) => b.globalScore - a.globalScore);
+    .sort((a, b) => (b.selectionScore || b.globalScore) - (a.selectionScore || a.globalScore) || b.globalScore - a.globalScore);
   const selected = [];
   const variantsByJob = {};
-  const bestScore = compatible[0]?.globalScore || 0;
+  const bestScore = compatible[0]?.selectionScore || compatible[0]?.globalScore || 0;
   const tryAddCandidate = (candidate, mode = "strict") => {
     if (selected.length >= 5 || selected.some(item => item.jobId === candidate.jobId)) return false;
-    if (mode !== "fill" && candidate.globalScore < bestScore - 12 && selected.length >= 3) return false;
+    const candidateSelectionScore = candidate.selectionScore || candidate.globalScore || 0;
+    if (!["fill", "relaxed"].includes(mode) && candidateSelectionScore < bestScore - 12 && selected.length >= 3) return false;
     const variantParent = selected.find(item => isVariantOf(candidate, item));
-    if (variantParent && mode !== "fill") {
+    if (mode === "core" || mode === "core_relaxed") {
+      if (candidate.coreProfileMatch?.level !== "core") return false;
+    }
+    if (mode === "core") {
+      const direction = jobDirectionKey(candidate.job);
+      if (selected.some(item => jobDirectionKey(item.job) === direction)) return false;
+    }
+    if (variantParent && !["relaxed", "core", "core_relaxed"].includes(mode)) {
       variantsByJob[variantParent.jobId] = variantsByJob[variantParent.jobId] || [];
       variantsByJob[variantParent.jobId].push(candidate);
       return false;
@@ -4570,14 +5004,22 @@ function diversifyTopResults(results) {
     if (mode === "soft" && sameDomain && sameFamily) return false;
     const diversityScore = calculateDiversityScore(candidate, selected);
     candidate.diversityScore = diversityScore;
-    candidate.top5SelectionReason = mode === "fill" ? "complément utile pour remplir le Top 5" : mode === "soft" ? "diversité souple" : "diversité forte";
-    if (candidate.diagnostic) candidate.diagnostic.top5SelectionReason = candidate.top5SelectionReason;
+    candidate.top5SelectionReason = top5SelectionReasonCode(candidate, mode);
+    candidate.top5SelectionLabel = top5SelectionLabel(candidate.top5SelectionReason);
+    candidate.qualitativeRole = candidate.top5SelectionReason;
+    if (candidate.diagnostic) {
+      candidate.diagnostic.top5SelectionReason = candidate.top5SelectionReason;
+      candidate.diagnostic.top5SelectionLabel = candidate.top5SelectionLabel;
+    }
     selected.push(candidate);
     return true;
   };
+  compatible.forEach(candidate => tryAddCandidate(candidate, "core"));
+  compatible.forEach(candidate => tryAddCandidate(candidate, "core_relaxed"));
   compatible.forEach(candidate => tryAddCandidate(candidate, "strict"));
   compatible.forEach(candidate => tryAddCandidate(candidate, "soft"));
   compatible.forEach(candidate => tryAddCandidate(candidate, "fill"));
+  compatible.forEach(candidate => tryAddCandidate(candidate, "relaxed"));
   return {
     top5: selected.slice(0, 5),
     variantsByJob,
@@ -4585,10 +5027,52 @@ function diversifyTopResults(results) {
   };
 }
 
+function top5SelectionReasonCode(result, mode) {
+  if (result.coreProfileMatch?.level === "core" && mode !== "fill" && mode !== "relaxed") return "core_match";
+  if (mode === "strict" || mode === "soft") return "diversity_pick";
+  if (result.coreProfileMatch?.level === "weak" || result.status === "explore_with_caution" || mode === "relaxed") return "exploratory";
+  return "fallback_useful";
+}
+
+function jobDirectionKey(job = {}) {
+  const title = normalizeText(job.title || "");
+  if (/data|analyst|analyste/.test(title)) return "data";
+  if (/nature|jardin|maraicher|riviere|milieu|aquatique|apicul|elev|animal|biodiversite|ecogarde|horticul|pepini/.test(title)) return "vivant-terrain";
+  if (/administrateur|technicien|support|reseau|systeme/.test(title)) return "support-infra";
+  if (/test|qa/.test(title)) return "qa";
+  if (/redacteur|seo|contenu|community|communication/.test(title)) return "contenu";
+  if (/no-code|automatisation/.test(title)) return "no-code";
+  if (/web|developpeur|integrateur|code/.test(title)) return "web";
+  const text = normalizeText(`${job.title} ${job.family} ${toArray(job.transitionTags).join(" ")} ${toArray(job.requiredSkills).join(" ")}`);
+  if (/web|developpeur|integrateur|code/.test(text)) return "web";
+  if (/data|analyse|analyst|stat/.test(text)) return "data";
+  if (/systeme|reseau|technicien|administrateur/.test(text)) return "support-infra";
+  if (/test|qa|qualite logiciel/.test(text)) return "qa";
+  if (/redacteur|seo|contenu|community|communication/.test(text)) return "contenu";
+  if (/no-code|automatisation|outil/.test(text)) return "no-code";
+  if (/enfance|atsem|animateur|education/.test(text)) return "education-animation";
+  if (/proprete|nettoyage|chambre|etage/.test(text)) return "proprete-hotellerie";
+  return normalizeText(job.family || job.domain || job.title || "autre").slice(0, 40);
+}
+
+function top5SelectionLabel(code) {
+  const labels = {
+    core_match: "cœur du profil",
+    diversity_pick: "diversité",
+    fallback_useful: "complément utile",
+    exploratory: "exploratoire"
+  };
+  return labels[code] || "sélection qualitative";
+}
+
 function findRelatedVariants(job, datasets = App.state.dataset) {
+  const cacheKey = datasets === App.state.dataset
+    ? `${job?.id || ""}|${datasets?.datasetVersion || ""}|${toArray(datasets?.jobs).length}`
+    : "";
+  if (cacheKey && App.state.relatedVariantsCache?.has(cacheKey)) return App.state.relatedVariantsCache.get(cacheKey);
   const jobs = datasets.jobs || [];
   const direct = toArray(job.relatedJobs)
-    .map(id => jobs.find(candidate => candidate.id === id))
+    .map(id => datasets === App.state.dataset ? findJob(id) : jobs.find(candidate => candidate.id === id))
     .filter(Boolean);
   const similar = jobs
     .filter(candidate => candidate.id !== job.id && !direct.some(item => item.id === candidate.id))
@@ -4597,12 +5081,14 @@ function findRelatedVariants(job, datasets = App.state.dataset) {
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 4)
     .map(item => item.job);
-  return uniqueBy([...direct, ...similar], "id").slice(0, 5).map(item => ({
+  const variants = uniqueBy([...direct, ...similar], "id").slice(0, 5).map(item => ({
     jobId: item.id,
     title: item.title,
     romeCode: item.romeCode,
     family: item.family
   }));
+  if (cacheKey) App.state.relatedVariantsCache.set(cacheKey, variants);
+  return variants;
 }
 
 function renderExperienceDomainDetails(profile) {
@@ -4979,6 +5465,7 @@ function renderResults() {
       </div>
       ${App.state.resultDiagnosticsEnabled ? renderResultsDiagnosticPanel(results) : ""}
       ${renderComparePanel()}
+      ${renderIntentComparisonPanel(results)}
     </section>
     <section class="results-section top-results-section print-section">
       <h2>Top 5 diversifié</h2>
@@ -5022,8 +5509,11 @@ function renderJobCard(result, options = {}) {
           <p class="job-subtitle">${h(getJobCodeLabel(job || result))} - ${h(job?.domain || "")} - ${h(job?.family || "")}</p>
           <div class="badge-row">
             ${options.featured ? `<span class="badge gold">Top 5</span>` : ""}
+            ${options.featured && result.top5SelectionLabel ? `<span class="badge sage">${h(result.top5SelectionLabel)}</span>` : ""}
+            ${result.coreProfileMatch?.level === "core" ? `<span class="badge sage">Cœur du profil</span>` : result.coreProfileMatch?.level === "exploratory" ? `<span class="badge outline">Exploratoire</span>` : ""}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
+            ${result.resultInterpretation?.informationDepth ? `<span class="badge outline">${h(informationDepthLabel(result.resultInterpretation.informationDepth))}</span>` : ""}
             <span class="badge outline">Fiabilité ${h(reliabilityText(result.dataReliability))}</span>
             <span class="badge gold">${h((job?.provenance || "sample") === "sample" ? "Corpus sample" : job?.provenance)}</span>
           </div>
@@ -5041,6 +5531,7 @@ function renderJobCard(result, options = {}) {
           <ul>${take(vigilances, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans ce corpus.</li>"}</ul>
         </div>
       </div>
+      ${result.resultInterpretation ? `<div class="summary-box"><strong>${h(result.resultInterpretation.mainReason)}</strong><p>${h(result.resultInterpretation.dataConfidenceExplanation)}</p></div>` : ""}
       ${options.showVariants && variants.length ? `<div class="summary-box"><strong>Variantes proches :</strong> ${variants.map(item => `<span class="badge outline">${h(item.title)}</span>`).join(" ")}</div>` : ""}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-result-action="details">Détails</button>
@@ -5050,18 +5541,33 @@ function renderJobCard(result, options = {}) {
         <button class="tiny-button ${isFavorite ? "is-active" : ""}" type="button" data-result-action="favorite" aria-pressed="${isFavorite ? "true" : "false"}">${isFavorite ? "Retirer favori" : "Favori"}</button>
         <button class="tiny-button ${isCompared ? "is-active" : ""}" type="button" data-result-action="compare" aria-pressed="${isCompared ? "true" : "false"}">${isCompared ? "Retirer du comparatif" : "Comparer"}</button>
       </div>
-      <div class="details-panel" data-details-panel>
-        <div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
-        <p><strong>Description :</strong> ${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</p>
-        <p><strong>Appellations :</strong> ${take(job?.appellations || [], 5).map(h).join(", ") || "Non renseignées."}</p>
-        <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</p>
-        <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
-        <p><strong>Données manquantes :</strong> ${result.missingData.map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
-        ${renderEvidenceSummary(result.evidenceSummary)}
-        ${renderScoreDetails(result.scoreDetails)}
-        ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}
-      </div>
+      <div class="details-panel" data-details-panel data-details-loaded="false"></div>
     </article>`;
+}
+
+function renderJobDetailsPanelContent(result = {}) {
+  const job = result.job || findJob(result.jobId);
+  const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
+  return `
+    <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
+    <p><strong>Description :</strong> ${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</p>
+    <p><strong>Appellations :</strong> ${take(job?.appellations || [], 5).map(h).join(", ") || "Non renseignées."}</p>
+    <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</p>
+    <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
+    <p><strong>Données manquantes :</strong> ${toArray(result.missingData).map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
+    ${renderEvidenceSummary(result.evidenceSummary)}
+    ${renderScoreDetails(result.scoreDetails)}
+    ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
+}
+
+function toggleJobDetailsPanel(card, result) {
+  const panel = card?.querySelector("[data-details-panel]");
+  if (!panel) return;
+  if (panel.dataset.detailsLoaded !== "true") {
+    panel.innerHTML = renderJobDetailsPanelContent(result);
+    panel.dataset.detailsLoaded = "true";
+  }
+  panel.classList.toggle("is-open");
 }
 
 function reliabilityText(value) {
@@ -5133,9 +5639,12 @@ function renderResultsDiagnosticPanel(results = App.state.results) {
         <li><strong>Scores élevés avec contraintes fortes :</strong> ${toArray(audit.highScoreWithConstraintWarnings).length}</li>
         <li><strong>Scores élevés avec confiance réduite :</strong> ${toArray(audit.highScoreLowConfidence).length}</li>
         <li><strong>Top 5 :</strong> ${h(audit.top5Count || 0)} piste(s), dont ${h(audit.top5FilledByFallback || 0)} complément(s) utile(s).</li>
+        <li><strong>Sélection Top 5 :</strong> cœur ${h(audit.top5SelectionReasons?.core_match || 0)}, diversité ${h(audit.top5SelectionReasons?.diversity_pick || 0)}, complément ${h(audit.top5SelectionReasons?.fallback_useful || 0)}, exploratoire ${h(audit.top5SelectionReasons?.exploratory || 0)}.</li>
         <li><strong>Distribution scores :</strong> bas ${h(audit.scoreDistribution?.low || 0)}, moyens ${h(audit.scoreDistribution?.medium || 0)}, hauts ${h(audit.scoreDistribution?.high || 0)}.</li>
+        <li><strong>Distribution cœur de profil :</strong> faible ${h(audit.coreProfileDistribution?.low || 0)}, moyenne ${h(audit.coreProfileDistribution?.medium || 0)}, forte ${h(audit.coreProfileDistribution?.high || 0)}.</li>
         <li><strong>Distribution confiance :</strong> basse ${h(audit.confidenceDistribution?.low || 0)}, moyenne ${h(audit.confidenceDistribution?.medium || 0)}, haute ${h(audit.confidenceDistribution?.high || 0)}.</li>
         <li><strong>Distribution marché :</strong> faible/inconnu ${h(audit.marketScoreDistribution?.low || 0)}, moyen ${h(audit.marketScoreDistribution?.medium || 0)}, fort ${h(audit.marketScoreDistribution?.high || 0)}.</li>
+        <li><strong>Marché :</strong> ${audit.marketContext?.marketDiscriminant ? "discriminant" : "estimatif / non discriminant"} · niveau ${h(audit.marketContext?.marketDataLevel || "non précisé")} · objectif ${h(audit.marketContext?.marketGoal || "balanced")}.</li>
         <li><strong>Distribution formation :</strong> faible ${h(audit.trainingScoreDistribution?.low || 0)}, moyenne ${h(audit.trainingScoreDistribution?.medium || 0)}, forte ${h(audit.trainingScoreDistribution?.high || 0)}.</li>
         <li><strong>Distribution contraintes :</strong> risquée ${h(audit.constraintScoreDistribution?.low || 0)}, à vérifier ${h(audit.constraintScoreDistribution?.medium || 0)}, confortable ${h(audit.constraintScoreDistribution?.high || 0)}.</li>
       </ul>
@@ -5143,18 +5652,35 @@ function renderResultsDiagnosticPanel(results = App.state.results) {
     </div>`;
 }
 
+function ensureResultDiagnostic(result = {}) {
+  if (!result || result.diagnostic) return result?.diagnostic || null;
+  const job = result.job || findJob(result.jobId);
+  if (!job || !App.state.profile || !App.state.dataset) return null;
+  const criteria = mapUserProfileToCriteria(App.state.profile);
+  criteria.marketContext = App.state.results?.marketContext || assessMarketContext(App.state.dataset, criteria);
+  const recalculated = calculateMatch(criteria, job, App.state.dataset, { includeDiagnostic: true });
+  result.diagnostic = recalculated.diagnostic || null;
+  if (result.diagnostic) {
+    result.diagnostic.top5SelectionReason = result.top5SelectionReason || "";
+    result.diagnostic.top5SelectionLabel = result.top5SelectionLabel || "";
+  }
+  return result.diagnostic;
+}
+
 function renderResultDiagnostic(result = {}) {
-  const diagnostic = result.diagnostic || {};
+  const diagnostic = ensureResultDiagnostic(result) || {};
   const subScores = toArray(diagnostic.subScores);
   const list = items => toArray(items).map(item => `<li>${h(item.label || item)}</li>`).join("") || "<li>Aucun élément renseigné.</li>";
   return `
     <div class="summary-box">
       <h3>Diagnostic du résultat</h3>
-      <p class="field-help">Intention : ${h(diagnostic.engineIntentLabel || ENGINE_INTENTS.balanced)} · Pondération : ${h(diagnostic.weightMode === "custom" ? "personnalisée" : "automatique")}.</p>
+      <p class="field-help">Intention : ${h(diagnostic.engineIntentLabel || ENGINE_INTENTS.balanced)} · Pondération : ${h(diagnostic.weightMode === "custom" ? "personnalisée" : "automatique")} · Origine : ${h(engineWeightsOriginText(diagnostic.weightOrigin))}.</p>
       <div class="score-grid">
         ${subScores.map(item => `<div class="score-line"><strong>${h(item.label)}</strong>${h(item.score)}/${h(item.max)} · ${h(item.stateLabel)}</div>`).join("")}
       </div>
-      <p class="field-help">Affinité domaine : ${Math.round(diagnostic.domainAffinity?.score || 0)}/100. Marché : ${h(diagnostic.marketReliability?.isEstimated ? "estimatif / à confirmer" : diagnostic.marketReliability?.level || "inconnu")}.</p>
+      <p class="field-help">Cœur de profil : ${Math.round(diagnostic.coreProfileMatchScore || 0)}/100 (${h(diagnostic.coreProfileMatch?.primarySectorLabel || "secteur à préciser")}). Affinité domaine : ${Math.round(diagnostic.domainAffinity?.score || 0)}/100.</p>
+      <p class="field-help">Marché : ${h(diagnostic.marketReliability?.isEstimated ? "estimatif / à confirmer" : diagnostic.marketReliability?.level || "inconnu")} · ${diagnostic.marketReliability?.marketDiscriminant ? "discriminant" : "non discriminant dans cette version"} · poids appliqué ${h(diagnostic.marketReliability?.marketWeightApplied ?? 0)}.</p>
+      ${diagnostic.confidenceBasis ? `<p class="field-help">Confiance : profil ${h(diagnostic.confidenceBasis.profileSignals)}, compétences ${h(diagnostic.confidenceBasis.skillEvidence)}, métier ${h(diagnostic.confidenceBasis.jobDataQuality)}, marché ${h(diagnostic.confidenceBasis.marketEvidence)}.</p>` : ""}
       ${toArray(diagnostic.scoreCapsApplied).length ? `<p class="field-help"><strong>Plafonds appliqués :</strong> ${toArray(diagnostic.scoreCapsApplied).map(cap => h(cap.message)).join(" ")}</p>` : ""}
       ${diagnostic.marketWeightWarning ? `<p class="field-help">${h(diagnostic.marketWeightWarning)}</p>` : ""}
       <ul class="compact-list">
@@ -5314,7 +5840,11 @@ function renderExplorationJobCard(job) {
 }
 
 function explorationHaystack(job) {
-  return normalizeText([
+  const cacheKey = job?.id || job?.canonicalId || job?.title;
+  if (cacheKey && App.state.explorationHaystackCache?.has(cacheKey)) {
+    return App.state.explorationHaystackCache.get(cacheKey);
+  }
+  const value = normalizeText([
     job.title,
     job.romeCode,
     job.domain,
@@ -5323,6 +5853,8 @@ function explorationHaystack(job) {
     ...toArray(job.transitionTags),
     ...toArray(job.interestTags)
   ].join(" "));
+  if (cacheKey) App.state.explorationHaystackCache.set(cacheKey, value);
+  return value;
 }
 
 function explorationDiplomaMatches(job, filter) {
@@ -5478,9 +6010,11 @@ function renderSettingsPage() {
       <p>Les pondérations restent locales et servent seulement au classement explicable. L’intention propose une base automatique ; les curseurs permettent ensuite de personnaliser.</p>
       <div class="form-grid">
         ${selectField("Intention de recherche", "engineIntent", App.state.profile.engineIntent || "balanced", Object.entries(ENGINE_INTENTS))}
+        ${selectField("Priorité marché", "marketPreference.priority", App.state.profile.marketPreference?.priority || "medium", [["low", "Faible"], ["medium", "Équilibrée"], ["high", "Forte"]])}
+        ${selectField("Objectif marché", "marketPreference.goal", App.state.profile.marketPreference?.goal || "balanced", [["balanced", "Équilibré"], ["quick_employment", "Emploi rapide"], ["local_tension", "Tension locale"], ["secure_recruitment", "Débouchés sécurisants"]])}
         <div class="summary-box">
-          <strong>${App.state.profile.engineWeightsMode === "custom" ? "Pondération personnalisée" : "Pondération selon l’intention"}</strong>
-          <p class="field-help">Total actuel : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Le marché est automatiquement limité si les données sont estimatives.</p>
+          <strong>Mode actuel : ${h(engineWeightsOriginLabel(App.state.profile))}</strong>
+          <p class="field-help">Total actuel : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Le marché reste visible, mais il est signalé comme limité si les données sont estimatives ou non localisées.</p>
         </div>
       </div>
       <div class="form-grid">
@@ -5492,7 +6026,9 @@ function renderSettingsPage() {
         ${weightSlider("Marché", "market")}
       </div>
       <div class="button-row no-print" style="margin-top:12px">
-        <button class="ghost-button" type="button" data-action="reset-weights">Revenir à l’intention</button>
+        <button class="ghost-button" type="button" data-action="reset-balanced-weights">Réinitialiser sur équilibre général</button>
+        <button class="ghost-button" type="button" data-action="reset-weights">Revenir aux pondérations de l’intention</button>
+        <button class="secondary-button" type="button" data-action="customize-weights">Personnaliser manuellement</button>
         <button class="secondary-button" type="button" data-action="preset-fast-access">Priorité accès rapide</button>
         <button class="secondary-button" type="button" data-action="preset-values">Priorité valeurs</button>
       </div>
@@ -6231,8 +6767,11 @@ function applyWeightPreset(name) {
   };
   if (name === "default") {
     App.state.profile.engineWeightsMode = "intent";
+    App.state.profile.engineWeightsOrigin = App.state.profile.engineIntent === "balanced" ? "default" : "intent";
+    App.state.profile.marketPreference = normalizeMarketPreference(App.state.profile.marketPreference, App.state.profile.engineIntent || "balanced");
   } else {
     App.state.profile.engineWeightsMode = "custom";
+    App.state.profile.engineWeightsOrigin = "manual_custom";
   }
   App.state.profile.criterionWeights = normalizeWeights(presets[name] || CONFIG.baseWeights);
   saveProfile();
@@ -6255,6 +6794,7 @@ function loadIntegratedTestProfile(testId) {
   });
   Object.entries(test.profile.constraintSeverities || {}).forEach(([value, severity]) => setConstraintSeverity(profile, value, severity));
   profile.engineWeightsMode = "custom";
+  profile.engineWeightsOrigin = "manual_custom";
   profile.criterionWeights = normalizeWeights(test.profile.criterionWeights || CONFIG.baseWeights);
   profile.testProfileId = test.id;
   App.state.profile = profile;
@@ -6362,7 +6902,21 @@ function createEmptyProfile() {
     needForMeaning: "not_specified",
     engineIntent: "balanced",
     engineWeightsMode: "intent",
+    engineWeightsOrigin: "default",
     criterionWeights: clone(CONFIG.baseWeights),
+    marketPreference: {
+      priority: "medium",
+      goal: "balanced",
+      territory: {
+        country: "FR",
+        regionCode: "76",
+        regionName: "Occitanie",
+        departmentCode: "11",
+        departmentName: "Aude",
+        cityCode: null,
+        radiusKm: null
+      }
+    },
     searchHorizon: "open_exploration",
     hasRequestedResults: false,
     completedBoussole: false,
@@ -6408,13 +6962,47 @@ function normalizeProfile(raw) {
   merged.needForAutonomy = raw.needForAutonomy || base.needForAutonomy;
   merged.needForMeaning = raw.needForMeaning || base.needForMeaning;
   merged.engineIntent = ENGINE_INTENTS[raw.engineIntent] ? raw.engineIntent : base.engineIntent;
-  merged.engineWeightsMode = raw.engineWeightsMode === "custom" ? "custom" : "intent";
+  merged.engineWeightsOrigin = normalizeEngineWeightsOrigin(raw.engineWeightsOrigin, raw);
+  merged.engineWeightsMode = ["manual_custom", "imported_custom", "legacy_profile"].includes(merged.engineWeightsOrigin) || raw.engineWeightsMode === "custom" ? "custom" : "intent";
   merged.hasRequestedResults = Boolean(raw.hasRequestedResults);
   merged.completedBoussole = Boolean(raw.completedBoussole);
   merged.preferredWorkStyles = toArray(raw.preferredWorkStyles);
   merged.preferredEnvironments = toArray(raw.preferredEnvironments);
   merged.criterionWeights = normalizeWeights(raw.criterionWeights || ENGINE_INTENT_WEIGHTS[merged.engineIntent] || CONFIG.baseWeights);
+  merged.marketPreference = normalizeMarketPreference(raw.marketPreference || base.marketPreference, merged.engineIntent);
   return merged;
+}
+
+function normalizeEngineWeightsOrigin(origin, raw = {}) {
+  const allowed = ["default", "intent", "manual_custom", "imported_custom", "legacy_profile"];
+  if (allowed.includes(origin)) return origin;
+  if (raw.engineWeightsMode === "custom") return "legacy_profile";
+  if (raw.criterionWeights && !raw.engineIntent) return "legacy_profile";
+  if (raw.engineIntent && raw.engineIntent !== "balanced") return "intent";
+  return "default";
+}
+
+function normalizeMarketPreference(raw = {}, engineIntent = "balanced") {
+  const goalFromIntent = {
+    quickEmployment: "quick_employment",
+    localTension: "local_tension",
+    comfortAndConstraints: "secure_recruitment"
+  }[engineIntent] || "balanced";
+  const goal = raw.goal || goalFromIntent;
+  const priority = raw.priority || (["quick_employment", "local_tension", "secure_recruitment"].includes(goal) ? "high" : "medium");
+  return {
+    priority: ["low", "medium", "high"].includes(priority) ? priority : "medium",
+    goal: ["balanced", "quick_employment", "local_tension", "secure_recruitment"].includes(goal) ? goal : "balanced",
+    territory: {
+      country: raw.territory?.country || "FR",
+      regionCode: raw.territory?.regionCode || "76",
+      regionName: raw.territory?.regionName || "Occitanie",
+      departmentCode: raw.territory?.departmentCode || "11",
+      departmentName: raw.territory?.departmentName || "Aude",
+      cityCode: raw.territory?.cityCode || null,
+      radiusKm: raw.territory?.radiusKm || null
+    }
+  };
 }
 
 function normalizeExperienceDomainDetails(raw = {}, selectedDomains = []) {
@@ -6474,9 +7062,7 @@ function bindGlobalEvents() {
       handleSaveBoussole();
       return;
     }
-    App.state.mainView = button.dataset.mainView;
-    renderAll();
-    App.dom.workspace?.focus?.();
+    navigateToMainView(button.dataset.mainView);
   });
   App.dom.stepNav.addEventListener("click", event => {
     const button = event.target.closest("[data-step-index]");
@@ -6491,6 +7077,25 @@ function bindGlobalEvents() {
   App.dom.resultsContainer.addEventListener("change", handleProfileInput);
   App.dom.stepContainer.addEventListener("click", handleActionClick);
   App.dom.resultsContainer.addEventListener("click", handleActionClick);
+}
+
+function navigateToMainView(view) {
+  App.state.mainView = view;
+  if (view === "results" && shouldCalculateResults() && App.state.resultsDirty) {
+    showLoading("Actualisation des résultats", "ClairMétier met à jour les pistes avant l’affichage. Merci de patienter.");
+    deferWork(() => {
+      try {
+        calculateAndStoreResults();
+        renderAll();
+        App.dom.workspace?.focus?.();
+      } finally {
+        hideLoading({ delay: 80 });
+      }
+    });
+    return;
+  }
+  renderAll();
+  App.dom.workspace?.focus?.();
 }
 
 function handleProfileInput(event) {
@@ -6508,6 +7113,11 @@ function handleProfileInput(event) {
   if (target.dataset.skillBrowser !== undefined) {
     updateSkillBrowser(target);
     renderSkillSectorListInPlace();
+    return;
+  }
+  if (target.dataset.intentComparison !== undefined) {
+    App.state.intentComparisonIntent = ENGINE_INTENTS[target.value] ? target.value : "quickEmployment";
+    renderResults();
     return;
   }
   const updatesExperienceDomains = target.dataset.array === "experienceDomains";
@@ -6541,8 +7151,7 @@ function handleActionClick(event) {
   }
   const action = target.dataset.action;
   if (target.dataset.mainView) {
-    App.state.mainView = target.dataset.mainView;
-    renderAll();
+    navigateToMainView(target.dataset.mainView);
     return;
   }
   if (action === "launch-results") {
@@ -6567,9 +7176,27 @@ function handleActionClick(event) {
   if (action === "export-results-json") exportResults("json");
   if (action === "export-results-md") exportResults("markdown");
   if (action === "export-diagnostic-json") exportResultDiagnostics();
+  if (action === "reset-balanced-weights") {
+    App.state.profile.engineIntent = "balanced";
+    App.state.profile.engineWeightsMode = "intent";
+    App.state.profile.engineWeightsOrigin = "default";
+    App.state.profile.criterionWeights = normalizeWeights(CONFIG.baseWeights);
+    App.state.profile.marketPreference = normalizeMarketPreference({}, "balanced");
+    saveProfile();
+    calculateAndStoreResults();
+    renderAll();
+    showToast("Pondérations réinitialisées sur l’équilibre général.");
+  }
+  if (action === "customize-weights") {
+    App.state.profile.engineWeightsMode = "custom";
+    App.state.profile.engineWeightsOrigin = "manual_custom";
+    saveProfile();
+    renderAll();
+    showToast("Les curseurs sont maintenant en réglage manuel.");
+  }
   if (action === "toggle-result-diagnostics") {
     App.state.resultDiagnosticsEnabled = !App.state.resultDiagnosticsEnabled;
-    renderAll();
+    renderResults();
     return;
   }
   if (action === "reset-profile") resetProfile();
@@ -6623,7 +7250,7 @@ function handleActionClick(event) {
   const result = findResult(jobId);
   if (!result) return;
   if (resultAction === "details") {
-    card.querySelector("[data-details-panel]")?.classList.toggle("is-open");
+    toggleJobDetailsPanel(card, result);
   }
   if (resultAction === "variants") openJobDialog(result, "variants");
   if (resultAction === "why") openJobDialog(result, "why");
@@ -6651,6 +7278,7 @@ function updateProfileFromTarget(target) {
   }
   if (target.dataset.weight) {
     profile.engineWeightsMode = "custom";
+    profile.engineWeightsOrigin = "manual_custom";
     profile.criterionWeights[target.dataset.weight] = Number(target.value);
     return;
   }
@@ -6668,9 +7296,12 @@ function updateProfileFromTarget(target) {
   if (!field) return;
   const value = target.type === "number" ? Number(target.value) : target.value;
   if (field === "engineIntent") {
+    const previousMarketGoal = profile.marketPreference?.goal || "balanced";
     profile.engineIntent = ENGINE_INTENTS[value] ? value : "balanced";
     profile.engineWeightsMode = "intent";
+    profile.engineWeightsOrigin = profile.engineIntent === "balanced" ? "default" : "intent";
     profile.criterionWeights = normalizeWeights(ENGINE_INTENT_WEIGHTS[profile.engineIntent] || CONFIG.baseWeights);
+    profile.marketPreference = normalizeMarketPreference(previousMarketGoal === "balanced" ? {} : profile.marketPreference, profile.engineIntent);
   } else if (field === "experiencesText") {
     profile.experiences = textToExperiences(target.value);
   } else if (field === "diplomasText") {
@@ -6700,12 +7331,26 @@ function scheduleSaveAndMatch() {
     saveProfile();
     const canRefreshVisibleResults = shouldCalculateResults() && ["results", "data"].includes(App.state.mainView);
     if (canRefreshVisibleResults) {
-      calculateAndStoreResults();
+      showLoading("Mise à jour des résultats", "ClairMétier recalcule les correspondances locales. Merci de patienter.");
+      deferWork(() => {
+        try {
+          calculateAndStoreResults();
+          renderProfileSummary();
+          if (App.state.mainView === "results") renderResults();
+          if (App.state.mainView === "data") App.dom.resultsContainer.innerHTML = renderDataPage();
+          renderStatusBar();
+        } finally {
+          hideLoading({ delay: 80 });
+        }
+      });
+      return;
     } else if (shouldCalculateResults()) {
       App.state.resultsDirty = true;
+      App.state.intentComparisonCache = null;
     } else {
       App.state.results = null;
       App.state.resultsDirty = false;
+      invalidateResultIndexes();
       clearStoredResults();
     }
     renderProfileSummary();
@@ -6733,11 +7378,13 @@ function calculateAndStoreResults(options = {}) {
   if (!force && !shouldCalculateResults()) {
     App.state.results = null;
     App.state.resultsDirty = false;
+    invalidateResultIndexes();
     clearStoredResults();
     return null;
   }
   App.state.results = calculateAllMatches(App.state.profile, App.state.dataset);
   App.state.resultsDirty = false;
+  invalidateResultIndexes();
   if (!persist) return App.state.results;
   try {
     localStorage.setItem(CONFIG.storageKeys.results, JSON.stringify({
@@ -6828,6 +7475,99 @@ function renderComparePanel() {
     </div>`;
 }
 
+function renderIntentComparisonPanel(results = App.state.results) {
+  if (!results || !App.state.profile?.hasRequestedResults) return "";
+  const currentIntent = App.state.profile.engineIntent || "balanced";
+  const comparedIntent = App.state.intentComparisonIntent === currentIntent
+    ? (currentIntent === "exploration" ? "balanced" : "exploration")
+    : App.state.intentComparisonIntent;
+  const comparison = calculateIntentComparison(comparedIntent, results);
+  return `
+    <div class="summary-box no-print" style="margin-top:12px">
+      <h3>Comparer avec une autre intention</h3>
+      <div class="form-grid">
+        ${selectField("Intention à comparer", "intentComparison", comparedIntent, Object.entries(ENGINE_INTENTS)).replace('data-field="intentComparison"', 'data-intent-comparison="intent"')}
+        <div>
+          <p class="field-help">Cette comparaison ne modifie pas le profil. Elle montre comment les pondérations changent le Top 5.</p>
+          <p><strong>Actuel :</strong> ${h(ENGINE_INTENTS[currentIntent] || currentIntent)} · <strong>Comparé :</strong> ${h(ENGINE_INTENTS[comparedIntent] || comparedIntent)}</p>
+        </div>
+      </div>
+      <div class="compare-table-wrapper" style="margin-top:10px">
+        <table class="compare-table">
+          <thead><tr><th>Top 5 actuel</th><th>Top 5 comparé</th><th>Métiers qui montent</th><th>Métiers qui descendent</th></tr></thead>
+          <tbody><tr>
+            <td>${comparison.currentTop.map(item => h(item.title)).join("<br>")}</td>
+            <td>${comparison.comparedTop.map(item => h(item.title)).join("<br>")}</td>
+            <td>${comparison.rising.map(item => h(item.title)).join("<br>") || "Aucun changement marqué"}</td>
+            <td>${comparison.falling.map(item => h(item.title)).join("<br>") || "Aucun changement marqué"}</td>
+          </tr></tbody>
+        </table>
+      </div>
+      <p class="field-help">${h(comparison.explanation)}</p>
+    </div>`;
+}
+
+function calculateIntentComparison(intent, currentResults = App.state.results) {
+  const cacheKey = buildIntentComparisonCacheKey(intent, currentResults);
+  if (App.state.intentComparisonCache?.key === cacheKey) return App.state.intentComparisonCache.value;
+  const profile = normalizeProfile({ ...App.state.profile, engineIntent: intent, engineWeightsMode: "intent", engineWeightsOrigin: intent === "balanced" ? "default" : "intent", criterionWeights: ENGINE_INTENT_WEIGHTS[intent] || CONFIG.baseWeights });
+  const criteria = mapUserProfileToCriteria(profile);
+  criteria.marketContext = currentResults?.marketContext || assessMarketContext(App.state.dataset, criteria);
+  const comparedList = toArray(currentResults?.completeList).map(result => reweightExistingResultForIntent(result, criteria));
+  const compared = {
+    top5: diversifyTopResults(comparedList.filter(result => result.status !== "excluded_for_now")).top5
+  };
+  const currentTop = toArray(currentResults.top5).slice(0, 5);
+  const comparedTop = toArray(compared.top5).slice(0, 5);
+  const currentRank = new Map(currentTop.map((item, index) => [item.jobId, index + 1]));
+  const comparedRank = new Map(comparedTop.map((item, index) => [item.jobId, index + 1]));
+  const rising = comparedTop.filter(item => !currentRank.has(item.jobId) || comparedRank.get(item.jobId) < currentRank.get(item.jobId)).slice(0, 4);
+  const falling = currentTop.filter(item => !comparedRank.has(item.jobId) || comparedRank.get(item.jobId) > currentRank.get(item.jobId)).slice(0, 4);
+  const marketNote = ["quickEmployment", "localTension"].includes(intent) ? " Le marché pèse davantage, mais reste indiqué comme estimatif si les données locales ne départagent pas les métiers." : "";
+  const value = {
+    currentTop,
+    comparedTop,
+    rising,
+    falling,
+    explanation: `La comparaison applique temporairement l’intention “${ENGINE_INTENTS[intent] || intent}”.${marketNote}`
+  };
+  App.state.intentComparisonCache = { key: cacheKey, value };
+  return value;
+}
+
+function reweightExistingResultForIntent(result = {}, criteria = {}) {
+  const scores = result.scores || {};
+  const marketDetail = result.scoreDetails?.market || { score: scores.market, source: "unknown", isEstimated: true };
+  const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, marketDetail, criteria.marketContext);
+  const nextGlobalScore = result.status === "excluded_for_now" ? 0 : weightedGlobalScore(scores, weightAdjustment.weights);
+  return {
+    ...result,
+    globalScore: nextGlobalScore,
+    rawGlobalScore: nextGlobalScore,
+    scorePertinence: result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : nextGlobalScore,
+    selectionScore: result.status === "excluded_for_now" ? 0 : calculateSelectionScore(nextGlobalScore, scores, {
+      core: result.coreProfileMatch,
+      affinity: { score: 35 },
+      constraint: { warnings: toArray(result.scoreDetails?.constraints?.warnings) },
+      training: { statusHint: result.scoreDetails?.training?.statusHint }
+    }),
+    engineIntent: criteria.engineIntent
+  };
+}
+
+function buildIntentComparisonCacheKey(intent, results = App.state.results) {
+  return [
+    intent || "",
+    results?.generatedAt || "",
+    App.state.profile?.updatedAt || "",
+    App.state.profile?.engineIntent || "",
+    JSON.stringify(App.state.profile?.criterionWeights || {}),
+    App.state.dataset?.datasetVersion || "",
+    App.state.dataset?.provenance || "",
+    toArray(App.state.dataset?.jobs).length
+  ].join("|");
+}
+
 function openJobDialog(result, mode) {
   const job = result.job || findJob(result.jobId);
   let content = "";
@@ -6860,7 +7600,7 @@ function toggleFavoriteJob(jobId, result = findResult(jobId)) {
   if (isFavoriteJob(jobId)) {
     App.state.favoriteJobs = App.state.favoriteJobs.filter(item => item.jobId !== jobId && item.canonicalJobId !== canonicalJobId(jobId));
     saveFavorites();
-    renderAll();
+    renderCurrentMainPanel();
     showToast("Métier retiré des favoris.");
     return;
   }
@@ -6878,8 +7618,20 @@ function toggleFavoriteJob(jobId, result = findResult(jobId)) {
     scoreAtSave: result?.globalScore ?? null
   }));
   saveFavorites();
-  renderAll();
+  renderCurrentMainPanel();
   showToast("Métier ajouté aux favoris.");
+}
+
+function renderCurrentMainPanel() {
+  if (App.state.mainView === "results") {
+    renderResults();
+    return;
+  }
+  if (App.state.mainView === "exploration") {
+    App.dom.resultsContainer.innerHTML = renderExplorationPage();
+    return;
+  }
+  renderAll();
 }
 
 function compareFavoriteJobs() {
@@ -6951,7 +7703,9 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
 }
 
 function hasExclusionHint(job, value) {
-  return toArray(job.exclusionHints).includes(value);
+  const cache = getJobDerivedCache(job);
+  if (!cache.exclusionHints) cache.exclusionHints = new Set(toArray(job.exclusionHints));
+  return cache.exclusionHints.has(value);
 }
 
 function scheduleStatus(value, base, category, message) {
@@ -6987,6 +7741,7 @@ function calculateConfidence(criteria, job, details = [], unknown = []) {
   const trainingDetail = details.find(item => item && "statusHint" in item && "missingCertifications" in item) || {};
   const marketDetail = details.find(item => item && "rankingUse" in item) || {};
   const affinityDetail = details.find(item => item && "matchedDomains" in item && "matchedSkills" in item) || {};
+  const coreDetail = details.find(item => item && "primarySectorId" in item && "matchedPrimarySector" in item) || {};
   const profileSkillIds = unique([...Object.keys(criteria.skills || {}), ...toArray(criteria.skillEvidence?.strong)]);
   const profileSkillCount = profileSkillIds.length + toArray(criteria.customSkills).length;
   const jobSkillCount = toArray(job.requiredSkills).length;
@@ -7016,10 +7771,25 @@ function calculateConfidence(criteria, job, details = [], unknown = []) {
     penalties
   ) * 100;
   let confidenceCap = job.provenance === "curated_clairmetier_ai_logic" ? 82 : 96;
-  if (profileCompleteness < 0.35 || profileSkillCount < 2) confidenceCap = Math.min(confidenceCap, 64);
-  if (!criteria.hasEnoughSkillEvidence) confidenceCap = Math.min(confidenceCap, 68);
+  if ((profileCompleteness < 0.35 || profileSkillCount < 2) && coreDetail.level !== "core") confidenceCap = Math.min(confidenceCap, 70);
+  if (!criteria.hasEnoughSkillEvidence && coreDetail.level !== "core") confidenceCap = Math.min(confidenceCap, 72);
   if (marketDetail.source === "unknown") confidenceCap = Math.min(confidenceCap, 84);
   return Math.round(clamp(raw, 25, confidenceCap));
+}
+
+function buildConfidenceBasis(criteria, job, details = {}) {
+  const skill = details.skill || {};
+  const training = details.training || {};
+  const market = details.market || {};
+  const core = details.core || {};
+  return {
+    profileSignals: criteria.completenessLevel === "high" ? "rich" : criteria.completenessLevel === "medium" ? "medium" : "limited",
+    jobDataQuality: job.provenance === "generated_rome" ? "official" : job.provenance === "curated_clairmetier_ai_logic" ? "curated" : "estimated",
+    skillEvidence: toArray(skill.profileSkillsUsed).length >= 3 ? "high" : toArray(skill.profileSkillsUsed).length ? "medium" : "low",
+    trainingEvidence: training.statusHint === "unknown" ? "unknown" : "indicative",
+    marketEvidence: market.isEstimated ? "estimated" : market.source === "unknown" ? "unknown" : "localized",
+    explanationQuality: core.level === "core" || toArray(core.matchedInterests).length + toArray(core.matchedValues).length + toArray(core.matchedSkills).length >= 3 ? "detailed" : "basic"
+  };
 }
 
 function computeJobSimilarity(jobA, jobB) {
@@ -7081,12 +7851,72 @@ function getEffectiveCriterionWeights(profile = App.state.profile) {
   return normalizeWeights(ENGINE_INTENT_WEIGHTS[intent] || CONFIG.baseWeights);
 }
 
-function adaptWeightsForMarketReliability(weights, market = {}) {
+function engineWeightsOriginLabel(profile = App.state.profile) {
+  const origin = normalizeEngineWeightsOrigin(profile?.engineWeightsOrigin, profile || {});
+  const intentLabel = ENGINE_INTENTS[profile?.engineIntent] || ENGINE_INTENTS.balanced;
+  const labels = {
+    default: "équilibre général par défaut",
+    intent: `intention “${intentLabel}”`,
+    manual_custom: "réglage manuel",
+    imported_custom: "pondération personnalisée importée",
+    legacy_profile: "ancien profil avec pondérations historiques"
+  };
+  return labels[origin] || "pondération locale";
+}
+
+function engineWeightsOriginText(origin) {
+  const labels = {
+    default: "défaut",
+    intent: "intention",
+    manual_custom: "manuel",
+    imported_custom: "importé",
+    legacy_profile: "ancien profil"
+  };
+  return labels[origin] || "local";
+}
+
+function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
+  const marketScores = toArray(datasets?.jobs).map(job => calculateMarketScore(job, datasets));
+  const numericScores = marketScores.map(item => item.score).filter(Number.isFinite);
+  const uniqueScores = unique(numericScores);
+  const sourceSet = unique(marketScores.map(item => item.source || "unknown"));
+  const averageReliability = marketScores.length
+    ? marketScores.reduce((sum, item) => sum + Number(item.confidence || 0), 0) / marketScores.length
+    : 0;
+  const hasLocalizedSource = sourceSet.some(source => ["bmo", "dataemploi", "data_emploi", "local_basin", "departmental", "regional"].some(key => normalizeText(source).includes(key)));
+  const marketDataLevel = hasLocalizedSource ? "regional" : sourceSet.some(source => source !== "unknown") ? "estimated" : "none";
+  const marketGoal = criteria.marketPreference?.goal || "balanced";
+  const highPriority = ["quick_employment", "local_tension", "secure_recruitment"].includes(marketGoal) || ["quickEmployment", "localTension"].includes(criteria.engineIntent);
+  return {
+    marketDataLevel,
+    marketGoal,
+    marketReliability: Number(averageReliability.toFixed(2)),
+    marketDiscriminant: uniqueScores.length > 1 && averageReliability >= 0.35,
+    highPriority,
+    uniformScore: uniqueScores.length === 1 ? uniqueScores[0] : null,
+    sources: sourceSet
+  };
+}
+
+function adaptWeightsForMarketReliability(weights, market = {}, marketContext = {}) {
   const normalized = normalizeWeights(weights);
   const reliableSources = ["bmo", "data_emploi", "manual", "official", "official_rome_api"];
   const source = normalizeText(market.source || "");
   const reliable = reliableSources.some(item => source.includes(normalizeText(item))) && Number(market.confidence || 0) >= 0.45 && !market.isEstimated;
-  if (reliable || normalized.market <= 6) return { weights: normalized, adjusted: false, warning: "" };
+  const marketDiscriminant = marketContext.marketDiscriminant !== false && reliable;
+  const marketCanBeStrong = marketDiscriminant && ["regional", "departmental", "local_basin"].includes(marketContext.marketDataLevel) && Number(marketContext.marketReliability || 0) >= 0.6;
+  if (marketCanBeStrong || normalized.market <= 6) {
+    return {
+      weights: normalized,
+      adjusted: false,
+      warning: marketContext.highPriority && !marketCanBeStrong ? "Le marché compte dans votre intention, mais les données locales restent à vérifier." : "",
+      marketDiscriminant: Boolean(marketDiscriminant),
+      marketWeightApplied: normalized.market,
+      marketWeightRedistributedTo: [],
+      marketDataLevel: marketContext.marketDataLevel || "estimated",
+      marketGoal: marketContext.marketGoal || "balanced"
+    };
+  }
   const reducedMarket = Math.min(normalized.market, 6);
   const delta = normalized.market - reducedMarket;
   const redistributed = { ...normalized, market: reducedMarket };
@@ -7098,7 +7928,14 @@ function adaptWeightsForMarketReliability(weights, market = {}) {
   return {
     weights: normalizeWeights(redistributed),
     adjusted: true,
-    warning: "Le critère marché est demandé, mais les données locales sont estimatives ou inconnues : son poids est limité dans ce calcul."
+    warning: marketContext.highPriority
+      ? "Le marché est important dans cette intention, mais les données locales ne sont pas encore assez précises : son poids est visible mais limité."
+      : "Le marché est estimatif ou non discriminant dans cette version : son poids est limité dans ce calcul.",
+    marketDiscriminant: Boolean(marketDiscriminant),
+    marketWeightApplied: reducedMarket,
+    marketWeightRedistributedTo: targets,
+    marketDataLevel: marketContext.marketDataLevel || "estimated",
+    marketGoal: marketContext.marketGoal || "balanced"
   };
 }
 
@@ -7153,9 +7990,14 @@ function buildResultDiagnosticExport(results = App.state.results) {
     status: result.status,
     scores: result.scores,
     top5SelectionReason: result.top5SelectionReason || "",
+    top5SelectionLabel: result.top5SelectionLabel || "",
+    coreProfileMatchScore: result.coreProfileMatchScore || 0,
+    coreProfileMatch: result.coreProfileMatch || null,
+    selectionScore: result.selectionScore || result.globalScore || 0,
+    resultInterpretation: result.resultInterpretation || null,
     exclusionReasons: result.exclusionReasons,
     missingData: result.missingData,
-    diagnostic: result.diagnostic
+    diagnostic: ensureResultDiagnostic(result)
   });
   return {
     app: "boussole-pro-result-diagnostic",
@@ -7166,6 +8008,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
     enginePreferences: {
       engineIntent: App.state.profile?.engineIntent || "balanced",
       engineWeightsMode: App.state.profile?.engineWeightsMode || "intent",
+      engineWeightsOrigin: normalizeEngineWeightsOrigin(App.state.profile?.engineWeightsOrigin, App.state.profile || {}),
       criterionWeights: getEffectiveCriterionWeights(App.state.profile),
       baseWeights: clone(CONFIG.baseWeights)
     },
@@ -7415,8 +8258,12 @@ function mergeConstraints(existing) {
 }
 
 function collectJobContextTags(job) {
-  const contextRows = (App.state.dataset?.workContexts || []).filter(ctx => job.workContexts.includes(ctx.id));
-  return unique(contextRows.flatMap(ctx => ctx.constraintTags || []));
+  const cache = getJobDerivedCache(job);
+  if (cache.contextTags) return cache.contextTags;
+  const jobContexts = new Set(toArray(job.workContexts));
+  const contextRows = toArray(App.state.dataset?.workContexts).filter(ctx => jobContexts.has(ctx.id));
+  cache.contextTags = unique(contextRows.flatMap(ctx => ctx.constraintTags || []));
+  return cache.contextTags;
 }
 
 function contextPreferenceMatches(pref, job, tags) {
@@ -7442,7 +8289,8 @@ function contextPreferenceMatches(pref, job, tags) {
 }
 
 function hasRelatedCustomSkill(customSkills, skillId, datasets) {
-  const skill = getAllSkillRows(datasets).find(item => item.id === skillId);
+  if (!toArray(customSkills).length) return false;
+  const skill = getSkillRowIndex(datasets).get(skillId);
   if (!skill) return false;
   const haystack = [skill.label, ...(skill.aliases || []), skill.category].map(normalizeText);
   return customSkills.some(input => haystack.some(text => text.includes(input) || input.includes(text)));
@@ -7471,20 +8319,88 @@ function jaccard(a, b) {
   return intersection / new Set([...setA, ...setB]).size;
 }
 
+function invalidateDatasetIndexes() {
+  App.state.jobIndex = null;
+  App.state.skillRowIndex = null;
+  App.state.skillLabelIndex = null;
+  App.state.contextLabelIndex = null;
+  App.state.explorationHaystackCache = new Map();
+  App.state.relatedVariantsCache = new Map();
+  App.state.jobDerivedCache = new Map();
+  invalidateResultIndexes();
+}
+
+function invalidateResultIndexes() {
+  App.state.resultIndex = null;
+  App.state.intentComparisonCache = null;
+}
+
+function getJobIndex() {
+  if (App.state.jobIndex) return App.state.jobIndex;
+  const index = new Map();
+  toArray(App.state.dataset?.jobs).forEach(job => {
+    if (!job) return;
+    [job.id, job.canonicalId, job.romeCode, job.localVariantOfRomeCode].filter(Boolean).forEach(id => index.set(id, job));
+  });
+  App.state.jobIndex = index;
+  return index;
+}
+
+function getResultIndex() {
+  if (App.state.resultIndex) return App.state.resultIndex;
+  const index = new Map();
+  toArray(App.state.results?.completeList).forEach(result => {
+    if (!result) return;
+    [result.jobId, result.canonicalJobId, result.romeCode].filter(Boolean).forEach(id => index.set(id, result));
+  });
+  App.state.resultIndex = index;
+  return index;
+}
+
+function getSkillLabelIndex(datasets = App.state.dataset) {
+  if (datasets === App.state.dataset && App.state.skillLabelIndex) return App.state.skillLabelIndex;
+  const index = new Map();
+  getAllSkillRows(datasets).forEach(skill => {
+    if (skill?.id) index.set(skill.id, skill.label || skill.title || skill.id);
+  });
+  if (datasets === App.state.dataset) App.state.skillLabelIndex = index;
+  return index;
+}
+
+function getSkillRowIndex(datasets = App.state.dataset) {
+  if (datasets === App.state.dataset && App.state.skillRowIndex) return App.state.skillRowIndex;
+  const index = new Map();
+  getAllSkillRows(datasets).forEach(skill => {
+    if (skill?.id) index.set(skill.id, skill);
+  });
+  if (datasets === App.state.dataset) App.state.skillRowIndex = index;
+  return index;
+}
+
+function getContextLabelIndex(datasets = App.state.dataset) {
+  if (datasets === App.state.dataset && App.state.contextLabelIndex) return App.state.contextLabelIndex;
+  const index = new Map();
+  toArray(datasets?.workContexts).forEach(context => {
+    if (context?.id) index.set(context.id, context.label || context.title || context.id);
+  });
+  if (datasets === App.state.dataset) App.state.contextLabelIndex = index;
+  return index;
+}
+
 function findJob(jobId) {
-  return (App.state.dataset?.jobs || []).find(job => job.id === jobId);
+  return getJobIndex().get(jobId);
 }
 
 function findResult(jobId) {
-  return (App.state.results?.completeList || []).find(result => result.jobId === jobId);
+  return getResultIndex().get(jobId);
 }
 
 function getSkillLabel(skillId, datasets = App.state.dataset) {
-  return getAllSkillRows(datasets).find(skill => skill.id === skillId)?.label || skillId;
+  return getSkillLabelIndex(datasets).get(skillId) || skillId;
 }
 
 function getContextLabel(contextId, datasets = App.state.dataset) {
-  return toArray(datasets?.workContexts).find(context => context.id === contextId)?.label || contextId;
+  return getContextLabelIndex(datasets).get(contextId) || contextId;
 }
 
 function getAllSkillRows(datasets = App.state.dataset) {
