@@ -371,6 +371,37 @@ h1 {
   font-size: 0.92rem;
 }
 
+.market-box {
+  display: grid;
+  gap: 8px;
+  padding: 11px;
+  border: 1px solid rgba(108, 151, 174, 0.34);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #f6fbfc, var(--read-bg));
+}
+
+.market-box h4 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.market-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.market-grid strong {
+  display: block;
+  margin-top: 2px;
+}
+
 .hero-panel {
   display: grid;
   gap: 16px;
@@ -1124,6 +1155,7 @@ body[data-theme="dark"] .loading-overlay {
 body[data-theme="dark"] .results-section,
 body[data-theme="dark"] .job-card,
 body[data-theme="dark"] .summary-box,
+body[data-theme="dark"] .market-box,
 body[data-theme="dark"] .reason-box,
 body[data-theme="dark"] .details-panel,
 body[data-theme="dark"] .metric,
@@ -1166,6 +1198,7 @@ body[data-theme="dark"] .job-card.excluded {
 }
 
 body[data-theme="dark"] .summary-box,
+body[data-theme="dark"] .market-box,
 body[data-theme="dark"] .reason-box,
 body[data-theme="dark"] .details-panel,
 body[data-theme="dark"] .metric,
@@ -1178,6 +1211,11 @@ body[data-theme="dark"] .choice-option,
 body[data-theme="dark"] .constraint-item {
   background: #2a263e;
   border-color: #5a5078;
+}
+
+body[data-theme="dark"] .market-box {
+  background: linear-gradient(180deg, #263844, #2a263e);
+  border-color: #4f7d8a;
 }
 
 body[data-theme="dark"] .reason-box,
@@ -1195,6 +1233,7 @@ body[data-theme="dark"] .job-subtitle,
 body[data-theme="dark"] .field-help,
 body[data-theme="dark"] .summary-list,
 body[data-theme="dark"] .metric span,
+body[data-theme="dark"] .market-grid span,
 body[data-theme="dark"] .tag-meta,
 body[data-theme="dark"] .empty-state {
   color: #d8d0ec;
@@ -1387,7 +1426,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.5.5-alpha",
+  version: "v0.6-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1461,10 +1500,33 @@ const MAIN_VIEWS = [
 ];
 
 const TERRITORIES = [
-  { id: "FR", type: "country", code: "FR", label: "France" },
-  { id: "REG-76", type: "region", code: "76", label: "Occitanie" },
-  { id: "DEP-11", type: "department", code: "11", label: "Aude" }
+  { id: "FR", type: "country", code: "FR", label: "France entière", country: "FR", sourceLevel: "national" },
+  { id: "REG-76", type: "region", code: "76", label: "Occitanie", country: "FR", regionCode: "76", regionName: "Occitanie", sourceLevel: "regional" },
+  { id: "DEP-11", type: "department", code: "11", label: "Aude", country: "FR", regionCode: "76", regionName: "Occitanie", departmentCode: "11", departmentName: "Aude", sourceLevel: "departmental" }
 ];
+
+const MARKET_SOURCE_LEVEL_LABELS = {
+  none: "aucune donnée",
+  estimated: "estimatif local",
+  national: "national",
+  regional: "régional",
+  departmental: "départemental",
+  local_basin: "bassin local"
+};
+
+const MARKET_SIGNAL_LABELS = {
+  unknown: "inconnu",
+  low: "faible",
+  medium: "moyen",
+  high: "fort"
+};
+
+const MARKET_GOAL_LABELS = {
+  balanced: "Choix équilibré",
+  quick_employment: "Trouver rapidement un emploi",
+  local_tension: "Prioriser les métiers à tension",
+  secure_recruitment: "Prioriser la sécurité des débouchés"
+};
 
 const DATASET_TYPES = {
   canonical: "canonical_clairmetier",
@@ -1519,7 +1581,8 @@ const PROFILE_FIELD_IMPACT_MAP = {
   preferredSchedule: ["constraintScore", "contextScore"],
   needForSecurity: ["valueScore", "marketInterpretation"],
   needForAutonomy: ["valueScore", "contextScore"],
-  needForMeaning: ["valueScore"]
+  needForMeaning: ["valueScore"],
+  marketPreference: ["marketScore", "territorySelection", "effectiveMarketWeight"]
 };
 
 const BOUSSOLE_STEPS = [
@@ -2079,7 +2142,7 @@ const App = {
       constraint: "all",
       context: "all",
       market: "all",
-      territory: "FR",
+      territory: "DEP-11",
       sort: "profile",
       favoritesOnly: false
     },
@@ -3402,7 +3465,7 @@ function generateDataQualityReport(datasets) {
   if (duplicateCount > 0) issues.push(buildIssue("critical", "duplicate_job", "Dataset", "jobs", `${duplicateCount} doublon(s) d'identifiant metier.`, "Dedoublonner avant usage reel."));
 
   const jobsWithTraining = jobs.filter(job => trainings.some(training => (training.targetJobIds || []).includes(job.id))).length;
-  const jobsWithMarket = jobs.filter(job => (job.marketIndicators || []).some(id => market.some(item => item.id === id))).length;
+  const jobsWithMarket = jobs.filter(job => job.marketStats?.sourceLevel || (job.marketIndicators || []).some(id => market.some(item => item.id === id))).length;
   const linkedSkillIds = getLinkedSkillIdsFromJobs(jobs);
   const linkedContextIds = new Set(jobs.flatMap(job => toArray(job.workContexts)));
   const linkedAppellations = appellations.filter(item => item.jobId).length;
@@ -3551,6 +3614,7 @@ function normalizeJob(raw) {
     valueTags: toArray(raw.valueTags),
     marketIndicators: toArray(raw.marketIndicators).length ? toArray(raw.marketIndicators) : (romeCode ? [`market-${romeCode}-FR`] : []),
     market: raw.market || { status: "unknown", source: "unknown", confidence: 0 },
+    marketStats: normalizeMarketStats(raw.marketStats, raw),
     sourceRefs: toArray(raw.sourceRefs).length ? toArray(raw.sourceRefs) : ["sample_non_official"],
     dataQuality: raw.dataQuality || { status: "usable_with_warnings", warnings: ["sample_data"], confidence: 0.4 },
     missingFields: toArray(raw.missingFields),
@@ -3917,7 +3981,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     const training = calculateTrainingScore(criteria, job, datasets);
     const value = calculateValueScore(criteria, job);
     const context = calculateContextScore(criteria, job, datasets);
-    const market = calculateMarketScore(job, datasets);
+    const market = calculateMarketScore(job, datasets, criteria);
     const affinity = calculateDomainAffinityScore(criteria, job, datasets);
     const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity });
     const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
@@ -3968,7 +4032,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   const constraint = calculateConstraintScore(criteria, job, datasets);
   const value = calculateValueScore(criteria, job);
   const context = calculateContextScore(criteria, job, datasets);
-  const market = calculateMarketScore(job, datasets);
+  const market = calculateMarketScore(job, datasets, criteria);
   const affinity = calculateDomainAffinityScore(criteria, job, datasets);
   const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity });
   const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
@@ -4171,10 +4235,24 @@ function buildScoreDetails(criteria, job, details = {}) {
     market: {
       level: market.level || getJobMarketLevel(job),
       source: market.source || job.market?.source || "unknown",
+      sourceName: market.sourceName || market.source || job.market?.source || "unknown",
+      sourceLevel: market.sourceLevel || "none",
+      sourceUpdatedAt: market.sourceUpdatedAt || null,
       confidence: market.confidence ?? job.market?.confidence ?? 0,
       isEstimated: market.isEstimated ?? true,
       rankingUse: market.rankingUse || "limited",
-      note: market.note || ""
+      note: market.note || "",
+      marketReliability: market.marketReliability ?? market.confidence ?? 0,
+      marketDiscriminant: Boolean(market.marketDiscriminant),
+      marketEvidenceLevel: market.marketEvidenceLevel || "none",
+      territory: market.territory || normalizeMarketTerritory(),
+      territoryLabel: market.territoryLabel || normalizeMarketTerritory().label,
+      tensionLevel: market.tensionLevel || market.level || "unknown",
+      recruitmentSignal: market.recruitmentSignal || "unknown",
+      recruitmentDifficulty: market.recruitmentDifficulty || "unknown",
+      salarySignal: market.salarySignal || "unknown",
+      seasonalRate: market.seasonalRate ?? null,
+      bmo: market.bmo || normalizeBmoStats()
     }
   };
 }
@@ -4252,15 +4330,25 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     marketReliability: {
       level: details.market?.level || "unknown",
       source: details.market?.source || "unknown",
+      sourceLevel: details.market?.sourceLevel || criteria.marketContext?.availableDataLevel || "none",
+      sourceName: details.market?.sourceName || details.market?.source || "unknown",
       confidence: details.market?.confidence ?? 0,
       isEstimated: details.market?.isEstimated ?? true,
       rankingUse: details.market?.rankingUse || "limited",
       note: details.market?.note || "",
+      territory: details.market?.territory || criteria.marketContext?.requestedTerritory || normalizeMarketTerritory(),
+      territoryLabel: details.market?.territoryLabel || criteria.marketContext?.requestedTerritory?.label || "France",
+      tensionLevel: details.market?.tensionLevel || details.market?.level || "unknown",
+      recruitmentSignal: details.market?.recruitmentSignal || "unknown",
+      recruitmentDifficulty: details.market?.recruitmentDifficulty || "unknown",
+      marketReliability: details.market?.marketReliability ?? details.market?.confidence ?? 0,
+      marketEvidenceLevel: details.market?.marketEvidenceLevel || "none",
       marketDiscriminant: details.weightAdjustment?.marketDiscriminant ?? criteria.marketContext?.marketDiscriminant ?? false,
       marketWeightApplied: details.weightAdjustment?.marketWeightApplied ?? 0,
       marketWeightRedistributedTo: toArray(details.weightAdjustment?.marketWeightRedistributedTo),
       marketDataLevel: details.weightAdjustment?.marketDataLevel || criteria.marketContext?.marketDataLevel || "estimated",
-      marketGoal: details.weightAdjustment?.marketGoal || criteria.marketContext?.marketGoal || "balanced"
+      marketGoal: details.weightAdjustment?.marketGoal || criteria.marketContext?.marketGoal || "balanced",
+      requestedPriority: criteria.marketPreference?.priority || "medium"
     },
     scoreCapsApplied: toArray(details.scoreCaps?.caps),
     top5SelectionReason: result.top5SelectionReason || "",
@@ -4313,7 +4401,7 @@ function buildSubScoreDiagnostic(key, value = 0, criteria, job, result, details 
 function isSubScoreNotEvaluated(key, detail = {}, job = {}) {
   if (key === "skills") return Boolean(detail.unlinkedOfficialSkills) || (toArray(job.requiredSkills).length === 0 && toArray(job.optionalSkills).length === 0);
   if (key === "context") return toArray(job.workContexts).length === 0;
-  if (key === "market") return detail.level === "unknown" || detail.source === "unknown";
+  if (key === "market") return detail.sourceLevel === "none" || detail.source === "unknown";
   if (key === "training") return toArray(detail.missingData).some(item => item.field === "job.requiredDiplomaLevel") && !toArray(job.requiredCertifications).length;
   return false;
 }
@@ -4358,7 +4446,7 @@ function subScorePositiveSignals(key, detail = {}, job = {}) {
   if (key === "constraints") return toArray(detail.matchedConstraints).slice(0, 5);
   if (key === "training" && detail.statusHint === "now") return ["niveau d'accès proche du profil"];
   if (key === "values") return toArray(detail.matched).slice(0, 5);
-  if (key === "market" && detail.level && detail.level !== "unknown") return [marketLabel(detail.level)];
+  if (key === "market" && detail.level && detail.level !== "unknown") return [`${marketLabel(detail.level)} sur ${detail.territoryLabel || "le territoire choisi"}`];
   return [];
 }
 
@@ -4371,6 +4459,7 @@ function subScoreLimits(key, detail = {}, job = {}) {
   if (key === "context") return toArray(detail.unmatchedPreferences).map(preferenceLabel);
   if (key === "constraints") return toArray(detail.warnings);
   if (key === "training") return toArray(detail.missingCertifications).map(id => `certification à vérifier : ${id}`);
+  if (key === "market") return [detail.note, detail.marketReliability < 0.5 ? "fiabilité statistique limitée" : ""].filter(Boolean);
   return toArray(detail.missingData).map(item => item.message || item.field);
 }
 
@@ -4383,6 +4472,7 @@ function buildWhyItRanks(result = {}, details = {}) {
   if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
   if ((result.scores?.values || 0) >= 10) reasons.push("les envies ou valeurs rejoignent cette direction");
   if ((result.scores?.context || 0) >= 7) reasons.push("le cadre de travail correspond à plusieurs préférences");
+  if (details.market?.marketDiscriminant && details.market?.tensionLevel === "high") reasons.push("le signal marché territorial est favorable");
   if (!reasons.length && result.status !== "excluded_for_now") reasons.push("aucune incompatibilité forte n’a été confirmée");
   if (details.skill?.unlinkedOfficialSkills) reasons.push("le score compétences reste volontairement neutre car les liens métier-compétence manquent");
   return unique(reasons).slice(0, 6);
@@ -4399,7 +4489,7 @@ function buildRankingLimits(result = {}, details = {}) {
   if (toArray(details.skill?.unassessedSkills).length) limits.push("compétences utiles non évaluées, non pénalisantes mais moins fiables");
   if (toArray(details.constraint?.warnings).length) limits.push("contraintes à vérifier : " + details.constraint.warnings.slice(0, 3).join(", "));
   if (["short", "long", "blocked"].includes(details.training?.statusHint)) limits.push("marche de formation ou certification à clarifier");
-  if (details.market?.source === "unknown" || details.market?.isEstimated) limits.push("réalisme marché encore estimatif");
+  if (details.market?.source === "unknown" || details.market?.isEstimated) limits.push("réalisme marché encore estimatif ou à confirmer localement");
   if ((details.affinity?.score || 0) < 25) limits.push("affinité de domaine faible ou peu renseignée");
   toArray(details.scoreCaps?.caps).forEach(cap => limits.push(cap.message));
   return unique(limits).slice(0, 7);
@@ -4414,6 +4504,7 @@ function buildChangeLevers(result = {}, details = {}) {
   if (details.training?.statusHint === "long") levers.push("changer l’horizon de recherche ou explorer une passerelle progressive");
   if (toArray(details.constraint?.warnings).length) levers.push("chercher des postes avec conditions plus compatibles");
   if (details.skill?.unlinkedOfficialSkills) levers.push("importer un mapping métier-compétence fiable pour recalibrer le score");
+  if (details.market?.isEstimated || details.market?.sourceLevel === "none") levers.push("connecter ou importer des statistiques marché territoriales pour fiabiliser ce critère");
   if ((details.affinity?.score || 0) < 35) levers.push("préciser les secteurs, expériences ou familles de formation qui vous attirent");
   if (!levers.length) levers.push("comparer avec les variantes proches et vérifier le terrain local");
   return unique(levers).slice(0, 6);
@@ -4459,6 +4550,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (details.training?.statusHint === "long") negative.push("Le parcours d'acces semble plus long que votre niveau actuel.");
   if (details.constraint?.warnings?.length) negative.push("Certaines contraintes sont a verifier dans les conditions reelles d'emploi.");
   if (details.market?.missingData?.length) negative.push("Les donnees marche sont sample ou incompletes dans ce corpus.");
+  if (details.market?.isEstimated) negative.push("Le signal marché est estimatif : il aide à orienter mais ne remplace pas des statistiques territoriales.");
   if (isCurated) negative.push("Cette piste repose sur un corpus local estimatif. Elle sert à orienter, pas à certifier.");
   if (scores.context < 5) {
     const unmatched = toArray(details.context?.unmatchedPreferences).slice(0, 3).map(preferenceLabel);
@@ -4475,6 +4567,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (details.training?.missingCertifications?.length) actions.push("Explorer la certification associee avant de considerer cette piste comme accessible.");
   if (details.constraint?.warnings?.length) actions.push("Verifier les conditions concretes du poste : " + details.constraint.warnings.slice(0, 3).join(", ") + ".");
   if (details.market?.missingData?.length) actions.push("Importer plus tard des indicateurs marche fiables pour mieux evaluer le realisme local.");
+  if (details.market?.isEstimated) actions.push("Vérifier le recrutement local sur le territoire choisi avant décision.");
   if (isCurated) actions.push("Vérifier cette piste avec des sources officielles ou des professionnels du métier.");
   if (actions.length === 0) actions.push("Comparer cette piste avec ses variantes proches et verifier les conditions reelles du territoire.");
 
@@ -5126,36 +5219,261 @@ function calculateContextScore(criteria, job) {
   };
 }
 
-function calculateMarketScore(job, datasets = App.state.dataset) {
-  const marketResult = (score, missingData, level, source, confidence, isEstimated, note = "") => ({
+function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) {
+  const snapshot = getJobMarketSnapshot(job, datasets, criteria.marketPreference || App.state.profile?.marketPreference);
+  const missingData = snapshot.sourceLevel === "none"
+    ? [missing("job.marketStats", "low", "Statistiques marché non disponibles pour ce métier.")]
+    : [];
+  const reliability = Number(snapshot.marketReliability || 0);
+  const signalValue = marketSignalValue(snapshot.tensionLevel);
+  let score = 2.5;
+  if (snapshot.sourceLevel === "none") {
+    score = 2.5;
+  } else if (snapshot.isEstimated) {
+    score = 2.15 + signalValue * 1.45;
+  } else if (snapshot.sourceLevel === "national") {
+    score = 1.2 + signalValue * 3.6;
+  } else {
+    score = 1 + signalValue * 4;
+  }
+  if (["quick_employment", "local_tension", "secure_recruitment"].includes(criteria.marketPreference?.goal) && reliability >= 0.7) score += 0.25;
+  const rankingUse = snapshot.marketDiscriminant ? "normal" : snapshot.sourceLevel === "none" ? "neutral" : "limited";
+  return {
     score: Math.round(clamp(score, 0, 5)),
     missingData,
-    level,
-    source,
-    confidence,
-    isEstimated,
-    rankingUse: isEstimated || source === "unknown" ? "limited" : "normal",
-    note
+    level: snapshot.tensionLevel,
+    source: snapshot.sourceName,
+    sourceName: snapshot.sourceName,
+    sourceLevel: snapshot.sourceLevel,
+    sourceUpdatedAt: snapshot.sourceUpdatedAt,
+    confidence: reliability,
+    isEstimated: snapshot.isEstimated,
+    rankingUse,
+    note: snapshot.note,
+    marketScore: Math.round(clamp(score, 0, 5)),
+    marketReliability: reliability,
+    marketDiscriminant: snapshot.marketDiscriminant,
+    marketEvidenceLevel: snapshot.marketEvidenceLevel,
+    territory: snapshot.territory,
+    territoryLabel: snapshot.territoryLabel,
+    tensionLevel: snapshot.tensionLevel,
+    recruitmentSignal: snapshot.recruitmentSignal,
+    recruitmentDifficulty: snapshot.recruitmentDifficulty,
+    salarySignal: snapshot.salarySignal,
+    seasonalRate: snapshot.seasonalRate,
+    bmo: snapshot.bmo
+  };
+}
+
+function normalizeMarketStats(raw = null, job = {}) {
+  if (raw && typeof raw === "object") {
+    const sourceLevel = normalizeMarketSourceLevel(raw.sourceLevel || raw.level || "estimated");
+    return {
+      romeCode: raw.romeCode || job.romeCode || job.localVariantOfRomeCode || "",
+      sourceLevel,
+      sourceName: raw.sourceName || raw.source || (sourceLevel === "estimated" ? "estimated_local_v06" : "unknown"),
+      sourceUpdatedAt: raw.sourceUpdatedAt || raw.updatedAt || null,
+      national: normalizeMarketTerritoryStats(raw.national),
+      regional: normalizeMarketTerritoryStats(raw.regional),
+      departmental: normalizeMarketTerritoryStats(raw.departmental),
+      bmo: normalizeBmoStats(raw.bmo)
+    };
+  }
+  return buildEstimatedMarketStats(job);
+}
+
+function normalizeMarketTerritoryStats(raw = {}) {
+  return {
+    demanders: numberOrNull(raw?.demanders),
+    newDemanders12m: numberOrNull(raw?.newDemanders12m),
+    offers12m: numberOrNull(raw?.offers12m),
+    hires12m: numberOrNull(raw?.hires12m),
+    tensionLevel: normalizeMarketSignal(raw?.tensionLevel),
+    recruitmentDifficulty: normalizeMarketSignal(raw?.recruitmentDifficulty),
+    recruitmentSignal: normalizeMarketSignal(raw?.recruitmentSignal || raw?.recruitmentLevel),
+    salarySignal: normalizeMarketSignal(raw?.salarySignal),
+    confidence: clamp(Number(raw?.confidence || 0), 0, 1)
+  };
+}
+
+function normalizeBmoStats(raw = {}) {
+  return {
+    year: raw?.year || 2026,
+    fapCode: raw?.fapCode || null,
+    fapLabel: raw?.fapLabel || null,
+    recruitmentProjects: numberOrNull(raw?.recruitmentProjects),
+    difficultRecruitmentRate: numberOrNull(raw?.difficultRecruitmentRate),
+    seasonalRate: numberOrNull(raw?.seasonalRate),
+    territoryLevel: raw?.territoryLevel || "unknown",
+    mappingConfidence: clamp(Number(raw?.mappingConfidence || 0), 0, 1),
+    confidence: clamp(Number(raw?.confidence || 0), 0, 1)
+  };
+}
+
+function buildEstimatedMarketStats(job = {}) {
+  const base = clamp(Number(job.market?.tensionScore ?? job.market?.score ?? job.market?.value ?? job.marketScoreSeed ?? (typeof job.market === "number" ? job.market : 0.5)), 0, 1);
+  const modifiers = estimateTerritoryMarketModifiers(job);
+  const fromScore = (value, confidence) => ({
+    demanders: null,
+    newDemanders12m: null,
+    offers12m: null,
+    hires12m: null,
+    tensionLevel: marketLevelFromScore(value),
+    recruitmentDifficulty: marketLevelFromScore(value + 0.04),
+    recruitmentSignal: marketLevelFromScore(value),
+    salarySignal: "unknown",
+    confidence
   });
-  if (job.market && job.market.source && job.market.source !== "unknown") {
-    const tension = Number(job.market.tensionScore ?? job.market.score ?? job.market.value);
-    const source = job.market.source;
-    const reliable = ["bmo", "dataemploi", "data_emploi", "manual"].includes(normalizeText(source));
-    if (Number.isFinite(tension) && job.provenance === "curated_clairmetier_ai_logic") return marketResult(1 + tension * 2, [], marketLevelFromScore(tension), source, job.market.confidence ?? 0.28, true, "marché estimatif local");
-    if (Number.isFinite(tension)) return marketResult(reliable ? 1 + tension * 4 : 1 + tension * 2, [], marketLevelFromScore(tension), source, job.market.confidence ?? (reliable ? 0.55 : 0.3), !reliable, reliable ? "" : "donnée marché à confirmer");
+  return {
+    romeCode: job.romeCode || job.localVariantOfRomeCode || "",
+    sourceLevel: "estimated",
+    sourceName: job.provenance === "curated_clairmetier_ai_logic" ? "curated_estimated_local_v06" : "estimated_local_v06",
+    sourceUpdatedAt: null,
+    national: fromScore(base, 0.22),
+    regional: fromScore(clamp(base + modifiers.regional, 0, 1), 0.24),
+    departmental: fromScore(clamp(base + modifiers.departmental, 0, 1), 0.24),
+    bmo: normalizeBmoStats({ confidence: 0, mappingConfidence: 0 })
+  };
+}
+
+function estimateTerritoryMarketModifiers(job = {}) {
+  const text = normalizeText([job.title, job.domain, job.family, ...(job.transitionTags || []), ...(job.interestTags || [])].join(" "));
+  const has = words => words.some(word => text.includes(normalizeText(word)));
+  let regional = 0;
+  let departmental = 0;
+  if (has(["soin", "aide", "service a la personne", "petite enfance", "social", "proprete", "entretien"])) {
+    regional += 0.04;
+    departmental += 0.05;
   }
+  if (has(["hotellerie", "restauration", "tourisme", "animation", "alimentation"])) {
+    regional += 0.04;
+    departmental += 0.08;
+  }
+  if (has(["agriculture", "nature", "paysage", "maraicher", "viticulture"])) {
+    regional += 0.03;
+    departmental += 0.07;
+  }
+  if (has(["batiment", "logistique", "transport", "industrie", "securite"])) {
+    regional += 0.03;
+    departmental += 0.04;
+  }
+  if (has(["numerique", "data", "developpeur", "communication"])) {
+    regional -= 0.01;
+    departmental -= 0.03;
+  }
+  return { regional, departmental };
+}
+
+function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference = App.state.profile?.marketPreference) {
+  const territory = normalizeMarketTerritory(preference?.territory || preference);
+  const stats = getJobMarketStats(job, datasets);
+  const sourceLevel = normalizeMarketSourceLevel(stats.sourceLevel);
+  const selectedStats = getMarketStatsForTerritory(stats, territory);
+  const isEstimated = sourceLevel === "estimated" || normalizeText(stats.sourceName).includes("estimated");
+  const sourceName = stats.sourceName || (sourceLevel === "none" ? "unknown" : "manual");
+  const reliability = marketReliabilityForLevel(sourceLevel, selectedStats.confidence, isEstimated);
+  const marketDiscriminant = sourceLevel !== "none" && !isEstimated && reliability >= 0.5;
+  const evidenceLevel = sourceLevel === "none" ? "none" : isEstimated ? "weak" : reliability >= 0.7 ? "strong" : "medium";
+  return {
+    romeCode: job.romeCode || stats.romeCode,
+    sourceLevel,
+    sourceName,
+    sourceUpdatedAt: stats.sourceUpdatedAt || null,
+    territory,
+    territoryLabel: territory.label,
+    tensionLevel: selectedStats.tensionLevel || "unknown",
+    recruitmentSignal: selectedStats.recruitmentSignal || selectedStats.tensionLevel || "unknown",
+    recruitmentDifficulty: selectedStats.recruitmentDifficulty || "unknown",
+    salarySignal: selectedStats.salarySignal || "unknown",
+    seasonalRate: stats.bmo?.seasonalRate ?? null,
+    bmo: stats.bmo || normalizeBmoStats(),
+    marketReliability: reliability,
+    marketDiscriminant,
+    marketEvidenceLevel: evidenceLevel,
+    isEstimated,
+    note: marketSnapshotNote(sourceLevel, territory, reliability, isEstimated)
+  };
+}
+
+function getJobMarketStats(job = {}, datasets = App.state.dataset) {
+  if (job.marketStats?.sourceLevel) return job.marketStats;
   const indicators = toArray(job.marketIndicators)
-    .map(id => (datasets.marketIndicators || []).find(item => item.id === id || item.romeCode === job.romeCode))
+    .map(id => toArray(datasets?.marketIndicators).find(item => item.id === id || item.romeCode === job.romeCode))
     .filter(Boolean);
-  if (indicators.length === 0) {
-    return marketResult(1, [missing("job.marketIndicators", "low", "Données marché non disponibles dans ce corpus local.")], "unknown", "unknown", 0, true, "marché non utilisé fortement dans le classement");
+  if (indicators.length) {
+    const indicator = indicators[0];
+    const score = Number(indicator.tensionScore ?? indicator.value ?? indicator.score);
+    return normalizeMarketStats({
+      romeCode: indicator.romeCode || job.romeCode,
+      sourceLevel: indicator.sourceLevel || indicator.territoryLevel || (indicator.source ? "estimated" : "none"),
+      sourceName: indicator.source || "market_indicator",
+      sourceUpdatedAt: indicator.updatedAt || indicator.sourceUpdatedAt || null,
+      national: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
+      regional: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
+      departmental: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 }
+    }, job);
   }
-  const tension = indicators[0].tensionScore;
-  if (typeof tension !== "number") return marketResult(1, [missing("market.tensionScore", "low", "Indicateur marché partiel.")], "unknown", indicators[0].source || "unknown", indicators[0].confidence ?? 0, true, "indicateur partiel");
-  const source = indicators[0].source || "unknown";
-  const reliable = ["bmo", "dataemploi", "data_emploi", "manual"].includes(normalizeText(source));
-  if (job.provenance === "curated_clairmetier_ai_logic") return marketResult(1 + tension * 2, [], marketLevelFromScore(tension), source || "curated_estimated", indicators[0].confidence ?? 0.28, true, "marché estimatif local");
-  return marketResult(reliable ? 1 + tension * 4 : 1 + tension * 2, [], marketLevelFromScore(tension), source, indicators[0].confidence ?? (reliable ? 0.5 : 0.28), !reliable, reliable ? "" : "donnée marché à confirmer");
+  return buildEstimatedMarketStats(job);
+}
+
+function getMarketStatsForTerritory(stats = {}, territory = normalizeMarketTerritory()) {
+  if (territory.type === "department") return stats.departmental || stats.regional || stats.national || normalizeMarketTerritoryStats();
+  if (territory.type === "region") return stats.regional || stats.national || normalizeMarketTerritoryStats();
+  return stats.national || normalizeMarketTerritoryStats();
+}
+
+function normalizeMarketTerritory(raw = {}) {
+  raw = raw || {};
+  const selected = typeof raw === "string" ? raw : raw.selected || raw.id || raw.territoryId || raw.territory || raw.code;
+  const fallbackId = selected || (raw.departmentCode === "11" ? "DEP-11" : raw.regionCode === "76" ? "REG-76" : "FR");
+  const territory = TERRITORIES.find(item => item.id === fallbackId || item.code === fallbackId) || TERRITORIES[2];
+  return {
+    selected: territory.id,
+    id: territory.id,
+    type: territory.type,
+    country: "FR",
+    regionCode: territory.regionCode || raw.regionCode || null,
+    regionName: territory.regionName || raw.regionName || null,
+    departmentCode: territory.departmentCode || raw.departmentCode || null,
+    departmentName: territory.departmentName || raw.departmentName || null,
+    cityCode: raw.cityCode || null,
+    cityName: raw.cityName || null,
+    radiusKm: raw.radiusKm || null,
+    label: territory.label,
+    sourceLevel: territory.sourceLevel
+  };
+}
+
+function normalizeMarketSourceLevel(level = "none") {
+  return ["none", "estimated", "national", "regional", "departmental", "local_basin"].includes(level) ? level : "estimated";
+}
+
+function normalizeMarketSignal(value) {
+  return ["unknown", "low", "medium", "high"].includes(value) ? value : "unknown";
+}
+
+function marketReliabilityForLevel(sourceLevel, confidence = 0, isEstimated = false) {
+  if (sourceLevel === "none") return 0;
+  if (isEstimated || sourceLevel === "estimated") return clamp(Number(confidence || 0.2), 0.15, 0.3);
+  if (sourceLevel === "national") return clamp(Number(confidence || 0.5), 0.45, 0.6);
+  if (sourceLevel === "regional") return clamp(Number(confidence || 0.7), 0.6, 0.78);
+  if (sourceLevel === "departmental") return clamp(Number(confidence || 0.8), 0.7, 0.88);
+  if (sourceLevel === "local_basin") return clamp(Number(confidence || 0.85), 0.75, 0.92);
+  return clamp(Number(confidence || 0), 0, 1);
+}
+
+function marketSnapshotNote(sourceLevel, territory, reliability, isEstimated) {
+  if (sourceLevel === "none") return "Aucune statistique marché connectée pour ce métier.";
+  if (isEstimated) return `Signal estimatif pour ${territory.label}. À confirmer avec des statistiques ou acteurs locaux.`;
+  if (reliability < 0.5) return "Donnée marché présente mais fiabilité limitée.";
+  return `Signal marché exploitable sur le niveau ${MARKET_SOURCE_LEVEL_LABELS[sourceLevel] || sourceLevel}.`;
+}
+
+function marketSignalValue(level) {
+  if (level === "high") return 0.85;
+  if (level === "medium") return 0.55;
+  if (level === "low") return 0.25;
+  return 0.5;
 }
 
 function determineFeasibilityStatus(globalScore, scores, criteria, job, details = {}) {
@@ -5271,6 +5589,7 @@ function buildCalibrationAudit(results = {}) {
     top5SelectionReasons: top5Reasons,
     coreProfileDistribution: scoreDistribution(complete.map(result => result.coreProfileMatchScore)),
     marketContext: results.marketContext || {},
+    marketCoverage: results.marketContext?.marketCoverage || {},
     profilesWarnings,
     top5Diversity: { families, domains },
     highExcluded,
@@ -5862,6 +6181,30 @@ function renderResults() {
     </section>`;
 }
 
+function renderMarketBox(market = {}, job = {}, options = {}) {
+  const data = market?.sourceLevel
+    ? market
+    : getJobMarketSnapshot(job, App.state.dataset, App.state.profile?.marketPreference);
+  const reliability = data.marketReliability ?? data.confidence ?? 0;
+  const sourceLevel = data.sourceLevel || "none";
+  const sourceLabel = marketSourceLevelLabel(sourceLevel);
+  const territoryLabel = data.territoryLabel || data.territory?.label || normalizeMarketTerritory().label;
+  const note = data.note || (data.isEstimated ? "Signal à confirmer localement." : "Statistique agrégée, sans offre individuelle.");
+  return `
+    <div class="market-box">
+      <h4>Marché et territoire</h4>
+      <div class="market-grid">
+        <div><span>Niveau</span><strong>${h(sourceLabel)}</strong></div>
+        <div><span>Territoire</span><strong>${h(territoryLabel)}</strong></div>
+        <div><span>Tension</span><strong>${h(marketSignalLabel(data.tensionLevel || data.level))}</strong></div>
+        <div><span>Recrutement</span><strong>${h(marketSignalLabel(data.recruitmentSignal))}</strong></div>
+        <div><span>Difficulté</span><strong>${h(marketSignalLabel(data.recruitmentDifficulty))}</strong></div>
+        <div><span>Fiabilité</span><strong>${h(reliabilityPercent(reliability))}</strong></div>
+      </div>
+      ${options.compact ? "" : `<p class="field-help">${h(note)} Source : ${h(data.sourceName || data.source || "non connectée")}${data.sourceUpdatedAt ? ` · mise à jour ${h(data.sourceUpdatedAt)}` : ""}. Aucune offre individuelle n’est affichée.</p>`}
+    </div>`;
+}
+
 function renderJobCard(result, options = {}) {
   const job = result.job || findJob(result.jobId);
   const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
@@ -5902,6 +6245,7 @@ function renderJobCard(result, options = {}) {
         </div>
       </div>
       ${result.resultInterpretation ? `<div class="summary-box"><strong>${h(result.resultInterpretation.mainReason)}</strong><p>${h(result.resultInterpretation.dataConfidenceExplanation)}</p></div>` : ""}
+      ${renderMarketBox(result.scoreDetails?.market, job, { compact: true })}
       ${options.showVariants && variants.length ? `<div class="summary-box"><strong>Variantes proches :</strong> ${variants.map(item => `<span class="badge outline">${h(item.title)}</span>`).join(" ")}</div>` : ""}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-result-action="details">Détails</button>
@@ -5925,6 +6269,7 @@ function renderJobDetailsPanelContent(result = {}) {
     <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</p>
     <p><strong>Variantes proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
     <p><strong>Données manquantes :</strong> ${toArray(result.missingData).map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
+    ${renderMarketBox(result.scoreDetails?.market, job)}
     ${renderEvidenceSummary(result.evidenceSummary)}
     ${renderScoreDetails(result.scoreDetails)}
     ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
@@ -5991,7 +6336,7 @@ function renderScoreDetails(details = {}) {
         <li><strong>Contraintes compatibles :</strong> ${toArray(constraints.matchedConstraints).map(h).join(", ") || "aucune contrainte active ou renseignée"}</li>
         <li><strong>Contraintes à vérifier :</strong> ${toArray(constraints.warnings).map(h).join(", ") || "aucune"}</li>
         <li><strong>Formation :</strong> profil ${h(getDiplomaLabel(training.currentDiplomaLevel || 0))}, requis ${h(getDiplomaLabel(training.requiredDiplomaLevel || 0))}, conseillé ${h(getDiplomaLabel(training.recommendedDiplomaLevel || 0))}, statut ${h(training.statusHint || "à vérifier")}${training.knownTrainingFamily ? ". Famille déjà connue : facilite l’entrée, sans signaler un désir principal." : ""}</li>
-        <li><strong>Marché :</strong> ${h(market.isEstimated || market.source === "unknown" ? "donnée à confirmer" : marketLabel(market.level))}. ${market.isEstimated ? "Marché estimatif, non utilisé fortement dans le classement." : "Indicateur marché exploitable selon la source disponible."}</li>
+        <li><strong>Marché :</strong> ${h(marketSourceLevelLabel(market.sourceLevel))} · territoire ${h(market.territoryLabel || market.territory?.label || "non précisé")} · tension ${h(marketSignalLabel(market.tensionLevel || market.level))} · recrutement ${h(marketSignalLabel(market.recruitmentSignal))} · fiabilité ${h(reliabilityPercent(market.marketReliability ?? market.confidence))}. ${h(market.note || "")}</li>
       </ul>
     </div>`;
 }
@@ -6014,7 +6359,8 @@ function renderResultsDiagnosticPanel(results = App.state.results) {
         <li><strong>Distribution cœur de profil :</strong> faible ${h(audit.coreProfileDistribution?.low || 0)}, moyenne ${h(audit.coreProfileDistribution?.medium || 0)}, forte ${h(audit.coreProfileDistribution?.high || 0)}.</li>
         <li><strong>Distribution confiance :</strong> basse ${h(audit.confidenceDistribution?.low || 0)}, moyenne ${h(audit.confidenceDistribution?.medium || 0)}, haute ${h(audit.confidenceDistribution?.high || 0)}.</li>
         <li><strong>Distribution marché :</strong> faible/inconnu ${h(audit.marketScoreDistribution?.low || 0)}, moyen ${h(audit.marketScoreDistribution?.medium || 0)}, fort ${h(audit.marketScoreDistribution?.high || 0)}.</li>
-        <li><strong>Marché :</strong> ${audit.marketContext?.marketDiscriminant ? "discriminant" : "estimatif / non discriminant"} · niveau ${h(audit.marketContext?.marketDataLevel || "non précisé")} · objectif ${h(audit.marketContext?.marketGoal || "balanced")}.</li>
+        <li><strong>Marché :</strong> ${audit.marketContext?.marketDiscriminant ? "discriminant" : "estimatif / non discriminant"} · niveau ${h(marketSourceLevelLabel(audit.marketContext?.availableDataLevel || audit.marketContext?.marketDataLevel || "none"))} · objectif ${h(marketGoalLabel(audit.marketContext?.marketGoal || "balanced"))} · territoire ${h(audit.marketContext?.requestedTerritory?.label || "non précisé")} · poids ${h(audit.marketContext?.effectiveMarketWeight ?? "?")}/${h(audit.marketContext?.requestedMarketWeight ?? "?")}.</li>
+        <li><strong>Couverture marché :</strong> estimatif ${h(audit.marketCoverage?.jobsWithEstimatedMarket || 0)}, national ${h(audit.marketCoverage?.jobsWithNationalMarket || 0)}, régional ${h(audit.marketCoverage?.jobsWithRegionalMarket || 0)}, départemental ${h(audit.marketCoverage?.jobsWithDepartmentalMarket || 0)}, BMO ${h(audit.marketCoverage?.jobsWithBmo || 0)}, sans donnée ${h(audit.marketCoverage?.jobsWithoutMarket || 0)}.</li>
         <li><strong>Distribution formation :</strong> faible ${h(audit.trainingScoreDistribution?.low || 0)}, moyenne ${h(audit.trainingScoreDistribution?.medium || 0)}, forte ${h(audit.trainingScoreDistribution?.high || 0)}.</li>
         <li><strong>Distribution contraintes :</strong> risquée ${h(audit.constraintScoreDistribution?.low || 0)}, à vérifier ${h(audit.constraintScoreDistribution?.medium || 0)}, confortable ${h(audit.constraintScoreDistribution?.high || 0)}.</li>
       </ul>
@@ -6049,7 +6395,7 @@ function renderResultDiagnostic(result = {}) {
         ${subScores.map(item => `<div class="score-line"><strong>${h(item.label)}</strong>${h(item.score)}/${h(item.max)} · ${h(item.stateLabel)}</div>`).join("")}
       </div>
       <p class="field-help">Cœur de profil : ${Math.round(diagnostic.coreProfileMatchScore || 0)}/100 · ${h(coreProfileLevelLabel(diagnostic.coreProfileLevel || diagnostic.coreProfileMatch?.coreProfileLevel))} (${h(diagnostic.coreProfileMatch?.primarySectorLabel || "secteur à préciser")}). Affinité domaine : ${Math.round(diagnostic.domainAffinity?.score || 0)}/100.</p>
-      <p class="field-help">Marché : ${h(diagnostic.marketReliability?.isEstimated ? "estimatif / à confirmer" : diagnostic.marketReliability?.level || "inconnu")} · ${diagnostic.marketReliability?.marketDiscriminant ? "discriminant" : "non discriminant dans cette version"} · poids appliqué ${h(diagnostic.marketReliability?.marketWeightApplied ?? 0)}.</p>
+      <p class="field-help">Marché : ${h(marketSourceLevelLabel(diagnostic.marketReliability?.sourceLevel || diagnostic.marketReliability?.marketDataLevel || "none"))} · territoire ${h(diagnostic.marketReliability?.territoryLabel || diagnostic.marketReliability?.territory?.label || "non précisé")} · tension ${h(marketSignalLabel(diagnostic.marketReliability?.tensionLevel || diagnostic.marketReliability?.level || "unknown"))} · ${diagnostic.marketReliability?.marketDiscriminant ? "discriminant" : "non discriminant dans cette version"} · poids appliqué ${h(diagnostic.marketReliability?.marketWeightApplied ?? 0)}.</p>
       ${diagnostic.confidenceBasis ? `<p class="field-help">Confiance : profil ${h(diagnostic.confidenceBasis.profileSignals)}, compétences ${h(diagnostic.confidenceBasis.skillEvidence)}, métier ${h(diagnostic.confidenceBasis.jobDataQuality)}, marché ${h(diagnostic.confidenceBasis.marketEvidence)}.</p>` : ""}
       ${toArray(diagnostic.scoreCapsApplied).length ? `<p class="field-help"><strong>Plafonds appliqués :</strong> ${toArray(diagnostic.scoreCapsApplied).map(cap => h(cap.message)).join(" ")}</p>` : ""}
       ${diagnostic.marketWeightWarning ? `<p class="field-help">${h(diagnostic.marketWeightWarning)}</p>` : ""}
@@ -6132,7 +6478,7 @@ function renderExplorationPage() {
         ${selectField("Diplôme / accès", "exploration.diplomaLevel", filters.diplomaLevel, [["all", "Tous niveaux"], ["quick", "Accès rapide / formation courte"], ["0_3", "Sans diplôme à CAP/BEP"], ["4", "Bac"], ["5_plus", "Bac +2 et plus"]]).replace('data-field="exploration.diplomaLevel"', 'data-exploration-filter="diplomaLevel"')}
         ${selectField("Contrainte à limiter", "exploration.constraint", filters.constraint, [["all", "Toutes contraintes"], ["low_physical", "Physique faible"], ["no_night", "Sans nuit fréquente"], ["no_weekend", "Sans week-end fréquent"], ["no_driver_license", "Sans permis obligatoire"], ["remote", "Télétravail possible"]]).replace('data-field="exploration.constraint"', 'data-exploration-filter="constraint"')}
         ${selectField("Contexte", "exploration.context", filters.context, buildExplorationContextOptions()).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
-        ${selectField("Marché", "exploration.market", filters.market, [["all", "Tous marchés"], ["high", "Marché favorable estimé"], ["medium", "Marché moyen estimé"], ["low", "Marché faible ou inconnu"]]).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
+        ${selectField("Marché", "exploration.market", filters.market, [["all", "Tous marchés"], ["available", "Données disponibles"], ["high_tension", "Tension forte"], ["favorable", "Recrutement favorable"], ["aude", "Signal Aude"], ["occitanie", "Signal Occitanie"], ["national", "National seulement"], ["confirm", "Données à confirmer"]]).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
         ${selectField("Territoire", "exploration.territory", filters.territory, TERRITORIES.map(item => [item.id, item.label])).replace('data-field="exploration.territory"', 'data-exploration-filter="territory"')}
         ${selectField("Tri", "exploration.sort", filters.sort, [["profile", "Pertinence profil"], ["title", "Titre"], ["domain", "Domaine"], ["quick_access", "Accès rapide"], ["market", "Marché"], ["low_constraints", "Contraintes faibles"], ["remote", "Télétravail"]]).replace('data-field="exploration.sort"', 'data-exploration-filter="sort"')}
         <label class="form-row full tag-option"><input type="checkbox" data-exploration-filter="favoritesOnly" value="yes" ${filters.favoritesOnly ? "checked" : ""}><span><span class="tag-name">Afficher seulement les favoris</span><span class="tag-meta">${App.state.favoriteJobs.length} favori(s) localement</span></span></label>
@@ -6185,7 +6531,7 @@ function getFilteredExplorationJobs() {
 function renderExplorationJobCard(job) {
   const result = findResult(job.id);
   const isFavorite = isFavoriteJob(job.id);
-  const market = getJobMarketLevel(job);
+  const market = getJobMarketSnapshot(job, App.state.dataset, { territory: App.state.explorationFilters.territory });
   return `
     <article class="job-card" data-job-id="${h(job.id)}">
       <div class="job-head">
@@ -6194,13 +6540,16 @@ function renderExplorationJobCard(job) {
           <p class="job-subtitle">${h(getJobCodeLabel(job))} - ${h(job.domain)} - ${h(job.family)}</p>
           <div class="badge-row">
             <span class="badge outline">${h(job.provenance || "local")}</span>
-            <span class="badge opal">${h(marketLabel(market))}</span>
+            <span class="badge opal">${h(marketLabel(market.tensionLevel))}</span>
+            <span class="badge outline">${h(marketSourceLevelLabel(market.sourceLevel))}</span>
+            <span class="badge outline">${h(market.territoryLabel)}</span>
             ${result ? `<span class="badge gold">Profil ${Math.round(result.globalScore)}/100</span>` : ""}
             ${isFavorite ? `<span class="badge sage">Favori</span>` : ""}
           </div>
         </div>
       </div>
       <p>${h(job.description || "Information métier à compléter.")}</p>
+      ${renderMarketBox(market, job, { compact: true })}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-explore-action="details" data-job-id="${h(job.id)}">Fiche</button>
         <button class="tiny-button ${isFavorite ? "is-active" : ""}" type="button" data-explore-action="favorite" data-job-id="${h(job.id)}">${isFavorite ? "Retirer favori" : "Favori"}</button>
@@ -6275,32 +6624,54 @@ function buildExplorationContextOptions() {
 }
 
 function explorationMarketMatches(job, filter) {
+  const selectedTerritory = App.state.explorationFilters.territory || App.state.profile?.marketPreference?.territory?.selected || "DEP-11";
+  const market = getJobMarketSnapshot(job, App.state.dataset, { territory: selectedTerritory });
   if (filter === "all") return true;
-  return getJobMarketLevel(job) === filter;
+  if (filter === "available") return market.sourceLevel !== "none";
+  if (filter === "high_tension") return market.tensionLevel === "high";
+  if (filter === "favorable") return ["medium", "high"].includes(market.recruitmentSignal);
+  if (filter === "aude") return getJobMarketSnapshot(job, App.state.dataset, { territory: "DEP-11" }).tensionLevel === "high";
+  if (filter === "occitanie") return ["medium", "high"].includes(getJobMarketSnapshot(job, App.state.dataset, { territory: "REG-76" }).tensionLevel);
+  if (filter === "national") return market.sourceLevel === "national";
+  if (filter === "confirm") return market.isEstimated || market.sourceLevel === "none" || market.marketReliability < 0.5;
+  return getJobMarketLevel(job, selectedTerritory) === filter;
 }
 
 function compareExplorationJobs(a, b, sort) {
   if (sort === "title") return a.job.title.localeCompare(b.job.title, "fr");
   if (sort === "domain") return `${a.job.domain} ${a.job.title}`.localeCompare(`${b.job.domain} ${b.job.title}`, "fr");
   if (sort === "quick_access") return Number(a.job.recommendedDiplomaLevel || 99) - Number(b.job.recommendedDiplomaLevel || 99);
-  if (sort === "market") return marketLevelWeight(getJobMarketLevel(b.job)) - marketLevelWeight(getJobMarketLevel(a.job));
+  if (sort === "market") return marketLevelWeight(getJobMarketLevel(b.job, App.state.explorationFilters.territory)) - marketLevelWeight(getJobMarketLevel(a.job, App.state.explorationFilters.territory));
   if (sort === "low_constraints") return constraintLightnessScore(b.job) - constraintLightnessScore(a.job);
   if (sort === "remote") return remoteWeight(b.job.remoteCompatibility) - remoteWeight(a.job.remoteCompatibility);
   return (b.result?.globalScore || 0) - (a.result?.globalScore || 0) || a.job.title.localeCompare(b.job.title, "fr");
 }
 
-function getJobMarketLevel(job) {
-  const value = Number(job.market?.tensionScore ?? job.market?.value ?? job.marketScoreSeed ?? 0.5);
-  if (value >= 0.66) return "high";
-  if (value >= 0.45) return "medium";
-  return "low";
+function getJobMarketLevel(job, territory = App.state.profile?.marketPreference?.territory) {
+  return getJobMarketSnapshot(job, App.state.dataset, { territory }).tensionLevel || "unknown";
 }
 
 function marketLabel(level) {
-  if (level === "high") return "Marché favorable estimé";
-  if (level === "medium") return "Marché moyen estimé";
-  if (level === "low") return "Marché faible ou inconnu";
+  if (level === "high") return "Marché favorable";
+  if (level === "medium") return "Marché moyen";
+  if (level === "low") return "Marché faible";
   return "Marché non renseigné";
+}
+
+function marketSourceLevelLabel(level = "none") {
+  return MARKET_SOURCE_LEVEL_LABELS[level] || MARKET_SOURCE_LEVEL_LABELS.none;
+}
+
+function marketSignalLabel(level = "unknown") {
+  return MARKET_SIGNAL_LABELS[level] || MARKET_SIGNAL_LABELS.unknown;
+}
+
+function marketGoalLabel(goal = "balanced") {
+  return MARKET_GOAL_LABELS[goal] || MARKET_GOAL_LABELS.balanced;
+}
+
+function reliabilityPercent(value = 0) {
+  return `${Math.round(clamp(Number(value || 0), 0, 1) * 100)}%`;
 }
 
 function getJobCodeLabel(job = {}) {
@@ -6353,6 +6724,7 @@ function openExplorationJobDialog(jobId) {
     </ul>
     <h3>Compatibilité profil</h3>
     ${result ? `<ul class="data-list"><li>Score : ${Math.round(result.globalScore)}/100 · Confiance : ${Math.round(result.confidenceScore)}%</li><li>${h(result.positiveReasons[0] || "Piste à vérifier.")}</li><li>${h(result.negativeReasons[0] || "Aucune vigilance majeure.")}</li></ul>` : `<p>Pas encore calculé : lancez les résultats pour obtenir une lecture profil.</p>`}
+    ${renderMarketBox(result?.scoreDetails?.market || getJobMarketSnapshot(job, App.state.dataset, { territory: App.state.explorationFilters.territory }), job)}
     <h3>Formations et variantes</h3>
     <p>${trainings.map(item => h(item.title)).join(", ") || "Pistes de formation non reliées ou à vérifier."}</p>
     <p><strong>Métiers proches :</strong> ${variants.map(item => h(item.title)).join(", ") || "Aucune variante classée."}</p>
@@ -6380,11 +6752,12 @@ function renderSettingsPage() {
       <p>Les pondérations restent locales et servent seulement au classement explicable. L’intention propose une base automatique ; les curseurs permettent ensuite de personnaliser.</p>
       <div class="form-grid">
         ${selectField("Intention de recherche", "engineIntent", App.state.profile.engineIntent || "balanced", Object.entries(ENGINE_INTENTS))}
-        ${selectField("Priorité marché", "marketPreference.priority", App.state.profile.marketPreference?.priority || "medium", [["low", "Faible"], ["medium", "Équilibrée"], ["high", "Forte"]])}
-        ${selectField("Objectif marché", "marketPreference.goal", App.state.profile.marketPreference?.goal || "balanced", [["balanced", "Équilibré"], ["quick_employment", "Emploi rapide"], ["local_tension", "Tension locale"], ["secure_recruitment", "Débouchés sécurisants"]])}
+        ${selectField("Territoire d’analyse", "marketPreference.territory.selected", App.state.profile.marketPreference?.territory?.selected || "DEP-11", TERRITORIES.map(item => [item.id, item.label]))}
+        ${selectField("Importance du marché", "marketPreference.priority", App.state.profile.marketPreference?.priority || "medium", [["low", "Peu important"], ["medium", "Équilibré"], ["high", "Priorité forte : je cherche une voie qui recrute"]])}
+        ${selectField("Objectif marché", "marketPreference.goal", App.state.profile.marketPreference?.goal || "balanced", Object.entries(MARKET_GOAL_LABELS))}
         <div class="summary-box">
           <strong>Mode actuel : ${h(engineWeightsOriginLabel(App.state.profile))}</strong>
-          <p class="field-help">Total actuel : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Le marché reste visible, mais il est signalé comme limité si les données sont estimatives ou non localisées.</p>
+          <p class="field-help">Total actuel : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Le marché peut compter davantage si vous le demandez, mais son poids réel est limité quand les statistiques territoriales sont absentes ou seulement estimatives.</p>
         </div>
       </div>
       <div class="form-grid">
@@ -6649,6 +7022,8 @@ function renderDataPage() {
   const source = (dataset.sources || [])[0] || {};
   const datasetStatus = getDatasetStatusLabels(dataset);
   const generatedSummary = getGeneratedRomeSummary(dataset, report, manifest);
+  const marketContext = assessMarketContext(dataset, mapUserProfileToCriteria(App.state.profile));
+  const marketCoverage = marketContext.marketCoverage || {};
   return `
     <section class="results-section print-section">
       <h2>Corpus actif</h2>
@@ -6729,6 +7104,25 @@ function renderDataPage() {
         <li>Appellations liées : ${h(generatedSummary.linkedAppellationsCount)}</li>
         <li>Descriptions officielles : ${h(generatedSummary.officialDescriptionsCount)}</li>
       </ul>
+    </section>
+    <section class="results-section print-section">
+      <h2>Marché et territoire</h2>
+      <p>Cette couche ne montre aucune offre d’emploi active. Elle prépare des statistiques agrégées par territoire et indique clairement quand le signal reste estimatif.</p>
+      <div class="metric-grid">
+        ${metric("Territoire demandé", marketContext.requestedTerritory?.label || "non précisé")}
+        ${metric("Niveau disponible", marketSourceLevelLabel(marketContext.availableDataLevel || "none"))}
+        ${metric("Fiabilité moyenne", reliabilityPercent(marketContext.marketReliability || 0))}
+        ${metric("Métiers estimatifs", marketCoverage.jobsWithEstimatedMarket || 0)}
+        ${metric("National", marketCoverage.jobsWithNationalMarket || 0)}
+        ${metric("Régional", marketCoverage.jobsWithRegionalMarket || 0)}
+        ${metric("Départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
+        ${metric("BMO rapproché", marketCoverage.jobsWithBmo || 0)}
+        ${metric("Sans donnée", marketCoverage.jobsWithoutMarket || 0)}
+      </div>
+      <div class="launch-box warning">
+        <strong>Statistiques officielles marché non connectées dans le HTML</strong>
+        <p>${h(marketContext.reason)} Pour la v0.6 offline, les signaux intégrés restent des repères locaux estimatifs. Les futures données API Marché du travail / BMO devront être générées en JSON statiques sans secret côté navigateur.</p>
+      </div>
     </section>
     <section class="results-section print-section">
       <h2>Mode API France Travail</h2>
@@ -6911,7 +7305,14 @@ async function loadGeneratedRomeDataset() {
     trainings: "formations.onisep.json",
     certifications: "certifications.certifinfo.json",
     mappingsRomeFormations: "mappings-rome-formations.json",
-    mappingsRomeCertifications: "mappings-rome-certifications.json"
+    mappingsRomeCertifications: "mappings-rome-certifications.json",
+    marketManifest: "market/market-import-manifest.json",
+    marketQualityReport: "market/market-quality-report.json",
+    marketNational: "market/market-national.rome.json",
+    marketOccitanie: "market/market-occitanie.rome.json",
+    marketAude: "market/market-aude.rome.json",
+    bmoFap2021: "market/bmo-fap2021.json",
+    fapRomeMappings: "market/fap-rome-mappings.json"
   };
   try {
     App.state.generatedDataStatus = "chargement en cours";
@@ -6968,6 +7369,8 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   const importedAt = new Date().toISOString();
   const generatedSkills = Array.isArray(generated.skills) ? generated.skills.map(normalizeSkill) : [];
   const looksLikeLegacyRawSkillDump = generatedSkills.length > 5000 && !generatedSkills.some(skill => skill.classification || skill.matchingUse || skill.matchingScope);
+  const generatedJobs = Array.isArray(generated.jobs) && generated.jobs.length ? generated.jobs.map(normalizeJob) : base.jobs;
+  const jobsWithGeneratedMarket = applyGeneratedMarketStatsToJobs(generatedJobs, generated);
   const merged = {
     ...base,
     datasetName: manifest.datasetName || "Boussole Pro - données ROME générées",
@@ -6977,7 +7380,7 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     provenance: "generated_rome",
     confidence: 0.75,
     manifest: { ...(base.manifest || {}), ...manifest, provenance: "generated_rome", importedAt },
-    jobs: Array.isArray(generated.jobs) && generated.jobs.length ? generated.jobs.map(normalizeJob) : base.jobs,
+    jobs: jobsWithGeneratedMarket,
     skills: mergeLocalHumanSkills(generatedSkills.length && !looksLikeLegacyRawSkillDump ? generatedSkills : base.skills),
     knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : (base.knowledge || []),
     certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : (base.certificationLike || []),
@@ -6988,11 +7391,47 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
     certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : [],
     marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : [],
+    marketManifest: generated.marketManifest || base.marketManifest || null,
+    marketQualityReport: generated.marketQualityReport || base.marketQualityReport || null,
+    marketDatasets: {
+      national: Array.isArray(generated.marketNational) ? generated.marketNational : [],
+      occitanie: Array.isArray(generated.marketOccitanie) ? generated.marketOccitanie : [],
+      aude: Array.isArray(generated.marketAude) ? generated.marketAude : [],
+      bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
+      fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : []
+    },
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : (base.mappingsRomeFormations || []),
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : (base.mappingsRomeCertifications || [])
   };
   merged.qualityReport = generated.qualityReport || generateDataQualityReport(merged);
   return finalizeDatasetForV051(merged, { regenerateReport: false });
+}
+
+function applyGeneratedMarketStatsToJobs(jobs = [], generated = {}) {
+  const byRome = new Map();
+  const addRows = (rows, level) => {
+    toArray(rows).forEach(row => {
+      const code = extractRomeCode(row.romeCode || row.code || row.id);
+      if (!code) return;
+      const current = byRome.get(code) || { romeCode: code, sourceLevel: "none", sourceName: row.sourceName || row.source || "generated_market", sourceUpdatedAt: row.sourceUpdatedAt || row.updatedAt || null };
+      if (level === "national") current.national = normalizeMarketTerritoryStats(row.national || row);
+      if (level === "regional") current.regional = normalizeMarketTerritoryStats(row.regional || row);
+      if (level === "departmental") current.departmental = normalizeMarketTerritoryStats(row.departmental || row);
+      current.sourceLevel = bestMarketSourceLevel([current.sourceLevel, row.sourceLevel || level]);
+      current.sourceName = row.sourceName || row.source || current.sourceName;
+      current.sourceUpdatedAt = row.sourceUpdatedAt || row.updatedAt || current.sourceUpdatedAt;
+      current.bmo = normalizeBmoStats(row.bmo || current.bmo || {});
+      byRome.set(code, current);
+    });
+  };
+  addRows(generated.marketNational, "national");
+  addRows(generated.marketOccitanie, "regional");
+  addRows(generated.marketAude, "departmental");
+  if (!byRome.size) return jobs;
+  return jobs.map(job => {
+    const stats = byRome.get(job.romeCode);
+    return stats ? normalizeJob({ ...job, marketStats: normalizeMarketStats(stats, job) }) : job;
+  });
 }
 
 function markDatasetAsOfficialRome(dataset, manifest = {}) {
@@ -7376,7 +7815,7 @@ function getUnusedProfileFields(profile) {
     skills: "directSkills",
     mobility: "mobilityRadius"
   };
-  const filled = ["ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingBudget", "trainingFamilies", "desiredTrainingFamilies", "driverLicenses", "mobility", "constraints", "skillSignals", "skills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "interests", "values", "preferredWorkStyles", "preferredEnvironments", "excludedDomains", "preferredSchedule", "needForSecurity", "needForAutonomy", "needForMeaning"]
+  const filled = ["ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingBudget", "trainingFamilies", "desiredTrainingFamilies", "driverLicenses", "mobility", "constraints", "skillSignals", "skills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "interests", "values", "preferredWorkStyles", "preferredEnvironments", "excludedDomains", "preferredSchedule", "needForSecurity", "needForAutonomy", "needForMeaning", "marketPreference"]
     .filter(field => isProfileFieldFilled(profile, field));
   return filled.filter(field => !known.has(aliases[field] || field));
 }
@@ -7450,12 +7889,16 @@ function createEmptyProfile() {
       priority: "medium",
       goal: "balanced",
       territory: {
+        selected: "DEP-11",
+        id: "DEP-11",
+        type: "department",
         country: "FR",
         regionCode: "76",
         regionName: "Occitanie",
         departmentCode: "11",
         departmentName: "Aude",
         cityCode: null,
+        cityName: null,
         radiusKm: null
       }
     },
@@ -7534,18 +7977,11 @@ function normalizeMarketPreference(raw = {}, engineIntent = "balanced") {
   }[engineIntent] || "balanced";
   const goal = raw.goal || goalFromIntent;
   const priority = raw.priority || (["quick_employment", "local_tension", "secure_recruitment"].includes(goal) ? "high" : "medium");
+  const territory = normalizeMarketTerritory(raw.territory || raw.territoryId || raw.territoryCode || "DEP-11");
   return {
     priority: ["low", "medium", "high"].includes(priority) ? priority : "medium",
     goal: ["balanced", "quick_employment", "local_tension", "secure_recruitment"].includes(goal) ? goal : "balanced",
-    territory: {
-      country: raw.territory?.country || "FR",
-      regionCode: raw.territory?.regionCode || "76",
-      regionName: raw.territory?.regionName || "Occitanie",
-      departmentCode: raw.territory?.departmentCode || "11",
-      departmentName: raw.territory?.departmentName || "Aude",
-      cityCode: raw.territory?.cityCode || null,
-      radiusKm: raw.territory?.radiusKm || null
-    }
+    territory
   };
 }
 
@@ -7899,6 +8335,9 @@ function updateProfileFromTarget(target) {
     profile.exclusions.domains = lines(target.value);
   } else {
     setDeep(profile, field, value);
+    if (field.startsWith("marketPreference.")) {
+      profile.marketPreference = normalizeMarketPreference(profile.marketPreference, profile.engineIntent);
+    }
   }
 }
 
@@ -8372,7 +8811,7 @@ function buildConfidenceBasis(criteria, job, details = {}) {
     jobDataQuality: job.provenance === "generated_rome" ? "official" : job.provenance === "curated_clairmetier_ai_logic" ? "curated" : "estimated",
     skillEvidence: toArray(skill.profileSkillsUsed).length >= 3 ? "high" : toArray(skill.profileSkillsUsed).length ? "medium" : "low",
     trainingEvidence: training.statusHint === "unknown" ? "unknown" : "indicative",
-    marketEvidence: market.isEstimated ? "estimated" : market.source === "unknown" ? "unknown" : "localized",
+    marketEvidence: market.sourceLevel === "none" || market.source === "unknown" ? "unknown" : market.isEstimated ? "estimated" : ["regional", "departmental", "local_basin"].includes(market.sourceLevel) ? "localized" : "national",
     explanationQuality: core.level === "core" || toArray(core.matchedInterests).length + toArray(core.matchedValues).length + toArray(core.matchedSkills).length >= 3 ? "detailed" : "basic"
   };
 }
@@ -8461,48 +8900,63 @@ function engineWeightsOriginText(origin) {
 }
 
 function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
-  const marketScores = toArray(datasets?.jobs).map(job => calculateMarketScore(job, datasets));
+  const marketScores = toArray(datasets?.jobs).map(job => calculateMarketScore(job, datasets, criteria));
   const numericScores = marketScores.map(item => item.score).filter(Number.isFinite);
   const uniqueScores = unique(numericScores);
-  const sourceSet = unique(marketScores.map(item => item.source || "unknown"));
+  const sourceSet = unique(marketScores.map(item => item.sourceName || item.source || "unknown"));
+  const sourceLevels = unique(marketScores.map(item => item.sourceLevel || "none"));
   const averageReliability = marketScores.length
-    ? marketScores.reduce((sum, item) => sum + Number(item.confidence || 0), 0) / marketScores.length
+    ? marketScores.reduce((sum, item) => sum + Number(item.marketReliability ?? item.confidence ?? 0), 0) / marketScores.length
     : 0;
-  const hasLocalizedSource = sourceSet.some(source => ["bmo", "dataemploi", "data_emploi", "local_basin", "departmental", "regional"].some(key => normalizeText(source).includes(key)));
-  const marketDataLevel = hasLocalizedSource ? "regional" : sourceSet.some(source => source !== "unknown") ? "estimated" : "none";
+  const marketDataLevel = bestMarketSourceLevel(sourceLevels);
   const marketGoal = criteria.marketPreference?.goal || "balanced";
-  const highPriority = ["quick_employment", "local_tension", "secure_recruitment"].includes(marketGoal) || ["quickEmployment", "localTension"].includes(criteria.engineIntent);
+  const requestedPriority = criteria.marketPreference?.priority || "medium";
+  const highPriority = requestedPriority === "high" || ["quick_employment", "local_tension", "secure_recruitment"].includes(marketGoal) || ["quickEmployment", "localTension"].includes(criteria.engineIntent);
+  const requestedTerritory = normalizeMarketTerritory(criteria.marketPreference?.territory);
+  const requestedMarketWeight = normalizeWeights(criteria.criterionWeights || CONFIG.baseWeights).market || 0;
+  const effectiveMarketWeight = highPriority && averageReliability < 0.5 ? Math.min(requestedMarketWeight, 8) : requestedMarketWeight;
   return {
+    requestedPriority,
+    requestedTerritory,
+    availableDataLevel: marketDataLevel,
+    requestedMarketWeight,
+    effectiveMarketWeight,
+    marketWeightLimited: effectiveMarketWeight < requestedMarketWeight,
     marketDataLevel,
     marketGoal,
     marketReliability: Number(averageReliability.toFixed(2)),
-    marketDiscriminant: uniqueScores.length > 1 && averageReliability >= 0.35,
+    marketDiscriminant: uniqueScores.length > 1 && averageReliability >= 0.35 && marketDataLevel !== "estimated",
     highPriority,
     uniformScore: uniqueScores.length === 1 ? uniqueScores[0] : null,
-    sources: sourceSet
+    sources: sourceSet,
+    marketCoverage: calculateMarketCoverage(datasets, criteria),
+    reason: marketDataLevel === "estimated"
+      ? "Les données marché sont structurées, mais restent estimatives et non officielles."
+      : marketDataLevel === "none"
+        ? "Aucune statistique marché exploitable n’est connectée."
+        : "Des statistiques marché territorialisées sont disponibles."
   };
 }
 
 function adaptWeightsForMarketReliability(weights, market = {}, marketContext = {}) {
   const normalized = normalizeWeights(weights);
-  const reliableSources = ["bmo", "data_emploi", "manual", "official", "official_rome_api"];
-  const source = normalizeText(market.source || "");
-  const reliable = reliableSources.some(item => source.includes(normalizeText(item))) && Number(market.confidence || 0) >= 0.45 && !market.isEstimated;
-  const marketDiscriminant = marketContext.marketDiscriminant !== false && reliable;
-  const marketCanBeStrong = marketDiscriminant && ["regional", "departmental", "local_basin"].includes(marketContext.marketDataLevel) && Number(marketContext.marketReliability || 0) >= 0.6;
+  const reliability = Number(market.marketReliability ?? market.confidence ?? 0);
+  const sourceLevel = market.sourceLevel || marketContext.marketDataLevel || "none";
+  const marketDiscriminant = marketContext.marketDiscriminant !== false && Boolean(market.marketDiscriminant) && !market.isEstimated;
+  const marketCanBeStrong = marketDiscriminant && ["regional", "departmental", "local_basin"].includes(sourceLevel) && reliability >= 0.7;
   if (marketCanBeStrong || normalized.market <= 6) {
     return {
       weights: normalized,
       adjusted: false,
-      warning: marketContext.highPriority && !marketCanBeStrong ? "Le marché compte dans votre intention, mais les données locales restent à vérifier." : "",
+      warning: marketContext.highPriority && !marketCanBeStrong ? "Le marché compte dans votre intention, mais les statistiques territoriales restent insuffisantes pour lui donner tout le poids demandé." : "",
       marketDiscriminant: Boolean(marketDiscriminant),
       marketWeightApplied: normalized.market,
       marketWeightRedistributedTo: [],
-      marketDataLevel: marketContext.marketDataLevel || "estimated",
+      marketDataLevel: sourceLevel || marketContext.marketDataLevel || "estimated",
       marketGoal: marketContext.marketGoal || "balanced"
     };
   }
-  const reducedMarket = Math.min(normalized.market, 6);
+  const reducedMarket = Math.min(normalized.market, marketContext.highPriority && reliability < 0.5 ? 8 : 6);
   const delta = normalized.market - reducedMarket;
   const redistributed = { ...normalized, market: reducedMarket };
   const targets = ["skills", "training", "values", "context"];
@@ -8514,13 +8968,31 @@ function adaptWeightsForMarketReliability(weights, market = {}, marketContext = 
     weights: normalizeWeights(redistributed),
     adjusted: true,
     warning: marketContext.highPriority
-      ? "Le marché est important dans cette intention, mais les données locales ne sont pas encore assez précises : son poids est visible mais limité."
+      ? "Votre objectif donne du poids au recrutement local, mais les statistiques localisées ne sont pas encore connectées ou assez fiables pour ce métier : le poids marché est limité."
       : "Le marché est estimatif ou non discriminant dans cette version : son poids est limité dans ce calcul.",
     marketDiscriminant: Boolean(marketDiscriminant),
     marketWeightApplied: reducedMarket,
     marketWeightRedistributedTo: targets,
-    marketDataLevel: marketContext.marketDataLevel || "estimated",
+    marketDataLevel: sourceLevel || marketContext.marketDataLevel || "estimated",
     marketGoal: marketContext.marketGoal || "balanced"
+  };
+}
+
+function bestMarketSourceLevel(levels = []) {
+  const order = ["none", "estimated", "national", "regional", "departmental", "local_basin"];
+  return toArray(levels).reduce((best, level) => order.indexOf(level) > order.indexOf(best) ? level : best, "none");
+}
+
+function calculateMarketCoverage(datasets = App.state.dataset, criteria = {}) {
+  const jobs = toArray(datasets?.jobs);
+  const scores = jobs.map(job => calculateMarketScore(job, datasets, criteria));
+  return {
+    jobsWithNationalMarket: scores.filter(item => ["national", "regional", "departmental", "local_basin"].includes(item.sourceLevel)).length,
+    jobsWithRegionalMarket: scores.filter(item => ["regional", "departmental", "local_basin"].includes(item.sourceLevel)).length,
+    jobsWithDepartmentalMarket: scores.filter(item => ["departmental", "local_basin"].includes(item.sourceLevel)).length,
+    jobsWithBmo: scores.filter(item => item.bmo?.confidence > 0).length,
+    jobsWithEstimatedMarket: scores.filter(item => item.sourceLevel === "estimated").length,
+    jobsWithoutMarket: scores.filter(item => item.sourceLevel === "none").length
   };
 }
 
@@ -8574,6 +9046,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
     confidenceScore: result.confidenceScore,
     status: result.status,
     scores: result.scores,
+    market: result.scoreDetails?.market || null,
     top5SelectionReason: result.top5SelectionReason || "",
     top5SelectionLabel: result.top5SelectionLabel || "",
     coreProfileMatchScore: result.coreProfileMatchScore || 0,
@@ -8597,6 +9070,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
       engineWeightsMode: App.state.profile?.engineWeightsMode || "intent",
       engineWeightsOrigin: normalizeEngineWeightsOrigin(App.state.profile?.engineWeightsOrigin, App.state.profile || {}),
       criterionWeights: getEffectiveCriterionWeights(App.state.profile),
+      marketPreference: normalizeMarketPreference(App.state.profile?.marketPreference || {}, App.state.profile?.engineIntent || "balanced"),
       baseWeights: clone(CONFIG.baseWeights)
     },
     dataset: {
@@ -8627,7 +9101,8 @@ function resultsToMarkdown(results) {
     `## Top 5 diversifié`
   ];
   topResults.forEach((result, index) => {
-    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Score : ${Math.round(result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Raisons : ${result.positiveReasons.slice(0, 3).join(" ; ")}`, `- Vigilances : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
+    const market = result.scoreDetails?.market || {};
+    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Score : ${Math.round(result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Marché : ${marketSourceLevelLabel(market.sourceLevel)} · ${market.territoryLabel || "territoire non précisé"} · tension ${marketSignalLabel(market.tensionLevel || market.level)}`, `- Raisons : ${result.positiveReasons.slice(0, 3).join(" ; ")}`, `- Vigilances : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
   });
   if (mainResults.length) {
     linesOut.push(``, `## Autres pistes principales`);

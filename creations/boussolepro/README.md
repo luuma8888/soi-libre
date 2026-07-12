@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.5.5-alpha
+**Version :** v0.6-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -18,7 +18,22 @@ Il contient le HTML, le CSS, le JavaScript, le moteur local, le corpus local enr
 
 L’application fonctionne sans serveur, sans CDN, sans tracking et sans API obligatoire. Le profil, le corpus actif, les préférences et les résultats sont conservés dans `localStorage`.
 
-Par défaut, la v0.5.5 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+Par défaut, la v0.6 utilise le corpus local enrichi estimatif embarqué dans le HTML. Si ce corpus est indisponible, le corpus sample minimal reste disponible.
+
+## Nouveautés v0.6-alpha
+
+La v0.6-alpha ajoute une première couche marché / territoire sans afficher d’offres d’emploi :
+
+- choix du territoire d’analyse : France entière, Occitanie ou Aude ;
+- préférence moteur “importance du marché” et objectif : équilibre, emploi rapide, tension locale ou débouchés sécurisants ;
+- schéma `marketStats` par métier avec niveau de source, territoire, tension, recrutement, difficulté et fiabilité ;
+- score marché moins uniforme, mais automatiquement limité quand la donnée reste estimative ou insuffisamment localisée ;
+- bloc “Marché et territoire” dans les cartes métier, les détails, l’Exploration et les diagnostics ;
+- onglet Données enrichi avec couverture marché : estimatif, national, régional, départemental, BMO et sans donnée ;
+- fichiers préparatoires `creations/boussolepro/data/generated/market/` générés en dry-run, sans secret ni appel API ;
+- workflow `generate-market-data.yml` et script `scripts/generate-market-data.mjs` prêts pour une future génération de statistiques agrégées.
+
+Limite volontaire : les statistiques officielles Marché du travail / BMO ne sont pas encore connectées. Les signaux embarqués restent des repères estimatifs à vérifier localement.
 
 ## Nouveautés v0.5.5-alpha
 
@@ -108,7 +123,7 @@ Il contient 210 métiers, 91 compétences locales, 41 contextes, 13 certificatio
 
 ## Données sample
 
-La version v0.5.5-alpha conserve les métiers sample non officiels comme repli minimal.
+La version v0.6-alpha conserve les métiers sample non officiels comme repli minimal.
 
 Les données sample restent marquées `sample_non_official` et ne doivent pas être présentées comme données ROME/RNCP/Onisep officielles.
 
@@ -145,6 +160,27 @@ La chaîne ROME prépare aussi, sans inventer de données, les fichiers futurs `
 
 Si les fichiers sont absents, bloqués ou indisponibles, un message lisible est affiché et le corpus actif est conservé.
 
+## Données marché v0.6
+
+La v0.6 prépare une couche séparée dans :
+
+```text
+creations/boussolepro/data/generated/market/
+```
+
+Fichiers prévus :
+
+- `territories.json`
+- `market-national.rome.json`
+- `market-occitanie.rome.json`
+- `market-aude.rome.json`
+- `bmo-fap2021.json`
+- `fap-rome-mappings.json`
+- `market-quality-report.json`
+- `market-import-manifest.json`
+
+Dans cette version, ces fichiers sont générés en dry-run par `scripts/generate-market-data.mjs`. Ils documentent que les sources officielles ne sont pas encore connectées. L’application utilise donc ses signaux locaux estimatifs embarqués, explicitement marqués comme “à confirmer”.
+
 ## Import / export
 
 Actions disponibles :
@@ -163,7 +199,7 @@ Actions disponibles :
 
 ## Mode API organisme
 
-L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.5.5-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
+L’API France Travail / ROME n’est pas obligatoire et reste en pause fonctionnelle côté navigateur. La version v0.6-alpha conserve un mode avancé de test manuel dans Paramètres, sans stockage du Client Secret en localStorage.
 
 Les chemins prévus sont :
 

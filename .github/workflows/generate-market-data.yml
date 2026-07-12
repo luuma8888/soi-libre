@@ -1,0 +1,44 @@
+name: Generate market data
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Générer seulement les fichiers de structure sans appel API"
+        required: false
+        default: "true"
+      territory:
+        description: "Territoires cibles, séparés par des virgules"
+        required: false
+        default: "occitanie,aude,france"
+      source:
+        description: "Sources prévues, séparées par des virgules"
+        required: false
+        default: "api_marche_travail,bmo"
+
+permissions:
+  contents: write
+
+jobs:
+  generate-market-data:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Generate static market data
+        run: node scripts/generate-market-data.mjs
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'true' }}
+          TERRITORY: ${{ inputs.territory || 'occitanie,aude,france' }}
+          SOURCE: ${{ inputs.source || 'api_marche_travail,bmo' }}
+      - name: Commit generated market data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add creations/boussolepro/data/generated/market
+          git commit -m "Update generated market data" || echo "No changes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

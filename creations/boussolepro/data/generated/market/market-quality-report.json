@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-12T07:25:20.502Z",
+  "generator": "scripts/generate-market-data.mjs",
+  "status": "not_connected_dry_run",
+  "requestedSources": [
+    "api_marche_travail",
+    "bmo"
+  ],
+  "requestedTerritories": [
+    "occitanie",
+    "aude",
+    "france"
+  ],
+  "sourceStatus": [
+    {
+      "source": "api_marche_travail",
+      "status": "not_connected",
+      "reason": "Endpoint, accès ou mapping non configuré dans cette version.",
+      "nextStep": "Ajouter un connecteur GitHub Actions vers une API de statistiques marché agrégées."
+    },
+    {
+      "source": "bmo",
+      "status": "not_connected",
+      "reason": "Endpoint, accès ou mapping non configuré dans cette version.",
+      "nextStep": "Ajouter une source BMO/FAP2021 et une table de rapprochement FAP -> ROME avec confiance."
+    }
+  ],
+  "coverage": {
+    "jobsWithNationalMarket": 0,
+    "jobsWithRegionalMarket": 0,
+    "jobsWithDepartmentalMarket": 0,
+    "jobsWithBmo": 0,
+    "jobsWithoutMarket": null
+  },
+  "warnings": [
+    "Aucune statistique officielle marché n’est générée par ce dry-run.",
+    "Boussole Pro conserve ses signaux locaux estimatifs embarqués et les signale comme tels.",
+    "Ne pas utiliser ce rapport comme preuve de tension ou de volume de recrutement."
+  ]
+}
