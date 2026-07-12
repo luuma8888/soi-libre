@@ -88,6 +88,7 @@ async function main() {
       fapRomeMappings = mappingResult.rows;
     }
 
+    enrichRowsByLevel(rowsByLevel);
     const coverage = buildCoverage(rowsByLevel, bmoRows);
     const totalMarketRows = rowsByLevel.national.length + rowsByLevel.regional.length + rowsByLevel.departmental.length;
     const shouldFailNoMarketData = shouldFailBecauseMarketApiHasNoRows(totalMarketRows);
@@ -121,6 +122,7 @@ async function main() {
     }
   } catch (error) {
     if (!dryRun && !error.marketErrorAlreadyReported) {
+      enrichRowsByLevel(rowsByLevel);
       const existingDiagnostics = diagnostics.length ? diagnostics : [{
         source: "generator",
         status: "error",
@@ -481,6 +483,14 @@ function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
     recruitmentSignal,
     recruitmentDifficulty,
     salarySignal: firstSignal(row, ["salarySignal", "niveauSalaire"]) || "unknown",
+    marketDataKind: "offers_volume",
+    marketInterpretationLabel: "Volume d’offres observé",
+    absoluteOfferSignal: absoluteOfferSignalFromVolume(offers12m),
+    territorialOfferSignal: "unknown",
+    territoryRank: null,
+    territoryPercentile: null,
+    offers12mRankInTerritory: null,
+    marketFreshness: "unknown",
     confidence: territory.sourceLevel === "departmental" ? 0.82 : territory.sourceLevel === "regional" ? 0.72 : 0.55,
     rawFieldHints: Object.keys(row).slice(0, 24),
     rawMeasureHints: extracted.rawMeasureHints.slice(0, 12)
@@ -527,6 +537,14 @@ function normalizeMarketPeriodResponse(row, territory, fallbackRomeCode = "") {
     recruitmentSignal: signal,
     recruitmentDifficulty: "unknown",
     salarySignal: "unknown",
+    marketDataKind: "offers_volume",
+    marketInterpretationLabel: "Volume d’offres observé",
+    absoluteOfferSignal: absoluteOfferSignalFromVolume(offers12m),
+    territorialOfferSignal: "unknown",
+    territoryRank: null,
+    territoryPercentile: null,
+    offers12mRankInTerritory: null,
+    marketFreshness: "unknown",
     confidence: territory.sourceLevel === "departmental" ? 0.82 : territory.sourceLevel === "regional" ? 0.72 : 0.55,
     rawFieldHints: Object.keys(row).slice(0, 24),
     rawMeasureHints: periods.map(item => ({
@@ -643,6 +661,92 @@ function normalizeFapRomeMapping(row) {
   };
 }
 
+function enrichRowsByLevel(rowsByLevel) {
+  for (const [sourceLevel, rows] of Object.entries(rowsByLevel || {})) {
+    enrichTerritoryRows(toArray(rows), sourceLevel);
+  }
+}
+
+function enrichTerritoryRows(rows, fallbackSourceLevel = "unknown") {
+  if (!Array.isArray(rows) || !rows.length) return rows;
+  const latestPeriod = latestPeriodCodeFromMarketRows(rows);
+  const rankedRows = rows
+    .filter(row => Number.isFinite(row.offers12m))
+    .sort((a, b) => Number(b.offers12m) - Number(a.offers12m) || String(a.romeCode).localeCompare(String(b.romeCode), "fr"));
+  const totalRanked = rankedRows.length;
+  const rankByCode = new Map();
+  rankedRows.forEach((row, index) => {
+    const rank = index + 1;
+    const percentile = totalRanked ? Math.round(((totalRanked - rank + 1) / totalRanked) * 100) : null;
+    rankByCode.set(row.romeCode, {
+      rank,
+      percentile,
+      territorialOfferSignal: territorialOfferSignalFromRank(row.offers12m, percentile)
+    });
+  });
+
+  rows.forEach(row => {
+    const rank = rankByCode.get(row.romeCode) || {};
+    row.sourceLevel = row.sourceLevel || fallbackSourceLevel;
+    row.sourceName = row.sourceName || "api_marche_travail";
+    row.marketDataKind = "offers_volume";
+    row.marketInterpretationLabel = "Volume d’offres observé";
+    row.absoluteOfferSignal = absoluteOfferSignalFromVolume(row.offers12m);
+    row.territorialOfferSignal = rank.territorialOfferSignal || "unknown";
+    row.territoryRank = rank.rank ?? null;
+    row.offers12mRankInTerritory = rank.rank ?? null;
+    row.territoryPercentile = rank.percentile ?? null;
+    row.marketFreshness = marketFreshnessFromPeriod(row.latestPeriodCode, latestPeriod);
+  });
+  return rows;
+}
+
+function latestPeriodCodeFromMarketRows(rows = []) {
+  return rows
+    .map(row => row.latestPeriodCode)
+    .filter(Boolean)
+    .sort((a, b) => periodRank(b) - periodRank(a))[0] || null;
+}
+
+function absoluteOfferSignalFromVolume(value) {
+  if (!Number.isFinite(value)) return "unknown";
+  if (value === 0) return "zero";
+  if (value < 100) return "low";
+  if (value < 1000) return "medium";
+  return "high";
+}
+
+function territorialOfferSignalFromRank(value, percentile) {
+  if (!Number.isFinite(value) || percentile === null || percentile === undefined) return "unknown";
+  if (value === 0) return "zero_local";
+  if (percentile >= 90) return "top_local";
+  if (percentile >= 75) return "strong_local";
+  if (percentile >= 35) return "medium_local";
+  return "weak_local";
+}
+
+function marketFreshnessFromPeriod(periodCode, latestPeriodCode) {
+  const rank = periodComparableRank(periodCode);
+  const latestRank = periodComparableRank(latestPeriodCode);
+  if (!rank || !latestRank) return "unknown";
+  const diff = latestRank - rank;
+  if (diff <= 0) return "current";
+  if (diff <= 3) return "recent";
+  if (diff <= 7) return "stale";
+  return "very_stale";
+}
+
+function periodComparableRank(value) {
+  const text = String(value || "").toUpperCase();
+  const quarter = text.match(/^(\d{4})T([1-4])$/);
+  if (quarter) return Number(quarter[1]) * 4 + Number(quarter[2]);
+  const month = text.match(/^(\d{4})[-_]?([0-1]?\d)$/);
+  if (month) return Number(month[1]) * 12 + Number(month[2]);
+  const year = text.match(/^(\d{4})$/);
+  if (year) return Number(year[1]) * 4;
+  return Number(text.replace(/\D/g, "")) || 0;
+}
+
 async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics, coverage, status, marketRomeCodes = [] }) {
   const report = {
     schemaVersion: "1.0.0",
@@ -670,6 +774,15 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
     sourceStatus: diagnostics,
     bmo: buildBmoSummary(diagnostics, bmoRows),
     coverage,
+    marketCoverage: pickMarketCoverage(coverage),
+    marketSignalDistribution: coverage.marketSignalDistribution,
+    territorialSignalDistribution: coverage.territorialSignalDistribution,
+    officialMarketConnected: coverage.officialMarketConnected,
+    apiMethod: "POST",
+    sourceName: "api_marche_travail",
+    bmoUsedInMarketScore: false,
+    fapRomeUsedInMarketScore: false,
+    activeOffersDisplayed: false,
     warnings: buildWarnings(status, diagnostics)
   };
   const outputFiles = [
@@ -701,7 +814,11 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
       marketApiPayloadUsesCodeActivite: true,
       bmoUsedInMarketScore: false,
       bmoRequiresValidatedParser: true,
-      fapRomeMappingsRequireConfidence: true
+      fapRomeMappingsRequireConfidence: true,
+      fapRomeUsedInMarketScore: false,
+      activeOffersDisplayed: false,
+      marketDataKind: "offers_volume",
+      marketInterpretationLabel: "Volume d’offres observé"
     }
   };
   await writeJson("territories.json", territoryRows());
@@ -716,13 +833,68 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
 }
 
 function buildCoverage(rowsByLevel, bmoRows) {
+  const nationalCodes = unique(rowsByLevel.national.map(row => row.romeCode));
+  const regionalCodes = unique(rowsByLevel.regional.map(row => row.romeCode));
+  const departmentalCodes = unique(rowsByLevel.departmental.map(row => row.romeCode));
+  const anyCodes = unique([...nationalCodes, ...regionalCodes, ...departmentalCodes]);
+  const staleCodes = unique([
+    ...rowsByLevel.national,
+    ...rowsByLevel.regional,
+    ...rowsByLevel.departmental
+  ].filter(row => ["stale", "very_stale"].includes(row.marketFreshness)).map(row => row.romeCode));
   return {
-    jobsWithNationalMarket: unique(rowsByLevel.national.map(row => row.romeCode)).length,
-    jobsWithRegionalMarket: unique(rowsByLevel.regional.map(row => row.romeCode)).length,
-    jobsWithDepartmentalMarket: unique(rowsByLevel.departmental.map(row => row.romeCode)).length,
+    officialMarketConnected: anyCodes.length > 0,
+    apiMethod: "POST",
+    sourceName: "api_marche_travail",
+    marketDataKind: "offers_volume",
+    marketInterpretationLabel: "Volume d’offres observé",
+    jobsWithAnyMarket: anyCodes.length,
+    jobsWithOfficialMarket: anyCodes.length,
+    jobsWithNationalMarket: nationalCodes.length,
+    jobsWithRegionalMarket: regionalCodes.length,
+    jobsWithDepartmentalMarket: departmentalCodes.length,
+    jobsWithZeroNationalOffers: unique(rowsByLevel.national.filter(row => row.offers12m === 0).map(row => row.romeCode)).length,
+    jobsWithZeroRegionalOffers: unique(rowsByLevel.regional.filter(row => row.offers12m === 0).map(row => row.romeCode)).length,
+    jobsWithZeroDepartmentalOffers: unique(rowsByLevel.departmental.filter(row => row.offers12m === 0).map(row => row.romeCode)).length,
+    jobsWithStaleMarketData: staleCodes.length,
     jobsWithBmo: unique(bmoRows.map(row => row.fapCode)).length,
-    jobsWithoutMarket: null
+    jobsWithoutMarket: null,
+    bmoUsedInMarketScore: false,
+    fapRomeUsedInMarketScore: false,
+    activeOffersDisplayed: false,
+    marketSignalDistribution: {
+      national: signalDistribution(rowsByLevel.national, "absoluteOfferSignal", ["zero", "low", "medium", "high", "unknown"]),
+      regional: signalDistribution(rowsByLevel.regional, "absoluteOfferSignal", ["zero", "low", "medium", "high", "unknown"]),
+      departmental: signalDistribution(rowsByLevel.departmental, "absoluteOfferSignal", ["zero", "low", "medium", "high", "unknown"])
+    },
+    territorialSignalDistribution: {
+      national: signalDistribution(rowsByLevel.national, "territorialOfferSignal", ["zero_local", "weak_local", "medium_local", "strong_local", "top_local", "unknown"]),
+      regional: signalDistribution(rowsByLevel.regional, "territorialOfferSignal", ["zero_local", "weak_local", "medium_local", "strong_local", "top_local", "unknown"]),
+      departmental: signalDistribution(rowsByLevel.departmental, "territorialOfferSignal", ["zero_local", "weak_local", "medium_local", "strong_local", "top_local", "unknown"])
+    }
   };
+}
+
+function pickMarketCoverage(coverage = {}) {
+  return {
+    jobsWithNationalMarket: coverage.jobsWithNationalMarket || 0,
+    jobsWithRegionalMarket: coverage.jobsWithRegionalMarket || 0,
+    jobsWithDepartmentalMarket: coverage.jobsWithDepartmentalMarket || 0,
+    jobsWithAnyMarket: coverage.jobsWithAnyMarket || 0,
+    jobsWithZeroDepartmentalOffers: coverage.jobsWithZeroDepartmentalOffers || 0,
+    jobsWithZeroRegionalOffers: coverage.jobsWithZeroRegionalOffers || 0,
+    jobsWithZeroNationalOffers: coverage.jobsWithZeroNationalOffers || 0,
+    jobsWithStaleMarketData: coverage.jobsWithStaleMarketData || 0
+  };
+}
+
+function signalDistribution(rows, key, labels) {
+  const distribution = Object.fromEntries(labels.map(label => [label, 0]));
+  rows.forEach(row => {
+    const signal = labels.includes(row[key]) ? row[key] : "unknown";
+    distribution[signal] += 1;
+  });
+  return distribution;
 }
 
 function buildBmoSummary(diagnostics, bmoRows) {
@@ -820,6 +992,7 @@ function isSensitiveKey(key) {
 
 function buildWarnings(status, diagnostics) {
   const warnings = [];
+  warnings.push("Les données marché actuelles représentent des volumes d’offres observés, pas une tension métier complète.");
   if (status === "not_connected_dry_run") warnings.push("Aucune statistique officielle marché n’est générée par ce dry-run.");
   if (status === "failed_no_market_data" || status === "failed") warnings.push("Aucune ligne marché exploitable par code ROME n’a été récupérée.");
   if (status === "completed_without_market_rows") warnings.push("Aucune ligne marché officielle n’a été générée, mais aucune source bloquante n’était exploitable dans cette configuration.");
@@ -918,7 +1091,7 @@ function firstSignal(row, keys) {
 function signalFromVolume(value) {
   if (!Number.isFinite(value)) return "unknown";
   if (value >= 1000) return "high";
-  if (value >= 150) return "medium";
+  if (value >= 100) return "medium";
   return "low";
 }
 
@@ -995,6 +1168,10 @@ function parseBoolean(value) {
 
 function parseList(value) {
   return String(value || "").split(/[,\n;]/).map(item => item.trim()).filter(Boolean);
+}
+
+function toArray(value) {
+  return Array.isArray(value) ? value : [];
 }
 
 function normalizeRomeCodes(values) {
