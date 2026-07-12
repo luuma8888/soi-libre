@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-12T16:03:00.752Z",
+  "generatedAt": "2026-07-12T16:59:23.469Z",
   "generator": "scripts/generate-market-data.mjs",
   "status": "completed_with_market_data",
   "requestedSources": [
@@ -126,13 +126,142 @@
     "futureStep": "v0.6.1/v0.6.2 : ajouter un parseur XLSX validé ou convertir BMO en CSV propre, puis produire un rapport qualité avant toute utilisation."
   },
   "coverage": {
+    "officialMarketConnected": true,
+    "apiMethod": "POST",
+    "sourceName": "api_marche_travail",
+    "marketDataKind": "offers_volume",
+    "marketInterpretationLabel": "Volume d’offres observé",
+    "jobsWithAnyMarket": 72,
+    "jobsWithOfficialMarket": 72,
     "jobsWithNationalMarket": 72,
     "jobsWithRegionalMarket": 72,
     "jobsWithDepartmentalMarket": 72,
+    "jobsWithZeroNationalOffers": 0,
+    "jobsWithZeroRegionalOffers": 0,
+    "jobsWithZeroDepartmentalOffers": 11,
+    "jobsWithStaleMarketData": 3,
     "jobsWithBmo": 0,
-    "jobsWithoutMarket": null
+    "jobsWithoutMarket": null,
+    "bmoUsedInMarketScore": false,
+    "fapRomeUsedInMarketScore": false,
+    "activeOffersDisplayed": false,
+    "marketSignalDistribution": {
+      "national": {
+        "zero": 0,
+        "low": 0,
+        "medium": 9,
+        "high": 63,
+        "unknown": 0
+      },
+      "regional": {
+        "zero": 0,
+        "low": 8,
+        "medium": 16,
+        "high": 48,
+        "unknown": 0
+      },
+      "departmental": {
+        "zero": 11,
+        "low": 30,
+        "medium": 31,
+        "high": 0,
+        "unknown": 0
+      }
+    },
+    "territorialSignalDistribution": {
+      "national": {
+        "zero_local": 0,
+        "weak_local": 24,
+        "medium_local": 29,
+        "strong_local": 11,
+        "top_local": 8,
+        "unknown": 0
+      },
+      "regional": {
+        "zero_local": 0,
+        "weak_local": 24,
+        "medium_local": 29,
+        "strong_local": 11,
+        "top_local": 8,
+        "unknown": 0
+      },
+      "departmental": {
+        "zero_local": 11,
+        "weak_local": 13,
+        "medium_local": 29,
+        "strong_local": 11,
+        "top_local": 8,
+        "unknown": 0
+      }
+    }
   },
+  "marketCoverage": {
+    "jobsWithNationalMarket": 72,
+    "jobsWithRegionalMarket": 72,
+    "jobsWithDepartmentalMarket": 72,
+    "jobsWithAnyMarket": 72,
+    "jobsWithZeroDepartmentalOffers": 11,
+    "jobsWithZeroRegionalOffers": 0,
+    "jobsWithZeroNationalOffers": 0,
+    "jobsWithStaleMarketData": 3
+  },
+  "marketSignalDistribution": {
+    "national": {
+      "zero": 0,
+      "low": 0,
+      "medium": 9,
+      "high": 63,
+      "unknown": 0
+    },
+    "regional": {
+      "zero": 0,
+      "low": 8,
+      "medium": 16,
+      "high": 48,
+      "unknown": 0
+    },
+    "departmental": {
+      "zero": 11,
+      "low": 30,
+      "medium": 31,
+      "high": 0,
+      "unknown": 0
+    }
+  },
+  "territorialSignalDistribution": {
+    "national": {
+      "zero_local": 0,
+      "weak_local": 24,
+      "medium_local": 29,
+      "strong_local": 11,
+      "top_local": 8,
+      "unknown": 0
+    },
+    "regional": {
+      "zero_local": 0,
+      "weak_local": 24,
+      "medium_local": 29,
+      "strong_local": 11,
+      "top_local": 8,
+      "unknown": 0
+    },
+    "departmental": {
+      "zero_local": 11,
+      "weak_local": 13,
+      "medium_local": 29,
+      "strong_local": 11,
+      "top_local": 8,
+      "unknown": 0
+    }
+  },
+  "officialMarketConnected": true,
+  "apiMethod": "POST",
+  "sourceName": "api_marche_travail",
+  "bmoUsedInMarketScore": false,
+  "fapRomeUsedInMarketScore": false,
+  "activeOffersDisplayed": false,
   "warnings": [
+    "Les données marché actuelles représentent des volumes d’offres observés, pas une tension métier complète.",
     "La source BMO XLSX est détectée mais non parsée ; elle n’est pas utilisée dans le score marché.",
     "La source FAP fournie ne contient pas de correspondance ROME directe détectée."
   ]
