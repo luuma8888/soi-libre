@@ -1,12 +1,12 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-08T05:41:33.774Z",
+  "generatedAt": "2026-07-12T17:35:58.015Z",
   "branch": "soi-libre-codex",
   "requestedDebugCodes": [
-    "M1607",
-    "M1805",
+    "A1203",
     "K1303",
-    "A1203"
+    "M1607",
+    "M1805"
   ],
   "note": "Rapport structurel sans corps brut complet et sans jeton. Les chemins indiquent uniquement les zones candidates a verifier pour la normalisation.",
   "fields": {
@@ -19,31 +19,19 @@
     "mobilites": "Voir samples[CODE].candidates.mobilites"
   },
   "samples": {
-    "M1607": {
+    "A1203": {
       "rootKeys": [
         "code",
         "metier"
       ],
       "candidates": {
-        "title": [],
-        "description": [],
-        "competences": [],
-        "savoirs": [],
-        "savoirEtre": [],
-        "appellations": [],
-        "contextesTravail": [],
-        "conditionsAcces": [],
-        "certifications": [],
-        "mobilites": []
-      }
-    },
-    "M1805": {
-      "rootKeys": [
-        "code",
-        "metier"
-      ],
-      "candidates": {
-        "title": [],
+        "title": [
+          {
+            "path": "$.metier.libelle",
+            "key": "libelle",
+            "type": "string"
+          }
+        ],
         "description": [],
         "competences": [],
         "savoirs": [],
@@ -61,7 +49,13 @@
         "metier"
       ],
       "candidates": {
-        "title": [],
+        "title": [
+          {
+            "path": "$.metier.libelle",
+            "key": "libelle",
+            "type": "string"
+          }
+        ],
         "description": [],
         "competences": [],
         "savoirs": [],
@@ -73,13 +67,43 @@
         "mobilites": []
       }
     },
-    "A1203": {
+    "M1607": {
       "rootKeys": [
         "code",
         "metier"
       ],
       "candidates": {
-        "title": [],
+        "title": [
+          {
+            "path": "$.metier.libelle",
+            "key": "libelle",
+            "type": "string"
+          }
+        ],
+        "description": [],
+        "competences": [],
+        "savoirs": [],
+        "savoirEtre": [],
+        "appellations": [],
+        "contextesTravail": [],
+        "conditionsAcces": [],
+        "certifications": [],
+        "mobilites": []
+      }
+    },
+    "M1805": {
+      "rootKeys": [
+        "code",
+        "metier"
+      ],
+      "candidates": {
+        "title": [
+          {
+            "path": "$.metier.libelle",
+            "key": "libelle",
+            "type": "string"
+          }
+        ],
         "description": [],
         "competences": [],
         "savoirs": [],
