@@ -1,18 +1,9 @@
 {
   "schemaVersion": "1.0.0",
   "generatedAt": "2026-07-12T08:18:06.846Z",
-  "generator": "scripts/generate-market-data.mjs",
-  "status": "failed",
-  "requestedSources": [
-    "api_marche_travail",
-    "bmo"
-  ],
-  "requestedTerritories": [
-    "FR",
-    "REG-76",
-    "DEP-11"
-  ],
-  "sourceStatus": [
+  "status": "error",
+  "message": "Génération marché bloquée : 0 donnée exploitable par code ROME.",
+  "diagnostics": [
     {
       "source": "api_marche_travail",
       "territory": "FR",
@@ -49,17 +40,5 @@
       "rowsCount": 0,
       "note": "La source semble décrire la nomenclature FAP2021, mais aucun code ROME direct n’a été détecté."
     }
-  ],
-  "coverage": {
-    "jobsWithNationalMarket": 0,
-    "jobsWithRegionalMarket": 0,
-    "jobsWithDepartmentalMarket": 0,
-    "jobsWithBmo": 0,
-    "jobsWithoutMarket": null
-  },
-  "warnings": [
-    "Aucune ligne marché exploitable par code ROME n’a été récupérée.",
-    "La source BMO XLSX n’est pas parsée sans dépendance externe.",
-    "La source FAP fournie ne contient pas de correspondance ROME directe détectée."
   ]
 }
