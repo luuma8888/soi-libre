@@ -4,17 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Générer seulement les fichiers de structure sans appel API"
+        description: "true = structure seule, false = appel réel et échec si aucune donnée exploitable"
         required: false
-        default: "true"
+        default: ""
       territory:
-        description: "Territoires cibles, séparés par des virgules"
+        description: "Territoires cibles, ex. FR,REG-76,DEP-11. Vide = variable MARKET_TERRITORIES."
         required: false
-        default: "occitanie,aude,france"
+        default: ""
       source:
-        description: "Sources prévues, séparées par des virgules"
+        description: "Sources prévues, ex. api_marche_travail,bmo. Vide = variable MARKET_SOURCE."
         required: false
-        default: "api_marche_travail,bmo"
+        default: ""
 
 permissions:
   contents: write
@@ -32,10 +32,19 @@ jobs:
       - name: Generate static market data
         run: node scripts/generate-market-data.mjs
         env:
-          DRY_RUN: ${{ inputs.dry_run || 'true' }}
-          TERRITORY: ${{ inputs.territory || 'occitanie,aude,france' }}
-          SOURCE: ${{ inputs.source || 'api_marche_travail,bmo' }}
+          DRY_RUN: ${{ inputs.dry_run || vars.MARKET_DRY_RUN || 'true' }}
+          MARKET_TERRITORIES: ${{ inputs.territory || vars.MARKET_TERRITORIES || 'FR,REG-76,DEP-11' }}
+          MARKET_SOURCE: ${{ inputs.source || vars.MARKET_SOURCE || 'api_marche_travail,bmo' }}
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_MARKET_SCOPE: ${{ vars.FT_MARKET_SCOPE }}
+          FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
+          FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
+          MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
+          BMO_DATA_URL: ${{ vars.BMO_DATA_URL }}
+          FAP_ROME_MAPPING_URL: ${{ vars.FAP_ROME_MAPPING_URL }}
       - name: Commit generated market data
+        if: always()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
