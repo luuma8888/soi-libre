@@ -41,6 +41,9 @@ jobs:
           FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
           FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
           MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
+          MARKET_ROME_CODES: ${{ vars.MARKET_ROME_CODES || vars.ROME_CODES || '' }}
+          MARKET_ROME_CODE_PARAM: ${{ vars.MARKET_ROME_CODE_PARAM || 'codeRome' }}
+          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '120' }}
           BMO_DATA_URL: ${{ vars.BMO_DATA_URL }}
           FAP_ROME_MAPPING_URL: ${{ vars.FAP_ROME_MAPPING_URL }}
       - name: Commit generated market data
