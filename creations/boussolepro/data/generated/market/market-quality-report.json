@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-12T16:59:23.469Z",
+  "generatedAt": "2026-07-12T18:04:17.452Z",
   "generator": "scripts/generate-market-data.mjs",
   "status": "completed_with_market_data",
   "requestedSources": [
@@ -12,7 +12,7 @@
     "REG-76",
     "DEP-11"
   ],
-  "requestedRomeCodesCount": 72,
+  "requestedRomeCodesCount": 500,
   "marketApi": {
     "prioritySource": "api_marche_travail",
     "endpointConfigured": true,
@@ -38,10 +38,191 @@
       "activityType": "ROME",
       "periodType": "TRIMESTRE",
       "nomenclatureType": "ORIGINEOFF",
-      "requestedCodesCount": 72,
-      "normalizedRowsCount": 72,
-      "failedCodesCount": 0,
-      "failedCodesSample": [],
+      "requestedCodesCount": 500,
+      "normalizedRowsCount": 437,
+      "failedCodesCount": 63,
+      "failedCodesSample": [
+        {
+          "romeCode": "A1216",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1216",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1217",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1217",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1218",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1218",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1220",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1220",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1221",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1221",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1314",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1314",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1315",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1315",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1319",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1319",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1322",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1322",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1324",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1324",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "B1816",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "B1816",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "C1126",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "C1126",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        }
+      ],
       "sampleKeys": [
         "datMaj",
         "codeIndicateur",
@@ -60,10 +241,202 @@
       "activityType": "ROME",
       "periodType": "TRIMESTRE",
       "nomenclatureType": "ORIGINEOFF",
-      "requestedCodesCount": 72,
-      "normalizedRowsCount": 72,
-      "failedCodesCount": 0,
-      "failedCodesSample": [],
+      "requestedCodesCount": 500,
+      "normalizedRowsCount": 429,
+      "failedCodesCount": 71,
+      "failedCodesSample": [
+        {
+          "romeCode": "A1216",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1216",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1217",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1217",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1218",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1218",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1220",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1220",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1221",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1221",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1314",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1314",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1315",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1315",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1319",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1319",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1322",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1322",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1324",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1324",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1432",
+          "status": "no_exploitable_rome_rows",
+          "method": "POST",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1432",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "responseTopLevelKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "sampleKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "B1816",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "REG",
+            "codeTerritoire": "76",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "B1816",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        }
+      ],
       "sampleKeys": [
         "datMaj",
         "codeIndicateur",
@@ -82,10 +455,213 @@
       "activityType": "ROME",
       "periodType": "TRIMESTRE",
       "nomenclatureType": "ORIGINEOFF",
-      "requestedCodesCount": 72,
-      "normalizedRowsCount": 72,
-      "failedCodesCount": 0,
-      "failedCodesSample": [],
+      "requestedCodesCount": 500,
+      "normalizedRowsCount": 382,
+      "failedCodesCount": 118,
+      "failedCodesSample": [
+        {
+          "romeCode": "A1216",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1216",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1217",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1217",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1218",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1218",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1220",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1220",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1221",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1221",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1314",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1314",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1315",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1315",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1319",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1319",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1322",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1322",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1324",
+          "status": 404,
+          "method": "POST",
+          "message": "{\"message\":\"[FiltreErreurSldng] Erreur lors de l'appel de l'Api REST 'POST:http://da084.z8-prod-mop.k8s.pole-emploi.intra/da084-smartemploi-sldng/v1/indicateur/stat-offres'. Status code = 404, message = Not Found\",\"codeHttp\":404}",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1324",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1432",
+          "status": "no_exploitable_rome_rows",
+          "method": "POST",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1432",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "responseTopLevelKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "sampleKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        },
+        {
+          "romeCode": "A1442",
+          "status": "no_exploitable_rome_rows",
+          "method": "POST",
+          "payload": {
+            "codeTypeTerritoire": "DEP",
+            "codeTerritoire": "11",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "A1442",
+            "codeTypePeriode": "TRIMESTRE",
+            "codeTypeNomenclature": "ORIGINEOFF"
+          },
+          "responseTopLevelKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "sampleKeys": [
+            "datMaj",
+            "codeIndicateur",
+            "codeFamille",
+            "libIndicateur"
+          ],
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"
+        }
+      ],
       "sampleKeys": [
         "datMaj",
         "codeIndicateur",
@@ -131,15 +707,15 @@
     "sourceName": "api_marche_travail",
     "marketDataKind": "offers_volume",
     "marketInterpretationLabel": "Volume d’offres observé",
-    "jobsWithAnyMarket": 72,
-    "jobsWithOfficialMarket": 72,
-    "jobsWithNationalMarket": 72,
-    "jobsWithRegionalMarket": 72,
-    "jobsWithDepartmentalMarket": 72,
-    "jobsWithZeroNationalOffers": 0,
-    "jobsWithZeroRegionalOffers": 0,
-    "jobsWithZeroDepartmentalOffers": 11,
-    "jobsWithStaleMarketData": 3,
+    "jobsWithAnyMarket": 437,
+    "jobsWithOfficialMarket": 437,
+    "jobsWithNationalMarket": 437,
+    "jobsWithRegionalMarket": 429,
+    "jobsWithDepartmentalMarket": 382,
+    "jobsWithZeroNationalOffers": 7,
+    "jobsWithZeroRegionalOffers": 48,
+    "jobsWithZeroDepartmentalOffers": 145,
+    "jobsWithStaleMarketData": 46,
     "jobsWithBmo": 0,
     "jobsWithoutMarket": null,
     "bmoUsedInMarketScore": false,
@@ -147,110 +723,110 @@
     "activeOffersDisplayed": false,
     "marketSignalDistribution": {
       "national": {
-        "zero": 0,
-        "low": 0,
-        "medium": 9,
-        "high": 63,
+        "zero": 7,
+        "low": 56,
+        "medium": 125,
+        "high": 249,
         "unknown": 0
       },
       "regional": {
-        "zero": 0,
-        "low": 8,
-        "medium": 16,
-        "high": 48,
+        "zero": 48,
+        "low": 133,
+        "medium": 142,
+        "high": 106,
         "unknown": 0
       },
       "departmental": {
-        "zero": 11,
-        "low": 30,
-        "medium": 31,
+        "zero": 145,
+        "low": 175,
+        "medium": 62,
         "high": 0,
         "unknown": 0
       }
     },
     "territorialSignalDistribution": {
       "national": {
-        "zero_local": 0,
-        "weak_local": 24,
-        "medium_local": 29,
-        "strong_local": 11,
-        "top_local": 8,
+        "zero_local": 7,
+        "weak_local": 143,
+        "medium_local": 175,
+        "strong_local": 66,
+        "top_local": 46,
         "unknown": 0
       },
       "regional": {
-        "zero_local": 0,
-        "weak_local": 24,
-        "medium_local": 29,
-        "strong_local": 11,
-        "top_local": 8,
+        "zero_local": 48,
+        "weak_local": 100,
+        "medium_local": 171,
+        "strong_local": 64,
+        "top_local": 46,
         "unknown": 0
       },
       "departmental": {
-        "zero_local": 11,
-        "weak_local": 13,
-        "medium_local": 29,
-        "strong_local": 11,
-        "top_local": 8,
+        "zero_local": 145,
+        "weak_local": 0,
+        "medium_local": 139,
+        "strong_local": 57,
+        "top_local": 41,
         "unknown": 0
       }
     }
   },
   "marketCoverage": {
-    "jobsWithNationalMarket": 72,
-    "jobsWithRegionalMarket": 72,
-    "jobsWithDepartmentalMarket": 72,
-    "jobsWithAnyMarket": 72,
-    "jobsWithZeroDepartmentalOffers": 11,
-    "jobsWithZeroRegionalOffers": 0,
-    "jobsWithZeroNationalOffers": 0,
-    "jobsWithStaleMarketData": 3
+    "jobsWithNationalMarket": 437,
+    "jobsWithRegionalMarket": 429,
+    "jobsWithDepartmentalMarket": 382,
+    "jobsWithAnyMarket": 437,
+    "jobsWithZeroDepartmentalOffers": 145,
+    "jobsWithZeroRegionalOffers": 48,
+    "jobsWithZeroNationalOffers": 7,
+    "jobsWithStaleMarketData": 46
   },
   "marketSignalDistribution": {
     "national": {
-      "zero": 0,
-      "low": 0,
-      "medium": 9,
-      "high": 63,
+      "zero": 7,
+      "low": 56,
+      "medium": 125,
+      "high": 249,
       "unknown": 0
     },
     "regional": {
-      "zero": 0,
-      "low": 8,
-      "medium": 16,
-      "high": 48,
+      "zero": 48,
+      "low": 133,
+      "medium": 142,
+      "high": 106,
       "unknown": 0
     },
     "departmental": {
-      "zero": 11,
-      "low": 30,
-      "medium": 31,
+      "zero": 145,
+      "low": 175,
+      "medium": 62,
       "high": 0,
       "unknown": 0
     }
   },
   "territorialSignalDistribution": {
     "national": {
-      "zero_local": 0,
-      "weak_local": 24,
-      "medium_local": 29,
-      "strong_local": 11,
-      "top_local": 8,
+      "zero_local": 7,
+      "weak_local": 143,
+      "medium_local": 175,
+      "strong_local": 66,
+      "top_local": 46,
       "unknown": 0
     },
     "regional": {
-      "zero_local": 0,
-      "weak_local": 24,
-      "medium_local": 29,
-      "strong_local": 11,
-      "top_local": 8,
+      "zero_local": 48,
+      "weak_local": 100,
+      "medium_local": 171,
+      "strong_local": 64,
+      "top_local": 46,
       "unknown": 0
     },
     "departmental": {
-      "zero_local": 11,
-      "weak_local": 13,
-      "medium_local": 29,
-      "strong_local": 11,
-      "top_local": 8,
+      "zero_local": 145,
+      "weak_local": 0,
+      "medium_local": 139,
+      "strong_local": 57,
+      "top_local": 41,
       "unknown": 0
     }
   },
