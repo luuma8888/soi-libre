@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-12T08:18:06.846Z",
+  "generatedAt": "2026-07-12T08:32:50.854Z",
   "generator": "scripts/generate-market-data.mjs",
-  "status": "failed",
+  "status": "failed_no_market_data",
   "requestedSources": [
     "api_marche_travail",
     "bmo"
@@ -12,6 +12,15 @@
     "REG-76",
     "DEP-11"
   ],
+  "requestedRomeCodesCount": 72,
+  "marketApi": {
+    "prioritySource": "api_marche_travail",
+    "endpointConfigured": true,
+    "scopeConfigured": true,
+    "byRomeFallbackEnabled": true,
+    "romeCodeParam": "codeRome",
+    "requestDelayMs": 120
+  },
   "sourceStatus": [
     {
       "source": "api_marche_travail",
@@ -23,11 +32,183 @@
     },
     {
       "source": "api_marche_travail",
+      "territory": "FR",
+      "status": "no_exploitable_rome_rows_by_rome_code",
+      "mode": "by_rome_code",
+      "codeParam": "codeRome",
+      "requestedCodesCount": 72,
+      "normalizedRowsCount": 0,
+      "failedCodesCount": 72,
+      "failedCodesSample": [
+        {
+          "romeCode": "M1607",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1607"
+        },
+        {
+          "romeCode": "M1601",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1601"
+        },
+        {
+          "romeCode": "M1602",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1602"
+        },
+        {
+          "romeCode": "M1604",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1604"
+        },
+        {
+          "romeCode": "M1501",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1501"
+        },
+        {
+          "romeCode": "M1203",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1203"
+        },
+        {
+          "romeCode": "M1805",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1805"
+        },
+        {
+          "romeCode": "M1810",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1810"
+        },
+        {
+          "romeCode": "M1801",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1801"
+        },
+        {
+          "romeCode": "M1806",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1806"
+        },
+        {
+          "romeCode": "M1808",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=M1808"
+        },
+        {
+          "romeCode": "E1104",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=NAT&codeTerritoire=FR&codeRome=E1104"
+        }
+      ],
+      "sampleKeys": [],
+      "note": "L’appel par code ROME n’a pas produit de ligne exploitable. Vérifier MARKET_ROME_CODE_PARAM, MARKET_EXTRA_QUERY et le format exact de réponse de l’API."
+    },
+    {
+      "source": "api_marche_travail",
       "territory": "REG-76",
       "status": "http_error",
       "httpStatus": 405,
       "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
       "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76"
+    },
+    {
+      "source": "api_marche_travail",
+      "territory": "REG-76",
+      "status": "no_exploitable_rome_rows_by_rome_code",
+      "mode": "by_rome_code",
+      "codeParam": "codeRome",
+      "requestedCodesCount": 72,
+      "normalizedRowsCount": 0,
+      "failedCodesCount": 72,
+      "failedCodesSample": [
+        {
+          "romeCode": "M1607",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1607"
+        },
+        {
+          "romeCode": "M1601",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1601"
+        },
+        {
+          "romeCode": "M1602",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1602"
+        },
+        {
+          "romeCode": "M1604",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1604"
+        },
+        {
+          "romeCode": "M1501",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1501"
+        },
+        {
+          "romeCode": "M1203",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1203"
+        },
+        {
+          "romeCode": "M1805",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1805"
+        },
+        {
+          "romeCode": "M1810",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1810"
+        },
+        {
+          "romeCode": "M1801",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1801"
+        },
+        {
+          "romeCode": "M1806",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1806"
+        },
+        {
+          "romeCode": "M1808",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=M1808"
+        },
+        {
+          "romeCode": "E1104",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=REG&codeTerritoire=76&codeRome=E1104"
+        }
+      ],
+      "sampleKeys": [],
+      "note": "L’appel par code ROME n’a pas produit de ligne exploitable. Vérifier MARKET_ROME_CODE_PARAM, MARKET_EXTRA_QUERY et le format exact de réponse de l’API."
     },
     {
       "source": "api_marche_travail",
@@ -38,9 +219,100 @@
       "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11"
     },
     {
+      "source": "api_marche_travail",
+      "territory": "DEP-11",
+      "status": "no_exploitable_rome_rows_by_rome_code",
+      "mode": "by_rome_code",
+      "codeParam": "codeRome",
+      "requestedCodesCount": 72,
+      "normalizedRowsCount": 0,
+      "failedCodesCount": 72,
+      "failedCodesSample": [
+        {
+          "romeCode": "M1607",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1607"
+        },
+        {
+          "romeCode": "M1601",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1601"
+        },
+        {
+          "romeCode": "M1602",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1602"
+        },
+        {
+          "romeCode": "M1604",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1604"
+        },
+        {
+          "romeCode": "M1501",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1501"
+        },
+        {
+          "romeCode": "M1203",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1203"
+        },
+        {
+          "romeCode": "M1805",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1805"
+        },
+        {
+          "romeCode": "M1810",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1810"
+        },
+        {
+          "romeCode": "M1801",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1801"
+        },
+        {
+          "romeCode": "M1806",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1806"
+        },
+        {
+          "romeCode": "M1808",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=M1808"
+        },
+        {
+          "romeCode": "E1104",
+          "status": 405,
+          "message": "{\"message\":\"RESTEASY003650: No resource method found for GET, return 405 with Allow header\",\"classeOrigine\":\"javax.ws.rs.NotAllowedException\",\"codeHttp\":405}",
+          "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres?codeTypeTerritoire=DEP&codeTerritoire=11&codeRome=E1104"
+        }
+      ],
+      "sampleKeys": [],
+      "note": "L’appel par code ROME n’a pas produit de ligne exploitable. Vérifier MARKET_ROME_CODE_PARAM, MARKET_EXTRA_QUERY et le format exact de réponse de l’API."
+    },
+    {
       "source": "bmo",
-      "status": "not_parsed_xlsx_no_dependency",
-      "reason": "La source BMO fournie est un fichier XLSX. Le projet ne doit pas ajouter de dépendance externe ; fournir un CSV/JSON exploitable ou ajouter un parseur dédié validé."
+      "status": "detected_not_parsed_xlsx",
+      "sourceLevel": "not_connected",
+      "confidence": 0,
+      "usedInMarketScore": false,
+      "fileType": "xlsx",
+      "reason": "La source BMO fournie est un fichier XLSX. Elle est détectée mais non parsée dans cette version ; aucun score marché ne l’utilise.",
+      "futureStep": "Prévoir en v0.6.1 ou v0.6.2 un parseur XLSX validé, ou une conversion BMO en CSV propre avec rapport qualité."
     },
     {
       "source": "fap_rome_mapping",
@@ -50,6 +322,18 @@
       "note": "La source semble décrire la nomenclature FAP2021, mais aucun code ROME direct n’a été détecté."
     }
   ],
+  "bmo": {
+    "sourceDetected": true,
+    "status": "detected_not_parsed_xlsx",
+    "sourceLevel": "not_connected",
+    "confidence": 0,
+    "fileType": "xlsx",
+    "rowsCount": 0,
+    "usedInMarketScore": false,
+    "parsed": false,
+    "note": "BMO est détecté mais non parsé : le fichier XLSX n’est pas transformé en données de matching dans cette version.",
+    "futureStep": "v0.6.1/v0.6.2 : ajouter un parseur XLSX validé ou convertir BMO en CSV propre, puis produire un rapport qualité avant toute utilisation."
+  },
   "coverage": {
     "jobsWithNationalMarket": 0,
     "jobsWithRegionalMarket": 0,
@@ -59,7 +343,7 @@
   },
   "warnings": [
     "Aucune ligne marché exploitable par code ROME n’a été récupérée.",
-    "La source BMO XLSX n’est pas parsée sans dépendance externe.",
+    "La source BMO XLSX est détectée mais non parsée ; elle n’est pas utilisée dans le score marché.",
     "La source FAP fournie ne contient pas de correspondance ROME directe détectée."
   ]
 }
