@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "true = structure seule, false = appel réel et échec si aucune donnée exploitable"
+        description: "true = structure seule, false = appel réel. L’échec sur résultat vide dépend de MARKET_FAIL_ON_EMPTY."
         required: false
         default: ""
       territory:
@@ -42,8 +42,13 @@ jobs:
           FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
           MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
           MARKET_ROME_CODES: ${{ vars.MARKET_ROME_CODES || vars.ROME_CODES || '' }}
-          MARKET_ROME_CODE_PARAM: ${{ vars.MARKET_ROME_CODE_PARAM || 'codeRome' }}
-          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '120' }}
+          MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
+          MARKET_PERIOD_TYPE: ${{ vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
+          MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
+          MARKET_USE_GLOBAL_TERRITORY_CALL: ${{ vars.MARKET_USE_GLOBAL_TERRITORY_CALL || 'false' }}
+          MARKET_FAIL_ON_EMPTY: ${{ vars.MARKET_FAIL_ON_EMPTY || 'false' }}
+          MARKET_DEBUG_SAMPLE: ${{ vars.MARKET_DEBUG_SAMPLE || 'false' }}
+          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
           BMO_DATA_URL: ${{ vars.BMO_DATA_URL }}
           FAP_ROME_MAPPING_URL: ${{ vars.FAP_ROME_MAPPING_URL }}
       - name: Commit generated market data

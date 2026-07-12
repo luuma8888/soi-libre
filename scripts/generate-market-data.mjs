@@ -14,6 +14,14 @@ const requestedSources = parseList(env.SOURCE || env.MARKET_SOURCE || "api_march
 const requestedTerritories = parseList(env.MARKET_TERRITORIES || env.TERRITORY || DEFAULT_TERRITORIES)
   .map(normalizeTerritory)
   .filter(Boolean);
+const useGlobalTerritoryCall = parseBoolean(env.MARKET_USE_GLOBAL_TERRITORY_CALL || "false");
+const marketDebugSampleEnabled = parseBoolean(env.MARKET_DEBUG_SAMPLE || "false");
+const marketRequestDelayMs = Math.max(0, Number(env.MARKET_REQUEST_DELAY_MS || 250));
+const marketActivityType = env.MARKET_ACTIVITY_TYPE || "ROME";
+const marketPeriodType = env.MARKET_PERIOD_TYPE || "TRIMESTRE";
+const marketNomenclatureType = env.MARKET_NOMENCLATURE_TYPE || "ORIGINEOFF";
+const marketDebugRequests = [];
+let marketTokenObtained = false;
 
 async function resolveMarketRomeCodes() {
   const explicitCodes = parseList(env.MARKET_ROME_CODES || env.ROME_CODES || "");
@@ -92,6 +100,7 @@ async function main() {
           : "completed_without_market_rows";
 
     await writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics, coverage, status, marketRomeCodes });
+    logMarketSummary({ rowsByLevel, marketRomeCodes, status });
 
     if (shouldFailNoMarketData) {
       await writeJson("sync-error.json", {
@@ -107,8 +116,9 @@ async function main() {
       throw error;
     }
 
-    console.log(`Market data written to ${OUTPUT_DIR}`);
-    console.log(`Market rows: national=${rowsByLevel.national.length}, regional=${rowsByLevel.regional.length}, departmental=${rowsByLevel.departmental.length}`);
+    if (!dryRun && totalMarketRows === 0 && requestedSources.includes("api_marche_travail")) {
+      console.log("Aucune donnée marché exploitable récupérée. Le workflow continue avec diagnostic.");
+    }
   } catch (error) {
     if (!dryRun && !error.marketErrorAlreadyReported) {
       const existingDiagnostics = diagnostics.length ? diagnostics : [{
@@ -132,6 +142,7 @@ async function main() {
         message: shortMessage(error.message),
         diagnostics: existingDiagnostics
       });
+      await writeDebugMarketSample(marketRomeCodes);
     }
     throw error;
   }
@@ -151,58 +162,26 @@ async function fetchMarketApiData(marketRomeCodes) {
     return { diagnostics, rowsByLevel };
   }
   const token = await getFranceTravailAccessToken(scope, env.FT_MARKET_TOKEN_URL || env.FT_TOKEN_URL || DEFAULT_TOKEN_URL);
+  marketTokenObtained = true;
   for (const territory of requestedTerritories) {
-    const url = buildMarketUrl(endpoint, territory);
-    let normalizedRowsCount = 0;
-    let canTryRomeFallback = true;
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token.access_token || token.token || token}`,
-          Accept: "application/json"
-        }
-      });
-      if (!response.ok) {
-        diagnostics.push({
-          source: "api_marche_travail",
-          territory: territory.id,
-          status: "http_error",
-          httpStatus: response.status,
-          message: shortMessage(await safeResponseText(response)),
-          endpoint: withoutSensitiveQuery(url)
-        });
-        canTryRomeFallback = ![401, 403].includes(response.status);
-      } else {
-        const json = await response.json();
-        const rawRows = extractRows(json);
-        const normalizedRows = normalizeMarketRows(rawRows, territory);
-        normalizedRowsCount = normalizedRows.length;
-        rowsByLevel[territory.outputKey].push(...normalizedRows);
-        diagnostics.push({
-          source: "api_marche_travail",
-          territory: territory.id,
-          status: normalizedRows.length ? "ok" : "no_exploitable_rome_rows",
-          mode: "territory",
-          rawRowsCount: rawRows.length,
-          normalizedRowsCount: normalizedRows.length,
-          endpoint: withoutSensitiveQuery(url),
-          sampleKeys: rawRows[0] && typeof rawRows[0] === "object" ? Object.keys(rawRows[0]).slice(0, 30) : []
-        });
-      }
-    } catch (error) {
+    if (useGlobalTerritoryCall) {
+      const globalResult = await fetchGlobalTerritoryMarketRows(endpoint, token, territory);
+      rowsByLevel[territory.outputKey].push(...globalResult.rows);
+      diagnostics.push(globalResult.diagnostic);
+      if (globalResult.rows.length) continue;
+    }
+    if (marketRomeCodes.length) {
+      const byCodeResult = await fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRomeCodes);
+      rowsByLevel[territory.outputKey].push(...byCodeResult.rows);
+      diagnostics.push(byCodeResult.diagnostic);
+    } else {
       diagnostics.push({
         source: "api_marche_travail",
         territory: territory.id,
-        status: "fetch_error",
-        message: shortMessage(error.message),
-        endpoint: withoutSensitiveQuery(url)
+        status: "no_rome_codes_to_request",
+        method: "POST",
+        reason: "Aucun code ROME disponible pour interroger stat-offres par activité."
       });
-      canTryRomeFallback = false;
-    }
-    if (canTryRomeFallback && normalizedRowsCount === 0 && marketRomeCodes.length) {
-      const fallback = await fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRomeCodes);
-      rowsByLevel[territory.outputKey].push(...fallback.rows);
-      diagnostics.push(fallback.diagnostic);
     }
   }
   dedupeRowsByRome(rowsByLevel.national);
@@ -211,43 +190,102 @@ async function fetchMarketApiData(marketRomeCodes) {
   return { diagnostics, rowsByLevel };
 }
 
+async function fetchGlobalTerritoryMarketRows(endpoint, token, territory) {
+  const url = buildMarketUrl(endpoint, territory);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token.access_token || token.token || token}`,
+        Accept: "application/json"
+      }
+    });
+    if (!response.ok) {
+      return {
+        rows: [],
+        diagnostic: {
+          source: "api_marche_travail",
+          territory: territory.id,
+          status: "http_error",
+          method: "GET",
+          httpStatus: response.status,
+          message: shortMessage(await safeResponseText(response)),
+          endpoint: withoutSensitiveQuery(url),
+          note: "Appel global territoire activé explicitement par MARKET_USE_GLOBAL_TERRITORY_CALL=true."
+        }
+      };
+    }
+    const json = await response.json();
+    const rawRows = extractRows(json);
+    const candidateRows = rawRows.length ? rawRows : (isObject(json) ? [json] : []);
+    const rows = normalizeMarketRows(candidateRows, territory);
+    return {
+      rows,
+      diagnostic: {
+        source: "api_marche_travail",
+        territory: territory.id,
+        status: rows.length ? "ok_global_territory" : "no_exploitable_rome_rows_global_territory",
+        method: "GET",
+        rawRowsCount: candidateRows.length,
+        normalizedRowsCount: rows.length,
+        endpoint: withoutSensitiveQuery(url),
+        responseTopLevelKeys: isObject(json) ? Object.keys(json).slice(0, 30) : [],
+        note: "Appel global territoire activé explicitement par MARKET_USE_GLOBAL_TERRITORY_CALL=true."
+      }
+    };
+  } catch (error) {
+    return {
+      rows: [],
+      diagnostic: {
+        source: "api_marche_travail",
+        territory: territory.id,
+        status: "fetch_error",
+        method: "GET",
+        message: shortMessage(error.message),
+        endpoint: withoutSensitiveQuery(url)
+      }
+    };
+  }
+}
+
 async function fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRomeCodes) {
   const rows = [];
   const failedCodes = [];
-  const codeParam = env.MARKET_ROME_CODE_PARAM || "codeRome";
-  const delayMs = Math.max(0, Number(env.MARKET_REQUEST_DELAY_MS || 120));
   let firstSampleKeys = [];
 
   for (const romeCode of marketRomeCodes) {
-    const url = buildMarketUrl(endpoint, territory, romeCode, codeParam);
+    const payload = buildMarketPayload(territory, romeCode);
     try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token.access_token || token.token || token}`,
-          Accept: "application/json"
-        }
-      });
+      const response = await postMarketStatOffres(endpoint, token, payload);
       if (!response.ok) {
+        const responseText = await safeResponseText(response);
+        captureMarketDebugSample({ territory, romeCode, payload, response, responseText });
         failedCodes.push({
           romeCode,
           status: response.status,
-          message: shortMessage(await safeResponseText(response)),
-          endpoint: withoutSensitiveQuery(url)
+          method: "POST",
+          message: shortMessage(responseText),
+          payload: sanitizeDebugPayload(payload),
+          endpoint: withoutSensitiveQuery(endpoint)
         });
       } else {
         const json = await response.json();
         const rawRows = extractRows(json);
-        const normalizedRows = normalizeMarketRows(rawRows, territory, romeCode);
+        const candidateRows = rawRows.length ? rawRows : (isObject(json) ? [json] : []);
+        captureMarketDebugSample({ territory, romeCode, payload, response, json });
+        const normalizedRows = normalizeMarketRows(candidateRows, territory, romeCode);
         rows.push(...normalizedRows);
-        if (!firstSampleKeys.length && rawRows[0] && typeof rawRows[0] === "object") {
-          firstSampleKeys = Object.keys(rawRows[0]).slice(0, 30);
+        if (!firstSampleKeys.length && candidateRows[0] && typeof candidateRows[0] === "object") {
+          firstSampleKeys = Object.keys(candidateRows[0]).slice(0, 30);
         }
         if (!normalizedRows.length) {
           failedCodes.push({
             romeCode,
             status: "no_exploitable_rome_rows",
-            sampleKeys: rawRows[0] && typeof rawRows[0] === "object" ? Object.keys(rawRows[0]).slice(0, 30) : [],
-            endpoint: withoutSensitiveQuery(url)
+            method: "POST",
+            payload: sanitizeDebugPayload(payload),
+            responseTopLevelKeys: isObject(json) ? Object.keys(json).slice(0, 30) : [],
+            sampleKeys: candidateRows[0] && typeof candidateRows[0] === "object" ? Object.keys(candidateRows[0]).slice(0, 30) : [],
+            endpoint: withoutSensitiveQuery(endpoint)
           });
         }
       }
@@ -255,11 +293,13 @@ async function fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRome
       failedCodes.push({
         romeCode,
         status: "fetch_error",
+        method: "POST",
+        payload: sanitizeDebugPayload(payload),
         message: shortMessage(error.message),
-        endpoint: withoutSensitiveQuery(url)
+        endpoint: withoutSensitiveQuery(endpoint)
       });
     }
-    if (delayMs) await sleep(delayMs);
+    if (marketRequestDelayMs) await sleep(marketRequestDelayMs);
   }
 
   dedupeRowsByRome(rows);
@@ -269,18 +309,44 @@ async function fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRome
       source: "api_marche_travail",
       territory: territory.id,
       status: rows.length ? "ok_by_rome_code" : "no_exploitable_rome_rows_by_rome_code",
-      mode: "by_rome_code",
-      codeParam,
+      mode: "by_rome_code_post_json",
+      method: "POST",
+      activityType: marketActivityType,
+      periodType: marketPeriodType,
+      nomenclatureType: marketNomenclatureType,
       requestedCodesCount: marketRomeCodes.length,
       normalizedRowsCount: rows.length,
       failedCodesCount: failedCodes.length,
       failedCodesSample: failedCodes.slice(0, 12),
       sampleKeys: firstSampleKeys,
       note: rows.length
-        ? "L’appel global par territoire ne donnait pas de lignes ROME ; des lignes ont été récupérées via des appels par code ROME."
-        : "L’appel par code ROME n’a pas produit de ligne exploitable. Vérifier MARKET_ROME_CODE_PARAM, MARKET_EXTRA_QUERY et le format exact de réponse de l’API."
+        ? "Des lignes ont été récupérées via des POST JSON par code ROME."
+        : "Le POST JSON par code ROME n’a pas produit de ligne exploitable. Vérifier le payload, MARKET_PERIOD_TYPE, MARKET_NOMENCLATURE_TYPE et le format exact de réponse de l’API."
     }
   };
+}
+
+function buildMarketPayload(territory, romeCode) {
+  return {
+    codeTypeTerritoire: territory.codeTypeTerritoire,
+    codeTerritoire: territory.codeTerritoire,
+    codeTypeActivite: marketActivityType,
+    codeActivite: romeCode,
+    codeTypePeriode: marketPeriodType,
+    codeTypeNomenclature: marketNomenclatureType
+  };
+}
+
+async function postMarketStatOffres(endpoint, token, payload) {
+  return fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.access_token || token.token || token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
 }
 
 async function fetchBmoData() {
@@ -364,11 +430,10 @@ async function getFranceTravailAccessToken(scope, tokenUrl) {
   return response.json();
 }
 
-function buildMarketUrl(endpoint, territory, romeCode = "", romeCodeParam = "codeRome") {
+function buildMarketUrl(endpoint, territory) {
   const url = new URL(endpoint);
   url.searchParams.set("codeTypeTerritoire", territory.codeTypeTerritoire);
   url.searchParams.set("codeTerritoire", territory.codeTerritoire);
-  if (romeCode) url.searchParams.set(romeCodeParam, romeCode);
   for (const [key, value] of new URLSearchParams(env.MARKET_EXTRA_QUERY || "")) {
     if (key && value) url.searchParams.set(key, value);
   }
@@ -383,14 +448,15 @@ function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
   if (!row || typeof row !== "object") return null;
   const romeCode = extractRomeCode(row) || fallbackRomeCode;
   if (!romeCode) return null;
+  const extracted = extractMarketMeasuresFromApiResponse(row);
   const offers12m = firstNumber(row, [
     "offers12m", "offres12m", "offres_12m", "nombreOffres12Mois", "nombreOffres",
     "nbOffres", "nb_offres", "offres", "valeur", "value", "count"
-  ]);
-  const demanders = firstNumber(row, ["demanders", "demandeurs", "nbDemandeurs", "nombreDemandeurs"]);
-  const hires12m = firstNumber(row, ["hires12m", "embauches12m", "embauches", "nbEmbauches"]);
+  ]) ?? extracted.offers12m;
+  const demanders = firstNumber(row, ["demanders", "demandeurs", "nbDemandeurs", "nombreDemandeurs"]) ?? extracted.demanders;
+  const hires12m = firstNumber(row, ["hires12m", "embauches12m", "embauches", "nbEmbauches"]) ?? extracted.hires12m;
   const signal = signalFromVolume(offers12m);
-  const newDemanders12m = firstNumber(row, ["newDemanders12m", "nouveauxDemandeurs12m", "nouveauxDemandeurs"]);
+  const newDemanders12m = firstNumber(row, ["newDemanders12m", "nouveauxDemandeurs12m", "nouveauxDemandeurs"]) ?? extracted.newDemanders12m;
   const tensionLevel = firstSignal(row, ["tensionLevel", "niveauTension", "tension"]) || signal;
   const recruitmentSignal = firstSignal(row, ["recruitmentSignal", "niveauRecrutement"]) || signal;
   const recruitmentDifficulty = firstSignal(row, ["recruitmentDifficulty", "difficulteRecrutement"]) || "unknown";
@@ -416,8 +482,60 @@ function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
     recruitmentDifficulty,
     salarySignal: firstSignal(row, ["salarySignal", "niveauSalaire"]) || "unknown",
     confidence: territory.sourceLevel === "departmental" ? 0.82 : territory.sourceLevel === "regional" ? 0.72 : 0.55,
-    rawFieldHints: Object.keys(row).slice(0, 24)
+    rawFieldHints: Object.keys(row).slice(0, 24),
+    rawMeasureHints: extracted.rawMeasureHints.slice(0, 12)
   };
+}
+
+function extractMarketMeasuresFromApiResponse(json) {
+  const measures = {
+    offers12m: null,
+    demanders: null,
+    hires12m: null,
+    newDemanders12m: null,
+    rawMeasureHints: []
+  };
+  const candidates = [];
+  walk(json, (value, key) => {
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item && typeof item === "object") candidates.push(item);
+      }
+    } else if (isObject(value) && hasAnyLooseNumber(value)) {
+      candidates.push(value);
+    } else if (Number.isFinite(numberOrNull(value)) && key && isPotentialMeasureKey(key)) {
+      candidates.push({ code: key, libelle: key, valeur: value });
+    }
+  });
+
+  for (const item of candidates) {
+    const code = firstString(item, ["code", "codeValeur", "codeIndicateur", "codeStatistique", "type", "cle", "key"]);
+    const label = firstString(item, ["libelle", "label", "nom", "description", "name"]);
+    const value = firstNumber(item, ["valeur", "value", "nombre", "nb", "count", "total"]);
+    if (!Number.isFinite(value)) continue;
+    const hint = normalizeText(`${code || ""} ${label || ""}`);
+    measures.rawMeasureHints.push({ code, label, value });
+
+    if (["toff", "offre", "offres"].some(itemHint => hint.includes(itemHint))) {
+      measures.offers12m = Math.max(measures.offers12m || 0, value);
+    } else if (["nouveau", "nouveaux", "entree", "inscription"].some(itemHint => hint.includes(itemHint)) && hint.includes("demande")) {
+      measures.newDemanders12m = Math.max(measures.newDemanders12m || 0, value);
+    } else if (["demandeur", "demandeurs", "defm"].some(itemHint => hint.includes(itemHint))) {
+      measures.demanders = Math.max(measures.demanders || 0, value);
+    } else if (["embauche", "embauches", "declaration", "dpae"].some(itemHint => hint.includes(itemHint))) {
+      measures.hires12m = Math.max(measures.hires12m || 0, value);
+    }
+  }
+
+  if (measures.offers12m === null && measures.rawMeasureHints.length) {
+    measures.offers12m = Math.max(...measures.rawMeasureHints.map(item => item.value).filter(Number.isFinite));
+  }
+  return measures;
+}
+
+function isPotentialMeasureKey(key) {
+  const normalized = normalizeText(key);
+  return ["valeur", "value", "nombre", "nb", "count", "total", "offre", "demandeur", "embauche", "dpae", "defm"].some(part => normalized.includes(part));
 }
 
 function normalizeBmoRow(row) {
@@ -464,15 +582,33 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
       prioritySource: "api_marche_travail",
       endpointConfigured: Boolean(env.FT_MARKET_API_URL),
       scopeConfigured: Boolean(env.FT_MARKET_SCOPE),
-      byRomeFallbackEnabled: true,
-      romeCodeParam: env.MARKET_ROME_CODE_PARAM || "codeRome",
-      requestDelayMs: Number(env.MARKET_REQUEST_DELAY_MS || 120)
+      method: "POST",
+      bodyFormat: "json",
+      byRomePostEnabled: true,
+      globalTerritoryCallEnabled: useGlobalTerritoryCall,
+      activityType: marketActivityType,
+      periodType: marketPeriodType,
+      nomenclatureType: marketNomenclatureType,
+      failOnEmpty: parseBoolean(env.MARKET_FAIL_ON_EMPTY || "false"),
+      debugSampleEnabled: marketDebugSampleEnabled,
+      requestDelayMs: marketRequestDelayMs
     },
     sourceStatus: diagnostics,
     bmo: buildBmoSummary(diagnostics, bmoRows),
     coverage,
     warnings: buildWarnings(status, diagnostics)
   };
+  const outputFiles = [
+    "territories.json",
+    "market-national.rome.json",
+    "market-occitanie.rome.json",
+    "market-aude.rome.json",
+    "bmo-fap2021.json",
+    "fap-rome-mappings.json",
+    "market-quality-report.json",
+    "market-import-manifest.json"
+  ];
+  if (marketDebugSampleEnabled) outputFiles.push("debug-market-sample.json");
   const manifest = {
     schemaVersion: "1.0.0",
     datasetName: "Boussole Pro - couche marché v0.6",
@@ -480,22 +616,15 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
     generatedAt: now,
     status,
     outputPath: "creations/boussolepro/data/generated/market/",
-    files: [
-      "territories.json",
-      "market-national.rome.json",
-      "market-occitanie.rome.json",
-      "market-aude.rome.json",
-      "bmo-fap2021.json",
-      "fap-rome-mappings.json",
-      "market-quality-report.json",
-      "market-import-manifest.json"
-    ],
+    files: outputFiles,
     sourcePolicy: {
       noActiveOffers: true,
       noBrowserToken: true,
       noSecretsWritten: true,
       officialStatsConnected: status === "completed_with_market_data",
       marketApiRequiredForOfficialStats: requestedSources.includes("api_marche_travail"),
+      marketApiMethod: "POST",
+      marketApiPayloadUsesCodeActivite: true,
       bmoUsedInMarketScore: false,
       bmoRequiresValidatedParser: true,
       fapRomeMappingsRequireConfidence: true
@@ -509,6 +638,7 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
   await writeJson("fap-rome-mappings.json", fapRomeMappings);
   await writeJson("market-quality-report.json", report);
   await writeJson("market-import-manifest.json", manifest);
+  await writeDebugMarketSample(marketRomeCodes);
 }
 
 function buildCoverage(rowsByLevel, bmoRows) {
@@ -540,6 +670,80 @@ function buildBmoSummary(diagnostics, bmoRows) {
   };
 }
 
+function captureMarketDebugSample({ territory, romeCode, payload, response, json = null, responseText = "" }) {
+  if (!marketDebugSampleEnabled || marketDebugRequests.length >= 8) return;
+  marketDebugRequests.push({
+    territory: territory.id,
+    romeCode,
+    payload: sanitizeDebugPayload(payload),
+    httpStatus: response.status,
+    ok: response.ok,
+    responseTopLevelKeys: isObject(json) ? Object.keys(json).slice(0, 30) : [],
+    responseSample: json ? sanitizeDebugPayload(limitDebugValue(json)) : undefined,
+    responseTextSample: responseText ? shortMessage(responseText) : undefined
+  });
+}
+
+async function writeDebugMarketSample(marketRomeCodes) {
+  if (!marketDebugSampleEnabled) return;
+  await writeJson("debug-market-sample.json", {
+    schemaVersion: "1.0.0",
+    generatedAt: now,
+    endpoint: withoutSensitiveQuery(env.FT_MARKET_API_URL || "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres"),
+    method: "POST",
+    tokenObtained: marketTokenObtained,
+    requestedTerritories: requestedTerritories.map(territory => territory.id),
+    requestedRomeCodesSample: marketRomeCodes.slice(0, 20),
+    activityType: marketActivityType,
+    periodType: marketPeriodType,
+    nomenclatureType: marketNomenclatureType,
+    firstRequests: sanitizeDebugPayload(marketDebugRequests)
+  });
+}
+
+function logMarketSummary({ rowsByLevel, marketRomeCodes, status }) {
+  console.log("Marché FT — résumé");
+  console.log(`- DRY_RUN: ${dryRun}`);
+  console.log(`- endpoint configuré: ${env.FT_MARKET_API_URL ? "oui" : "non"}`);
+  console.log("- méthode: POST");
+  console.log(`- token obtenu: ${marketTokenObtained ? "oui" : "non"}`);
+  console.log(`- territoires: ${requestedTerritories.map(territory => territory.id).join(", ") || "aucun"}`);
+  console.log(`- codes ROME testés: ${marketRomeCodes.length}`);
+  console.log(`- lignes marché: national=${rowsByLevel.national.length}, regional=${rowsByLevel.regional.length}, departmental=${rowsByLevel.departmental.length}`);
+  console.log(`- statut: ${status}`);
+  console.log(`- diagnostics écrits dans: ${path.join(OUTPUT_DIR, "market-quality-report.json")}`);
+  if (marketDebugSampleEnabled) console.log(`- debug écrit dans: ${path.join(OUTPUT_DIR, "debug-market-sample.json")}`);
+}
+
+function sanitizeDebugPayload(value, depth = 0) {
+  if (depth > 5) return "[truncated]";
+  if (Array.isArray(value)) return value.slice(0, 8).map(item => sanitizeDebugPayload(item, depth + 1));
+  if (isObject(value)) {
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => {
+      if (isSensitiveKey(key)) return [key, "[redacted]"];
+      return [key, sanitizeDebugPayload(child, depth + 1)];
+    }));
+  }
+  if (typeof value === "string") {
+    if (/bearer\s+[a-z0-9._-]+/i.test(value)) return "[redacted]";
+    return value.length > 500 ? `${value.slice(0, 500)}...` : value;
+  }
+  return value;
+}
+
+function limitDebugValue(value, depth = 0) {
+  if (depth > 4) return "[truncated]";
+  if (Array.isArray(value)) return value.slice(0, 4).map(item => limitDebugValue(item, depth + 1));
+  if (isObject(value)) {
+    return Object.fromEntries(Object.entries(value).slice(0, 20).map(([key, child]) => [key, limitDebugValue(child, depth + 1)]));
+  }
+  return value;
+}
+
+function isSensitiveKey(key) {
+  return /token|secret|client_id|clientSecret|client_secret|authorization|bearer/i.test(String(key || ""));
+}
+
 function buildWarnings(status, diagnostics) {
   const warnings = [];
   if (status === "not_connected_dry_run") warnings.push("Aucune statistique officielle marché n’est générée par ce dry-run.");
@@ -551,7 +755,8 @@ function buildWarnings(status, diagnostics) {
 }
 
 function shouldFailBecauseMarketApiHasNoRows(totalMarketRows) {
-  return !dryRun && requestedSources.includes("api_marche_travail") && totalMarketRows === 0;
+  const failOnEmpty = parseBoolean(env.MARKET_FAIL_ON_EMPTY || "false");
+  return failOnEmpty && !dryRun && requestedSources.includes("api_marche_travail") && totalMarketRows === 0;
 }
 
 function territoryRows() {
@@ -653,6 +858,14 @@ function getLoose(row, wantedKey) {
   return found;
 }
 
+function hasAnyLooseNumber(row) {
+  let found = false;
+  walk(row, value => {
+    if (!found && Number.isFinite(numberOrNull(value))) found = true;
+  });
+  return found;
+}
+
 function dedupeRowsByRome(rows) {
   const byCode = new Map();
   for (const row of rows) byCode.set(row.romeCode, row);
@@ -746,7 +959,7 @@ function sleep(ms) {
 function withoutSensitiveQuery(url) {
   const parsed = new URL(url);
   for (const key of [...parsed.searchParams.keys()]) {
-    if (/token|secret|client|authorization|bearer/i.test(key)) {
+    if (isSensitiveKey(key) || /client/i.test(key)) {
       parsed.searchParams.set(key, "[redacted]");
     }
   }
