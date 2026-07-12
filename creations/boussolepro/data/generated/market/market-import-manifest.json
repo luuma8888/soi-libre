@@ -2,8 +2,8 @@
   "schemaVersion": "1.0.0",
   "datasetName": "Boussole Pro - couche marché v0.6",
   "datasetVersion": "market-v0.6-2026-07-12",
-  "generatedAt": "2026-07-12T08:32:50.854Z",
-  "status": "failed_no_market_data",
+  "generatedAt": "2026-07-12T15:09:13.544Z",
+  "status": "completed_with_market_data",
   "outputPath": "creations/boussolepro/data/generated/market/",
   "files": [
     "territories.json",
@@ -13,14 +13,17 @@
     "bmo-fap2021.json",
     "fap-rome-mappings.json",
     "market-quality-report.json",
-    "market-import-manifest.json"
+    "market-import-manifest.json",
+    "debug-market-sample.json"
   ],
   "sourcePolicy": {
     "noActiveOffers": true,
     "noBrowserToken": true,
     "noSecretsWritten": true,
-    "officialStatsConnected": false,
+    "officialStatsConnected": true,
     "marketApiRequiredForOfficialStats": true,
+    "marketApiMethod": "POST",
+    "marketApiPayloadUsesCodeActivite": true,
     "bmoUsedInMarketScore": false,
     "bmoRequiresValidatedParser": true,
     "fapRomeMappingsRequireConfidence": true
