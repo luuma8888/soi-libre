@@ -5256,6 +5256,12 @@ function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) 
     marketEvidenceLevel: snapshot.marketEvidenceLevel,
     territory: snapshot.territory,
     territoryLabel: snapshot.territoryLabel,
+    marketTitle: snapshot.marketTitle,
+    latestPeriodCode: snapshot.latestPeriodCode,
+    latestPeriodLabel: snapshot.latestPeriodLabel,
+    offersFranceTravail12m: snapshot.offersFranceTravail12m,
+    offersAll12m: snapshot.offersAll12m,
+    offers12m: snapshot.offers12m,
     tensionLevel: snapshot.tensionLevel,
     recruitmentSignal: snapshot.recruitmentSignal,
     recruitmentDifficulty: snapshot.recruitmentDifficulty,
@@ -5284,15 +5290,22 @@ function normalizeMarketStats(raw = null, job = {}) {
 
 function normalizeMarketTerritoryStats(raw = {}) {
   return {
+    title: raw?.title || null,
+    latestPeriodCode: raw?.latestPeriodCode || null,
+    latestPeriodLabel: raw?.latestPeriodLabel || null,
     demanders: numberOrNull(raw?.demanders),
     newDemanders12m: numberOrNull(raw?.newDemanders12m),
+    offersFranceTravail12m: numberOrNull(raw?.offersFranceTravail12m),
+    offersAll12m: numberOrNull(raw?.offersAll12m),
     offers12m: numberOrNull(raw?.offers12m),
     hires12m: numberOrNull(raw?.hires12m),
     tensionLevel: normalizeMarketSignal(raw?.tensionLevel),
     recruitmentDifficulty: normalizeMarketSignal(raw?.recruitmentDifficulty),
     recruitmentSignal: normalizeMarketSignal(raw?.recruitmentSignal || raw?.recruitmentLevel),
     salarySignal: normalizeMarketSignal(raw?.salarySignal),
-    confidence: clamp(Number(raw?.confidence || 0), 0, 1)
+    confidence: clamp(Number(raw?.confidence || 0), 0, 1),
+    territoryLabel: raw?.territoryLabel || null,
+    rawMeasureHints: toArray(raw?.rawMeasureHints).slice(0, 24)
   };
 }
 
@@ -5381,6 +5394,12 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
     sourceUpdatedAt: stats.sourceUpdatedAt || null,
     territory,
     territoryLabel: territory.label,
+    marketTitle: selectedStats.title || null,
+    latestPeriodCode: selectedStats.latestPeriodCode || null,
+    latestPeriodLabel: selectedStats.latestPeriodLabel || null,
+    offersFranceTravail12m: selectedStats.offersFranceTravail12m,
+    offersAll12m: selectedStats.offersAll12m,
+    offers12m: selectedStats.offers12m,
     tensionLevel: selectedStats.tensionLevel || "unknown",
     recruitmentSignal: selectedStats.recruitmentSignal || selectedStats.tensionLevel || "unknown",
     recruitmentDifficulty: selectedStats.recruitmentDifficulty || "unknown",
@@ -6200,6 +6219,8 @@ function renderMarketBox(market = {}, job = {}, options = {}) {
         <div><span>Recrutement</span><strong>${h(marketSignalLabel(data.recruitmentSignal))}</strong></div>
         <div><span>Difficulté</span><strong>${h(marketSignalLabel(data.recruitmentDifficulty))}</strong></div>
         <div><span>Fiabilité</span><strong>${h(reliabilityPercent(reliability))}</strong></div>
+        ${Number.isFinite(data.offers12m) ? `<div><span>Offres 12 mois</span><strong>${h(data.offers12m)}</strong></div>` : ""}
+        ${data.latestPeriodLabel || data.latestPeriodCode ? `<div><span>Période</span><strong>${h(data.latestPeriodLabel || data.latestPeriodCode)}</strong></div>` : ""}
       </div>
       ${options.compact ? "" : `<p class="field-help">${h(note)} Source : ${h(data.sourceName || data.source || "non connectée")}${data.sourceUpdatedAt ? ` · mise à jour ${h(data.sourceUpdatedAt)}` : ""}. Aucune offre individuelle n’est affichée.</p>`}
     </div>`;
@@ -6488,9 +6509,9 @@ function renderExplorationPage() {
       </div>
     </section>
     <section class="results-section print-section">
-      <h2>${jobs.length} métier(s) trouvé(s)</h2>
-      <div class="job-list">${jobs.slice(0, 80).map(renderExplorationJobCard).join("") || emptyState("Aucun métier ne correspond à ces filtres.")}</div>
-      ${jobs.length > 80 ? `<p class="field-help">Seuls les 80 premiers métiers sont affichés. Affinez la recherche pour réduire la liste.</p>` : ""}
+      <h2><span data-exploration-count>${jobs.length}</span> métier(s) trouvé(s)</h2>
+      <div class="job-list" data-exploration-job-list>${jobs.slice(0, 80).map(renderExplorationJobCard).join("") || emptyState("Aucun métier ne correspond à ces filtres.")}</div>
+      <p class="field-help" data-exploration-limit ${jobs.length > 80 ? "" : 'hidden'}>Seuls les 80 premiers métiers sont affichés. Affinez la recherche pour réduire la liste.</p>
     </section>`;
 }
 
@@ -6498,6 +6519,20 @@ function updateExplorationFilter(target) {
   const key = target.dataset.explorationFilter;
   if (!key) return;
   App.state.explorationFilters[key] = target.type === "checkbox" ? target.checked : target.value;
+}
+
+function renderExplorationResultsInPlace() {
+  const jobs = getFilteredExplorationJobs();
+  const count = App.dom.resultsContainer?.querySelector("[data-exploration-count]");
+  const list = App.dom.resultsContainer?.querySelector("[data-exploration-job-list]");
+  const limit = App.dom.resultsContainer?.querySelector("[data-exploration-limit]");
+  if (!count || !list || !limit) {
+    App.dom.resultsContainer.innerHTML = renderExplorationPage();
+    return;
+  }
+  count.textContent = String(jobs.length);
+  list.innerHTML = jobs.slice(0, 80).map(renderExplorationJobCard).join("") || emptyState("Aucun métier ne correspond à ces filtres.");
+  limit.hidden = jobs.length <= 80;
 }
 
 function updateSkillBrowser(target) {
@@ -7024,6 +7059,13 @@ function renderDataPage() {
   const generatedSummary = getGeneratedRomeSummary(dataset, report, manifest);
   const marketContext = assessMarketContext(dataset, mapUserProfileToCriteria(App.state.profile));
   const marketCoverage = marketContext.marketCoverage || {};
+  const totalJobs = toArray(dataset.jobs).length;
+  const marketRows = countMarketDatasetRows(dataset);
+  const jobsWithOfficialMarket = marketCoverage.jobsWithOfficialMarket || 0;
+  const jobsWithAnyMarket = marketCoverage.jobsWithAnyMarket || jobsWithOfficialMarket + (marketCoverage.jobsWithEstimatedMarket || 0);
+  const marketConnectedLabel = totalJobs ? `${jobsWithOfficialMarket}/${totalJobs} (${percent(ratio(jobsWithOfficialMarket, totalJobs))})` : "0/0";
+  const hasOfficialMarketStats = jobsWithOfficialMarket > 0 && ["national", "regional", "departmental", "local_basin"].includes(marketContext.availableDataLevel || marketContext.marketDataLevel);
+  const marketReport = dataset.marketQualityReport || {};
   return `
     <section class="results-section print-section">
       <h2>Corpus actif</h2>
@@ -7082,6 +7124,7 @@ function renderDataPage() {
         ${metric("Contextes", summary.workContexts ?? toArray(dataset.workContexts).length)}
         ${metric("Mappings", summary.mappings ?? toArray(dataset.mappings).length)}
         ${metric("Indicateurs", summary.marketIndicators ?? toArray(dataset.marketIndicators).length)}
+        ${metric("Lignes marché générées", marketRows.total)}
         ${metric(isCurated ? "Qualité locale" : "Complétude ROME", isCurated ? (report.status || "à vérifier") : percent(generatedSummary.completionScore))}
         ${metric("Codes demandés", generatedSummary.requestedCodesCount)}
         ${metric("Codes réussis", generatedSummary.successfulCodesCount)}
@@ -7091,7 +7134,8 @@ function renderDataPage() {
         <li>Métiers avec compétences : ${percent(coverage.jobsWithSkills)}</li>
         <li>Métiers avec contextes : ${percent(coverage.jobsWithContexts)}</li>
         <li>Métiers avec formations : ${percent(coverage.jobsWithTraining)}</li>
-        <li>Métiers avec marché : ${percent(coverage.jobsWithMarketData)}</li>
+        <li>Métiers avec marché officiel : ${h(marketConnectedLabel)}</li>
+        <li>Métiers avec marché estimatif ou officiel : ${h(totalJobs ? `${jobsWithAnyMarket}/${totalJobs} (${percent(ratio(jobsWithAnyMarket, totalJobs))})` : "0/0")}</li>
         <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
         <li>Formations : ${h(generatedSummary.trainingsLabel)}</li>
         <li>Certifications : ${h(generatedSummary.certificationsLabel)}</li>
@@ -7113,15 +7157,19 @@ function renderDataPage() {
         ${metric("Niveau disponible", marketSourceLevelLabel(marketContext.availableDataLevel || "none"))}
         ${metric("Fiabilité moyenne", reliabilityPercent(marketContext.marketReliability || 0))}
         ${metric("Métiers estimatifs", marketCoverage.jobsWithEstimatedMarket || 0)}
-        ${metric("National", marketCoverage.jobsWithNationalMarket || 0)}
-        ${metric("Régional", marketCoverage.jobsWithRegionalMarket || 0)}
-        ${metric("Départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
+        ${metric("Avec données officielles", jobsWithOfficialMarket)}
+        ${metric("Lignes nationales", marketRows.national)}
+        ${metric("Lignes régionales", marketRows.occitanie)}
+        ${metric("Lignes départementales", marketRows.aude)}
+        ${metric("Métiers niveau national", marketCoverage.jobsWithNationalMarket || 0)}
+        ${metric("Métiers niveau régional", marketCoverage.jobsWithRegionalMarket || 0)}
+        ${metric("Métiers niveau départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
         ${metric("BMO rapproché", marketCoverage.jobsWithBmo || 0)}
         ${metric("Sans donnée", marketCoverage.jobsWithoutMarket || 0)}
       </div>
-      <div class="launch-box warning">
-        <strong>Statistiques officielles marché non connectées dans le HTML</strong>
-        <p>${h(marketContext.reason)} Pour la v0.6 offline, les signaux intégrés restent des repères locaux estimatifs. Les futures données API Marché du travail / BMO devront être générées en JSON statiques sans secret côté navigateur.</p>
+      <div class="launch-box ${hasOfficialMarketStats ? "" : "warning"}">
+        <strong>${hasOfficialMarketStats ? "Statistiques officielles marché chargées" : "Statistiques officielles marché non connectées ou non exploitables"}</strong>
+        <p>${h(marketContext.reason)} ${hasOfficialMarketStats ? `Boussole Pro utilise les fichiers JSON statiques générés dans data/generated/market, sans secret côté navigateur. Statut génération : ${h(marketReport.status || "non renseigné")}.` : "Les signaux intégrés restent alors des repères locaux estimatifs. Les données API Marché du travail doivent être générées en JSON statiques sans secret côté navigateur."}</p>
       </div>
     </section>
     <section class="results-section print-section">
@@ -7337,10 +7385,12 @@ async function loadGeneratedRomeDataset() {
     saveSettings({ corpusMode: "generated_rome" });
     saveDataset(App.state.dataset);
     calculateAndStoreResults();
+    const marketRowsLoaded = countMarketDatasetRows(generated);
+    const marketStatus = generated.marketQualityReport?.status || "non renseigné";
     App.state.generatedDataStatus = "disponible via données générées";
-    App.state.generatedDataMessage = "Les fichiers creations/boussolepro/data/generated ont été chargés sans secret dans le navigateur.";
+    App.state.generatedDataMessage = `Les fichiers creations/boussolepro/data/generated ont été chargés sans secret dans le navigateur. Marché : ${marketRowsLoaded.total} ligne(s) statistiques chargée(s), statut ${marketStatus}.`;
     renderAll();
-    showToast("Données générées chargées.");
+    showToast(`Données générées chargées. Marché : ${marketRowsLoaded.total} ligne(s).`);
   } catch (error) {
     App.state.generatedDataStatus = "erreur";
     App.state.generatedDataMessage = error.message || "Chargement impossible. Le corpus actuel reste actif.";
@@ -7432,6 +7482,15 @@ function applyGeneratedMarketStatsToJobs(jobs = [], generated = {}) {
     const stats = byRome.get(job.romeCode);
     return stats ? normalizeJob({ ...job, marketStats: normalizeMarketStats(stats, job) }) : job;
   });
+}
+
+function countMarketDatasetRows(datasetOrGenerated = {}) {
+  const marketDatasets = datasetOrGenerated.marketDatasets || {};
+  const national = toArray(datasetOrGenerated.marketNational || marketDatasets.national).length;
+  const occitanie = toArray(datasetOrGenerated.marketOccitanie || marketDatasets.occitanie).length;
+  const aude = toArray(datasetOrGenerated.marketAude || marketDatasets.aude).length;
+  const bmo = toArray(datasetOrGenerated.bmoFap2021 || marketDatasets.bmoFap2021).length;
+  return { national, occitanie, aude, bmo, total: national + occitanie + aude };
 }
 
 function markDatasetAsOfficialRome(dataset, manifest = {}) {
@@ -8112,7 +8171,8 @@ function handleProfileInput(event) {
   }
   if (target.dataset.explorationFilter !== undefined) {
     updateExplorationFilter(target);
-    App.dom.resultsContainer.innerHTML = renderExplorationPage();
+    if (target.dataset.explorationFilter === "query" && event.type === "input") renderExplorationResultsInPlace();
+    else App.dom.resultsContainer.innerHTML = renderExplorationPage();
     return;
   }
   if (target.dataset.skillBrowser !== undefined) {
@@ -8986,10 +9046,13 @@ function bestMarketSourceLevel(levels = []) {
 function calculateMarketCoverage(datasets = App.state.dataset, criteria = {}) {
   const jobs = toArray(datasets?.jobs);
   const scores = jobs.map(job => calculateMarketScore(job, datasets, criteria));
+  const official = scores.filter(item => ["national", "regional", "departmental", "local_basin"].includes(item.sourceLevel));
   return {
-    jobsWithNationalMarket: scores.filter(item => ["national", "regional", "departmental", "local_basin"].includes(item.sourceLevel)).length,
-    jobsWithRegionalMarket: scores.filter(item => ["regional", "departmental", "local_basin"].includes(item.sourceLevel)).length,
-    jobsWithDepartmentalMarket: scores.filter(item => ["departmental", "local_basin"].includes(item.sourceLevel)).length,
+    jobsWithAnyMarket: scores.filter(item => item.sourceLevel !== "none").length,
+    jobsWithOfficialMarket: official.length,
+    jobsWithNationalMarket: scores.filter(item => item.sourceLevel === "national").length,
+    jobsWithRegionalMarket: scores.filter(item => item.sourceLevel === "regional").length,
+    jobsWithDepartmentalMarket: scores.filter(item => item.sourceLevel === "departmental" || item.sourceLevel === "local_basin").length,
     jobsWithBmo: scores.filter(item => item.bmo?.confidence > 0).length,
     jobsWithEstimatedMarket: scores.filter(item => item.sourceLevel === "estimated").length,
     jobsWithoutMarket: scores.filter(item => item.sourceLevel === "none").length

@@ -215,8 +215,7 @@ async function fetchGlobalTerritoryMarketRows(endpoint, token, territory) {
       };
     }
     const json = await response.json();
-    const rawRows = extractRows(json);
-    const candidateRows = rawRows.length ? rawRows : (isObject(json) ? [json] : []);
+    const candidateRows = marketApiCandidateRows(json);
     const rows = normalizeMarketRows(candidateRows, territory);
     return {
       rows,
@@ -269,8 +268,7 @@ async function fetchMarketRowsByRomeCodes(endpoint, token, territory, marketRome
         });
       } else {
         const json = await response.json();
-        const rawRows = extractRows(json);
-        const candidateRows = rawRows.length ? rawRows : (isObject(json) ? [json] : []);
+        const candidateRows = marketApiCandidateRows(json);
         captureMarketDebugSample({ territory, romeCode, payload, response, json });
         const normalizedRows = normalizeMarketRows(candidateRows, territory, romeCode);
         rows.push(...normalizedRows);
@@ -446,6 +444,8 @@ function normalizeMarketRows(rows, territory, fallbackRomeCode = "") {
 
 function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
   if (!row || typeof row !== "object") return null;
+  const periodRow = normalizeMarketPeriodResponse(row, territory, fallbackRomeCode);
+  if (periodRow) return periodRow;
   const romeCode = extractRomeCode(row) || fallbackRomeCode;
   if (!romeCode) return null;
   const extracted = extractMarketMeasuresFromApiResponse(row);
@@ -485,6 +485,80 @@ function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
     rawFieldHints: Object.keys(row).slice(0, 24),
     rawMeasureHints: extracted.rawMeasureHints.slice(0, 12)
   };
+}
+
+function normalizeMarketPeriodResponse(row, territory, fallbackRomeCode = "") {
+  const periods = Array.isArray(row.listeValeursParPeriode) ? row.listeValeursParPeriode.filter(isObject) : [];
+  if (!periods.length) return null;
+  const latestPeriodCode = latestPeriodCodeFromRows(periods);
+  const latestRows = periods.filter(item => item.codePeriode === latestPeriodCode);
+  const latestRow = latestRows[0] || periods[0] || {};
+  const peRow = latestRows.find(item => item.codeNomenclature === "PE-CUMUL12MOIS") ||
+    periods.find(item => item.codeNomenclature === "PE-CUMUL12MOIS") || {};
+  const allRow = latestRows.find(item => item.codeNomenclature === "TOFF-CUMUL12MOIS") ||
+    periods.find(item => item.codeNomenclature === "TOFF-CUMUL12MOIS") || {};
+  const offersFranceTravail12m = numberOrNull(peRow.valeurPrincipaleNombre);
+  const offersAll12m = numberOrNull(allRow.valeurPrincipaleNombre);
+  const offers12m = Number.isFinite(offersAll12m) ? offersAll12m : offersFranceTravail12m;
+  const hasMarketMeasure = Number.isFinite(offers12m) || Number.isFinite(offersFranceTravail12m) || Number.isFinite(offersAll12m);
+  if (!hasMarketMeasure) return null;
+  const romeCode = latestRow.codeActivite || peRow.codeActivite || allRow.codeActivite || fallbackRomeCode;
+  if (!romeCode) return null;
+  const signal = signalFromVolume(offers12m);
+  return {
+    romeCode,
+    title: latestRow.libActivite || peRow.libActivite || allRow.libActivite || null,
+    sourceLevel: territory.sourceLevel,
+    sourceName: "api_marche_travail",
+    sourceUpdatedAt: row.datMaj || latestRow.datMaj || peRow.datMaj || allRow.datMaj || now,
+    territoryId: territory.id,
+    territoryLabel: latestRow.libTerritoire || peRow.libTerritoire || allRow.libTerritoire || territory.label,
+    codeTypeTerritoire: latestRow.codeTypeTerritoire || territory.codeTypeTerritoire,
+    codeTerritoire: latestRow.codeTerritoire || territory.codeTerritoire,
+    latestPeriodCode,
+    latestPeriodLabel: latestRow.libPeriode || peRow.libPeriode || allRow.libPeriode || null,
+    offersFranceTravail12m,
+    offersAll12m,
+    offers12m,
+    demanders: null,
+    newDemanders12m: null,
+    hires12m: null,
+    tensionLevel: signal,
+    recruitmentSignal: signal,
+    recruitmentDifficulty: "unknown",
+    salarySignal: "unknown",
+    confidence: territory.sourceLevel === "departmental" ? 0.82 : territory.sourceLevel === "regional" ? 0.72 : 0.55,
+    rawFieldHints: Object.keys(row).slice(0, 24),
+    rawMeasureHints: periods.map(item => ({
+      codeNomenclature: item.codeNomenclature || null,
+      codePeriode: item.codePeriode || null,
+      valeurPrincipaleNombre: numberOrNull(item.valeurPrincipaleNombre)
+    })).slice(0, 24)
+  };
+}
+
+function marketApiCandidateRows(json) {
+  if (isObject(json) && Array.isArray(json.listeValeursParPeriode)) return [json];
+  const rawRows = extractRows(json);
+  return rawRows.length ? rawRows : (isObject(json) ? [json] : []);
+}
+
+function latestPeriodCodeFromRows(rows = []) {
+  return rows
+    .map(item => item.codePeriode)
+    .filter(Boolean)
+    .sort((a, b) => periodRank(b) - periodRank(a))[0] || null;
+}
+
+function periodRank(value) {
+  const text = String(value || "").toUpperCase();
+  const quarter = text.match(/^(\d{4})T([1-4])$/);
+  if (quarter) return Number(quarter[1]) * 10 + Number(quarter[2]);
+  const month = text.match(/^(\d{4})[-_]?([0-1]?\d)$/);
+  if (month) return Number(month[1]) * 100 + Number(month[2]);
+  const year = text.match(/^(\d{4})$/);
+  if (year) return Number(year[1]) * 10;
+  return Number(text.replace(/\D/g, "")) || 0;
 }
 
 function extractMarketMeasuresFromApiResponse(json) {
