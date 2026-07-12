@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-12T15:52:55.735Z",
+  "generatedAt": "2026-07-12T15:56:11.938Z",
   "generator": "scripts/generate-market-data.mjs",
   "status": "completed_with_market_data",
   "requestedSources": [
@@ -8,7 +8,8 @@
     "bmo"
   ],
   "requestedTerritories": [
-    "DEP-11"
+    "DEP-11",
+    "REG-76"
   ],
   "requestedRomeCodesCount": 7,
   "marketApi": {
@@ -30,6 +31,28 @@
     {
       "source": "api_marche_travail",
       "territory": "DEP-11",
+      "status": "ok_by_rome_code",
+      "mode": "by_rome_code_post_json",
+      "method": "POST",
+      "activityType": "ROME",
+      "periodType": "TRIMESTRE",
+      "nomenclatureType": "ORIGINEOFF",
+      "requestedCodesCount": 7,
+      "normalizedRowsCount": 7,
+      "failedCodesCount": 0,
+      "failedCodesSample": [],
+      "sampleKeys": [
+        "datMaj",
+        "codeIndicateur",
+        "codeFamille",
+        "libIndicateur",
+        "listeValeursParPeriode"
+      ],
+      "note": "Des lignes ont été récupérées via des POST JSON par code ROME."
+    },
+    {
+      "source": "api_marche_travail",
+      "territory": "REG-76",
       "status": "ok_by_rome_code",
       "mode": "by_rome_code_post_json",
       "method": "POST",
@@ -81,7 +104,7 @@
   },
   "coverage": {
     "jobsWithNationalMarket": 0,
-    "jobsWithRegionalMarket": 0,
+    "jobsWithRegionalMarket": 7,
     "jobsWithDepartmentalMarket": 7,
     "jobsWithBmo": 0,
     "jobsWithoutMarket": null
