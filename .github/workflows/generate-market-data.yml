@@ -11,6 +11,14 @@ on:
         description: "Territoires cibles, ex. FR,REG-76,DEP-11. Vide = variable MARKET_TERRITORIES."
         required: false
         default: ""
+      rome_codes:
+        description: "Codes ROME cibles, ex. G1202,K1207,M1607. Vide = MARKET_ROME_CODES puis ROME_CODES."
+        required: false
+        default: ""
+      period_type:
+        description: "Type de période, ex. TRIMESTRE. Vide = variable MARKET_PERIOD_TYPE."
+        required: false
+        default: ""
       source:
         description: "Sources prévues, ex. api_marche_travail,bmo. Vide = variable MARKET_SOURCE."
         required: false
@@ -41,9 +49,9 @@ jobs:
           FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
           FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
           MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
-          MARKET_ROME_CODES: ${{ vars.MARKET_ROME_CODES || vars.ROME_CODES || '' }}
+          MARKET_ROME_CODES: ${{ inputs.rome_codes || vars.MARKET_ROME_CODES || vars.ROME_CODES || '' }}
           MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
-          MARKET_PERIOD_TYPE: ${{ vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
+          MARKET_PERIOD_TYPE: ${{ inputs.period_type || vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
           MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
           MARKET_USE_GLOBAL_TERRITORY_CALL: ${{ vars.MARKET_USE_GLOBAL_TERRITORY_CALL || 'false' }}
           MARKET_FAIL_ON_EMPTY: ${{ vars.MARKET_FAIL_ON_EMPTY || 'false' }}
