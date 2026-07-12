@@ -1,12 +1,13 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-12T15:56:11.938Z",
+  "generatedAt": "2026-07-12T15:58:33.681Z",
   "endpoint": "https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres",
   "method": "POST",
   "tokenObtained": true,
   "requestedTerritories": [
-    "DEP-11",
-    "REG-76"
+    "FR",
+    "REG-76",
+    "DEP-11"
   ],
   "requestedRomeCodesSample": [
     "G1202",
@@ -22,11 +23,11 @@
   "nomenclatureType": "ORIGINEOFF",
   "firstRequests": [
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "G1202",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "G1202",
         "codeTypePeriode": "TRIMESTRE",
@@ -48,19 +49,41 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:37:44.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "G1202",
+            "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
+            "codeNomenclature": "PE",
+            "libNomenclature": "Offres France Travail",
+            "codeTypePeriode": "TRIMESTRE",
+            "codePeriode": "2026T1",
+            "libPeriode": "1er trimestre 2026",
+            "valeurPrincipaleNombre": 230,
+            "valeurSecondairePourcentage": 0,
+            "listeValeurParCaract": [
+              "[truncated]",
+              "[truncated]",
+              "[truncated]",
+              "[truncated]"
+            ]
+          },
+          {
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1202",
             "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
             "codeNomenclature": "PE-CUMUL12MOIS",
             "libNomenclature": "Cumul 12 derniers mois offres France Travail",
             "codeTypePeriode": "TRIMESTRE",
-            "codePeriode": "2024T4",
-            "libPeriode": "4ème trimestre 2024",
-            "valeurPrincipaleNombre": 0,
+            "codePeriode": "2026T1",
+            "libPeriode": "1er trimestre 2026",
+            "valeurPrincipaleNombre": 1020,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -70,63 +93,41 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:37:46.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "G1202",
+            "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
+            "codeNomenclature": "TOFF",
+            "libNomenclature": "Toutes offres",
+            "codeTypePeriode": "TRIMESTRE",
+            "codePeriode": "2026T1",
+            "libPeriode": "1er trimestre 2026",
+            "valeurPrincipaleNombre": 270,
+            "valeurSecondairePourcentage": 0,
+            "listeValeurParCaract": [
+              "[truncated]",
+              "[truncated]",
+              "[truncated]",
+              "[truncated]"
+            ]
+          },
+          {
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1202",
             "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
             "codeNomenclature": "TOFF-CUMUL12MOIS",
             "libNomenclature": "Cumul 12 derniers mois toutes offres",
             "codeTypePeriode": "TRIMESTRE",
-            "codePeriode": "2024T4",
-            "libPeriode": "4ème trimestre 2024",
-            "valeurPrincipaleNombre": 0,
-            "valeurSecondairePourcentage": 0,
-            "listeValeurParCaract": [
-              "[truncated]",
-              "[truncated]",
-              "[truncated]",
-              "[truncated]"
-            ]
-          },
-          {
-            "datMaj": "2026-05-28T17:37:39.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
-            "codeTypeActivite": "ROME",
-            "codeActivite": "G1202",
-            "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
-            "codeNomenclature": "PE-CUMUL12MOIS",
-            "libNomenclature": "Cumul 12 derniers mois offres France Travail",
-            "codeTypePeriode": "TRIMESTRE",
-            "codePeriode": "2024T3",
-            "libPeriode": "3ème trimestre 2024",
-            "valeurPrincipaleNombre": 0,
-            "valeurSecondairePourcentage": 0,
-            "listeValeurParCaract": [
-              "[truncated]",
-              "[truncated]",
-              "[truncated]",
-              "[truncated]"
-            ]
-          },
-          {
-            "datMaj": "2026-05-28T17:37:42.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
-            "codeTypeActivite": "ROME",
-            "codeActivite": "G1202",
-            "libActivite": "Animateur / Animatrice d'atelier artistique ou ludique",
-            "codeNomenclature": "TOFF-CUMUL12MOIS",
-            "libNomenclature": "Cumul 12 derniers mois toutes offres",
-            "codeTypePeriode": "TRIMESTRE",
-            "codePeriode": "2024T3",
-            "libPeriode": "3ème trimestre 2024",
-            "valeurPrincipaleNombre": 0,
+            "codePeriode": "2026T1",
+            "libPeriode": "1er trimestre 2026",
+            "valeurPrincipaleNombre": 1250,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -139,11 +140,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "G1203",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "G1203",
         "codeTypePeriode": "TRIMESTRE",
@@ -165,10 +166,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:38:05.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1203",
             "libActivite": "Animateur / Animatrice jeunesse",
@@ -177,8 +178,8 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
-            "valeurSecondairePourcentage": 0,
+            "valeurPrincipaleNombre": 4650,
+            "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
               "[truncated]",
@@ -187,10 +188,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:02.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1203",
             "libActivite": "Animateur / Animatrice jeunesse",
@@ -199,8 +200,8 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 70,
-            "valeurSecondairePourcentage": 0,
+            "valeurPrincipaleNombre": 19330,
+            "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
               "[truncated]",
@@ -209,10 +210,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:03.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1203",
             "libActivite": "Animateur / Animatrice jeunesse",
@@ -221,7 +222,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 5790,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -231,10 +232,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:02.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "G1203",
             "libActivite": "Animateur / Animatrice jeunesse",
@@ -243,7 +244,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 80,
+            "valeurPrincipaleNombre": 23320,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -256,11 +257,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "K1204",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "K1204",
         "codeTypePeriode": "TRIMESTRE",
@@ -282,10 +283,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:38:07.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1204",
             "libActivite": "Médiateur social / Médiatrice sociale",
@@ -294,7 +295,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 0,
+            "valeurPrincipaleNombre": 490,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -304,10 +305,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:03.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1204",
             "libActivite": "Médiateur social / Médiatrice sociale",
@@ -316,7 +317,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 2330,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -326,10 +327,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:37:59.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1204",
             "libActivite": "Médiateur social / Médiatrice sociale",
@@ -338,7 +339,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 0,
+            "valeurPrincipaleNombre": 700,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -348,10 +349,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:07.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1204",
             "libActivite": "Médiateur social / Médiatrice sociale",
@@ -360,7 +361,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 2940,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -373,11 +374,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "K1801",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "K1801",
         "codeTypePeriode": "TRIMESTRE",
@@ -399,10 +400,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:38:03.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1801",
             "libActivite": "Conseiller / Conseillère en insertion professionnelle",
@@ -411,7 +412,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 1420,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -421,10 +422,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:04.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1801",
             "libActivite": "Conseiller / Conseillère en insertion professionnelle",
@@ -433,7 +434,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 20,
+            "valeurPrincipaleNombre": 6370,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -443,10 +444,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:00.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1801",
             "libActivite": "Conseiller / Conseillère en insertion professionnelle",
@@ -455,7 +456,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 2770,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -465,10 +466,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:06.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1801",
             "libActivite": "Conseiller / Conseillère en insertion professionnelle",
@@ -477,7 +478,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 30,
+            "valeurPrincipaleNombre": 11390,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -490,11 +491,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "J1304",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "J1304",
         "codeTypePeriode": "TRIMESTRE",
@@ -516,10 +517,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:38:02.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "J1304",
             "libActivite": "Auxiliaire de puériculture",
@@ -528,7 +529,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 3280,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -538,10 +539,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:06.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "J1304",
             "libActivite": "Auxiliaire de puériculture",
@@ -550,7 +551,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 60,
+            "valeurPrincipaleNombre": 11760,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -560,10 +561,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:06.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "J1304",
             "libActivite": "Auxiliaire de puériculture",
@@ -572,7 +573,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 10,
+            "valeurPrincipaleNombre": 6900,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -582,10 +583,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:07.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "J1304",
             "libActivite": "Auxiliaire de puériculture",
@@ -594,7 +595,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 80,
+            "valeurPrincipaleNombre": 32470,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -607,11 +608,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "K1303",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "K1303",
         "codeTypePeriode": "TRIMESTRE",
@@ -633,10 +634,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:38:05.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:28.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1303",
             "libActivite": "Garde d'enfant",
@@ -645,29 +646,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 20,
-            "valeurSecondairePourcentage": 1,
-            "listeValeurParCaract": [
-              "[truncated]",
-              "[truncated]",
-              "[truncated]",
-              "[truncated]"
-            ]
-          },
-          {
-            "datMaj": "2026-05-28T17:37:59.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
-            "codeTypeActivite": "ROME",
-            "codeActivite": "K1303",
-            "libActivite": "Garde d'enfant",
-            "codeNomenclature": "PE-CUMUL12MOIS",
-            "libNomenclature": "Cumul 12 derniers mois offres France Travail",
-            "codeTypePeriode": "TRIMESTRE",
-            "codePeriode": "2026T1",
-            "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 50,
+            "valeurPrincipaleNombre": 3600,
             "valeurSecondairePourcentage": 0,
             "listeValeurParCaract": [
               "[truncated]",
@@ -677,19 +656,19 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:37:59.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1303",
             "libActivite": "Garde d'enfant",
-            "codeNomenclature": "TOFF",
-            "libNomenclature": "Toutes offres",
+            "codeNomenclature": "PE-CUMUL12MOIS",
+            "libNomenclature": "Cumul 12 derniers mois offres France Travail",
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 70,
+            "valeurPrincipaleNombre": 17160,
             "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
@@ -699,10 +678,32 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:06.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
+            "codeTypeActivite": "ROME",
+            "codeActivite": "K1303",
+            "libActivite": "Garde d'enfant",
+            "codeNomenclature": "TOFF",
+            "libNomenclature": "Toutes offres",
+            "codeTypePeriode": "TRIMESTRE",
+            "codePeriode": "2026T1",
+            "libPeriode": "1er trimestre 2026",
+            "valeurPrincipaleNombre": 13290,
+            "valeurSecondairePourcentage": 1,
+            "listeValeurParCaract": [
+              "[truncated]",
+              "[truncated]",
+              "[truncated]",
+              "[truncated]"
+            ]
+          },
+          {
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "K1303",
             "libActivite": "Garde d'enfant",
@@ -711,7 +712,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 290,
+            "valeurPrincipaleNombre": 65190,
             "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
@@ -724,11 +725,11 @@
       }
     },
     {
-      "territory": "DEP-11",
+      "territory": "FR",
       "romeCode": "M1607",
       "payload": {
-        "codeTypeTerritoire": "DEP",
-        "codeTerritoire": "11",
+        "codeTypeTerritoire": "NAT",
+        "codeTerritoire": "FR",
         "codeTypeActivite": "ROME",
         "codeActivite": "M1607",
         "codeTypePeriode": "TRIMESTRE",
@@ -750,10 +751,10 @@
         "libIndicateur": "Nombre et % d'offres par origine (Pole-emploi / Toutes offres) x caractéristiques, % par activités (Rome, Secteur, Savoir-être, Compétence)",
         "listeValeursParPeriode": [
           {
-            "datMaj": "2026-05-28T17:37:59.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:28.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "M1607",
             "libActivite": "Secrétaire",
@@ -762,7 +763,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 20,
+            "valeurPrincipaleNombre": 6120,
             "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
@@ -772,10 +773,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:05.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:31.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "M1607",
             "libActivite": "Secrétaire",
@@ -784,7 +785,7 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 120,
+            "valeurPrincipaleNombre": 25280,
             "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
@@ -794,10 +795,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:01.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "M1607",
             "libActivite": "Secrétaire",
@@ -806,8 +807,8 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 40,
-            "valeurSecondairePourcentage": 0,
+            "valeurPrincipaleNombre": 12960,
+            "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
               "[truncated]",
@@ -816,10 +817,10 @@
             ]
           },
           {
-            "datMaj": "2026-05-28T17:38:02.000+02:00",
-            "codeTypeTerritoire": "DEP",
-            "codeTerritoire": "11",
-            "libTerritoire": "AUDE",
+            "datMaj": "2026-05-28T17:39:32.000+02:00",
+            "codeTypeTerritoire": "NAT",
+            "codeTerritoire": "FR",
+            "libTerritoire": "France",
             "codeTypeActivite": "ROME",
             "codeActivite": "M1607",
             "libActivite": "Secrétaire",
@@ -828,8 +829,8 @@
             "codeTypePeriode": "TRIMESTRE",
             "codePeriode": "2026T1",
             "libPeriode": "1er trimestre 2026",
-            "valeurPrincipaleNombre": 170,
-            "valeurSecondairePourcentage": 0,
+            "valeurPrincipaleNombre": 54530,
+            "valeurSecondairePourcentage": 1,
             "listeValeurParCaract": [
               "[truncated]",
               "[truncated]",
