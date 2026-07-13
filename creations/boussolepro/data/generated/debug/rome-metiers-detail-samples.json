@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T16:45:49.803Z",
+  "generatedAt": "2026-07-13T17:07:12.972Z",
   "branch": "soi-libre-codex",
   "source": "rome_metiers_detail_api",
   "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
@@ -54,9 +54,9 @@
       "status": "not_available_in_sample"
     },
     "contextRefs": {
-      "samplesWithField": 0,
+      "samplesWithField": 3,
       "samplesTotal": 3,
-      "status": "not_available_in_sample"
+      "status": "available_in_sample"
     },
     "accessConditions": {
       "samplesWithField": 3,
@@ -81,13 +81,14 @@
   },
   "conclusion": {
     "status": "rich_fields_detected",
-    "usedForDataset": false,
+    "usedForDataset": true,
     "normalizationAllowed": [
       "code",
       "title",
       "description",
       "appellations",
       "skillRefs",
+      "contextRefs",
       "accessConditions",
       "regulatoryTags"
     ],
@@ -95,7 +96,6 @@
       "characteristics",
       "softSkillRefs",
       "knowledgeRefs",
-      "contextRefs",
       "certificationRefs",
       "relatedRomeCodes"
     ],
@@ -1011,7 +1011,9 @@
         "conditionsExerciceActivite",
         "environnementsTravail"
       ],
-      "detectedPaths": [],
+      "detectedPaths": [
+        "$.contextesTravail"
+      ],
       "actualRootKeys": [
         "accesEmploi",
         "appellations",
@@ -1147,8 +1149,8 @@
           "recursivePathCount": 240
         }
       },
-      "status": "not_available_in_sample",
-      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
     },
     {
       "field": "accessConditions",
@@ -3769,7 +3771,14 @@
         ],
         "softSkillRefs": [],
         "knowledgeRefs": [],
-        "contextRefs": [],
+        "contextRefs": [
+          {
+            "path": "$.contextesTravail",
+            "key": "contextesTravail",
+            "type": "array",
+            "arrayLength": 12
+          }
+        ],
         "accessConditions": [
           {
             "path": "$.accesEmploi",
@@ -6387,7 +6396,14 @@
         ],
         "softSkillRefs": [],
         "knowledgeRefs": [],
-        "contextRefs": [],
+        "contextRefs": [
+          {
+            "path": "$.contextesTravail",
+            "key": "contextesTravail",
+            "type": "array",
+            "arrayLength": 8
+          }
+        ],
         "accessConditions": [
           {
             "path": "$.accesEmploi",
@@ -9124,7 +9140,14 @@
         ],
         "softSkillRefs": [],
         "knowledgeRefs": [],
-        "contextRefs": [],
+        "contextRefs": [
+          {
+            "path": "$.contextesTravail",
+            "key": "contextesTravail",
+            "type": "array",
+            "arrayLength": 7
+          }
+        ],
         "accessConditions": [
           {
             "path": "$.accesEmploi",
