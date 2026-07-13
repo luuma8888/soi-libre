@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T16:24:25.280Z.
+Généré le 2026-07-13T16:39:29.454Z.
 
 ## Synthèse
 
@@ -8,16 +8,16 @@ Généré le 2026-07-13T16:24:25.280Z.
 - Métiers récupérés : 72
 - Échecs : 0
 - Coquilles code + titre : 0/72
-- Score de préparation matching : 60%
+- Score de préparation matching : 100%
 
 ## Données réellement reliées aux métiers
 
 - Mappings compétences : 72/72
-- Mappings contextes : 0/72
-- Mappings appellations : 0/72
+- Mappings contextes : 71/72
+- Mappings appellations : 71/72
 - Mappings savoirs : 72/72
 - Activités : 0/72
-- Descriptions officielles : 0/72
+- Descriptions officielles : 71/72
 
 ## Endpoints et sources
 
@@ -27,15 +27,14 @@ Généré le 2026-07-13T16:24:25.280Z.
 
 ## Champs absents ou insuffisants
 
-- description : 72
 - activities : 72
-- workContexts : 72
-- accessConditions : 72
 - requiredDiplomaLevel : 72
 - recommendedDiplomaLevel : 72
-- market : 72
-- appellations : 72
 - relatedJobs : 72
+- description : 1
+- workContexts : 1
+- accessConditions : 1
+- appellations : 1
 
 ## Marché officiel
 
@@ -57,13 +56,13 @@ Généré le 2026-07-13T16:24:25.280Z.
 - Entrées brutes : 35595
 - Doublons d'identifiants : 0
 - Identifiants manquants : 0
-- Checksum : `81987e003329a52a8558eb15ce6aa5f9acaf072344235f0adf040dc275eba534`
+- Checksum : `56f2a5b6f30d1cdc01477a8294cd7c84096767f5ffede82294a56aa71973565d`
 
 ## Taille et performance
 
-- Taille totale générée : 37.25 Mo
-- Nombre de fichiers : 42
-- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.1 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
+- Taille totale générée : 38.51 Mo
+- Nombre de fichiers : 44
+- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.66 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
 ## Limite actuelle
 
@@ -71,5 +70,4 @@ Le corpus ROME 500 est techniquement chargeable, mais il ne doit pas encore êtr
 
 ## Warnings
 
-- Aucun contexte officiel n'est relié aux métiers : les contraintes doivent rester neutres ou faiblement pondérées.
 - 9 code(s) n'ont pas de ligne marché nationale dans le lot actuel.
