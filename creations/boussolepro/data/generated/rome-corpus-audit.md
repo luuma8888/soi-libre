@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T17:10:27.014Z.
+Généré le 2026-07-13T17:48:52.618Z.
 
 ## Synthèse
 
@@ -8,7 +8,8 @@ Généré le 2026-07-13T17:10:27.014Z.
 - Métiers récupérés : 72
 - Échecs : 0
 - Coquilles code + titre : 0/72
-- Score de préparation matching : 100%
+- Score de préparation données : 100%
+- Readiness globale : usable_for_validation
 
 ## Données réellement reliées aux métiers
 
@@ -61,9 +62,9 @@ Généré le 2026-07-13T17:10:27.014Z.
 
 ## Taille et performance
 
-- Taille totale générée : 38.51 Mo
-- Nombre de fichiers : 44
-- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.66 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
+- Taille totale générée : 38.56 Mo
+- Nombre de fichiers : 45
+- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.68 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
 ## Limite actuelle
 

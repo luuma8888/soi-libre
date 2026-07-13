@@ -1457,7 +1457,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.6.2-alpha",
+  version: "v0.6.3-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1475,6 +1475,8 @@ const CONFIG = {
     market: 5
   }
 };
+
+const TOP5_DIVERSITY_SCORE_DELTA = 4;
 
 const ENGINE_INTENTS = {
   balanced: "Équilibre général",
@@ -1942,43 +1944,164 @@ const LEGACY_SKILL_ALIAS_RULES_V061 = [
 const SEMANTIC_SKILL_CONCEPTS_V062 = {
   software_development: {
     legacyIds: ["skill-code"],
-    labels: ["développer un logiciel", "développer une application", "programmer", "intégrer des éléments graphiques"],
-    officialSkillIds: []
+    referenceRomeCodes: ["M1805", "M1801"],
+    labels: ["développer un logiciel", "développer une application"],
+    officialSkillIds: [
+      "skill-rome-126535",
+      "skill-rome-109846",
+      "skill-rome-113317",
+      "skill-rome-522155",
+      "skill-rome-300679",
+      "skill-rome-484119",
+      "skill-rome-404167",
+      "skill-rome-486020"
+    ]
+  },
+  it_user_support: {
+    legacyIds: ["skill-support-user", "skill-network"],
+    referenceRomeCodes: ["M1810"],
+    labels: ["assistance technique utilisateur", "support informatique"],
+    officialSkillIds: [
+      "skill-rome-109971",
+      "skill-rome-484475",
+      "skill-rome-501945",
+      "skill-rome-300184",
+      "skill-rome-115552",
+      "skill-rome-300204",
+      "skill-rome-501944",
+      "skill-rome-109983"
+    ]
+  },
+  data_analysis: {
+    legacyIds: ["skill-data", "skill-analysis"],
+    referenceRomeCodes: ["M1801", "M1805", "M1808"],
+    labels: ["analyser des données", "gérer une base de données"],
+    officialSkillIds: [
+      "skill-rome-400199",
+      "skill-rome-404167",
+      "skill-rome-400759",
+      "skill-rome-109917",
+      "skill-rome-109918",
+      "skill-rome-109922",
+      "skill-rome-485348",
+      "skill-rome-500082"
+    ]
   },
   group_animation: {
     legacyIds: ["skill-animation"],
+    referenceRomeCodes: ["G1202", "K2106", "K2111"],
     labels: ["animer un groupe", "animer un atelier", "concevoir une activité", "organiser des activités d'animation"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-103889",
+      "skill-rome-103888",
+      "skill-rome-502894",
+      "skill-rome-503553",
+      "skill-rome-508280",
+      "skill-rome-103890",
+      "skill-rome-400407",
+      "skill-rome-482284"
+    ]
   },
   administrative_documents: {
     legacyIds: ["skill-admin-doc"],
+    referenceRomeCodes: ["M1607", "M1601", "M1609", "M1501", "M1203"],
     labels: ["gérer un dossier", "classer", "archiver", "traiter des documents", "mettre à jour une base de données"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-300431",
+      "skill-rome-400328",
+      "skill-rome-520435",
+      "skill-rome-484384",
+      "skill-rome-518350",
+      "skill-rome-119250",
+      "skill-rome-489448",
+      "skill-rome-489449"
+    ]
+  },
+  office_organisation: {
+    legacyIds: ["skill-organisation", "skill-admin-doc"],
+    referenceRomeCodes: ["M1607", "M1601", "M1609", "M1501", "M1203"],
+    labels: ["organiser son travail", "planifier un suivi", "mettre à jour une base"],
+    officialSkillIds: [
+      "skill-rome-300483",
+      "skill-rome-300431",
+      "skill-rome-400328",
+      "skill-rome-119758",
+      "skill-rome-119759",
+      "skill-rome-300324",
+      "skill-rome-501203",
+      "skill-rome-522261"
+    ]
   },
   cleaning_hygiene: {
     legacyIds: ["skill-cleaning", "skill-cleanliness", "skill-cleaning-protocol"],
+    referenceRomeCodes: ["K2204", "G1501"],
     labels: ["nettoyer", "désinfecter", "entretenir un espace", "appliquer des règles d'hygiène"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-300282",
+      "skill-rome-107356",
+      "skill-rome-489878",
+      "skill-rome-484992",
+      "skill-rome-125246",
+      "skill-rome-124101",
+      "skill-rome-124663",
+      "skill-rome-104160"
+    ]
   },
   gardening_nature: {
     legacyIds: ["skill-gardening", "skill-environment"],
+    referenceRomeCodes: ["A1203", "A1414", "A1405", "A1202", "A1204", "A1501", "A1503"],
     labels: ["entretenir des espaces verts", "cultiver", "préserver l'environnement", "identifier des végétaux"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-122843",
+      "skill-rome-100063",
+      "skill-rome-122580",
+      "skill-rome-122730",
+      "skill-rome-300292",
+      "skill-rome-116214",
+      "skill-rome-122570",
+      "skill-rome-122833"
+    ]
   },
   care_relationship: {
     legacyIds: ["skill-active-listening", "skill-care-basic", "skill-early-childhood"],
+    referenceRomeCodes: ["K1303", "J1304", "K1204", "K1302", "J1501"],
     labels: ["écouter", "faire preuve d'empathie", "accompagner une personne", "veiller à la sécurité d'un enfant"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-120684",
+      "skill-rome-120690",
+      "skill-rome-404317",
+      "skill-rome-107740",
+      "skill-rome-300044",
+      "skill-rome-489902",
+      "skill-rome-107371",
+      "skill-rome-400438"
+    ]
   },
   customer_support: {
-    legacyIds: ["skill-communication", "skill-customer-care", "skill-support-user"],
+    legacyIds: ["skill-communication", "skill-customer-care"],
+    referenceRomeCodes: ["D1214", "M1607", "M1704"],
     labels: ["accueillir", "informer", "conseiller", "renseigner un public"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-300361",
+      "skill-rome-300363",
+      "skill-rome-507476",
+      "skill-rome-300345",
+      "skill-rome-485132",
+      "skill-rome-518355"
+    ]
   },
   logistics_driving: {
     legacyIds: ["skill-logistics", "skill-driving"],
+    referenceRomeCodes: ["N1103", "N4101", "N1101"],
     labels: ["réceptionner", "préparer une commande", "conduire un véhicule", "livrer"],
-    officialSkillIds: []
+    officialSkillIds: [
+      "skill-rome-110036",
+      "skill-rome-123660",
+      "skill-rome-300645",
+      "skill-rome-400110",
+      "skill-rome-484040",
+      "skill-rome-482889"
+    ]
   }
 };
 
@@ -2057,8 +2180,10 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     profile: {
       profileName: "Profil test - administratif calme",
       diplomaLevel: 4,
+      experienceDomains: ["administratif"],
+      domainOrientation: { administratif: "heart" },
       skills: ["skill-admin-doc", "skill-organisation", "skill-writing", "skill-data"],
-      semanticSkillKeys: ["administrative_documents"],
+      semanticSkillKeys: ["administrative_documents", "office_organisation"],
       weakSkills: ["skill-sales"],
       interests: ["organiser", "analyser", "aider"],
       values: ["stability", "clarity", "service"],
@@ -2085,6 +2210,8 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     profile: {
       profileName: "Profil test - enfance et relation",
       diplomaLevel: 3,
+      experienceDomains: ["animation", "petite_enfance", "social"],
+      domainOrientation: { animation: "heart", petite_enfance: "heart", social: "heart" },
       skills: ["skill-animation", "skill-early-childhood", "skill-active-listening", "skill-communication"],
       semanticSkillKeys: ["group_animation", "care_relationship", "customer_support"],
       weakSkills: ["skill-data"],
@@ -2113,8 +2240,10 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     profile: {
       profileName: "Profil test - numérique à distance",
       diplomaLevel: 5,
+      experienceDomains: ["numerique"],
+      domainOrientation: { numerique: "heart" },
       skills: ["skill-code", "skill-data", "skill-analysis", "skill-writing", "skill-support-user"],
-      semanticSkillKeys: ["software_development", "customer_support"],
+      semanticSkillKeys: ["software_development", "it_user_support", "data_analysis"],
       absentSkills: ["skill-driving"],
       interests: ["numerique", "analyser", "technique"],
       values: ["autonomy", "clarity", "freedom"],
@@ -2141,6 +2270,8 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     profile: {
       profileName: "Profil test - terrain nature prudent",
       diplomaLevel: 3,
+      experienceDomains: ["nature", "animaux"],
+      domainOrientation: { nature: "heart", animaux: "heart" },
       skills: ["skill-environment", "skill-gardening", "skill-animal-care", "skill-writing"],
       semanticSkillKeys: ["gardening_nature"],
       weakSkills: ["skill-driving"],
@@ -2190,6 +2321,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     expectedFamilies: ["Administration et support", "Accueil et tourisme", "Vente et conseil"],
     unexpectedFamilies: [],
     mustNotContain: [],
+    skillEvidenceExpected: false,
     profile: {
       profileName: "Profil test - minimal",
       diplomaLevel: 0,
@@ -3715,6 +3847,11 @@ function generateDataQualityReport(datasets) {
   const linkedContextIds = new Set(jobs.flatMap(job => toArray(job.workContexts)));
   const linkedAppellations = appellations.filter(item => item.jobId).length;
   const officialDescriptions = jobs.filter(job => job.description && job.fieldSources?.description === "official_rome_api").length;
+  const jobsWithSkillsCount = jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length;
+  const jobsWithContextsCount = jobs.filter(job => toArray(job.workContexts).length).length;
+  const jobsWithTrainingCount = jobsWithTraining;
+  const jobsWithDiplomaLevelCount = jobs.filter(job => Number.isFinite(Number(job.recommendedDiplomaLevel)) || Number.isFinite(Number(job.requiredDiplomaLevel))).length;
+  const jobsWithMarketDataCount = jobsWithMarket;
   const rawMarketRows = countMarketDatasetRows(datasets);
   const activeMarketCoverage = calculateMarketCoverage(datasets, {});
   const hasSampleSource = datasets.provenance === "sample" || (datasets.sources || []).some(source => source.id === "sample_non_official" || source.provenance === "sample");
@@ -3750,14 +3887,20 @@ function generateDataQualityReport(datasets) {
       marketIndicators: market.length
     },
     coverage: {
-      jobsWithSkills: ratio(jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length, jobs.length),
-      jobsWithContexts: ratio(jobs.filter(job => (job.workContexts || []).length > 0).length, jobs.length),
-      linkedJobsWithSkillsCount: jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length,
-      linkedJobsWithContextsCount: jobs.filter(job => toArray(job.workContexts).length).length,
-      jobsWithOfficialDescription: ratio(officialDescriptions, jobs.length),
-      jobsWithTraining: ratio(jobsWithTraining, jobs.length),
-      jobsWithDiplomaLevel: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== undefined).length, jobs.length),
-      jobsWithMarketData: ratio(jobsWithMarket, jobs.length)
+      jobsWithSkillsCount,
+      jobsWithSkillsRatio: ratio(jobsWithSkillsCount, jobs.length),
+      jobsWithContextsCount,
+      jobsWithContextsRatio: ratio(jobsWithContextsCount, jobs.length),
+      linkedJobsWithSkillsCount: jobsWithSkillsCount,
+      linkedJobsWithContextsCount: jobsWithContextsCount,
+      jobsWithOfficialDescriptionCount: officialDescriptions,
+      jobsWithOfficialDescriptionRatio: ratio(officialDescriptions, jobs.length),
+      jobsWithTrainingCount,
+      jobsWithTrainingRatio: ratio(jobsWithTrainingCount, jobs.length),
+      jobsWithDiplomaLevelCount,
+      jobsWithDiplomaLevelRatio: ratio(jobsWithDiplomaLevelCount, jobs.length),
+      jobsWithMarketDataCount,
+      jobsWithMarketDataRatio: ratio(jobsWithMarketDataCount, jobs.length)
     },
     provenanceDistribution: buildLocalProvenanceDistribution(datasets),
     marketCoverage: {
@@ -3780,6 +3923,7 @@ function generateDataQualityReport(datasets) {
     completeness: {
       skills: {
         rawCount: rawSkills.length,
+        rawLoadedInActiveApp: rawSkills.length > 0,
         filteredCount: skills.length,
         linkedCount: linkedSkillIds.size,
         matchableCount: matchableSkills.length,
@@ -6079,8 +6223,9 @@ function buildCalibrationAudit(results = {}) {
     .filter(result => (result.relevanceWithoutExclusion || result.scorePertinence || 0) >= 58)
     .sort((a, b) => (b.relevanceWithoutExclusion || b.scorePertinence || 0) - (a.relevanceWithoutExclusion || a.scorePertinence || 0))
     .map(result => ({
-      jobId: result.jobId,
-      title: result.title,
+        jobId: result.jobId,
+        romeCode: result.romeCode || result.job?.romeCode || "",
+        title: result.title,
       relevanceWithoutExclusion: Math.round(result.relevanceWithoutExclusion || result.scorePertinence || 0),
       reasons: toArray(result.exclusionReasons).map(item => item.message || item.label || item.code).slice(0, 3)
     }));
@@ -6178,28 +6323,49 @@ function diversifyTopResults(results) {
     .sort((a, b) => (b.selectionScore || b.globalScore) - (a.selectionScore || a.globalScore) || b.globalScore - a.globalScore);
   const selected = [];
   const variantsByJob = {};
-  const bestScore = compatible[0]?.selectionScore || compatible[0]?.globalScore || 0;
-  const tryAddCandidate = (candidate, mode = "strict") => {
+  const scoreOf = result => Number(result?.selectionScore || result?.globalScore || 0);
+  const foundationRank = result => {
+    const level = result?.coreProfileMatch?.coreProfileLevel || result?.coreProfileMatch?.level || "";
+    if (["heart_current", "heart_secondary", "core"].includes(level)) return 4;
+    if (["compatible", "support_tool", "past_transferable"].includes(level)) return 3;
+    if (level === "exploratory") return 2;
+    if (level === "avoid_main") return 1;
+    return 0;
+  };
+  const isContrary = result => Boolean(result?.coreProfileMatch?.excludedMatch || result?.coreProfileMatch?.avoidMainMatch || result?.coreProfileMatch?.coreProfileLevel === "avoid_main");
+  const isPrimaryRelevant = result => Boolean(
+    result?.coreProfileMatch?.matchedPrimarySector ||
+    ["heart_current", "heart_secondary"].includes(result?.coreProfileMatch?.coreProfileLevel) ||
+    result?.coreProfileMatch?.level === "core"
+  );
+  const bestScore = scoreOf(compatible[0]);
+  const ranked = compatible.slice().sort((a, b) => {
+    const relevantDelta = Number(isPrimaryRelevant(b)) - Number(isPrimaryRelevant(a));
+    if (relevantDelta) return relevantDelta;
+    const foundationDelta = foundationRank(b) - foundationRank(a);
+    if (foundationDelta) return foundationDelta;
+    return scoreOf(b) - scoreOf(a) || b.globalScore - a.globalScore;
+  });
+  const tryAddCandidate = (candidate, mode = "score") => {
     if (selected.length >= 5 || selected.some(item => item.jobId === candidate.jobId)) return false;
-    const candidateSelectionScore = candidate.selectionScore || candidate.globalScore || 0;
-    if (!["fill", "relaxed"].includes(mode) && candidateSelectionScore < bestScore - 12 && selected.length >= 3) return false;
+    const candidateSelectionScore = scoreOf(candidate);
+    if (mode !== "fill" && candidateSelectionScore < bestScore - 12 && selected.length >= 3) return false;
     const variantParent = selected.find(item => isVariantOf(candidate, item));
-    if (mode === "core" || mode === "core_relaxed") {
-      if (candidate.coreProfileMatch?.level !== "core") return false;
-    }
-    if (mode === "core") {
-      const direction = jobDirectionKey(candidate.job);
-      if (selected.some(item => jobDirectionKey(item.job) === direction)) return false;
-    }
-    if (variantParent && !["relaxed", "core", "core_relaxed"].includes(mode)) {
+    if (variantParent && mode !== "fill") {
       variantsByJob[variantParent.jobId] = variantsByJob[variantParent.jobId] || [];
       variantsByJob[variantParent.jobId].push(candidate);
       return false;
     }
-    const sameDomain = selected.some(item => item.job.domain === candidate.job.domain);
-    const sameFamily = selected.some(item => item.job.family === candidate.job.family);
-    if (mode === "strict" && (sameDomain || sameFamily)) return false;
-    if (mode === "soft" && sameDomain && sameFamily) return false;
+    if (mode === "relevant" && !isPrimaryRelevant(candidate)) return false;
+    if (mode === "diversity") {
+      if (isContrary(candidate)) return false;
+      const nearestSelectedScore = selected.length ? Math.max(...selected.map(scoreOf)) : bestScore;
+      if (nearestSelectedScore - candidateSelectionScore > TOP5_DIVERSITY_SCORE_DELTA) return false;
+      const weakerThanSelected = selected.some(item => foundationRank(candidate) + 1 < foundationRank(item));
+      if (weakerThanSelected) return false;
+      const direction = jobDirectionKey(candidate.job);
+      if (selected.some(item => jobDirectionKey(item.job) === direction)) return false;
+    }
     const diversityScore = calculateDiversityScore(candidate, selected);
     candidate.diversityScore = diversityScore;
     candidate.top5SelectionReason = top5SelectionReasonCode(candidate, mode);
@@ -6212,16 +6378,14 @@ function diversifyTopResults(results) {
     selected.push(candidate);
     return true;
   };
-  compatible.forEach(candidate => tryAddCandidate(candidate, "core"));
-  compatible.forEach(candidate => tryAddCandidate(candidate, "core_relaxed"));
-  compatible.forEach(candidate => tryAddCandidate(candidate, "strict"));
-  compatible.forEach(candidate => tryAddCandidate(candidate, "soft"));
+  ranked.forEach(candidate => tryAddCandidate(candidate, "relevant"));
+  ranked.forEach(candidate => tryAddCandidate(candidate, "score"));
+  ranked.forEach(candidate => tryAddCandidate(candidate, "diversity"));
   compatible.forEach(candidate => tryAddCandidate(candidate, "fill"));
-  compatible.forEach(candidate => tryAddCandidate(candidate, "relaxed"));
   return {
     top5: selected.slice(0, 5),
     variantsByJob,
-    diversityExplanation: "Le Top 5 evite les repetitions de famille, domaine et metiers trop proches. Les pistes proches sont rangees en variantes."
+    diversityExplanation: "Le Top 5 privilégie d’abord la pertinence, le score et le cœur de profil. La diversité intervient seulement pour départager des pistes proches, dans une marge de 4 points."
   };
 }
 
@@ -6231,7 +6395,8 @@ function top5SelectionReasonCode(result, mode) {
   if (level === "heart_current" && mode !== "fill" && mode !== "relaxed") return "heart_current";
   if (level === "heart_secondary" && mode !== "fill" && mode !== "relaxed") return "secondary_branch";
   if (level === "support_tool" && mode !== "relaxed") return "support_hybrid";
-  if (mode === "strict" || mode === "soft") return "diversity_pick";
+  if (mode === "diversity") return "diversity_pick";
+  if (mode === "relevant" || mode === "score") return "core_match";
   if (["weak", "exploratory", "avoid_main", "past_transferable"].includes(level) || result.status === "explore_with_caution" || mode === "relaxed") return "exploratory";
   return "fallback_useful";
 }
@@ -7613,17 +7778,20 @@ function runDiagnosticProfiles(testProfiles = []) {
     Object.entries(test.profile?.constraintSeverities || test.constraintSeverities || {}).forEach(([value, severity]) => setConstraintSeverity(profile, value, severity));
     const results = calculateAllMatches(profile, App.state.dataset, { skipAudit: true });
     const anomalies = detectTestBenchAnomalies(results, test);
+    const expectedJobsEvaluation = buildExpectedJobsEvaluation(results, test);
     return {
       id: test.id || profile.id,
       title: test.title || profile.profileName,
       top5: toArray(results.top5).map(result => ({
         jobId: result.jobId,
+        romeCode: result.romeCode || result.job?.romeCode || "",
         title: result.title,
         score: result.globalScore,
         selection: result.top5SelectionReason || "",
         coreProfileLevel: result.coreProfileMatch?.coreProfileLevel || "",
         family: result.job?.family || ""
       })),
+      expectedJobsEvaluation,
       anomalies,
       marketUniform: results.calibrationAudit?.marketContext?.uniformScore ?? !results.marketContext?.marketDiscriminant
     };
@@ -7636,8 +7804,15 @@ function runDiagnosticProfiles(testProfiles = []) {
   return {
     app: "boussole-pro-test-bench",
     version: CONFIG.version,
+    status: "completed",
     generatedAt: new Date().toISOString(),
     datasetVersion: App.state.dataset?.datasetVersion || "",
+    testProfilesCount: rows.length,
+    anomaliesCount: anomalies.length,
+    blockingAnomalies: anomalies.filter(item => item.severity === "blocking"),
+    warningAnomalies: anomalies.filter(item => item.severity === "warning"),
+    expectedJobsEvaluation: Object.fromEntries(rows.map(row => [row.id, row.expectedJobsEvaluation])),
+    readinessRecommendation: testBenchReadinessRecommendation(anomalies),
     rows,
     anomalies,
     summary: {
@@ -7647,6 +7822,32 @@ function runDiagnosticProfiles(testProfiles = []) {
       uniformMarket: rows.some(row => row.marketUniform)
     }
   };
+}
+
+function testBenchReadinessRecommendation(anomalies = []) {
+  if (anomalies.some(item => item.severity === "blocking")) return "needs_blocking_regression_fix";
+  if (anomalies.some(item => item.severity === "warning")) return "usable_for_validation_with_warnings";
+  return "usable_for_validation";
+}
+
+function buildExpectedJobsEvaluation(results = {}, test = {}) {
+  const complete = toArray(results.completeList);
+  const byCode = new Map(complete.map((result, index) => [result.romeCode || result.job?.romeCode, { result, rank: index + 1 }]));
+  return toArray(test.expectedRomeCodes).map(romeCode => {
+    const item = byCode.get(romeCode);
+    const result = item?.result || {};
+    return {
+      romeCode,
+      rank: item?.rank || 0,
+      score: Math.round(result.globalScore || 0),
+      excluded: result.status === "excluded_for_now",
+      exclusionReasons: toArray(result.exclusionReasons).map(reason => reason.message || reason.label || reason.code || String(reason)).slice(0, 5),
+      primarySectorId: result.coreProfileMatch?.primarySectorId || result.job?.primarySectorId || "",
+      skillScore: Math.round(result.scores?.skills || 0),
+      constraintScore: Math.round(result.scores?.constraints || 0),
+      contextScore: Math.round(result.scores?.context || 0)
+    };
+  });
 }
 
 function detectTestBenchAnomalies(results = {}, test = {}) {
@@ -7659,24 +7860,43 @@ function detectTestBenchAnomalies(results = {}, test = {}) {
   if (expectedRomeCodes.length && !availableExpectedCodes.length) {
     anomalies.push({ type: "insufficient_rome_coverage", severity: "info", message: `Codes attendus absents du corpus actif : ${expectedRomeCodes.join(", ")}.` });
   } else if (availableExpectedCodes.length) {
-    const topCodes = new Set(top.map(result => result.romeCode).filter(Boolean));
+    const topCodes = new Set(top.map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
     const foundCount = availableExpectedCodes.filter(code => topCodes.has(code)).length;
     if (foundCount === 0) anomalies.push({ type: "expected_rome_missing_from_top5", severity: "warning", message: `Aucun code ROME attendu dans le Top 5 malgré leur présence dans le corpus : ${availableExpectedCodes.join(", ")}.` });
+    if (test.id === "admin-calme" && foundCount < 3) anomalies.push({ type: "admin_expected_rome_underrepresented", severity: "warning", message: `Profil administratif : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 3.` });
+    if (test.id === "numerique-distance" && foundCount < 2) anomalies.push({ type: "digital_expected_rome_underrepresented", severity: "warning", message: `Profil numérique : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 2.` });
   }
   const familyCounts = countBy(top.map(result => result.job?.family || "inconnu"));
-  if (Object.values(familyCounts).some(count => count >= 4)) anomalies.push({ type: "top5_family_concentration", severity: "warning", message: "Top 5 concentré sur une seule famille." });
+  const familyConcentrationCount = Math.max(0, ...Object.values(familyCounts));
+  if (familyConcentrationCount >= 4) {
+    const topExpectedSectorCount = expectedSectorIds.length
+      ? top.filter(result => expectedSectorIds.includes(result.coreProfileMatch?.primarySectorId)).length
+      : 0;
+    const expectedByProfile = topExpectedSectorCount >= 4 || ["enfance-relation", "social-education-commerce-exclu", "education-numerique-outil"].includes(test.id);
+    anomalies.push({
+      type: "top5_family_concentration",
+      severity: expectedByProfile ? "info" : "warning",
+      familyConcentration: { count: familyConcentrationCount, expectedByProfile, severity: expectedByProfile ? "info" : "warning" },
+      message: expectedByProfile ? "Top 5 concentré sur une famille cohérente avec le profil." : "Top 5 concentré sur une seule famille."
+    });
+  }
   const scoreCounts = countBy(top.map(result => String(Math.round(result.globalScore || 0))));
   Object.entries(scoreCounts).filter(([, count]) => count >= 3).forEach(([score, count]) => anomalies.push({ type: "same_score_group", severity: "info", message: `${count} métiers du Top 5 ont le même score (${score}).` }));
   if (top.some(result => result.status === "discouraged" && ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel))) anomalies.push({ type: "heart_discouraged", severity: "warning", message: "Un métier de cœur est classé découragé." });
   const expectedPresent = expectedSectorIds.length ? top.some(result => expectedSectorIds.includes(result.coreProfileMatch?.primarySectorId)) : true;
   if (!expectedPresent && expectedSectorIds.length) anomalies.push({ type: "expected_sector_missing_from_top5", severity: "warning", message: `Aucun secteur attendu dans le Top 5 : ${expectedSectorIds.map(sectorLabel).join(", ")}.` });
+  if (test.id === "terrain-nature-prudent") {
+    const terrainCount = top.filter(result => expectedSectorIds.includes(result.coreProfileMatch?.primarySectorId)).length;
+    if (terrainCount < 3) anomalies.push({ type: "nature_expected_sector_underrepresented", severity: "warning", message: `Profil terrain nature : ${terrainCount}/5 métier(s) nature, animaux ou environnement dans le Top 5, objectif minimum 3.` });
+    if (top.some(result => normalizeText(result.title).includes("chef de cuisine"))) anomalies.push({ type: "forbidden_specific_job", severity: "warning", message: "Chef de cuisine ne doit pas remonter dans le profil terrain nature prudent." });
+  }
   top
     .filter(result => forbiddenPrimarySectorIds.includes(result.coreProfileMatch?.primarySectorId))
     .forEach(result => anomalies.push({ type: "primary_sector_mismatch", severity: "warning", message: `${result.title} appartient au secteur primaire ${sectorLabel(result.coreProfileMatch?.primarySectorId)}, interdit pour ce profil test.` }));
   if (toArray(results.completeList).filter(result => result.coreProfileMatch?.coreProfileLevel === "heart_current").length / Math.max(1, toArray(results.completeList).length) > 0.25) {
     anomalies.push({ type: "core_saturation", severity: "warning", message: "Plus de 25% du corpus est classé cœur actuel." });
   }
-  if (top.every(result => (result.scores?.skills || 0) <= 12)) anomalies.push({ type: "no_skill_match_after_profile_migration", severity: "warning", message: "Aucune compétence reconnue ne semble départager le Top 5 après migration." });
+  if (test.skillEvidenceExpected !== false && top.every(result => (result.scores?.skills || 0) <= 12)) anomalies.push({ type: "no_skill_match_after_profile_migration", severity: "warning", message: "Aucune compétence reconnue ne semble départager le Top 5 après migration." });
   if (top.some(result => (result.scores?.training || 0) >= 15 && result.diagnostic?.subScores?.some(score => score.key === "training" && score.state === "not_evaluated"))) anomalies.push({ type: "training_high_without_evidence", severity: "warning", message: "Score formation élevé alors que l’accès métier est non évalué." });
   if (top.some(result => (result.scores?.context || 0) > 5 && !toArray(result.job?.workContexts).length)) anomalies.push({ type: "context_match_without_context_data", severity: "warning", message: "Score contexte supérieur au neutre sans contexte métier relié." });
   const firstHeartIndex = top.findIndex(result => ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel));
@@ -7808,7 +8028,8 @@ function renderDataPage() {
   const isCurated = dataset.provenance === "curated_clairmetier_ai_logic";
   const source = (dataset.sources || [])[0] || {};
   const datasetStatus = getDatasetStatusLabels(dataset);
-  const generatedSummary = getGeneratedRomeSummary(dataset, report, manifest);
+  const sourceRomeReport = dataset.qualityReports?.romeGeneration || report;
+  const generatedSummary = getGeneratedRomeSummary(dataset, sourceRomeReport, manifest);
   const marketContext = assessMarketContext(dataset, mapUserProfileToCriteria(App.state.profile));
   const marketCoverage = marketContext.marketCoverage || {};
   const totalJobs = toArray(dataset.jobs).length;
@@ -7885,13 +8106,13 @@ function renderDataPage() {
       <ul class="compact-list">
         <li>Métiers avec compétences : ${percent(coverageRatio("jobsWithSkillsRatio", "jobsWithSkills", "jobsWithSkillsCount"))}</li>
         <li>Métiers avec contextes : ${percent(coverageRatio("jobsWithContextsRatio", "jobsWithContexts", "jobsWithContextsCount"))}</li>
-        <li>Métiers avec formations : ${percent(coverage.jobsWithTraining)}</li>
+        <li>Métiers avec formations : ${percent(coverageRatio("jobsWithTrainingRatio", "jobsWithTraining", "jobsWithTrainingCount"))}</li>
         <li>Métiers avec marché officiel : ${h(marketConnectedLabel)}</li>
         <li>Métiers avec marché estimatif ou officiel : ${h(totalJobs ? `${jobsWithAnyMarket}/${totalJobs} (${percent(ratio(jobsWithAnyMarket, totalJobs))})` : "0/0")}</li>
         <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
         <li>Formations : ${h(generatedSummary.trainingsLabel)}</li>
         <li>Certifications : ${h(generatedSummary.certificationsLabel)}</li>
-        <li>${isCurated ? "Compétences locales" : "Compétences brutes ROME"} : ${h(isCurated ? summary.skills : generatedSummary.rawSkillsCount)}</li>
+        <li>${isCurated ? "Compétences locales" : "Compétences brutes ROME"} : ${h(isCurated ? summary.skills : generatedSummary.rawSkillsCount)}${!isCurated && !generatedSummary.rawSkillsLoadedInActiveApp ? " (rapport de génération, non chargé dans le corpus compact actif)" : ""}</li>
         <li>${isCurated ? "Compétences utilisées" : "Compétences filtrées"} : ${h(generatedSummary.filteredSkillsCount)}</li>
         <li>Compétences liées aux métiers : ${h(generatedSummary.linkedSkillsCount)}</li>
         <li>Compétences matchables profil : ${h(generatedSummary.matchableSkillsCount)}</li>
@@ -7949,7 +8170,8 @@ function renderDataPage() {
         <button class="primary-button" type="button" data-action="load-generated-rome">Charger les données générées</button>
         <button class="primary-button" type="button" data-action="load-curated-corpus">Charger le corpus local enrichi</button>
         <button class="secondary-button" type="button" data-import-type="corpus">Importer un corpus JSON</button>
-        <button class="secondary-button" type="button" data-action="export-corpus">Exporter corpus</button>
+        <button class="secondary-button" type="button" data-action="export-corpus">Exporter corpus compact</button>
+        <button class="ghost-button" type="button" data-action="export-corpus-diagnostic">Exporter diagnostic complet</button>
         <button class="secondary-button" type="button" data-action="export-quality">Voir / exporter rapport qualité</button>
         <button class="danger-button" type="button" data-action="reset-sample">Revenir aux données sample</button>
       </div>
@@ -7987,6 +8209,8 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
   const requestedCodesCount = report.requestedCodesCount ?? sync.requestedCodesCount ?? manifest.requestedCodesCount ?? toArray(manifest.requestedRomeCodes).length;
   const successfulCodesCount = report.successfulCodesCount ?? sync.successfulCodesCount ?? manifest.successfulCodesCount ?? successfulCodes.length;
   const failedCodesCount = report.failedCodesCount ?? sync.failedCodesCount ?? manifest.failedCodesCount ?? failedCodes.length;
+  const rawSkillsLoadedInActiveApp = toArray(dataset.rawSkills).length > 0;
+  const rawSkillsCountInGenerationReport = summary.rawSkills ?? completeness.skills?.rawCount ?? (legacyHugeSkillCount ? summary.skills : 0);
   return {
     sourceName: "France Travail ROME 4.0 via GitHub Actions",
     generatedAt: report.generatedAt || manifest.importedAt || dataset.importedAt || dataset.sourceDate,
@@ -8001,7 +8225,9 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
     missingLabel: topMissingFields.length ? topMissingFields.slice(0, 8).join(", ") : "aucun champ majeur signalé",
     domainLabel: represented.length ? represented.join(", ") : "non renseignés",
     completenessLines,
-    rawSkillsCount: summary.rawSkills ?? completeness.skills?.rawCount ?? (legacyHugeSkillCount ? summary.skills : 0),
+    rawSkillsLoadedInActiveApp,
+    rawSkillsCountInGenerationReport,
+    rawSkillsCount: rawSkillsLoadedInActiveApp ? toArray(dataset.rawSkills).length : rawSkillsCountInGenerationReport,
     filteredSkillsCount: summary.filteredSkills ?? completeness.skills?.filteredCount ?? (legacyHugeSkillCount ? 0 : (summary.skills || 0)),
     linkedSkillsCount: summary.linkedSkills ?? completeness.skills?.linkedCount ?? linkedFromJobs,
     matchableSkillsCount: summary.matchableSkills ?? completeness.skills?.matchableCount ?? toArray(dataset.matchableSkills).length,
@@ -8276,16 +8502,17 @@ function createEmptyGeneratedDatasetBase() {
 }
 
 function mergeGeneratedDatasetIntoApp(generated, options = {}) {
+  const compactGenerated = compactGeneratedDatasetForBrowser(generated);
   const base = options.replace ? createEmptyGeneratedDatasetBase() : clone(App.state.dataset || loadSampleData());
-  const manifest = generated.manifest || {};
+  const manifest = compactGenerated.manifest || {};
   const importedAt = new Date().toISOString();
-  const generatedSkills = Array.isArray(generated.skills) ? generated.skills.map(normalizeSkill) : [];
+  const generatedSkills = Array.isArray(compactGenerated.skills) ? compactGenerated.skills.map(normalizeSkill) : [];
   const looksLikeLegacyRawSkillDump = generatedSkills.length > 5000 && !generatedSkills.some(skill => skill.classification || skill.matchingUse || skill.matchingScope);
-  const generatedJobs = Array.isArray(generated.jobs) && generated.jobs.length ? generated.jobs.map(normalizeJob) : base.jobs;
-  const jobsWithGeneratedMarket = applyGeneratedMarketStatsToJobs(generatedJobs, generated);
+  const generatedJobs = Array.isArray(compactGenerated.jobs) && compactGenerated.jobs.length ? compactGenerated.jobs.map(normalizeJob) : base.jobs;
+  const jobsWithGeneratedMarket = applyGeneratedMarketStatsToJobs(generatedJobs, compactGenerated);
   const collectionPatch = options.replace
-    ? replaceDatasetCollections(base, generated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket })
-    : mergeDatasetCollections(base, generated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket });
+    ? replaceDatasetCollections(base, compactGenerated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket })
+    : mergeDatasetCollections(base, compactGenerated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket });
   const merged = {
     ...base,
     datasetName: manifest.datasetName || "Boussole Pro - données ROME générées",
@@ -8300,6 +8527,69 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   merged.qualityReports = buildGeneratedQualityReports(generated, merged);
   merged.qualityReport = buildActiveMergedQualityReport(merged, generated);
   return finalizeDatasetForV051(merged, { regenerateReport: false });
+}
+
+function compactGeneratedDatasetForBrowser(generated = {}) {
+  const jobs = toArray(generated.jobs);
+  const mappings = toArray(generated.mappings);
+  const matchableSkillIds = new Set(toArray(generated.matchableSkills).map(item => item.id).filter(Boolean));
+  const referencedSkillIds = new Set([
+    ...jobs.flatMap(job => [
+      ...toArray(job.requiredSkills),
+      ...toArray(job.optionalSkills),
+      ...toArray(job.softSkills),
+      ...toArray(job.matchableSkillIds),
+      ...toArray(job.mobilizedSkillIds)
+    ]),
+    ...mappings.flatMap(mapping => toArray(mapping.skillIds))
+  ].filter(Boolean));
+  const referencedKnowledgeIds = new Set([
+    ...jobs.flatMap(job => [...toArray(job.knowledge), ...toArray(job.knowledgeIds)]),
+    ...mappings.flatMap(mapping => toArray(mapping.knowledgeIds))
+  ].filter(Boolean));
+  const referencedCertificationIds = new Set([
+    ...jobs.flatMap(job => [...toArray(job.requiredCertifications), ...toArray(job.recommendedCertifications)]),
+    ...mappings.flatMap(mapping => toArray(mapping.certificationIds))
+  ].filter(Boolean));
+  const keepSkill = item => referencedSkillIds.has(item.id) || matchableSkillIds.has(item.id);
+  return {
+    ...generated,
+    skills: toArray(generated.skills).filter(keepSkill),
+    knowledge: toArray(generated.knowledge).filter(item => referencedKnowledgeIds.has(item.id)),
+    certificationLike: referencedCertificationIds.size
+      ? toArray(generated.certificationLike).filter(item => referencedCertificationIds.has(item.id))
+      : [],
+    marketNational: toArray(generated.marketNational).map(compactMarketRowForActiveCorpus),
+    marketOccitanie: toArray(generated.marketOccitanie).map(compactMarketRowForActiveCorpus),
+    marketAude: toArray(generated.marketAude).map(compactMarketRowForActiveCorpus)
+  };
+}
+
+function compactMarketRowForActiveCorpus(row = {}) {
+  return {
+    id: row.id,
+    romeCode: row.romeCode,
+    title: row.title,
+    territoryCode: row.territoryCode,
+    territoryLabel: row.territoryLabel,
+    sourceLevel: row.sourceLevel,
+    sourceName: row.sourceName || row.source,
+    sourceUpdatedAt: row.sourceUpdatedAt || row.updatedAt || null,
+    offers12m: row.offers12m,
+    offersAll12m: row.offersAll12m,
+    offersFranceTravail12m: row.offersFranceTravail12m,
+    latestPeriodCode: row.latestPeriodCode,
+    latestPeriodLabel: row.latestPeriodLabel,
+    absoluteOfferSignal: row.absoluteOfferSignal,
+    territorialOfferSignal: row.territorialOfferSignal,
+    territoryRank: row.territoryRank,
+    territoryPercentile: row.territoryPercentile,
+    marketFreshness: row.marketFreshness,
+    confidence: row.confidence,
+    marketAvailabilityStatus: row.marketAvailabilityStatus,
+    marketDataKind: row.marketDataKind,
+    marketInterpretationLabel: row.marketInterpretationLabel
+  };
 }
 
 function replaceDatasetCollections(base, generated, prepared = {}) {
@@ -9026,6 +9316,7 @@ function resolveSemanticSkillKeys(keys = [], dataset = App.state.dataset) {
     const concept = SEMANTIC_SKILL_CONCEPTS_V062[key];
     if (!concept) return [];
     const directIds = toArray(concept.officialSkillIds).filter(id => index.byCanonicalId.has(id));
+    if (directIds.length) return directIds.slice(0, 14);
     const fromLegacy = toArray(concept.legacyIds).flatMap(id => {
       const resolved = resolveSkillSelection(id, dataset);
       if (resolved.status === "matched") return [resolved.id];
@@ -9035,7 +9326,6 @@ function resolveSemanticSkillKeys(keys = [], dataset = App.state.dataset) {
     const fromLabels = toArray(concept.labels).flatMap(label => {
       const normalized = normalizedSkillLabel(label);
       return toArray(index.byNormalizedLabel.get(normalized))
-        .concat(findSkillsContainingTokens(index, normalized))
         .map(skill => skill.id);
     });
     return unique([...directIds, ...fromLegacy, ...fromLabels]).slice(0, 12);
@@ -9397,7 +9687,8 @@ function handleActionClick(event) {
   if (action === "reset-weights") applyWeightPreset("default");
   if (action === "preset-fast-access") applyWeightPreset("fast_access");
   if (action === "preset-values") applyWeightPreset("values");
-  if (action === "export-corpus") downloadFile(`boussole-pro-corpus-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
+  if (action === "export-corpus") downloadFile(`boussole-pro-corpus-compact-${dateStamp()}.json`, JSON.stringify(prepareCompactDatasetExport(App.state.dataset), null, 2), "application/json");
+  if (action === "export-corpus-diagnostic") downloadFile(`boussole-pro-corpus-diagnostic-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
   if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
   if (action === "skills-expand-all") {
@@ -10306,6 +10597,53 @@ function findSuggestedTrainings(job, datasets) {
   ).slice(0, 5);
 }
 
+function prepareCompactDatasetExport(dataset = App.state.dataset) {
+  const compact = clone(dataset || {});
+  compact.exportKind = "compact_dataset";
+  compact.exportedAt = new Date().toISOString();
+  compact.rawSkills = [];
+  compact.marketDatasets = {
+    national: toArray(compact.marketDatasets?.national).map(compactMarketRowForActiveCorpus),
+    occitanie: toArray(compact.marketDatasets?.occitanie).map(compactMarketRowForActiveCorpus),
+    aude: toArray(compact.marketDatasets?.aude).map(compactMarketRowForActiveCorpus),
+    bmoFap2021: [],
+    fapRomeMappings: []
+  };
+  if (compact.qualityReports) {
+    compact.qualityReports = {
+      romeGeneration: compactQualityReportSummary(compact.qualityReports.romeGeneration),
+      marketGeneration: compactQualityReportSummary(compact.qualityReports.marketGeneration),
+      activeMergedDataset: compactQualityReportSummary(compact.qualityReports.activeMergedDataset)
+    };
+  }
+  compact.qualityReport = compactQualityReportSummary(compact.qualityReport);
+  compact.note = "Export compact par défaut : référentiels bruts et historiques marché détaillés retirés. Utiliser l’export diagnostic complet pour l’audit complet.";
+  return compact;
+}
+
+function compactQualityReportSummary(report = null) {
+  if (!report) return null;
+  return {
+    schemaVersion: report.schemaVersion,
+    reportId: report.reportId,
+    generatedAt: report.generatedAt,
+    datasetVersion: report.datasetVersion,
+    status: report.status,
+    requestedCodesCount: report.requestedCodesCount,
+    successfulCodesCount: report.successfulCodesCount,
+    failedCodesCount: report.failedCodesCount,
+    completionRate: report.completionRate,
+    summary: report.summary || null,
+    coverage: report.coverage || null,
+    completeness: report.completeness || null,
+    marketCoverage: report.marketCoverage || report.marketAvailability || null,
+    topMissingFields: toArray(report.topMissingFields).slice(0, 12),
+    warnings: toArray(report.warnings).slice(0, 20),
+    issues: toArray(report.issues).slice(0, 20),
+    recommendations: toArray(report.recommendations).slice(0, 12)
+  };
+}
+
 function prepareCompactResultsForExport(results = {}) {
   const compactResult = result => ({
     jobId: result.jobId,
@@ -10455,6 +10793,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
       provenance: App.state.dataset?.provenance || ""
     },
     calibrationAudit: results?.calibrationAudit || {},
+    testBenchReport: App.state.testBenchReport || null,
     top5: toArray(results?.top5).map(stripDiagnosticResult),
     visibleRecommended: toArray(results?.visibleRecommended).map(stripDiagnosticResult),
     visibleExcludedButRelevant: toArray(results?.visibleExcludedButRelevant).map(stripDiagnosticResult),

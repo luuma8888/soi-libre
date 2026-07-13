@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 const SOURCE_OFFICIAL = "official_rome_api";
 const SOURCE_COMPUTED = "computed";
 const SOURCE_UNKNOWN = "unknown";
+const SOURCE_NOT_AVAILABLE = "not_available_in_connected_sources";
+const SOURCE_OFFICIAL_DETAIL_UNAVAILABLE = "official_detail_unavailable";
 const MATCHABLE_SKILLS_LIMIT = 500;
 const ROME_SECTOR_MAPPING = loadRomeSectorMapping();
 const ROME_DOMAIN_BY_LETTER = {
@@ -143,7 +145,7 @@ export function normalizeRomeMetier(raw = {}) {
     family: familyOfficial ? SOURCE_OFFICIAL : SOURCE_COMPUTED,
     appellations: appellations.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
     description: description ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    activities: activities.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
+    activities: activities.length ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
     requiredSkills: requiredSkillLabels.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
     optionalSkills: optionalSkillLabels.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
     softSkills: softSkillLabels.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
@@ -151,11 +153,11 @@ export function normalizeRomeMetier(raw = {}) {
     workContexts: contextLabels.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
     constraints: constraints.source,
     accessConditions: accessText ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    requiredDiplomaLevel: source.requiredDiplomaLevel !== undefined ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    recommendedDiplomaLevel: source.recommendedDiplomaLevel !== undefined ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    requiredCertifications: requiredCertifications.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    recommendedCertifications: recommendedCertifications.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
-    relatedJobs: relatedJobs.length ? SOURCE_OFFICIAL : SOURCE_UNKNOWN,
+    requiredDiplomaLevel: source.requiredDiplomaLevel !== undefined ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
+    recommendedDiplomaLevel: source.recommendedDiplomaLevel !== undefined ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
+    requiredCertifications: requiredCertifications.length ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
+    recommendedCertifications: recommendedCertifications.length ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
+    relatedJobs: relatedJobs.length ? SOURCE_OFFICIAL : SOURCE_NOT_AVAILABLE,
     transitionTags: SOURCE_COMPUTED,
     interestTags: SOURCE_COMPUTED,
     valueTags: SOURCE_COMPUTED,
@@ -288,7 +290,7 @@ export function normalizeRomeFicheMetier(raw = {}) {
 export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecord = null, skillsIndex = null, contextsIndex = null } = {}) {
   const base = normalizeRomeMetier(ficheMetierRecord || metierRecord || {});
   const metier = metierRecord ? normalizeRomeMetier(metierRecord) : null;
-  if (!metier) return base;
+  if (!metier) return markOfficialDetailUnavailable(base);
   const merged = { ...base };
   mergeOfficialField(merged, metier, "title", value => value && value !== "Metier ROME sans titre");
   mergeOfficialField(merged, metier, "appellations", value => value?.length);
@@ -337,6 +339,52 @@ export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecor
   merged.missingFields = missingFields;
   merged.confidence = completenessScore(missingFields);
   return merged;
+}
+
+function markOfficialDetailUnavailable(job = {}) {
+  const fieldSources = {
+    ...(job.fieldSources || {}),
+    description: job.description ? job.fieldSources?.description || SOURCE_OFFICIAL : SOURCE_OFFICIAL_DETAIL_UNAVAILABLE,
+    appellations: toArray(job.appellations).length ? job.fieldSources?.appellations || SOURCE_OFFICIAL : SOURCE_OFFICIAL_DETAIL_UNAVAILABLE,
+    workContexts: toArray(job.workContexts).length ? job.fieldSources?.workContexts || SOURCE_OFFICIAL : SOURCE_OFFICIAL_DETAIL_UNAVAILABLE,
+    accessConditions: job.accessConditions?.text ? job.fieldSources?.accessConditions || SOURCE_OFFICIAL : SOURCE_OFFICIAL_DETAIL_UNAVAILABLE,
+    activities: SOURCE_NOT_AVAILABLE,
+    relatedJobs: SOURCE_NOT_AVAILABLE,
+    requiredCertifications: SOURCE_NOT_AVAILABLE,
+    recommendedCertifications: SOURCE_NOT_AVAILABLE,
+    requiredDiplomaLevel: SOURCE_NOT_AVAILABLE,
+    recommendedDiplomaLevel: SOURCE_NOT_AVAILABLE
+  };
+  const missingFields = buildMissingFields({
+    romeCode: job.romeCode,
+    title: job.title,
+    description: job.description,
+    activities: job.activities,
+    requiredSkills: job.requiredSkills,
+    workContexts: job.workContexts,
+    accessConditions: job.accessConditions?.text,
+    requiredDiplomaLevel: job.requiredDiplomaLevel,
+    recommendedDiplomaLevel: job.recommendedDiplomaLevel,
+    market: job.market || job.marketIndicators
+  });
+  return {
+    ...job,
+    fieldSources,
+    dataQuality: {
+      ...(job.dataQuality || {}),
+      status: "generated_partial_api_exception",
+      warnings: unique([
+        ...toArray(job.dataQuality?.warnings),
+        "official_detail_unavailable",
+        ...missingFields.map(field => `missing_${field}`)
+      ]),
+      missingFields,
+      completenessScore: completenessScore(missingFields),
+      confidence: completenessScore(missingFields)
+    },
+    missingFields,
+    confidence: completenessScore(missingFields)
+  };
 }
 
 function mergeOfficialField(target, source, field, hasMeaningfulValue) {
