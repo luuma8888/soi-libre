@@ -472,16 +472,20 @@ async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
   }));
   const fieldAvailability = buildMetiersFieldAvailability(samples);
   const conclusion = buildMetiersDiagnosticConclusion(fieldAvailability);
+  const endpoint = getMetiersDiagnosticEndpoint(syncMeta);
+  const unavailableFieldReport = buildMetiersUnavailableFieldReport({ fieldAvailability, samples, endpoint });
   const report = {
     schemaVersion: "1.0.0",
     generatedAt: syncMeta.generatedAt || new Date().toISOString(),
     branch: syncMeta.branch || process.env.GITHUB_REF_NAME || "local",
     source: "rome_metiers_api",
+    endpoint,
     totalRecords: records.length,
     diagnosticCodes: codes,
     note: "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas utilisé pour enrichir jobs.rome.json tant qu'il ne contient que code/libelle ou tant que les chemins riches ne sont pas validés.",
     fieldAvailability,
     conclusion,
+    unavailableFieldReport,
     samples
   };
   await writeFile(new URL("rome-metiers-record-samples.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
@@ -581,6 +585,51 @@ function buildMetiersDiagnosticConclusion(fieldAvailability = {}) {
       ? "Analyser les chemins detectes puis brancher uniquement les champs confirmes."
       : "Identifier une route de detail ou de liaison officielle pour appellations, contextes, conditions d'acces et mobilites."
   };
+}
+
+function getMetiersDiagnosticEndpoint(syncMeta = {}) {
+  const diagnostic = toArray(syncMeta.optionalReferentials).find(item => item?.name === "metiers");
+  return diagnostic?.endpoint || process.env.FT_ROME_METIERS_URL || "endpoint_metiers_non_renseigne";
+}
+
+function buildMetiersUnavailableFieldReport({ fieldAvailability = {}, samples = {}, endpoint = "" } = {}) {
+  const actualRootKeys = unique(Object.values(samples)
+    .filter(sample => sample?.found)
+    .flatMap(sample => sample.rootKeys || []));
+  const actualStructures = Object.fromEntries(Object.entries(samples).map(([code, sample]) => [code, {
+    found: Boolean(sample?.found),
+    rootKeys: sample?.rootKeys || [],
+    recursivePathCount: toArray(sample?.recursivePaths).length
+  }]));
+  const expected = {
+    description: ["definition", "description", "descriptif", "resume", "finalite"],
+    appellations: ["appellations", "appellationsMetier", "libelles", "intitules"],
+    characteristics: ["caracteristiques", "conditionsExercice", "situationsTravail"],
+    skillRefs: ["competences", "savoirFaire", "groupesCompetences"],
+    softSkillRefs: ["savoirEtre", "savoirEtreProfessionnels"],
+    knowledgeRefs: ["savoirs", "connaissances", "groupesSavoirs"],
+    contextRefs: ["contextesTravail", "conditionsExerciceActivite", "environnementsTravail"],
+    accessConditions: ["conditionsAcces", "accesEmploiMetier", "prerequis"],
+    certificationRefs: ["certifications", "habilitations", "reglementation"],
+    relatedRomeCodes: ["mobilites", "metiersProches", "prochesMetiers"],
+    regulatoryTags: ["reglementation", "obligatoire", "autorisation"]
+  };
+  return Object.entries(expected).map(([field, expectedPaths]) => {
+    const availability = fieldAvailability[field] || {};
+    const detectedPaths = unique(Object.values(samples).flatMap(sample => toArray(sample?.detectedFields?.[field]).map(item => item.path || item)));
+    return {
+      field,
+      endpointTested: endpoint,
+      expectedPathHints: expectedPaths,
+      detectedPaths,
+      actualRootKeys,
+      actualStructures,
+      status: availability.samplesWithField > 0 ? "candidate_path_detected" : "not_available_in_sample",
+      reason: availability.samplesWithField > 0
+        ? "Chemin candidat detecte : a valider avant normalisation."
+        : "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    };
+  });
 }
 
 function collectRecursivePaths(source) {

@@ -285,6 +285,52 @@ export function normalizeRomeFicheMetier(raw = {}) {
   return normalizeRomeMetier(raw);
 }
 
+export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecord = null, skillsIndex = null, contextsIndex = null } = {}) {
+  const base = normalizeRomeMetier(ficheMetierRecord || metierRecord || {});
+  const metier = metierRecord ? normalizeRomeMetier(metierRecord) : null;
+  if (!metier) return base;
+  const merged = { ...base };
+  mergeOfficialField(merged, metier, "title", value => value && value !== "Metier ROME sans titre");
+  mergeOfficialField(merged, metier, "appellations", value => value?.length);
+  mergeOfficialField(merged, metier, "description", value => Boolean(value));
+  mergeOfficialField(merged, metier, "activities", value => value?.length);
+  mergeOfficialField(merged, metier, "workContexts", value => value?.length);
+  mergeOfficialField(merged, metier, "accessConditions", value => value?.text);
+  mergeOfficialField(merged, metier, "requiredCertifications", value => value?.length);
+  mergeOfficialField(merged, metier, "recommendedCertifications", value => value?.length);
+  mergeOfficialField(merged, metier, "relatedJobs", value => value?.length);
+  merged.dataQuality = {
+    ...(merged.dataQuality || {}),
+    normalizer: "normalizeOfficialRomeJob",
+    relationIndexesAvailable: {
+      skills: Boolean(skillsIndex),
+      contexts: Boolean(contextsIndex)
+    },
+    missingFields: buildMissingFields({
+      romeCode: merged.romeCode,
+      title: merged.title,
+      description: merged.description,
+      activities: merged.activities,
+      requiredSkills: merged.requiredSkills,
+      workContexts: merged.workContexts,
+      accessConditions: merged.accessConditions?.text,
+      requiredDiplomaLevel: merged.requiredDiplomaLevel,
+      recommendedDiplomaLevel: merged.recommendedDiplomaLevel,
+      market: merged.market || merged.marketIndicators
+    })
+  };
+  return merged;
+}
+
+function mergeOfficialField(target, source, field, hasMeaningfulValue) {
+  if (!source || !hasMeaningfulValue(source[field])) return;
+  target[field] = source[field];
+  target.fieldSources = {
+    ...(target.fieldSources || {}),
+    [field]: source.fieldSources?.[field] || SOURCE_OFFICIAL
+  };
+}
+
 export function classifyRomeSkill(entry = {}) {
   const label = firstText(entry.label, entry.libelle, entry.intitule, entry.nom, entry.title);
   const text = normalizeText(label);
