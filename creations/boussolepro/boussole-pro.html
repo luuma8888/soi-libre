@@ -1457,7 +1457,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.6-alpha",
+  version: "v0.6.1-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1891,6 +1891,54 @@ const SECTOR_TAXONOMY = {
   }
 };
 
+const GENERATED_ROME_SECTOR_TO_PROFILE_SECTOR_V061 = {
+  administratif: ["administratif_support"],
+  numerique: ["numerique"],
+  soin_sante: ["sante_soin"],
+  social_accompagnement: ["social_insertion"],
+  enfance_education: ["education_enfance"],
+  nature_agriculture_animaux: ["nature_agriculture", "animaux"],
+  artisanat_batiment_maintenance: ["batiment_construction", "maintenance"],
+  commerce_relation_client: ["commerce_vente"],
+  restauration_hotellerie_tourisme: ["restauration_alimentation", "hotellerie_hebergement"],
+  industrie_qualite: ["industrie_production"],
+  logistique_transport_securite: ["logistique_transport", "securite_prevention"],
+  culture_communication_creation: ["culture_communication"],
+  recherche_analyse: ["administratif_support"],
+  droit_gestion_publique: ["services_aux_collectivites"],
+  services_proprete: ["proprete_entretien"]
+};
+
+const LEGACY_SKILL_ALIAS_RULES_V061 = [
+  { ids: ["skill-active-listening"], all: ["ecoute", "empathie"] },
+  { ids: ["skill-communication"], any: ["communiquer", "communication", "message adapte", "faciliter la communication", "informer"] },
+  { ids: ["skill-mediation"], any: ["mediation", "conflit", "tension", "rassurer"] },
+  { ids: ["skill-organisation"], all: ["organiser", "travail"], any: ["priorites", "objectifs"] },
+  { ids: ["skill-admin-doc"], any: ["dossier", "base de donnees", "classer", "archiver", "documentation"] },
+  { ids: ["skill-project"], any: ["projet", "gerer plusieurs projets", "planifier"] },
+  { ids: ["skill-data"], any: ["donnees", "base de donnees", "conformite des donnees"] },
+  { ids: ["skill-analysis"], any: ["analyser", "diagnostiquer", "evaluer", "controle"] },
+  { ids: ["skill-writing"], any: ["rediger", "compte rendu", "rapport", "documentation"] },
+  { ids: ["skill-code"], any: ["developper", "logiciel", "web", "integrer des elements graphiques"] },
+  { ids: ["skill-support-user"], any: ["support utilisateur", "assistance technique", "renseigner", "aide technique"] },
+  { ids: ["skill-network"], any: ["reseau", "systeme", "equipement informatique"] },
+  { ids: ["skill-design"], any: ["identite visuelle", "creation", "graphique", "visuel"] },
+  { ids: ["skill-animation"], any: ["animer", "atelier", "activites d animation", "groupe de travail"] },
+  { ids: ["skill-teaching", "skill-pedagogy"], any: ["enseigner", "pedagogie", "methodes pedagogiques", "developper des competences"] },
+  { ids: ["skill-early-childhood", "skill-child-safety", "skill-child-development"], any: ["enfant", "petite enfance", "public", "activites d animation"] },
+  { ids: ["skill-cleaning", "skill-cleanliness", "skill-cleaning-protocol"], any: ["nettoyer", "entretenir un espace", "desinfecter", "local"] },
+  { ids: ["skill-hygiene-rules"], any: ["qhsse", "hygiene", "securite sante environnement"] },
+  { ids: ["skill-sales", "skill-customer-care"], any: ["client", "vente", "relation client", "conseiller les clients"] },
+  { ids: ["skill-gardening"], any: ["jardin", "espace vert", "vegetal", "plante", "irrigation"] },
+  { ids: ["skill-environment"], any: ["environnement", "normes environnementales", "dechets verts"] },
+  { ids: ["skill-animal-care", "skill-animal-observation"], any: ["animal", "bien-etre animal", "soins", "sante d un animal"] },
+  { ids: ["skill-repair"], any: ["reparer", "maintenance", "depannage"] },
+  { ids: ["skill-craft", "skill-building"], any: ["materiel", "outillage", "construction", "chantier", "travaux"] },
+  { ids: ["skill-logistics"], any: ["stock", "commande", "expedition", "livraison", "receptionner"] },
+  { ids: ["skill-driving"], any: ["conduire", "vehicule", "livrer", "transport"] },
+  { ids: ["skill-teamwork", "skill-team", "skill-rome-avoir-l-esprit-d-equipe"], all: ["esprit", "equipe"] }
+];
+
 const SKILL_TESTS = [
   {
     id: "relationnel",
@@ -2176,6 +2224,7 @@ const App = {
     skillRowIndex: null,
     skillLabelIndex: null,
     skillSectorIndex: null,
+    skillMigrationIndex: null,
     contextLabelIndex: null,
     explorationHaystackCache: new Map(),
     relatedVariantsCache: new Map(),
@@ -3232,6 +3281,9 @@ function loadStoredData() {
   } catch (error) {
     console.warn("Favoris locaux illisibles", error);
   }
+  if (App.state.profile && App.state.dataset) {
+    migrateProfileSkillSelections(App.state.profile, App.state.dataset);
+  }
   return loaded;
 }
 
@@ -3333,6 +3385,7 @@ function saveFavorites() {
 
 function exportProfile() {
   const profile = App.state.profile || createEmptyProfile();
+  migrateProfileSkillSelections(profile, App.state.dataset);
   const enginePreferences = {
     engineIntent: profile.engineIntent || "balanced",
     engineWeightsMode: profile.engineWeightsMode || "intent",
@@ -3347,6 +3400,7 @@ function exportProfile() {
     version: CONFIG.version,
     exportedAt: new Date().toISOString(),
     enginePreferences,
+    skillSelections: buildProfileSkillSelections(profile, App.state.dataset),
     profile,
     favoriteJobs: App.state.favoriteJobs
   };
@@ -3360,7 +3414,8 @@ function importProfile(fileOrText) {
     deferWork(() => {
       try {
         const parsed = JSON.parse(text);
-        const rawProfile = parsed.data || parsed.profile || parsed;
+        const rawProfile = { ...(parsed.data || parsed.profile || parsed) };
+        if (parsed.skillSelections && !rawProfile.skillSelections) rawProfile.skillSelections = parsed.skillSelections;
         const profile = normalizeProfile(rawProfile);
         const importedWeights = parsed.enginePreferences?.criterionWeights || rawProfile.enginePreferences?.criterionWeights || rawProfile.criterionWeights;
         if (importedWeights && typeof importedWeights === "object") {
@@ -3368,6 +3423,7 @@ function importProfile(fileOrText) {
           profile.engineWeightsMode = rawProfile.engineWeightsMode || parsed.enginePreferences?.engineWeightsMode || "custom";
           profile.engineWeightsOrigin = parsed.enginePreferences?.engineWeightsOrigin || rawProfile.engineWeightsOrigin || "imported_custom";
         }
+        migrateProfileSkillSelections(profile, App.state.dataset);
         App.state.profile = profile;
         if (Array.isArray(parsed.favoriteJobs)) {
           App.state.favoriteJobs = parsed.favoriteJobs.map(normalizeFavoriteJob).filter(Boolean);
@@ -3441,6 +3497,7 @@ function importDatasetFile(file, forcedType = App.state.pendingImportType || "co
       }
       App.state.dataset = validation.normalized;
       App.state.dataset.qualityReport = generateDataQualityReport(App.state.dataset);
+      if (App.state.profile) migrateProfileSkillSelections(App.state.profile, App.state.dataset);
       saveDataset(App.state.dataset);
       calculateAndStoreResults();
       renderAll();
@@ -3692,6 +3749,16 @@ function normalizeJob(raw) {
     description: raw.description ? frText(raw.description) : null,
     activities: toArray(raw.activities).map(frText),
     accessConditions: raw.accessConditions || { text: null, source: "unknown", confidence: 0 },
+    primarySectorId: raw.primarySectorId || raw.primarySector || null,
+    secondarySectorIds: toArray(raw.secondarySectorIds || raw.sectorIds),
+    sectorMappingConfidence: raw.sectorMappingConfidence ?? null,
+    sectorEvidence: toArray(raw.sectorEvidence),
+    boussoleSectorIds: toArray(raw.boussoleSectorIds),
+    skillGroups: toArray(raw.skillGroups),
+    mobilizedSkillIds: toArray(raw.mobilizedSkillIds),
+    matchableSkillIds: toArray(raw.matchableSkillIds),
+    softSkillIds: toArray(raw.softSkillIds),
+    knowledgeIds: toArray(raw.knowledgeIds),
     requiredSkills: toArray(raw.requiredSkills),
     optionalSkills: toArray(raw.optionalSkills),
     softSkills: toArray(raw.softSkills),
@@ -3744,13 +3811,17 @@ function isGeneratedRomeJob(job = {}) {
 }
 
 function normalizeSkill(raw) {
+  const label = frText(raw.label || "Compétence sans libellé");
+  const rawId = raw.rawId || raw.officialId || null;
   return {
     id: raw.id || raw.normalizedId || `skill-${slug(raw.label || cryptoRandom())}`,
     schemaVersion: raw.schemaVersion || CONFIG.schemaVersion,
-    label: frText(raw.label || "Compétence sans libellé"),
+    label,
+    officialId: raw.officialId || rawId || null,
+    normalizedLabel: raw.normalizedLabel || normalizedSkillLabel(label),
     type: raw.type || "savoir-faire",
     category: raw.category || "general",
-    rawId: raw.rawId || null,
+    rawId,
     rawType: raw.rawType || "",
     classification: raw.classification || "",
     matchableCandidate: Boolean(raw.matchableCandidate),
@@ -4035,6 +4106,7 @@ function mapUserProfileToCriteria(profile) {
 }
 
 function calculateAllMatches(profile = App.state.profile, datasets = App.state.dataset, options = {}) {
+  migrateProfileSkillSelections(profile, datasets);
   const criteria = mapUserProfileToCriteria(profile);
   criteria.marketContext = assessMarketContext(datasets, criteria);
   const results = (datasets.jobs || []).map(job => calculateMatch(criteria, job, datasets));
@@ -4670,7 +4742,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   const actions = [];
   const isCurated = job.provenance === "curated_clairmetier_ai_logic";
   if (scores.skills >= 18) positive.push("Plusieurs competences declarees correspondent aux competences attendues.");
-  if (scores.training >= 15) positive.push("Le niveau de formation ou les certifications semblent proches de votre profil actuel.");
+  if (details.training?.evidenceAvailable && scores.training >= 15) positive.push("Le niveau de formation ou les certifications semblent proches de votre profil actuel.");
   if (scores.constraints >= 20) positive.push("Les contraintes principales semblent compatibles avec ce metier.");
   if (scores.values >= 10) positive.push("Cette piste rejoint plusieurs envies ou valeurs que vous avez indiquees.");
   if (scores.context >= 7) positive.push("Le contexte de travail semble proche de vos preferences.");
@@ -4679,7 +4751,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
 
   if (details.skill?.unlinkedOfficialSkills) negative.push("Les compétences officielles de ce métier ne sont pas encore reliées dans le corpus. Le score est donc moins fiable.");
   if (details.skill?.unassessedSkills?.length) negative.push(`Compétences utiles à vérifier : ${details.skill.unassessedSkillLabels.slice(0, 3).join(", ")}. Non coché ne signifie pas absent : cela baisse surtout la confiance.`);
-  if (details.skill?.missingSkills?.length) negative.push("Certaines competences importantes ne sont pas encore declarees.");
+  if (details.skill?.missingSkills?.length) negative.push(isGeneratedRomeJob(job) ? "Certaines compétences mobilisées par ce métier restent à vérifier dans votre profil." : "Certaines competences importantes ne sont pas encore declarees.");
   if (details.training?.statusHint === "short") negative.push("Une formation ou certification courte pourrait etre necessaire.");
   if (details.training?.statusHint === "long") negative.push("Le parcours d'acces semble plus long que votre niveau actuel.");
   if (details.constraint?.warnings?.length) negative.push("Certaines contraintes sont a verifier dans les conditions reelles d'emploi.");
@@ -4695,7 +4767,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   }
   if (negative.length === 0) negative.push("Aucune vigilance majeure n'est ressortie dans le corpus sample.");
 
-  if (details.skill?.missingSkills?.length) actions.push("Ajouter ou renforcer les competences suivantes : " + details.skill.missingSkillLabels.slice(0, 3).join(", ") + ".");
+  if (details.skill?.missingSkills?.length) actions.push((isGeneratedRomeJob(job) ? "Vérifier ces compétences mobilisées : " : "Ajouter ou renforcer les competences suivantes : ") + details.skill.missingSkillLabels.slice(0, 3).join(", ") + ".");
   if (details.skill?.unassessedSkills?.length) actions.push("Vérifier ces compétences sans conclure trop vite : " + details.skill.unassessedSkillLabels.slice(0, 3).join(", ") + ".");
   if (details.skill?.unlinkedOfficialSkills) actions.push("Relancer la synchronisation avec une route ROME qui fournit les liens métier-compétence, ou importer un mapping structuré.");
   if (details.training?.missingCertifications?.length) actions.push("Explorer la certification associee avant de considerer cette piste comme accessible.");
@@ -4720,8 +4792,8 @@ function applyHardExclusions(criteria, job) {
   if (matchedExcludedDomain) {
     confirmed.push(exclusion("voluntary_domain", "Domaine exclu volontairement.", "secteur", `Le secteur ${optionLabel(EXCLUDED_DOMAIN_OPTIONS, matchedExcludedDomain)} fait partie de vos exclusions.`));
   }
-  const jobSectors = getJobSectorProfile(job).allSectorIds;
-  const excludedByOrientation = toArray(criteria.excludedSectors).find(sectorId => jobSectors.includes(sectorId));
+  const jobSector = getJobSectorProfile(job);
+  const excludedByOrientation = toArray(criteria.excludedSectors).find(sectorId => jobSector.primarySectorId === sectorId && jobSector.confidence >= 0.55);
   if (excludedByOrientation) {
     confirmed.push(exclusion("domain_orientation_exclude", "Domaine exclu dans le profil.", "secteur", `Le secteur ${sectorLabel(excludedByOrientation)} est marqué à exclure complètement.`));
   }
@@ -4748,7 +4820,7 @@ function domainExclusionMatchesJob(domainId, job) {
   const mapped = toArray(DOMAIN_EXCLUSION_MAP[domainId] || DOMAIN_EXCLUSION_MAP[normalizedDomainId]);
   if (!mapped.length) return false;
   const jobSector = getJobSectorProfile(job);
-  return mapped.some(item => jobSector.allSectorIds.includes(item));
+  return mapped.includes(jobSector.primarySectorId) && jobSector.confidence >= 0.55;
 }
 
 function getJobDomainExclusionIds(job) {
@@ -4767,15 +4839,25 @@ function getJobSectorProfile(job = {}) {
   const cache = getJobDerivedCache(job);
   if (cache.sectorProfile) return cache.sectorProfile;
   const explicitPrimary = job.primarySectorId || job.primarySector || "";
-  const explicitSecondary = unique([...toArray(job.secondarySectorIds), ...toArray(job.sectorIds)]).filter(Boolean);
-  const inferred = inferJobSectorIds(job);
-  const primarySectorId = explicitPrimary || inferred[0] || "unknown";
-  const secondarySectorIds = unique([...explicitSecondary, ...inferred.slice(1)]).filter(id => id && id !== primarySectorId);
+  const generatedSectors = mapGeneratedRomeSectorsToProfileSectors(job);
+  const explicitSecondary = unique([
+    ...toArray(job.secondarySectorIds),
+    ...toArray(job.sectorIds),
+    ...generatedSectors.slice(1)
+  ]).filter(Boolean);
+  const inferred = explicitPrimary || generatedSectors.length ? [] : inferJobSectorIds(job);
+  const primarySectorId = explicitPrimary || generatedSectors[0] || inferred[0] || "unknown";
+  const secondarySectorIds = unique([...explicitSecondary, ...inferred.slice(1)])
+    .filter(id => id && id !== primarySectorId)
+    .slice(0, 2);
+  const confidence = Number(job.sectorMappingConfidence ?? (explicitPrimary ? 0.9 : generatedSectors.length ? 0.78 : inferred.length ? 0.38 : 0));
   cache.sectorProfile = {
     primarySectorId,
     secondarySectorIds,
     allSectorIds: unique([primarySectorId, ...secondarySectorIds]).filter(id => id && id !== "unknown"),
-    source: explicitPrimary || explicitSecondary.length ? "explicit_or_imported" : "computed"
+    confidence,
+    evidence: toArray(job.sectorEvidence),
+    source: explicitPrimary || explicitSecondary.length ? "explicit_or_imported" : generatedSectors.length ? "generated_rome_domain_mapping" : inferred.length ? "fallback_low_confidence" : "unknown"
   };
   return cache.sectorProfile;
 }
@@ -4788,9 +4870,7 @@ function inferJobSectorIds(job = {}) {
     job.domain,
     job.family,
     job.marketDomain,
-    ...toArray(job.appellations),
-    ...toArray(job.transitionTags),
-    ...toArray(job.interestTags)
+    ...toArray(job.appellations)
   ].join(" "));
   const scores = Object.entries(SECTOR_TAXONOMY).map(([sectorId, config]) => {
     const score = toArray(config.includes).reduce((sum, token) => {
@@ -4803,15 +4883,19 @@ function inferJobSectorIds(job = {}) {
   const byScore = scores.sort((a, b) => b.score - a.score || a.sectorId.localeCompare(b.sectorId));
   const sectorIds = byScore.map(item => item.sectorId);
   if (sectorIds.includes("hotellerie_hebergement") && sectorIds.includes("proprete_entretien")) {
-    cache.inferredSectorIds = unique(["hotellerie_hebergement", "proprete_entretien", ...sectorIds.filter(id => !["hotellerie_hebergement", "proprete_entretien", "batiment_construction"].includes(id))]);
+    cache.inferredSectorIds = unique(["hotellerie_hebergement", "proprete_entretien"]);
     return cache.inferredSectorIds;
   }
   if (sectorIds.includes("proprete_entretien")) {
-    cache.inferredSectorIds = unique(["proprete_entretien", ...sectorIds.filter(id => id !== "batiment_construction")]);
+    cache.inferredSectorIds = ["proprete_entretien"];
     return cache.inferredSectorIds;
   }
-  cache.inferredSectorIds = unique(sectorIds);
+  cache.inferredSectorIds = unique(sectorIds).slice(0, 1);
   return cache.inferredSectorIds;
+}
+
+function mapGeneratedRomeSectorsToProfileSectors(job = {}) {
+  return unique(toArray(job.boussoleSectorIds).flatMap(id => GENERATED_ROME_SECTOR_TO_PROFILE_SECTOR_V061[id] || []));
 }
 
 function sectorLabel(sectorId) {
@@ -4873,8 +4957,8 @@ function profileCompletenessLevel(value) {
 }
 
 function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
-  const required = toArray(job.requiredSkills);
-  const optional = [...toArray(job.optionalSkills), ...toArray(job.softSkills)];
+  const required = toArray(job.matchableSkillIds).length ? toArray(job.matchableSkillIds) : toArray(job.requiredSkills);
+  const optional = unique([...toArray(job.optionalSkills), ...toArray(job.softSkills), ...toArray(job.softSkillIds)]);
   const missingData = [];
   const missingSkills = [];
   const missingSkillLabels = [];
@@ -4950,6 +5034,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const neutralSkillScore = criteria.hasEnoughSkillEvidence ? 11 : 12;
   const positiveBonus = positiveRatio * 10;
   const optionalBonus = optionalRatio * 2;
+  const recognizedSkillBonus = Math.min(unique([...matchedRequiredSkills, ...matchedOptionalSkills]).length, 5) * 1.2;
   const weakPenalty = explicitWeak * 5;
   const absentPenalty = explicitAbsent * 7;
   if (unassessedSkills.length) {
@@ -4958,7 +5043,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     confidenceOnlyWarnings.push(label);
   }
   return {
-    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + experienceBonus - weakPenalty - absentPenalty, 0, 25)),
+    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + recognizedSkillBonus + experienceBonus - weakPenalty - absentPenalty, 0, 25)),
     missingData,
     missingSkills,
     missingSkillLabels,
@@ -5002,7 +5087,12 @@ function experienceBonusForJob(criteria, job) {
 function getExperienceDomainsForJob(job) {
   const cache = getJobDerivedCache(job);
   if (cache.experienceDomains) return cache.experienceDomains;
-  const text = normalizeText(`${job.domain} ${job.family} ${job.title} ${toArray(job.transitionTags).join(" ")} ${toArray(job.interestTags).join(" ")}`);
+  const sectorDomains = getExperienceDomainsFromSectorProfile(getJobSectorProfile(job));
+  if (isGeneratedRomeJob(job) && sectorDomains.length) {
+    cache.experienceDomains = sectorDomains;
+    return cache.experienceDomains;
+  }
+  const text = normalizeText(`${job.domain} ${job.family} ${job.title} ${toArray(job.appellations).join(" ")}`);
   const pairs = [
     ["administratif", /admin|bureau|dossier|gestion/],
     ["numerique", /numerique|informatique|web|data|support/],
@@ -5027,6 +5117,31 @@ function getExperienceDomainsForJob(job) {
   ];
   cache.experienceDomains = pairs.filter(([, pattern]) => pattern.test(text)).map(([domain]) => domain);
   return cache.experienceDomains;
+}
+
+function getExperienceDomainsFromSectorProfile(sectorProfile = {}) {
+  const map = {
+    administratif_support: ["administratif"],
+    numerique: ["numerique"],
+    social_insertion: ["social"],
+    education_enfance: ["education", "animation", "petite_enfance"],
+    sante_soin: ["soin"],
+    proprete_entretien: ["proprete"],
+    hotellerie_hebergement: ["accueil"],
+    restauration_alimentation: ["cuisine"],
+    commerce_vente: ["commerce", "accueil"],
+    nature_agriculture: ["nature"],
+    animaux: ["animaux", "nature"],
+    batiment_construction: ["batiment", "bricolage"],
+    maintenance: ["bricolage"],
+    industrie_production: ["industrie"],
+    logistique_transport: ["logistique", "transport"],
+    securite_prevention: ["transport"],
+    culture_communication: ["communication", "culture"],
+    services_aux_collectivites: ["association"]
+  };
+  return unique([sectorProfile.primarySectorId, ...toArray(sectorProfile.secondarySectorIds)]
+    .flatMap(sectorId => map[sectorId] || []));
 }
 
 function calculateDomainAffinityScore(criteria, job, datasets = App.state.dataset) {
@@ -5080,13 +5195,15 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
   const desiredTrainingSectors = toArray(criteria.education?.desiredTrainingFamilies).flatMap(domain => experienceDomainToSectors(normalizeExperienceDomainId(domain)));
   const jobSectors = jobSector.allSectorIds.length ? jobSector.allSectorIds : [jobSector.primarySectorId].filter(Boolean);
   const hasSector = sectors => jobSectors.some(id => toArray(sectors).includes(id));
-  const matchedPrimarySector = hasSector(heartSectors) || hasSector(desiredTrainingSectors);
+  const primaryMatches = sectors => toArray(sectors).includes(jobSector.primarySectorId);
+  const secondaryMatches = sectors => jobSector.secondarySectorIds.some(id => toArray(sectors).includes(id));
+  const matchedPrimarySector = primaryMatches(heartSectors) || primaryMatches(desiredTrainingSectors);
   const matchedSecondarySectors = jobSector.secondarySectorIds.filter(id => [...heartSectors, ...desiredTrainingSectors, ...secondarySectors].includes(id));
-  const supportToolMatch = hasSector(supportSectors);
-  const secondaryMatch = hasSector(secondarySectors);
-  const pastMatch = hasSector(pastSectors);
-  const avoidMainMatch = hasSector(avoidMainSectors);
-  const excludedMatch = hasSector(excludedSectors);
+  const supportToolMatch = primaryMatches(supportSectors) || secondaryMatches(supportSectors);
+  const secondaryMatch = primaryMatches(secondarySectors) || secondaryMatches(secondarySectors);
+  const pastMatch = primaryMatches(pastSectors) || secondaryMatches(pastSectors);
+  const avoidMainMatch = primaryMatches(avoidMainSectors);
+  const excludedMatch = primaryMatches(excludedSectors);
   const knownTrainingMatch = hasSector(knownTrainingSectors);
   const matchedExperienceDomains = getExperienceDomainsForJob(job).filter(domain => toArray(criteria.experience?.domains).includes(domain));
   const matchedInterests = Object.keys(criteria.interests || {}).filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
@@ -5096,12 +5213,17 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
     ...toArray(details.skill?.matchedOptionalSkills)
   ]);
   const matchedContexts = toArray(details.context?.matched);
+  const hasStrongAdditionalSignal = matchedExperienceDomains.length > 0 ||
+    matchedSkills.length > 0 ||
+    matchedInterests.length >= 2 ||
+    matchedValues.length >= 2 ||
+    matchedContexts.length > 0;
   let score = 0;
   if (matchedPrimarySector) score += 30;
-  score += Math.min(matchedSecondarySectors.length, 2) * 8;
+  score += Math.min(matchedSecondarySectors.length, 2) * 5;
   score += Math.min(matchedExperienceDomains.length, 2) * 12;
-  if (supportToolMatch) score += 14;
-  if (secondaryMatch) score += 12;
+  if (supportToolMatch) score += primaryMatches(supportSectors) ? 10 : 5;
+  if (secondaryMatch) score += primaryMatches(secondarySectors) ? 9 : 5;
   if (pastMatch) score += 6;
   if (knownTrainingMatch) score += 4;
   score += Math.min(matchedSkills.length, 4) * 4;
@@ -5114,6 +5236,7 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
   const coreProfileLevel = determineCoreProfileLevel({
     score: normalizedScore,
     matchedPrimarySector,
+    hasStrongAdditionalSignal,
     supportToolMatch,
     secondaryMatch,
     pastMatch,
@@ -5158,6 +5281,8 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
     matchedValues,
     matchedSkills,
     matchedContexts,
+    hasStrongAdditionalSignal,
+    sectorConfidence: jobSector.confidence,
     source: jobSector.source
   };
 }
@@ -5165,10 +5290,10 @@ function calculateCoreProfileMatchScore(criteria, job, datasets = App.state.data
 function determineCoreProfileLevel(input = {}) {
   if (input.excludedMatch) return "excluded";
   if (input.avoidMainMatch) return "avoid_main";
-  if (input.matchedPrimarySector && input.score >= 68) return "heart_current";
+  if (input.matchedPrimarySector && input.hasStrongAdditionalSignal && input.score >= 68) return "heart_current";
   if (input.matchedPrimarySector && input.score >= 48) return "heart_secondary";
   if (input.supportToolMatch && input.score >= 46) return "support_tool";
-  if (input.secondaryMatch && input.score >= 42) return "heart_secondary";
+  if (input.secondaryMatch && input.score >= 42) return "compatible";
   if (input.pastMatch && input.score >= 36) return "past_transferable";
   if (input.score >= 45) return "compatible";
   if (input.score >= 24) return "exploratory";
@@ -5222,39 +5347,43 @@ function calculateTrainingScore(criteria, job) {
     recommendedDiplomaLevel: numberOrNull(job.recommendedDiplomaLevel)
   };
   const knownFamilyBonus = jobMatchesKnownTrainingFamily(criteria, job) ? 2 : 0;
+  const hasAccessEvidence = requiredCerts.length > 0 ||
+    job.requiredDiplomaLevel !== null && job.requiredDiplomaLevel !== undefined ||
+    job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined ||
+    (job.accessConditions?.source && job.accessConditions.source !== "unknown");
   if (requiredCerts.length && missingCertifications.length === 0) {
-    return { score: clamp(17 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "certification_held", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    return { score: clamp(17 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "certification_held", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   if (missingCertifications.length > 0) {
-    if (criteria.education.canDoShortTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "short", feasibility: "certification_short", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-    if (criteria.education.canDoLongTraining) return { score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "certification_long", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-    return { score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (criteria.education.canDoShortTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "short", feasibility: "certification_short", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (criteria.education.canDoLongTraining) return { score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "certification_long", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    return { score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
 
   const userLevel = Number(criteria.education.highestLevel || 0);
   const requiredLevel = numberOrNull(job.requiredDiplomaLevel);
   const recommendedLevel = numberOrNull(job.recommendedDiplomaLevel);
   const targetLevel = requiredLevel ?? recommendedLevel;
-  if (targetLevel === null || targetLevel === 0) {
-    missingData.push(missing("job.requiredDiplomaLevel", "low", "Niveau de diplôme requis absent, non obligatoire ou non précisé dans le corpus."));
-    return { score: clamp(13 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "unknown", feasibility: "access_unknown_or_open", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (!hasAccessEvidence || targetLevel === null || targetLevel === 0) {
+    missingData.push(missing("job.accessConditions", "low", "Accès métier, diplôme et certification non disponibles dans le corpus."));
+    return { score: 10, missingData, missingCertifications: [], statusHint: "unknown", feasibility: "unknown_neutral", evidenceAvailable: false, knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   const hasMandatoryLevel = requiredLevel !== null && requiredLevel > 0;
   if (!hasMandatoryLevel && recommendedLevel !== null && recommendedLevel > userLevel) {
     const recommendedGap = recommendedLevel - userLevel;
     missingData.push(missing("job.recommendedDiplomaLevel", "low", "Niveau conseillé supérieur au profil, sans indication d’obligation réglementaire."));
-    if (recommendedGap === 1 && criteria.education.canDoShortTraining) return { score: clamp(13 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "recommended_short_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-    if (recommendedGap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "recommended_long_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-    return { score: clamp((criteria.education.trainingOpenness === "none" ? 9 : 10) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "recommended_gap", feasibility: "recommended_not_blocking", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (recommendedGap === 1 && criteria.education.canDoShortTraining) return { score: clamp(13 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "recommended_short_gap", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    if (recommendedGap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "recommended_long_gap", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+    return { score: clamp((criteria.education.trainingOpenness === "none" ? 9 : 10) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "recommended_gap", feasibility: "recommended_not_blocking", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
   }
   const gap = targetLevel - userLevel;
-  if (gap <= 0) return { score: clamp((requiredLevel ? 17 : 16) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "level_ok", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap <= 0) return { score: clamp((requiredLevel ? 17 : 16) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "level_ok", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
   const budgetPenalty = ["none", "under_300"].includes(criteria.education.trainingBudget) ? 3 : 0;
   const horizonPenalty = criteria.searchHorizon === "now" ? 2 : 0;
-  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: clamp(Math.max(7, 13 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_short_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: clamp(Math.max(5, 9 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_medium_gap_short_possible", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(Math.max(5, 8 - budgetPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "level_long_gap", knownTrainingFamily: knownFamilyBonus > 0, ...base };
-  return { score: clamp((criteria.education.trainingOpenness === "none" ? 2 : 5) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long", feasibility: "level_gap_difficult", knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap === 1 && criteria.education.trainingOpenness !== "none") return { score: clamp(Math.max(7, 13 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_short_gap", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap <= 2 && criteria.education.canDoShortTraining) return { score: clamp(Math.max(5, 9 - budgetPenalty - horizonPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "short", feasibility: "level_medium_gap_short_possible", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  if (gap <= 3 && criteria.education.canDoLongTraining) return { score: clamp(Math.max(5, 8 - budgetPenalty) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "long", feasibility: "level_long_gap", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
+  return { score: clamp((criteria.education.trainingOpenness === "none" ? 2 : 5) + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: criteria.education.trainingOpenness === "none" ? "blocked" : "long", feasibility: "level_gap_difficult", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base };
 }
 
 function jobMatchesKnownTrainingFamily(criteria, job) {
@@ -5279,8 +5408,14 @@ function calculateConstraintScore(criteria, job) {
     if (compatibility.status === "unknown") {
       missingData.push(missing(`job.${value}`, "medium", `Contrainte a verifier : ${compatibility.label}.`));
       warnings.push(compatibility.label);
+      return;
+    }
+    if (compatibility.status === "possible_risk") {
+      missingData.push(missing(`job.${value}`, "low", `Risque possible à vérifier : ${compatibility.label}.`));
+      warnings.push(compatibility.label);
       if (severity === "conditional") riskScore += 1;
-      if (severity === "avoid") riskScore += 2;
+      if (severity === "avoid") riskScore += 3;
+      if (severity === "excluding") riskScore += 4;
       return;
     }
     if (compatibility.status === "confirmed_incompatible") {
@@ -5332,10 +5467,21 @@ function calculateContextScore(criteria, job) {
   if (criteria.preferredSchedule === "flexible") preferences.push("flexible");
   if (criteria.needForAutonomy === "high") preferences.push("autonomous");
   if (criteria.needForSecurity === "high") preferences.push("structured");
-  if (!preferences.length) return { score: 5, missingData: [], matched: [], profilePreferences: [], unmatchedPreferences: [], jobContextTags: collectJobContextTags(job) };
+  const jobContextTags = collectJobContextTags(job);
+  if (!toArray(job.workContexts).length && isGeneratedRomeJob(job)) {
+    return {
+      score: 5,
+      missingData: [missing("job.workContexts", "medium", "Contextes de travail officiels non reliés au métier.")],
+      matched: [],
+      profilePreferences: preferences,
+      unmatchedPreferences: preferences,
+      jobContextTags,
+      evidenceAvailable: false
+    };
+  }
+  if (!preferences.length) return { score: 5, missingData: [], matched: [], profilePreferences: [], unmatchedPreferences: [], jobContextTags, evidenceAvailable: Boolean(toArray(job.workContexts).length) };
   let score = 0;
   const matched = [];
-  const jobContextTags = collectJobContextTags(job);
   preferences.forEach(pref => {
     const ok = contextPreferenceMatches(pref, job, jobContextTags);
     if (ok) {
@@ -5349,7 +5495,8 @@ function calculateContextScore(criteria, job) {
     matched,
     profilePreferences: preferences,
     unmatchedPreferences: preferences.filter(pref => !matched.includes(pref)),
-    jobContextTags
+    jobContextTags,
+    evidenceAvailable: Boolean(toArray(job.workContexts).length)
   };
 }
 
@@ -7374,17 +7521,55 @@ function runDiagnosticProfiles(testProfiles = []) {
 function detectTestBenchAnomalies(results = {}, test = {}) {
   const top = toArray(results.top5);
   const anomalies = [];
+  const expectedSectorIds = getExpectedSectorIdsForTest(test);
+  const forbiddenPrimarySectorIds = getForbiddenPrimarySectorIdsForTest(test);
   const familyCounts = countBy(top.map(result => result.job?.family || "inconnu"));
   if (Object.values(familyCounts).some(count => count >= 4)) anomalies.push({ type: "top5_family_concentration", severity: "warning", message: "Top 5 concentré sur une seule famille." });
   const scoreCounts = countBy(top.map(result => String(Math.round(result.globalScore || 0))));
   Object.entries(scoreCounts).filter(([, count]) => count >= 3).forEach(([score, count]) => anomalies.push({ type: "same_score_group", severity: "info", message: `${count} métiers du Top 5 ont le même score (${score}).` }));
   if (top.some(result => result.status === "discouraged" && ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel))) anomalies.push({ type: "heart_discouraged", severity: "warning", message: "Un métier de cœur est classé découragé." });
+  const expectedPresent = expectedSectorIds.length ? top.some(result => expectedSectorIds.includes(result.coreProfileMatch?.primarySectorId)) : true;
+  if (!expectedPresent && expectedSectorIds.length) anomalies.push({ type: "expected_sector_missing_from_top5", severity: "warning", message: `Aucun secteur attendu dans le Top 5 : ${expectedSectorIds.map(sectorLabel).join(", ")}.` });
+  top
+    .filter(result => forbiddenPrimarySectorIds.includes(result.coreProfileMatch?.primarySectorId))
+    .forEach(result => anomalies.push({ type: "primary_sector_mismatch", severity: "warning", message: `${result.title} appartient au secteur primaire ${sectorLabel(result.coreProfileMatch?.primarySectorId)}, interdit pour ce profil test.` }));
+  if (toArray(results.completeList).filter(result => result.coreProfileMatch?.coreProfileLevel === "heart_current").length / Math.max(1, toArray(results.completeList).length) > 0.25) {
+    anomalies.push({ type: "core_saturation", severity: "warning", message: "Plus de 25% du corpus est classé cœur actuel." });
+  }
+  if (top.every(result => (result.scores?.skills || 0) <= 12)) anomalies.push({ type: "no_skill_match_after_profile_migration", severity: "warning", message: "Aucune compétence reconnue ne semble départager le Top 5 après migration." });
+  if (top.some(result => (result.scores?.training || 0) >= 15 && result.diagnostic?.subScores?.some(score => score.key === "training" && score.state === "not_evaluated"))) anomalies.push({ type: "training_high_without_evidence", severity: "warning", message: "Score formation élevé alors que l’accès métier est non évalué." });
+  if (top.some(result => (result.scores?.context || 0) > 5 && !toArray(result.job?.workContexts).length)) anomalies.push({ type: "context_match_without_context_data", severity: "warning", message: "Score contexte supérieur au neutre sans contexte métier relié." });
   const firstHeartIndex = top.findIndex(result => ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel));
   const firstNonCentralIndex = top.findIndex(result => ["support_tool", "avoid_main", "past_transferable", "exploratory"].includes(result.coreProfileMatch?.coreProfileLevel));
   if (firstNonCentralIndex >= 0 && firstHeartIndex >= 0 && firstNonCentralIndex < firstHeartIndex) anomalies.push({ type: "non_central_before_heart", severity: "warning", message: "Un métier non central passe devant une piste de cœur." });
   if (!results.marketContext?.marketDiscriminant) anomalies.push({ type: "uniform_market", severity: "info", message: "Score marché visible mais non départageant." });
   if (top.filter(result => result.coreProfileMatchScore >= 98).length >= 3) anomalies.push({ type: "core_saturation", severity: "warning", message: "Trop de métiers saturent le score cœur." });
   return anomalies;
+}
+
+function getExpectedSectorIdsForTest(test = {}) {
+  const map = {
+    "admin-calme": ["administratif_support"],
+    "enfance-relation": ["education_enfance", "social_insertion", "sante_soin"],
+    "numerique-distance": ["numerique"],
+    "terrain-nature-prudent": ["nature_agriculture", "animaux"],
+    "proprete-hotellerie-accessible": ["proprete_entretien", "hotellerie_hebergement"],
+    "social-education": ["social_insertion", "education_enfance"],
+    "education-numerique-outil": ["education_enfance", "social_insertion"]
+  };
+  return toArray(test.expectedSectorIds || map[test.id]);
+}
+
+function getForbiddenPrimarySectorIdsForTest(test = {}) {
+  const map = {
+    "admin-calme": ["nature_agriculture", "animaux", "batiment_construction", "industrie_production", "logistique_transport", "restauration_alimentation"],
+    "enfance-relation": ["batiment_construction", "industrie_production", "logistique_transport", "restauration_alimentation"],
+    "numerique-distance": ["nature_agriculture", "restauration_alimentation", "hotellerie_hebergement", "logistique_transport"],
+    "terrain-nature-prudent": ["administratif_support", "restauration_alimentation"],
+    "social-education": ["industrie_production", "maintenance", "restauration_alimentation"],
+    "education-numerique-outil": ["industrie_production", "maintenance", "commerce_vente"]
+  };
+  return toArray(test.forbiddenPrimarySectorIds || map[test.id]);
 }
 
 function exportTestBench(format = "json") {
@@ -7469,6 +7654,12 @@ function renderDataPage() {
   const report = dataset.qualityReport || generateDataQualityReport(dataset);
   const summary = report.summary || {};
   const coverage = report.coverage || {};
+  const coverageRatio = (ratioKey, legacyKey, countKey) => {
+    if (coverage[ratioKey] !== undefined) return coverage[ratioKey];
+    if (coverage[legacyKey] !== undefined) return coverage[legacyKey];
+    if (coverage[countKey] !== undefined) return ratio(Number(coverage[countKey] || 0), toArray(dataset.jobs).length);
+    return 0;
+  };
   const issues = toArray(report.issues);
   const warnings = toArray(report.warnings);
   const manifest = dataset.manifest || {};
@@ -7551,8 +7742,8 @@ function renderDataPage() {
         ${metric("Codes échoués", generatedSummary.failedCodesCount)}
       </div>
       <ul class="compact-list">
-        <li>Métiers avec compétences : ${percent(coverage.jobsWithSkills)}</li>
-        <li>Métiers avec contextes : ${percent(coverage.jobsWithContexts)}</li>
+        <li>Métiers avec compétences : ${percent(coverageRatio("jobsWithSkillsRatio", "jobsWithSkills", "jobsWithSkillsCount"))}</li>
+        <li>Métiers avec contextes : ${percent(coverageRatio("jobsWithContextsRatio", "jobsWithContexts", "jobsWithContextsCount"))}</li>
         <li>Métiers avec formations : ${percent(coverage.jobsWithTraining)}</li>
         <li>Métiers avec marché officiel : ${h(marketConnectedLabel)}</li>
         <li>Métiers avec marché estimatif ou officiel : ${h(totalJobs ? `${jobsWithAnyMarket}/${totalJobs} (${percent(ratio(jobsWithAnyMarket, totalJobs))})` : "0/0")}</li>
@@ -8413,6 +8604,8 @@ function normalizeProfile(raw) {
   merged.weakSkills = toArray(raw.weakSkills);
   merged.absentSkills = toArray(raw.absentSkills);
   merged.avoidedSkills = toArray(raw.avoidedSkills);
+  merged.skillSelections = toArray(raw.skillSelections);
+  merged.skillMigration = raw.skillMigration || null;
   merged.skillSignals = toArray(raw.skillSignals);
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
@@ -8443,7 +8636,155 @@ function normalizeProfile(raw) {
   merged.preferredEnvironments = toArray(raw.preferredEnvironments);
   merged.criterionWeights = normalizeWeights(raw.criterionWeights || ENGINE_INTENT_WEIGHTS[merged.engineIntent] || CONFIG.baseWeights);
   merged.marketPreference = normalizeMarketPreference(raw.marketPreference || base.marketPreference, merged.engineIntent);
+  if (App.state.dataset) migrateProfileSkillSelections(merged, App.state.dataset);
   return merged;
+}
+
+function migrateProfileSkillSelections(profile, dataset = App.state.dataset) {
+  if (!profile || !dataset) return null;
+  const report = {
+    sourceDatasetVersion: profile.skillMigration?.targetDatasetVersion || profile.skillMigration?.sourceDatasetVersion || "profile_legacy_or_unknown",
+    targetDatasetVersion: dataset.datasetVersion || CONFIG.version,
+    migrated: [],
+    unresolved: [],
+    ambiguous: []
+  };
+  const migrateList = (values, field) => unique(toArray(values).map(value => {
+    const resolved = resolveSkillSelection(value, dataset);
+    if (resolved.status === "matched") {
+      if (resolved.id !== skillSelectionId(value)) report.migrated.push({ field, from: skillSelectionId(value), to: resolved.id, label: resolved.label, reason: resolved.reason });
+      return resolved.id;
+    }
+    if (resolved.status === "ambiguous") {
+      report.ambiguous.push({ field, value: skillSelectionId(value), candidates: resolved.candidates.slice(0, 8), reason: resolved.reason });
+      return skillSelectionId(value);
+    }
+    report.unresolved.push({ field, value: skillSelectionId(value), label: skillSelectionLabel(value), reason: resolved.reason });
+    return skillSelectionId(value);
+  }).filter(Boolean));
+  const resolvedSelections = toArray(profile.skillSelections)
+    .map(selection => resolveSkillSelection(selection, dataset))
+    .filter(result => result.status === "matched")
+    .map(result => result.id);
+  profile.skills = migrateList([...toArray(profile.skills), ...resolvedSelections], "skills");
+  profile.weakSkills = migrateList(profile.weakSkills, "weakSkills").filter(id => !profile.skills.includes(id));
+  profile.absentSkills = migrateList(profile.absentSkills, "absentSkills").filter(id => !profile.skills.includes(id));
+  profile.avoidedSkills = migrateList(profile.avoidedSkills, "avoidedSkills").filter(id => !profile.skills.includes(id));
+  profile.skillMigration = {
+    ...report,
+    migrated: uniqueObjectsBy(report.migrated, item => `${item.field}:${item.from}:${item.to}`),
+    unresolved: uniqueObjectsBy(report.unresolved, item => `${item.field}:${item.value}`),
+    ambiguous: uniqueObjectsBy(report.ambiguous, item => `${item.field}:${item.value}`)
+  };
+  profile.skillSelections = buildProfileSkillSelections(profile, dataset);
+  return profile.skillMigration;
+}
+
+function buildProfileSkillSelections(profile = App.state.profile, dataset = App.state.dataset) {
+  const index = getSkillMigrationIndex(dataset);
+  return unique(toArray(profile?.skills)).map(id => {
+    const skill = index.byCanonicalId.get(id) || index.byAlias.get(id);
+    return {
+      id,
+      label: skill?.label || getSkillLabel(id, dataset),
+      level: "strong",
+      sourceDatasetVersion: dataset?.datasetVersion || CONFIG.version
+    };
+  });
+}
+
+function resolveSkillIdsForDataset(ids = [], dataset = App.state.dataset) {
+  return unique(toArray(ids).map(id => {
+    const resolved = resolveSkillSelection(id, dataset);
+    return resolved.status === "matched" ? resolved.id : id;
+  }));
+}
+
+function resolveSkillSelection(selection, dataset = App.state.dataset) {
+  const index = getSkillMigrationIndex(dataset);
+  const id = skillSelectionId(selection);
+  const label = skillSelectionLabel(selection);
+  const trySingle = (items, reason) => {
+    const candidates = uniqueBy(toArray(items).filter(Boolean), "id");
+    if (candidates.length === 1) return { status: "matched", id: candidates[0].id, label: candidates[0].label, reason };
+    if (candidates.length > 1) return { status: "ambiguous", candidates: candidates.map(skill => ({ id: skill.id, label: skill.label })), reason };
+    return null;
+  };
+  if (id) {
+    const direct = index.byCanonicalId.get(id) || index.byAlias.get(id);
+    if (direct) return { status: "matched", id: direct.id, label: direct.label, reason: "id_or_alias" };
+    if (id.startsWith("skill-rome-")) {
+      const normalizedFromId = normalizedSkillLabel(id.replace(/^skill-rome-/, "").replaceAll("-", " "));
+      const bySlug = trySingle(index.byNormalizedLabel.get(normalizedFromId), "normalized_legacy_slug");
+      if (bySlug) return bySlug;
+    }
+    const legacy = trySingle(index.byLegacyAlias.get(id), "legacy_alias_rule");
+    if (legacy) return legacy;
+  }
+  if (label) {
+    const normalized = normalizedSkillLabel(label);
+    const byLabel = trySingle(index.byNormalizedLabel.get(normalized), "normalized_label");
+    if (byLabel) return byLabel;
+  }
+  return { status: "unresolved", reason: id || label ? "no_unique_match" : "empty_selection" };
+}
+
+function getSkillMigrationIndex(dataset = App.state.dataset) {
+  if (dataset === App.state.dataset && App.state.skillMigrationIndex) return App.state.skillMigrationIndex;
+  const index = {
+    byCanonicalId: new Map(),
+    byAlias: new Map(),
+    byNormalizedLabel: new Map(),
+    byLegacyAlias: new Map()
+  };
+  const addToList = (map, key, skill) => {
+    const normalizedKey = normalizedSkillLabel(key);
+    if (!normalizedKey || !skill?.id) return;
+    if (!map.has(normalizedKey)) map.set(normalizedKey, []);
+    map.get(normalizedKey).push(skill);
+  };
+  getAllSkillRows(dataset).forEach(skill => {
+    const normalized = normalizeSkill(skill);
+    [normalized.id, normalized.rawId, normalized.officialId, normalized.rawId ? `skill-rome-${normalized.rawId}` : ""].filter(Boolean).forEach(key => index.byCanonicalId.set(String(key), normalized));
+    toArray(normalized.aliases).forEach(alias => index.byAlias.set(alias, normalized));
+    addToList(index.byNormalizedLabel, normalized.normalizedLabel || normalized.label, normalized);
+  });
+  index.byCanonicalId.forEach(skill => {
+    LEGACY_SKILL_ALIAS_RULES_V061.forEach(rule => {
+      if (!skillMatchesLegacyRule(skill, rule)) return;
+      toArray(rule.ids).forEach(alias => {
+        if (!index.byLegacyAlias.has(alias)) index.byLegacyAlias.set(alias, []);
+        index.byLegacyAlias.get(alias).push(skill);
+      });
+    });
+  });
+  index.byNormalizedLabel.forEach((items, key) => index.byNormalizedLabel.set(key, uniqueBy(items, "id")));
+  index.byLegacyAlias.forEach((items, key) => index.byLegacyAlias.set(key, uniqueBy(items, "id")));
+  if (dataset === App.state.dataset) App.state.skillMigrationIndex = index;
+  return index;
+}
+
+function skillMatchesLegacyRule(skill = {}, rule = {}) {
+  const text = normalizedSkillLabel(`${skill.label} ${skill.category} ${skill.type} ${skill.rawType} ${skill.classification}`);
+  const all = toArray(rule.all).map(normalizedSkillLabel).filter(Boolean);
+  const any = toArray(rule.any).map(normalizedSkillLabel).filter(Boolean);
+  if (all.length && !all.every(token => text.includes(token))) return false;
+  if (any.length && !any.some(token => text.includes(token))) return false;
+  return Boolean(all.length || any.length);
+}
+
+function skillSelectionId(selection) {
+  if (selection && typeof selection === "object") return selection.id || selection.skillId || selection.rawId || "";
+  return String(selection || "");
+}
+
+function skillSelectionLabel(selection) {
+  if (selection && typeof selection === "object") return selection.label || selection.title || selection.name || "";
+  return "";
+}
+
+function normalizedSkillLabel(value) {
+  return normalizeText(value).replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 function normalizeEngineWeightsOrigin(origin, raw = {}) {
@@ -9224,35 +9565,37 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   if (hasExclusionHint(job, value)) {
     return { ...base, status: "confirmed_incompatible", category: "estimation", message: "Signal estimatif local à vérifier pour ce métier." };
   }
-  if (value === "nightWork") return scheduleStatus(schedule.nightWork, base, "horaire", "Ce metier semble impliquer du travail de nuit.");
-  if (value === "weekendWork") return scheduleStatus(schedule.weekendWork, base, "horaire", "Ce metier semble impliquer du travail le week-end.");
+  if (value === "nightWork") return scheduleStatus(schedule.nightWork, schedule, base, "horaire", "Ce metier semble impliquer du travail de nuit.");
+  if (value === "weekendWork") return scheduleStatus(schedule.weekendWork, schedule, base, "horaire", "Ce metier semble impliquer du travail le week-end.");
   if (value === "heavyLoad") return physicalStatus(physicalTags.includes("load") || job.physicalConstraints?.level === "high", job.physicalConstraints, base, "intensite physique", "Ce metier semble impliquer du port de charges ou une intensite physique forte.");
   if (value === "standing") return physicalStatus(physicalTags.includes("standing") || physicalTags.includes("movement") || job.physicalConstraints?.level === "high", job.physicalConstraints, base, "intensite physique", "Ce metier semble demander une station debout importante.");
   if (value === "noise") return physicalStatus(physicalTags.includes("noise") || job.workContexts.includes("ctx-noise") || job.workContexts.includes("ctx-factory"), job.physicalConstraints, base, "environnement", "Ce metier peut se derouler dans un environnement bruyant.");
   if (value === "publicContact") {
+    if (isGeneratedRomeJob(job) && !toArray(job.workContexts).length) return { ...base, status: "unknown", category: "relationnel", message: "Contextes officiels non reliés : contact public non conclu." };
     if (job.publicContactLevel === "unknown") return { ...base, status: "unknown", category: "relationnel", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(["medium", "high"].includes(job.publicContactLevel), base, "relationnel", "Ce metier implique un contact public notable.");
+    return levelStatus(["medium", "high"].includes(job.publicContactLevel), { source: job.fieldSources?.publicContactLevel || "computed_medium_confidence", confidence: isGeneratedRomeJob(job) ? 0.35 : 0.6 }, base, "relationnel", "Ce metier implique un contact public notable.");
   }
   if (value === "travel") {
     if (!mobility.source || mobility.source === "unknown" || mobility.travelFrequency === "unknown") return { ...base, status: "unknown", category: "mobilite", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(["medium", "high"].includes(mobility.travelFrequency), base, "mobilite", "Ce metier semble demander des deplacements reguliers.");
+    return levelStatus(["medium", "high"].includes(mobility.travelFrequency), mobility, base, "mobilite", "Ce metier semble demander des deplacements reguliers.");
   }
   if (value === "driverLicenseRequired") {
     if (!mobility.source || mobility.source === "unknown") return { ...base, status: "unknown", category: "permis", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), base, "permis", "Ce metier semble demander le permis B, absent du profil.");
+    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), mobility, base, "permis", "Ce metier semble demander le permis B, absent du profil.");
   }
   if (value === "longTraining") {
     const gap = (job.requiredDiplomaLevel || job.recommendedDiplomaLevel || 0) - (criteria.education.highestLevel || 0);
     if (!job.requiredDiplomaLevel && !job.recommendedDiplomaLevel && !toArray(job.requiredCertifications).length) return { ...base, status: "unknown", category: "formation", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(gap >= 2 || toArray(job.requiredCertifications).length > 0, base, "formation", "Cette piste demande probablement une formation ou certification significative.");
+    return levelStatus(gap >= 2 || toArray(job.requiredCertifications).length > 0, { source: "official_or_profile", confidence: 0.7 }, base, "formation", "Cette piste demande probablement une formation ou certification significative.");
   }
   if (value === "screenWork") {
     const hasScreenSignal = physicalTags.includes("screen") || job.workContexts.includes("ctx-office") || ["high", "partial"].includes(job.remoteCompatibility);
     return physicalStatus(hasScreenSignal, job.physicalConstraints, base, "environnement", "Ce metier peut impliquer un travail sur ecran prolonge.");
   }
   if (value === "remoteNeeded") {
+    if (isGeneratedRomeJob(job) && !toArray(job.workContexts).length) return { ...base, status: "unknown", category: "lieu", message: "Contextes officiels non reliés : télétravail non conclu." };
     if (!job.remoteCompatibility || job.remoteCompatibility === "unknown") return { ...base, status: "unknown", category: "lieu", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(job.remoteCompatibility === "none" || job.remoteCompatibility === "low", base, "lieu", "Ce metier semble surtout presentiel.");
+    return levelStatus(job.remoteCompatibility === "none" || job.remoteCompatibility === "low", { source: isGeneratedRomeJob(job) ? "computed_low_confidence" : "sample_non_official", confidence: isGeneratedRomeJob(job) ? 0.25 : 0.5 }, base, "lieu", "Ce metier semble surtout presentiel.");
   }
   return { ...base, status: "unknown", message: "Donnee non disponible dans le corpus." };
 }
@@ -9263,10 +9606,10 @@ function hasExclusionHint(job, value) {
   return cache.exclusionHints.has(value);
 }
 
-function scheduleStatus(value, base, category, message) {
+function scheduleStatus(value, source, base, category, message) {
   if (!value || value === "unknown") return { ...base, status: "unknown", category };
-  if (["required", "frequent"].includes(value)) return { ...base, status: "confirmed_incompatible", category, message };
-  if (value === "possible") return { ...base, status: "confirmed_incompatible", category, message: `${message} selon les postes.` };
+  if (["required", "frequent"].includes(value)) return statusFromEvidence(true, source, base, category, message);
+  if (value === "possible") return statusFromEvidence(true, { ...source, confidence: Math.min(Number(source?.confidence || 0.45), 0.55) }, base, category, `${message} selon les postes.`);
   return { ...base, status: "compatible", category };
 }
 
@@ -9274,14 +9617,32 @@ function tagStatus(condition, base, category, message) {
   return condition ? { ...base, status: "confirmed_incompatible", category, message } : { ...base, status: "compatible", category };
 }
 
-function levelStatus(condition, base, category, message) {
-  return condition ? { ...base, status: "confirmed_incompatible", category, message } : { ...base, status: "compatible", category };
+function levelStatus(condition, source, base, category, message) {
+  return statusFromEvidence(condition, source, base, category, message);
 }
 
 function physicalStatus(condition, source, base, category, message) {
-  const hasOfficialOrComputedSignal = source?.source && source.source !== "unknown" && Number(source.confidence || 0) > 0 && (toArray(source.tags).length || source.level !== "unknown");
-  if (!hasOfficialOrComputedSignal) return { ...base, status: "unknown", category, message: "Information officielle non disponible dans le corpus." };
-  return tagStatus(condition, base, category, message);
+  const hasSignal = source?.source && source.source !== "unknown" && Number(source.confidence || 0) > 0 && (toArray(source.tags).length || source.level !== "unknown");
+  if (!hasSignal) return { ...base, status: "unknown", category, message: "Information officielle non disponible dans le corpus." };
+  return statusFromEvidence(condition, source, base, category, message);
+}
+
+function statusFromEvidence(condition, source, base, category, message) {
+  if (!condition) return { ...base, status: "compatible", category };
+  const evidenceLevel = constraintEvidenceLevel(source);
+  if (evidenceLevel === "official" || evidenceLevel === "high_confidence_mapping") return { ...base, status: "confirmed_incompatible", category, message, evidenceLevel };
+  if (evidenceLevel === "computed_medium_confidence") return { ...base, status: "possible_risk", category, message: `${message} À vérifier : preuve encore partielle.`, evidenceLevel };
+  return { ...base, status: "unknown", category, message: "Information insuffisamment fiable dans le corpus.", evidenceLevel };
+}
+
+function constraintEvidenceLevel(source = {}) {
+  const sourceName = String(source?.source || source || "unknown");
+  const confidence = Number(source?.confidence ?? 0);
+  if (sourceName === "official" || sourceName === "official_rome_api" || sourceName === "official_or_profile") return "official";
+  if (sourceName === "computed_low_confidence" || confidence < 0.4) return "unknown";
+  if (confidence >= 0.65) return "high_confidence_mapping";
+  if (confidence >= 0.4) return "computed_medium_confidence";
+  return "unknown";
 }
 
 function calculateConfidence(criteria, job, details = [], unknown = []) {
@@ -9877,7 +10238,7 @@ function getSkillIdsFromSignals(profile) {
       skillIds.push(...toArray(group.mapsToSkills));
     });
   });
-  return unique(skillIds);
+  return resolveSkillIdsForDataset(skillIds, App.state.dataset);
 }
 
 function migrateTrainingOpenness(value) {
@@ -10049,6 +10410,7 @@ function invalidateDatasetIndexes() {
   App.state.skillRowIndex = null;
   App.state.skillLabelIndex = null;
   App.state.skillSectorIndex = null;
+  App.state.skillMigrationIndex = null;
   App.state.contextLabelIndex = null;
   App.state.explorationHaystackCache = new Map();
   App.state.relatedVariantsCache = new Map();
@@ -10265,7 +10627,7 @@ function uniqueBy(items, key) {
 function uniqueObjectsBy(items, key) {
   const seen = new Set();
   return items.filter(item => {
-    const value = item[key] || JSON.stringify(item);
+    const value = (typeof key === "function" ? key(item) : item[key]) || JSON.stringify(item);
     if (seen.has(value)) return false;
     seen.add(value);
     return true;

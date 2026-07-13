@@ -37,6 +37,24 @@ const BOUSSOLE_SECTOR_LABELS = {
   services_proprete: "Services, propreté et aide pratique"
 };
 
+const PROFILE_SECTOR_FROM_GENERATED = {
+  administratif: ["administratif_support"],
+  numerique: ["numerique"],
+  soin_sante: ["sante_soin"],
+  social_accompagnement: ["social_insertion"],
+  enfance_education: ["education_enfance"],
+  nature_agriculture_animaux: ["nature_agriculture", "animaux"],
+  artisanat_batiment_maintenance: ["batiment_construction", "maintenance"],
+  commerce_relation_client: ["commerce_vente"],
+  restauration_hotellerie_tourisme: ["restauration_alimentation", "hotellerie_hebergement"],
+  industrie_qualite: ["industrie_production"],
+  logistique_transport_securite: ["logistique_transport", "securite_prevention"],
+  culture_communication_creation: ["culture_communication"],
+  recherche_analyse: ["administratif_support"],
+  droit_gestion_publique: ["services_aux_collectivites"],
+  services_proprete: ["proprete_entretien"]
+};
+
 export function normalizeRomeMetier(raw = {}) {
   const source = unwrapFiche(raw);
   const romeCode = firstText(source.romeCode, source.codeRome, source.code, raw.romeCode, raw.codeRome, raw.code);
@@ -45,9 +63,11 @@ export function normalizeRomeMetier(raw = {}) {
   const appellationRefs = collectRelationRefs(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
   const appellations = unique(appellationRefs.map(ref => ref.label).filter(Boolean));
   const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques, ...findValuesByKeyHints(source, ["activite", "activites"]));
-  const requiredSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.groupesCompetencesMobilisees, source.groupesCompetences, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
+  const mobilizedSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.groupesCompetencesMobilisees, source.groupesCompetences, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
   const optionalSkillRefs = collectRelationRefs(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
-  const softSkillRefs = collectRelationRefs(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
+  const explicitSoftSkillRefs = collectRelationRefs(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
+  const requiredSkillRefs = mobilizedSkillRefs.filter(ref => classifyRomeSkill({ label: ref.label, type: ref.rawType }) === "skill_action");
+  const softSkillRefs = uniqueBy([...explicitSoftSkillRefs, ...mobilizedSkillRefs.filter(ref => classifyRomeSkill({ label: ref.label, type: ref.rawType }) === "soft_skill")], ref => `${ref.officialId || ""}|${normalizeText(ref.label)}`);
   const knowledgeRefs = collectRelationRefs(source.knowledge, source.savoirs, source.groupesSavoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
   const contextRefs = collectRelationRefs(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail, ...findValuesByKeyHints(source, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"]));
   const requiredSkillLabels = unique(requiredSkillRefs.map(ref => ref.label).filter(Boolean));
@@ -63,6 +83,7 @@ export function normalizeRomeMetier(raw = {}) {
   const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers, ...findValuesByKeyHints(source, ["metierproche", "mobilite", "prochemetier"]));
   const officialRomeDomain = buildOfficialRomeDomain(romeCode, firstText(source.domain, source.domaine, source.grandDomaine));
   const boussoleSectorIds = mapBoussoleSectors({ romeCode, title, description, activities, appellations });
+  const sectorMapping = mapProfileSectorsFromGenerated(boussoleSectorIds);
   const domainOfficial = officialRomeDomain.label;
   const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
   const domain = boussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
@@ -120,9 +141,21 @@ export function normalizeRomeMetier(raw = {}) {
     family,
     officialRomeDomain,
     boussoleSectorIds,
+    primarySectorId: sectorMapping.primarySectorId,
+    secondarySectorIds: sectorMapping.secondarySectorIds,
+    sectorMappingConfidence: sectorMapping.confidence,
+    sectorEvidence: [{
+      source: officialRomeDomain.source === SOURCE_OFFICIAL ? "official_rome_domain" : "rome_code_domain_mapping",
+      value: domainOfficial || officialRomeDomain.label || romeCode
+    }],
     appellations,
     description: description || null,
     activities,
+    skillGroups: collectSkillGroups(source.groupesCompetencesMobilisees, source.groupesCompetences),
+    mobilizedSkillIds: unique(mobilizedSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    matchableSkillIds: unique(requiredSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    softSkillIds: unique(softSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    knowledgeIds: unique(knowledgeRefs.map(ref => toStableKnowledgeId(ref.label, ref.officialId))),
     requiredSkills: unique(requiredSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
     optionalSkills: unique(optionalSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
     softSkills: unique(softSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
@@ -133,9 +166,9 @@ export function normalizeRomeMetier(raw = {}) {
     physicalConstraints: constraints.physical,
     scheduleConstraints: constraints.schedule,
     mobilityConstraints: constraints.mobility,
-    publicContactLevel: inferPublicContactLevel(textPool),
+    publicContactLevel: contextRefs.length ? inferPublicContactLevel(textPool) : "unknown",
     autonomyLevel: inferAutonomyLevel(textPool),
-    remoteCompatibility: inferRemoteCompatibility(textPool),
+    remoteCompatibility: contextRefs.length ? inferRemoteCompatibility(textPool) : "unknown",
     requiredDiplomaLevel: numberOrNull(source.requiredDiplomaLevel),
     recommendedDiplomaLevel: numberOrNull(source.recommendedDiplomaLevel),
     requiredCertifications,
@@ -193,10 +226,12 @@ export function normalizeRomeCompetence(raw = {}) {
   const matchableCandidate = isMatchableSkillCandidate(label, raw, classification);
   return {
     id: toStableSkillId(label, rawId),
+    officialId: rawId || null,
     rawId: rawId || null,
     rawKeyOrId: rawId || toStableSkillId(label),
     schemaVersion: "1.0.0",
     label,
+    normalizedLabel: normalizedSkillLabel(label),
     type: typeForSkillClassification(classification, rawType),
     category: raw.category || raw.famille || rawType || "rome",
     rawType,
@@ -204,7 +239,7 @@ export function normalizeRomeCompetence(raw = {}) {
     matchableCandidate,
     matchingUse: matchableCandidate ? "candidate" : "excluded",
     matchingScope: isMacroRomeSkill(raw) ? "macro" : "detail",
-    aliases: toArray(raw.aliases),
+    aliases: unique([...toArray(raw.aliases), ...aliasesForSkill(label, rawId)]),
     source: SOURCE_OFFICIAL,
     provenance: "generated_rome",
     confidence: 0.75
@@ -284,7 +319,6 @@ function buildRomeSkillLayers(rawCompetences = [], jobs = []) {
   const linkedFromJobs = deriveSkillsFromJobs(jobs).map(skill => ({
     ...skill,
     linkedToCorpusJobs: true,
-    classification: skill.type === "savoir-etre" ? "soft_skill" : "skill_action",
     matchableCandidate: true,
     matchingUse: "linked_job_skill",
     matchingScope: "linked"
@@ -301,11 +335,12 @@ function buildRomeSkillLayers(rawCompetences = [], jobs = []) {
     ...macroMatchable,
     ...rawSkills.filter(skill => skill.matchableCandidate && linkedSkillIds.has(skill.id))
   ], "id");
-  const matchableSkills = uniqueBy([
+  const matchableCandidates = uniqueBy([
     ...linkedFromJobs.filter(skill => isUserFacingSkillLabel(skill.label)),
     ...rawLinked.filter(skill => skill.matchableCandidate),
     ...macroMatchable.filter(skill => isUserFacingSkillLabel(skill.label))
-  ], "id").slice(0, MATCHABLE_SKILLS_LIMIT);
+  ], "id");
+  const matchableSkills = selectMatchableSkills(matchableCandidates, jobs);
   const knowledge = uniqueBy([
     ...rawSkills.filter(skill => skill.classification === "knowledge").map(skill => knowledgeFromSkill(skill)),
     ...deriveKnowledgeFromJobs(jobs)
@@ -321,6 +356,35 @@ function buildRomeSkillLayers(rawCompetences = [], jobs = []) {
     certificationLike,
     matchableSkills
   };
+}
+
+function selectMatchableSkills(candidates = [], jobs = []) {
+  const byId = new Map(candidates.map(skill => [skill.id, skill]));
+  const selected = [];
+  const selectedIds = new Set();
+
+  const addSkill = id => {
+    if (!id || selectedIds.has(id) || !byId.has(id) || selected.length >= MATCHABLE_SKILLS_LIMIT) return;
+    selectedIds.add(id);
+    selected.push(byId.get(id));
+  };
+
+  jobs.forEach(job => {
+    unique([
+      ...toArray(job.matchableSkillIds),
+      ...toArray(job.skillGroups?.matchable),
+      ...toArray(job.softSkillIds),
+      ...toArray(job.requiredSkills),
+      ...toArray(job.softSkills)
+    ]).slice(0, 10).forEach(addSkill);
+  });
+
+  candidates
+    .filter(skill => skill.matchingScope === "macro" || skill.matchingUse === "macro_matchable")
+    .forEach(skill => addSkill(skill.id));
+
+  candidates.forEach(skill => addSkill(skill.id));
+  return selected;
 }
 
 function buildMissingFields(fields) {
@@ -472,14 +536,19 @@ function deriveSkillsFromJobs(jobs) {
 
 function skillFromRef(ref, type, category) {
   const label = ref?.label || String(ref || "");
+  const classification = classifyRomeSkill({ label, type: ref?.rawType || type });
   return {
     id: toStableSkillId(label, ref?.officialId),
     schemaVersion: "1.0.0",
+    officialId: ref?.officialId || null,
     label,
+    normalizedLabel: normalizedSkillLabel(label),
     rawId: ref?.officialId || null,
-    type,
+    rawType: ref?.rawType || "",
+    type: typeForSkillClassification(classification, ref?.rawType || type),
+    classification,
     category,
-    aliases: [],
+    aliases: aliasesForSkill(label, ref?.officialId),
     source: SOURCE_OFFICIAL,
     provenance: "generated_rome",
     confidence: 0.75
@@ -541,6 +610,29 @@ function typeForSkillClassification(classification, rawType = "") {
   if (classification === "job_like") return "job_like";
   if (classification === "too_specific") return "too_specific";
   return rawType || "savoir-faire";
+}
+
+function aliasesForSkill(label = "", rawId = null) {
+  const normalized = normalizedSkillLabel(label);
+  const aliases = [];
+  if (rawId) aliases.push(`skill-rome-${slug(rawId)}`);
+  if (normalized) aliases.push(`skill-rome-${slug(normalized)}`);
+  const rules = [
+    ["skill-active-listening", /ecoute.*empathie|empathie/],
+    ["skill-teamwork", /esprit.*equipe/],
+    ["skill-organisation", /organiser.*travail|priorites.*objectifs/],
+    ["skill-admin-doc", /dossier|base de donnees|archiver|documentation/],
+    ["skill-animation", /animer|atelier|activites d animation/],
+    ["skill-cleaning", /nettoyer|entretenir un espace|desinfecter/],
+    ["skill-gardening", /jardin|espace vert|vegetal|plante/],
+    ["skill-animal-care", /animal|bien etre animal/],
+    ["skill-writing", /rediger|rapport|compte rendu/],
+    ["skill-data", /donnees|base de donnees/]
+  ];
+  rules.forEach(([alias, pattern]) => {
+    if (pattern.test(normalized)) aliases.push(alias);
+  });
+  return unique(aliases);
 }
 
 function isMatchableSkillCandidate(label, raw, classification) {
@@ -803,6 +895,29 @@ function mapBoussoleSectors({ romeCode = "", title = "", description = "", activ
   return sectors;
 }
 
+function mapProfileSectorsFromGenerated(boussoleSectorIds = []) {
+  const mapped = unique(toArray(boussoleSectorIds).flatMap(id => PROFILE_SECTOR_FROM_GENERATED[id] || []));
+  return {
+    primarySectorId: mapped[0] || null,
+    secondarySectorIds: mapped.slice(1, 3),
+    confidence: mapped.length ? 0.82 : 0
+  };
+}
+
+function collectSkillGroups(...values) {
+  return collectRawItems(...values).flatMap((group, index) => {
+    if (!group || typeof group !== "object" || Array.isArray(group)) return [];
+    const issueId = firstText(group.id, group.code, group.identifiant) || `issue-${index + 1}`;
+    const issueLabel = firstText(group.libelle, group.label, group.intitule, group.nom) || `Groupe de compétences ${index + 1}`;
+    const refs = collectRelationRefs(group);
+    return [{
+      issueId,
+      issueLabel,
+      skills: unique(refs.map(ref => toStableSkillId(ref.label, ref.officialId)))
+    }];
+  }).filter(group => group.skills.length);
+}
+
 function toStableSkillId(value, official = null) {
   if (String(value || "").startsWith("skill-")) return String(value);
   return official ? `skill-rome-${slug(official)}` : `skill-rome-${slug(value || "competence")}`;
@@ -869,6 +984,10 @@ function normalizeText(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+}
+
+function normalizedSkillLabel(value) {
+  return normalizeText(value).replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 function slug(value) {

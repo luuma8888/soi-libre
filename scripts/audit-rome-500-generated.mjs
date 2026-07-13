@@ -74,18 +74,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
       ratio: ratio(shellJobs.length, jobs.length),
       samples: shellJobs.slice(0, 30).map(jobSummary)
     },
-    matchingReadiness: {
-      usableForMatchingJobs: jobs.length - shellJobs.length,
-      usableForMatchingRatio: ratio(jobs.length - shellJobs.length, jobs.length),
-      score: average([
-        ratio(linked.jobsWithSkillMappings, jobs.length),
-        ratio(linked.jobsWithContextMappings, jobs.length),
-        ratio(linked.jobsWithAppellationMappings, jobs.length),
-        ratio(jobs.length - shellJobs.length, jobs.length),
-        ratio(sectorMappingCoverage.jobsWithBoussoleSector, jobs.length)
-      ]),
-      status: linked.jobsWithSkillMappings / Math.max(1, jobs.length) >= 0.9 ? "matching_ready" : "data_links_missing"
-    },
+    matchingReadiness: buildMatchingReadiness({ jobs, linked, shellJobs, sectorMappingCoverage }),
     warnings: buildWarnings({ jobs, linked, shellJobs, sectorMappingCoverage, marketAvailability })
   };
 
@@ -95,6 +84,27 @@ export async function buildRome500AuditArtifacts(options = {}) {
   await writeJson(path.join(generatedDir, "rome-500-performance-report.json"), performance);
   await writeFile(path.join(generatedDir, "rome-500-audit.md"), markdown, "utf8");
   return { quality, performance, markdown };
+}
+
+function buildMatchingReadiness({ jobs, linked, shellJobs, sectorMappingCoverage }) {
+  const score = average([
+    ratio(linked.jobsWithSkillMappings, jobs.length),
+    ratio(linked.jobsWithContextMappings, jobs.length),
+    ratio(linked.jobsWithAppellationMappings, jobs.length),
+    ratio(jobs.length - shellJobs.length, jobs.length),
+    ratio(sectorMappingCoverage.jobsWithBoussoleSector, jobs.length)
+  ]);
+  let status = "not_ready";
+  if (score >= 0.35) status = "technical_preview";
+  if (score >= 0.5 && linked.jobsWithSkillMappings / Math.max(1, jobs.length) >= 0.9) status = "partial_matching";
+  if (score >= 0.75 && linked.jobsWithContextMappings / Math.max(1, jobs.length) >= 0.75 && linked.jobsWithAppellationMappings / Math.max(1, jobs.length) >= 0.75) status = "usable";
+  if (score >= 0.92 && shellJobs.length === 0) status = "production_ready";
+  return {
+    usableForMatchingJobs: jobs.length - shellJobs.length,
+    usableForMatchingRatio: ratio(jobs.length - shellJobs.length, jobs.length),
+    score,
+    status
+  };
 }
 
 function buildLinkedCoverage(jobs = [], mappings = []) {

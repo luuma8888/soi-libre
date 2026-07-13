@@ -65,6 +65,17 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   const jobsWithContextMappings = mappings.filter(mapping => mapping.contextIds?.length).length;
   const jobsWithAppellationMappings = mappings.filter(mapping => mapping.appellationIds?.length).length;
   const officialDescriptionsCount = jobs.filter(job => hasValue(job.description) && job.fieldSources?.description === "official_rome_api").length;
+  const jobsWithSkillsCount = Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length || job.mobilizedSkillIds?.length).length, jobsWithSkillMappings);
+  const jobsWithContextsCount = Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings);
+  const jobsWithAppellationsCount = Math.max(jobs.filter(job => job.appellations?.length).length, jobsWithAppellationMappings);
+  const matchableSkillIds = new Set(matchableSkills.map(skill => skill.id).filter(Boolean));
+  const linkedMatchableSkillIds = new Set([...linkedSkillIds].filter(skillId => matchableSkillIds.has(skillId)));
+  const matchablePerJob = jobs.map(job => [...new Set([
+    ...(job.matchableSkillIds || []),
+    ...(job.requiredSkills || []),
+    ...(job.optionalSkills || []),
+    ...(job.softSkills || [])
+  ])].filter(skillId => matchableSkillIds.has(skillId)).length);
   if (rawSkills.length && linkedSkillIds.size === 0) {
     warnings.push(issue("warning", "referential_loaded_but_unlinked", "Des competences ROME globales sont chargees, mais aucune competence officielle n'est reliee aux metiers. Elles servent au profil, pas a prouver qu'un metier les exige.", "skills"));
   }
@@ -109,6 +120,14 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
         endpoint: failure.endpoint
       }))
     },
+    matchableSkillCoverage: {
+      jobsTotal: jobs.length,
+      jobsWithAtLeast5MatchableSkills: matchablePerJob.filter(count => count >= 5).length,
+      jobsWithAtLeast10MatchableSkills: matchablePerJob.filter(count => count >= 10).length,
+      averageMatchableSkillsPerJob: average(matchablePerJob),
+      linkedOfficialSkillsTotal: linkedSkillIds.size,
+      linkedMatchableSkillsTotal: linkedMatchableSkillIds.size
+    },
     summary: {
       jobs: jobs.length,
       appellations: (dataset.jobAppellations || []).length,
@@ -133,17 +152,25 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
     },
     completeness,
     coverage: {
-      jobsWithSkills: ratio(jobs.filter(job => job.requiredSkills?.length).length, jobs.length),
-      jobsWithContexts: ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length),
-      linkedJobsWithSkillsCount: Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobsWithSkillMappings),
-      linkedJobsWithContextsCount: Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings),
-      linkedJobsWithAppellationsCount: Math.max(jobs.filter(job => job.appellations?.length).length, jobsWithAppellationMappings),
-      jobsWithOfficialDescription: ratio(officialDescriptionsCount, jobs.length),
-      jobsWithActivities: ratio(jobs.filter(job => job.activities?.length).length, jobs.length),
-      jobsWithAppellations: ratio(jobs.filter(job => job.appellations?.length).length, jobs.length),
-      jobsWithRelatedJobs: ratio(jobs.filter(job => job.relatedJobs?.length).length, jobs.length),
-      jobsWithDiplomaLevel: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined).length, jobs.length),
-      jobsWithMarketData: ratio(jobs.filter(job => job.market?.source && job.market.source !== "unknown").length, jobs.length)
+      jobsWithSkillsCount,
+      jobsWithSkillsRatio: ratio(jobsWithSkillsCount, jobs.length),
+      jobsWithContextsCount,
+      jobsWithContextsRatio: ratio(jobsWithContextsCount, jobs.length),
+      linkedJobsWithSkillsCount: jobsWithSkillsCount,
+      linkedJobsWithContextsCount: jobsWithContextsCount,
+      linkedJobsWithAppellationsCount: jobsWithAppellationsCount,
+      jobsWithOfficialDescriptionCount: officialDescriptionsCount,
+      jobsWithOfficialDescriptionRatio: ratio(officialDescriptionsCount, jobs.length),
+      jobsWithActivitiesCount: jobs.filter(job => job.activities?.length).length,
+      jobsWithActivitiesRatio: ratio(jobs.filter(job => job.activities?.length).length, jobs.length),
+      jobsWithAppellationsCount,
+      jobsWithAppellationsRatio: ratio(jobsWithAppellationsCount, jobs.length),
+      jobsWithRelatedJobsCount: jobs.filter(job => job.relatedJobs?.length).length,
+      jobsWithRelatedJobsRatio: ratio(jobs.filter(job => job.relatedJobs?.length).length, jobs.length),
+      jobsWithDiplomaLevelCount: jobs.filter(job => job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined).length,
+      jobsWithDiplomaLevelRatio: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined).length, jobs.length),
+      jobsWithMarketDataCount: jobs.filter(job => job.market?.source && job.market.source !== "unknown").length,
+      jobsWithMarketDataRatio: ratio(jobs.filter(job => job.market?.source && job.market.source !== "unknown").length, jobs.length)
     },
     completenessScore: completionScore,
     globalCompletionScore: completionScore,
