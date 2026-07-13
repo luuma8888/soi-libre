@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T15:12:06.906Z.
+Généré le 2026-07-13T15:16:12.618Z.
 
 ## Synthèse
 
