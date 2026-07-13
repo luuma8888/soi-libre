@@ -81,7 +81,8 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
     warnings.push(issue("warning", "referential_loaded_but_unlinked", "Des competences ROME globales sont chargees, mais aucune competence officielle n'est reliee aux metiers. Elles servent au profil, pas a prouver qu'un metier les exige.", "skills"));
   }
   const metiersReferential = optionalReferentials.find(item => item.name === "metiers" && item.status === "ok");
-  if (metiersReferential && metiersReferential.usedForDataset === false) {
+  const metiersDetails = optionalReferentials.find(item => item.name === "metiers_details" && item.status === "ok" && item.usedForDataset);
+  if (metiersReferential && metiersReferential.usedForDataset === false && !metiersDetails) {
     warnings.push(issue("info", "rome_metiers_referential_not_used", "Le referentiel ROME Metiers global est charge a titre diagnostique mais n'enrichit pas les fiches : les echantillons disponibles ne fournissent pas encore descriptions, appellations, contextes ou conditions d'acces exploitables.", "metiers"));
   }
   if (jobs.length && officialDescriptionsCount === 0) {
@@ -368,9 +369,11 @@ function countProvenance(rows = []) {
     unknown: 0
   };
   rows.forEach(row => {
-    const value = row?.source || row?.provenance || row?.officialStatus || "unknown";
-    if (value === "official_rome_api") counts.official_rome_api += 1;
-    else if (value === "generated_rome") counts.generated_rome += 1;
+    const source = row?.source || row?.officialStatus || "";
+    const provenance = row?.provenance || "";
+    const value = source || provenance || "unknown";
+    if (source === "official_rome_api") counts.official_rome_api += 1;
+    else if (provenance === "generated_rome" || value === "generated_rome") counts.generated_rome += 1;
     else if (String(value).includes("sample")) counts.sample_non_official += 1;
     else if (String(value).includes("curated") || String(value).includes("estimated")) counts.curated_estimated += 1;
     else counts.unknown += 1;

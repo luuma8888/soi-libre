@@ -46,7 +46,7 @@ async function main() {
       noDataError.failedCodes = syncResult.failedCodes;
       throw noDataError;
     }
-    const optionalReferentials = await fetchOptionalRomeReferentials(token);
+    const optionalReferentials = await fetchOptionalRomeReferentials(token, requestedCodes);
     const syncMeta = {
       generatedAt,
       branch: process.env.GITHUB_REF_NAME || "local",
@@ -58,6 +58,14 @@ async function main() {
     };
     if (optionalReferentials.referentials?.metiers?.length) {
       await writeRomeMetiersRecordSamples(optionalReferentials.referentials.metiers, syncMeta);
+    }
+    if (optionalReferentials.referentials?.metiersDetails?.length) {
+      await writeRomeMetiersRecordSamples(optionalReferentials.referentials.metiersDetails, syncMeta, {
+        filename: "rome-metiers-detail-samples.json",
+        source: "rome_metiers_detail_api",
+        endpoint: optionalReferentials.diagnostics.find(item => item.name === "metiers_details")?.endpoint,
+        note: "Diagnostic structurel des enregistrements detailles ROME Metiers recuperes par code. Ces champs peuvent enrichir jobs.rome.json seulement quand les chemins sont presents et stables."
+      });
     }
     const parts = {
       fichesMetiers: syncResult.fichesMetiers,
@@ -110,6 +118,7 @@ async function main() {
         "rome-500-performance-report.json",
         "rome-500-audit.md",
         ...(optionalReferentials.referentials?.metiers?.length ? ["debug/rome-metiers-record-samples.json"] : []),
+        ...(optionalReferentials.referentials?.metiersDetails?.length ? ["debug/rome-metiers-detail-samples.json"] : []),
         ...(isEndpointDiagnosticEnabled() ? ["debug/fiche-endpoint-diagnostic.json"] : []),
         ...(isRawDebugEnabled() ? ["debug/raw-structure-report.json"] : [])
       ],
@@ -419,7 +428,7 @@ function buildEndpointDiagnosticRecommendation(results = []) {
   return "Toutes les variantes repondent avec un payload trop pauvre. Chercher une autre route de l'API Fiches metiers ou une API Metiers/Competences de liaison.";
 }
 
-async function fetchOptionalRomeReferentials(mainToken) {
+async function fetchOptionalRomeReferentials(mainToken, requestedCodes = []) {
   const diagnostics = [];
   const parts = {};
   const referentials = {};
@@ -449,7 +458,23 @@ async function fetchOptionalRomeReferentials(mainToken) {
       }
       const json = await response.json();
       const rows = extractArrayFromApiResponse(json);
-      if (config.name === "metiers") referentials.metiers = rows;
+      if (config.name === "metiers") {
+        referentials.metiers = rows;
+        const details = await fetchRomeMetiersDetails(endpoint, token, requestedCodes);
+        if (details.records.length) {
+          parts.metiers = details.records;
+          referentials.metiersDetails = details.records;
+        }
+        diagnostics.push({
+          name: "metiers_details",
+          status: details.records.length ? "ok" : "no_data",
+          count: details.records.length,
+          usedForDataset: Boolean(details.records.length),
+          endpoint: `${endpoint.replace(/\/$/, "")}/{CODE_ROME}`,
+          failedCodesCount: details.failedCodes.length,
+          failedCodes: details.failedCodes.slice(0, 20)
+        });
+      }
       if (config.partKey) parts[config.partKey] = rows;
       diagnostics.push({ name: config.name, status: "ok", count: rows.length, usedForDataset: Boolean(config.partKey), endpoint, scope: scope ? "configured" : "default" });
     } catch (error) {
@@ -458,6 +483,28 @@ async function fetchOptionalRomeReferentials(mainToken) {
     await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
   }
   return { parts, diagnostics, referentials };
+}
+
+async function fetchRomeMetiersDetails(endpointUrl, token, codes = []) {
+  const accessToken = token.access_token || token.token || token;
+  const records = [];
+  const failedCodes = [];
+  for (const code of codes) {
+    const result = await fetchRomeFicheMetier(endpointUrl, accessToken, code);
+    if (result.ok) {
+      const raw = result.payload || {};
+      records.push({ ...raw, code: raw.code || raw.codeRome || raw.romeCode || code, romeCode: raw.romeCode || raw.codeRome || raw.code || code });
+    } else {
+      failedCodes.push({
+        code,
+        status: result.status || "unknown",
+        message: shortMessage(result.message || "Detail ROME Metiers non exploitable."),
+        endpoint: result.endpoint || endpointUrl
+      });
+    }
+    await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
+  }
+  return { records, failedCodes };
 }
 
 function extractArrayFromApiResponse(json) {
@@ -472,7 +519,7 @@ function extractArrayFromApiResponse(json) {
   return [];
 }
 
-async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
+async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}, options = {}) {
   await mkdir(DEBUG_DIR, { recursive: true });
   const codes = parseList(process.env.ROME_METIERS_DIAGNOSTIC_CODES, DEFAULT_METIERS_DIAGNOSTIC_CODES);
   const recordsByCode = new Map();
@@ -486,23 +533,23 @@ async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
   }));
   const fieldAvailability = buildMetiersFieldAvailability(samples);
   const conclusion = buildMetiersDiagnosticConclusion(fieldAvailability);
-  const endpoint = getMetiersDiagnosticEndpoint(syncMeta);
+  const endpoint = options.endpoint || getMetiersDiagnosticEndpoint(syncMeta);
   const unavailableFieldReport = buildMetiersUnavailableFieldReport({ fieldAvailability, samples, endpoint });
   const report = {
     schemaVersion: "1.0.0",
     generatedAt: syncMeta.generatedAt || new Date().toISOString(),
     branch: syncMeta.branch || process.env.GITHUB_REF_NAME || "local",
-    source: "rome_metiers_api",
+    source: options.source || "rome_metiers_api",
     endpoint,
     totalRecords: records.length,
     diagnosticCodes: codes,
-    note: "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas utilisé pour enrichir jobs.rome.json tant qu'il ne contient que code/libelle ou tant que les chemins riches ne sont pas validés.",
+    note: options.note || "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas utilisé pour enrichir jobs.rome.json tant qu'il ne contient que code/libelle ou tant que les chemins riches ne sont pas validés.",
     fieldAvailability,
     conclusion,
     unavailableFieldReport,
     samples
   };
-  await writeFile(new URL("rome-metiers-record-samples.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  await writeFile(new URL(options.filename || "rome-metiers-record-samples.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   console.log(`[Boussole Pro] Diagnostic API Metiers: ${records.length} enregistrement(s), ${codes.filter(code => samples[code]?.found).length}/${codes.length} code(s) trouves.`);
 }
 

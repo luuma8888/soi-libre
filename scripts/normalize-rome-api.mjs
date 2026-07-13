@@ -87,7 +87,7 @@ export function normalizeRomeMetier(raw = {}) {
   const description = firstText(source.description, source.resume, source.definition, source.presentation);
   const appellationRefs = collectRelationRefs(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
   const appellations = unique(appellationRefs.map(ref => ref.label).filter(Boolean));
-  const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques, ...findValuesByKeyHints(source, ["activite", "activites"]));
+  const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques);
   const mobilizedSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.groupesCompetencesMobilisees, source.groupesCompetences, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
   const optionalSkillRefs = collectRelationRefs(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
   const explicitSoftSkillRefs = collectRelationRefs(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
@@ -100,7 +100,7 @@ export function normalizeRomeMetier(raw = {}) {
   const softSkillLabels = unique(softSkillRefs.map(ref => ref.label).filter(Boolean));
   const knowledgeLabels = unique(knowledgeRefs.map(ref => ref.label).filter(Boolean));
   const contextLabels = unique(contextRefs.map(ref => ref.label).filter(Boolean));
-  const accessText = firstText(source.accessConditions, source.conditionsAcces, source.accesEmploiMetier, source.accesMetier, ...findValuesByKeyHints(source, ["conditionacces", "accesemploimetier", "accesmetier"]));
+  const accessText = firstText(source.accessConditions, source.conditionsAcces, source.accesEmploi, source.accesEmploiMetier, source.accesMetier, ...findValuesByKeyHints(source, ["conditionacces", "accesemploi", "accesemploimetier", "accesmetier"]));
   const requiredCertificationRefs = collectRelationRefs(source.requiredCertifications, source.certificationsObligatoires, source.habilitationsObligatoires, ...findValuesByKeyHints(source, ["certificationobligatoire", "habilitationobligatoire"]));
   const recommendedCertificationRefs = collectRelationRefs(source.recommendedCertifications, source.certificationsRecommandees, source.habilitations, ...findValuesByKeyHints(source, ["certification", "habilitation"]));
   const requiredCertifications = unique(requiredCertificationRefs.map(ref => toStableCertificationId(ref.label, ref.officialId)));
@@ -299,6 +299,30 @@ export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecor
   mergeOfficialField(merged, metier, "requiredCertifications", value => value?.length);
   mergeOfficialField(merged, metier, "recommendedCertifications", value => value?.length);
   mergeOfficialField(merged, metier, "relatedJobs", value => value?.length);
+  mergeOfficialField(merged, metier, "romeAppellationRefs", value => value?.length);
+  mergeOfficialField(merged, metier, "romeWorkContextRefs", value => value?.length);
+  mergeOfficialField(merged, metier, "romeWorkContextLabels", value => value?.length);
+  mergeOfficialField(merged, metier, "romeCertificationRefs", value => toArray(value?.required).length || toArray(value?.recommended).length);
+  if (metier.description) {
+    merged.officialDescription = {
+      definition: metier.description,
+      purpose: null,
+      characteristicsSummary: null,
+      source: SOURCE_OFFICIAL
+    };
+  }
+  const missingFields = buildMissingFields({
+    romeCode: merged.romeCode,
+    title: merged.title,
+    description: merged.description,
+    activities: merged.activities,
+    requiredSkills: merged.requiredSkills,
+    workContexts: merged.workContexts,
+    accessConditions: merged.accessConditions?.text,
+    requiredDiplomaLevel: merged.requiredDiplomaLevel,
+    recommendedDiplomaLevel: merged.recommendedDiplomaLevel,
+    market: merged.market || merged.marketIndicators
+  });
   merged.dataQuality = {
     ...(merged.dataQuality || {}),
     normalizer: "normalizeOfficialRomeJob",
@@ -306,19 +330,12 @@ export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecor
       skills: Boolean(skillsIndex),
       contexts: Boolean(contextsIndex)
     },
-    missingFields: buildMissingFields({
-      romeCode: merged.romeCode,
-      title: merged.title,
-      description: merged.description,
-      activities: merged.activities,
-      requiredSkills: merged.requiredSkills,
-      workContexts: merged.workContexts,
-      accessConditions: merged.accessConditions?.text,
-      requiredDiplomaLevel: merged.requiredDiplomaLevel,
-      recommendedDiplomaLevel: merged.recommendedDiplomaLevel,
-      market: merged.market || merged.marketIndicators
-    })
+    missingFields,
+    completenessScore: completenessScore(missingFields),
+    confidence: completenessScore(missingFields)
   };
+  merged.missingFields = missingFields;
+  merged.confidence = completenessScore(missingFields);
   return merged;
 }
 
@@ -346,7 +363,18 @@ export function classifyRomeSkill(entry = {}) {
 }
 
 export function mergeRomeDatasets(parts = {}) {
-  const jobs = uniqueBy([...(parts.metiers || []), ...(parts.fichesMetiers || [])].map(normalizeRomeMetier), "id");
+  const metiersByCode = new Map(toArray(parts.metiers)
+    .map(record => [extractRecordRomeCode(record), record])
+    .filter(([code]) => code));
+  const ficheJobs = toArray(parts.fichesMetiers).map(fiche => normalizeOfficialRomeJob({
+    ficheMetierRecord: fiche,
+    metierRecord: metiersByCode.get(extractRecordRomeCode(fiche))
+  }));
+  const ficheCodes = new Set(ficheJobs.map(job => job.romeCode).filter(Boolean));
+  const metierOnlyJobs = toArray(parts.metiers)
+    .filter(record => !ficheCodes.has(extractRecordRomeCode(record)))
+    .map(metierRecord => normalizeOfficialRomeJob({ metierRecord }));
+  const jobs = uniqueBy([...ficheJobs, ...metierOnlyJobs], "id");
   const skillLayers = buildRomeSkillLayers(parts.competences || [], jobs);
   const workContexts = uniqueBy([
     ...(parts.contextes || []).map(normalizeRomeContexte),
@@ -833,6 +861,20 @@ function collectRelatedJobRefs(...values) {
     if (code) return `rome-${code}`;
     return firstText(item.id, item.libelle, item.intitule, item.label, item.nom);
   }).filter(Boolean);
+}
+
+function extractRecordRomeCode(record = {}) {
+  const source = unwrapFiche(record);
+  return firstText(
+    source.romeCode,
+    source.codeRome,
+    source.code,
+    source.metier?.code,
+    record.romeCode,
+    record.codeRome,
+    record.code,
+    record.metier?.code
+  );
 }
 
 function collectRawItems(...values) {
