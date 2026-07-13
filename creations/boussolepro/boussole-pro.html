@@ -511,8 +511,45 @@ textarea {
   margin: 8px 0 12px;
 }
 
+.skill-family-grid {
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
 .skill-family-grid .tag-option {
-  min-height: 92px;
+  min-height: 0;
+  padding: 8px 34px 8px 10px;
+  border-radius: 12px;
+  align-items: center;
+}
+
+.skill-family-grid .tag-option input {
+  margin-top: 0;
+}
+
+.skill-family-grid .tag-option > span {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.skill-family-grid .tag-name {
+  white-space: nowrap;
+}
+
+.skill-family-grid .tag-meta {
+  flex: 0 0 auto;
+  margin-top: 0;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+.skill-family-grid .tag-option:has(input:checked)::after {
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .skill-family-hint {
@@ -8391,6 +8428,16 @@ async function loadGeneratedRomeDataset(options = {}) {
   const basePath = options.basePath || "data/generated/";
   const corpusLabel = options.label || "données générées";
   const corpusMode = options.corpusMode || "generated_rome";
+  const sharedMarketBasePath = options.marketBasePath || (basePath !== "data/generated/" ? "data/generated/market/" : "");
+  const marketFiles = {
+    marketManifest: "market-import-manifest.json",
+    marketQualityReport: "market-quality-report.json",
+    marketNational: "market-national.rome.json",
+    marketOccitanie: "market-occitanie.rome.json",
+    marketAude: "market-aude.rome.json",
+    bmoFap2021: "bmo-fap2021.json",
+    fapRomeMappings: "fap-rome-mappings.json"
+  };
   const files = {
     manifest: "import-manifest.rome.json",
     jobs: "jobs.rome.json",
@@ -8406,13 +8453,13 @@ async function loadGeneratedRomeDataset(options = {}) {
     certifications: "certifications.certifinfo.json",
     mappingsRomeFormations: "mappings-rome-formations.json",
     mappingsRomeCertifications: "mappings-rome-certifications.json",
-    marketManifest: "market/market-import-manifest.json",
-    marketQualityReport: "market/market-quality-report.json",
-    marketNational: "market/market-national.rome.json",
-    marketOccitanie: "market/market-occitanie.rome.json",
-    marketAude: "market/market-aude.rome.json",
-    bmoFap2021: "market/bmo-fap2021.json",
-    fapRomeMappings: "market/fap-rome-mappings.json"
+    marketManifest: `market/${marketFiles.marketManifest}`,
+    marketQualityReport: `market/${marketFiles.marketQualityReport}`,
+    marketNational: `market/${marketFiles.marketNational}`,
+    marketOccitanie: `market/${marketFiles.marketOccitanie}`,
+    marketAude: `market/${marketFiles.marketAude}`,
+    bmoFap2021: `market/${marketFiles.bmoFap2021}`,
+    fapRomeMappings: `market/${marketFiles.fapRomeMappings}`
   };
   try {
     showLoading("Chargement des données générées", `Boussole Pro lit les fichiers JSON statiques dans ${basePath}. Merci de patienter.`);
@@ -8423,6 +8470,15 @@ async function loadGeneratedRomeDataset(options = {}) {
     const generated = {};
     for (const [key, filename] of Object.entries(files)) {
       generated[key] = await fetchJsonIfExists(basePath + filename);
+    }
+    if (sharedMarketBasePath && !hasGeneratedMarketRows(generated)) {
+      const sharedMarket = await fetchGeneratedMarketLayer(sharedMarketBasePath, marketFiles);
+      Object.entries(sharedMarket).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) generated[key] = value;
+      });
+      if (hasGeneratedMarketRows(sharedMarket) || sharedMarket.marketManifest || sharedMarket.marketQualityReport) {
+        generated.marketBasePath = sharedMarketBasePath;
+      }
     }
     const hasUsefulData = ["jobs", "skills", "matchableSkills", "workContexts", "jobAppellations", "mappings"].some(key => Array.isArray(generated[key]) && generated[key].length);
     if (!hasUsefulData) {
@@ -8465,6 +8521,18 @@ async function loadGeneratedRomeDataset(options = {}) {
     renderAll();
     showImportError(App.state.generatedDataMessage);
   }
+}
+
+async function fetchGeneratedMarketLayer(marketBasePath, marketFiles = {}) {
+  const generated = {};
+  for (const [key, filename] of Object.entries(marketFiles)) {
+    generated[key] = await fetchJsonIfExists(marketBasePath + filename);
+  }
+  return generated;
+}
+
+function hasGeneratedMarketRows(generated = {}) {
+  return countMarketDatasetRows(generated).total > 0;
 }
 
 function askGeneratedDatasetMode(generated = {}) {
@@ -9786,6 +9854,7 @@ function handleActionClick(event) {
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
   if (action === "load-generated-rome500") loadGeneratedRomeDataset({
     basePath: "data/generated/rome500-experimental/",
+    marketBasePath: "data/generated/market/",
     label: "creations/boussolepro/data/generated/rome500-experimental",
     corpusMode: "generated_rome_500_experimental"
   });
