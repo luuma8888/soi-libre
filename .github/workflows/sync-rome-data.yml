@@ -23,6 +23,10 @@ on:
         description: "Codes ROME pour le diagnostic endpoint, separes par des virgules."
         required: false
         default: "M1607,G1202,A1203"
+      relations_diagnostic:
+        description: "Generer debug/rome-relations-endpoint-diagnostic.json pour tester les routes de relations configurees."
+        required: false
+        default: "false"
   schedule:
     - cron: "0 3 1 * *"
 
@@ -59,6 +63,22 @@ jobs:
           ROME_ENDPOINT_DIAGNOSTIC: ${{ inputs.endpoint_diagnostic || 'false' }}
           ROME_ENDPOINT_DIAGNOSTIC_ONLY: ${{ inputs.endpoint_diagnostic_only || 'false' }}
           ROME_DIAGNOSTIC_CODES: ${{ inputs.diagnostic_codes || 'M1607,G1202,A1203' }}
+      - name: Diagnostic relations ROME
+        if: ${{ inputs.relations_diagnostic == 'true' }}
+        run: node scripts/diagnose-rome-relations-endpoints.mjs
+        continue-on-error: true
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_SCOPE: "nomenclatureRome api_rome-fiches-metiersv1"
+          FT_SCOPE_METIERS: ${{ vars.FT_SCOPE_METIERS }}
+          FT_SCOPE_CONTEXTES: ${{ vars.FT_SCOPE_CONTEXTES }}
+          FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
+          FT_ROME_FICHES_METIERS_URL: ${{ vars.FT_ROME_FICHES_METIERS_URL }}
+          FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
+          FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
+          FT_RATE_LIMIT_MS: ${{ vars.FT_RATE_LIMIT_MS || '1100' }}
+          ROME_RELATIONS_DIAGNOSTIC_CODES: ${{ inputs.diagnostic_codes || 'M1607,G1202,A1203' }}
       - name: Commit generated data
         run: |
           git config user.name "github-actions"

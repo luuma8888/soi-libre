@@ -8,14 +8,17 @@ const DEFAULT_CODES = ["A1203", "K1303", "M1607", "M1805"];
 const ENDPOINTS = [
   {
     alias: "rome_fiches_metiers",
+    scopeEnv: "FT_SCOPE",
     url: process.env.FT_ROME_FICHES_METIERS_URL || "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/{CODE_ROME}"
   },
   {
     alias: "rome_metiers",
+    scopeEnv: "FT_SCOPE_METIERS",
     url: process.env.FT_ROME_METIERS_URL || ""
   },
   {
     alias: "rome_contextes_travail",
+    scopeEnv: "FT_SCOPE_CONTEXTES",
     url: process.env.FT_ROME_CONTEXTES_URL || ""
   }
 ];
@@ -30,26 +33,39 @@ async function main() {
     codes,
     endpoints: []
   };
-  try {
-    const token = await getAccessToken();
-    for (const endpoint of ENDPOINTS) {
-      if (!endpoint.url) {
-        report.endpoints.push({ endpointAlias: endpoint.alias, status: "not_configured", diagnostics: [] });
-        continue;
-      }
+  for (const endpoint of ENDPOINTS) {
+    if (!endpoint.url) {
+      report.endpoints.push({ endpointAlias: endpoint.alias, status: "not_configured", diagnostics: [] });
+      continue;
+    }
+    try {
+      const scope = getEndpointScope(endpoint);
+      const token = await getAccessToken(scope);
       const diagnostics = [];
       for (const code of codes) {
         diagnostics.push(await inspectEndpoint(endpoint, code, token));
         await sleep(Number(process.env.FT_RATE_LIMIT_MS || 1100));
       }
-      report.endpoints.push({ endpointAlias: endpoint.alias, status: "tested", diagnostics });
+      report.endpoints.push({
+        endpointAlias: endpoint.alias,
+        status: "tested",
+        scope: scope ? "configured" : "default",
+        diagnostics
+      });
+    } catch (error) {
+      report.endpoints.push({
+        endpointAlias: endpoint.alias,
+        status: "error",
+        message: redact(error.message),
+        diagnostics: []
+      });
     }
-  } catch (error) {
-    report.status = "error";
-    report.message = redact(error.message);
   }
+  report.summary = buildSummary(report.endpoints);
   await writeFile(new URL("rome-relations-endpoint-diagnostic.json", OUT_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
-  if (report.status === "error") throw new Error(report.message);
+  if (report.endpoints.every(endpoint => endpoint.status === "error") && isStrictMode()) {
+    throw new Error("Diagnostic relations ROME sans endpoint exploitable.");
+  }
 }
 
 async function inspectEndpoint(endpoint, romeCode, token) {
@@ -134,7 +150,7 @@ function summarizeValue(path, value) {
   };
 }
 
-async function getAccessToken() {
+async function getAccessToken(scope = process.env.FT_SCOPE || process.env.FT_ROME_SCOPE || DEFAULT_SCOPE) {
   const clientId = process.env.FT_CLIENT_ID;
   const clientSecret = process.env.FT_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error("FT_CLIENT_ID et FT_CLIENT_SECRET sont requis pour le diagnostic.");
@@ -142,7 +158,7 @@ async function getAccessToken() {
   params.set("grant_type", "client_credentials");
   params.set("client_id", clientId);
   params.set("client_secret", clientSecret);
-  params.set("scope", process.env.FT_SCOPE || process.env.FT_ROME_SCOPE || DEFAULT_SCOPE);
+  params.set("scope", scope || DEFAULT_SCOPE);
   const response = await fetch(process.env.FT_TOKEN_URL || DEFAULT_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -151,6 +167,28 @@ async function getAccessToken() {
   if (!response.ok) throw new Error(`Echec token: ${response.status} ${redact(await response.text())}`);
   const token = await response.json();
   return token.access_token;
+}
+
+function getEndpointScope(endpoint = {}) {
+  return process.env[endpoint.scopeEnv] || process.env.FT_SCOPE || process.env.FT_ROME_SCOPE || DEFAULT_SCOPE;
+}
+
+function buildSummary(endpoints = []) {
+  const tested = endpoints.filter(endpoint => endpoint.status === "tested");
+  const fieldCounts = Object.fromEntries(Object.keys(emptyRelations()).map(field => [field, 0]));
+  tested.flatMap(endpoint => endpoint.diagnostics || []).forEach(diagnostic => {
+    Object.entries(diagnostic.detectedRelations || {}).forEach(([field, rows]) => {
+      fieldCounts[field] += Array.isArray(rows) ? rows.length : 0;
+    });
+  });
+  return {
+    endpointsTested: tested.length,
+    endpointsInError: endpoints.filter(endpoint => endpoint.status === "error").length,
+    relationHintsFound: fieldCounts,
+    recommendation: Object.values(fieldCounts).some(count => count > 0)
+      ? "Des chemins candidats existent : analyser les paths avant toute normalisation."
+      : "Aucun chemin relationnel riche detecte sur ces endpoints/codes. Ne pas enrichir les fiches depuis ces routes sans autre preuve officielle."
+  };
 }
 
 function buildUrl(template, code) {
@@ -210,6 +248,10 @@ function redact(value) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function isStrictMode() {
+  return String(process.env.ROME_RELATIONS_DIAGNOSTIC_STRICT || "false").toLowerCase() === "true";
 }
 
 main();

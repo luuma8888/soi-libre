@@ -303,11 +303,20 @@ function analyzeFichePayload(payload = {}) {
     "appellations",
     "contextesTravail"
   ].includes(key));
+  const availableRichFields = Object.entries(candidates)
+    .filter(([, rows]) => rows.length)
+    .map(([field]) => field);
+  const expectedCompleteFields = ["appellations", "contextesTravail", "conditionsAcces", "mobilites"];
+  const missingCompleteFields = expectedCompleteFields.filter(field => !availableRichFields.includes(field));
   const score = nonEmptyGroups + (hasKnownRichRoot ? 2 : 0) + Math.max(0, rootKeys.length - 2) * 0.25;
   return {
     rootKeys,
     score: Number(score.toFixed(2)),
     isDetailed: score >= 2,
+    isCompleteFiche: missingCompleteFields.length === 0,
+    detailLevel: missingCompleteFields.length ? "skills_and_knowledge_only" : "complete_job_fields_candidate",
+    availableRichFields,
+    missingCompleteFields,
     isShell: score < 1 && rootKeys.every(key => ["code", "metier", "libelle"].includes(key)),
     candidates: Object.fromEntries(Object.entries(candidates).map(([key, rows]) => [key, rows.slice(0, 8)]))
   };
@@ -401,7 +410,12 @@ function buildEndpointDiagnosticRecommendation(results = []) {
     .filter(item => item.ok)
     .sort((a, b) => (b.richness?.score || 0) - (a.richness?.score || 0))[0];
   if (!best) return "Aucune variante n'a renvoye de payload exploitable. Verifier le scope, l'URL ou les droits API.";
-  if (best.richness?.isDetailed) return `Utiliser la variante ${best.endpoint}, qui expose des champs enrichis.`;
+  if (best.richness?.isCompleteFiche) return `Utiliser la variante ${best.endpoint}, qui expose des champs metier riches candidats.`;
+  if (best.richness?.isDetailed) {
+    const available = toArray(best.richness.availableRichFields).join(", ") || "competences/savoirs";
+    const missing = toArray(best.richness.missingCompleteFields).join(", ") || "aucun";
+    return `Utiliser la variante ${best.endpoint} pour les champs disponibles (${available}). Elle ne suffit pas pour une fiche complete : champs encore absents (${missing}).`;
+  }
   return "Toutes les variantes repondent avec un payload trop pauvre. Chercher une autre route de l'API Fiches metiers ou une API Metiers/Competences de liaison.";
 }
 
