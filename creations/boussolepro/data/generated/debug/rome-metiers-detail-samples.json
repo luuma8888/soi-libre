@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T16:35:39.963Z",
+  "generatedAt": "2026-07-13T16:45:49.803Z",
   "branch": "soi-libre-codex",
   "source": "rome_metiers_detail_api",
   "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
-  "totalRecords": 72,
+  "totalRecords": 71,
   "diagnosticCodes": [
     "A1203",
     "K1303",
@@ -14,68 +14,68 @@
   "note": "Diagnostic structurel des enregistrements detailles ROME Metiers recuperes par code. Ces champs peuvent enrichir jobs.rome.json seulement quand les chemins sont presents et stables.",
   "fieldAvailability": {
     "code": {
-      "samplesWithField": 4,
-      "samplesTotal": 4,
+      "samplesWithField": 3,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     },
     "title": {
-      "samplesWithField": 4,
-      "samplesTotal": 4,
+      "samplesWithField": 3,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     },
     "description": {
       "samplesWithField": 3,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     },
     "appellations": {
       "samplesWithField": 3,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     },
     "characteristics": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "skillRefs": {
       "samplesWithField": 3,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     },
     "softSkillRefs": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "knowledgeRefs": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "contextRefs": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "accessConditions": {
-      "samplesWithField": 0,
-      "samplesTotal": 4,
-      "status": "not_available_in_sample"
+      "samplesWithField": 3,
+      "samplesTotal": 3,
+      "status": "available_in_sample"
     },
     "certificationRefs": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "relatedRomeCodes": {
       "samplesWithField": 0,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "not_available_in_sample"
     },
     "regulatoryTags": {
       "samplesWithField": 2,
-      "samplesTotal": 4,
+      "samplesTotal": 3,
       "status": "available_in_sample"
     }
   },
@@ -88,6 +88,7 @@
       "description",
       "appellations",
       "skillRefs",
+      "accessConditions",
       "regulatoryTags"
     ],
     "missingRichFields": [
@@ -95,7 +96,6 @@
       "softSkillRefs",
       "knowledgeRefs",
       "contextRefs",
-      "accessConditions",
       "certificationRefs",
       "relatedRomeCodes"
     ],
@@ -117,13 +117,11 @@
         "$.definition"
       ],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -135,9 +133,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -148,13 +148,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -271,13 +267,11 @@
         "$.appellations"
       ],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -289,9 +283,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -302,13 +298,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -422,13 +414,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -440,9 +430,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -453,13 +445,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -585,13 +573,11 @@
         "$.appellations[7].competencesCles"
       ],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -603,9 +589,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -616,13 +604,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -735,13 +719,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -753,9 +735,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -766,13 +750,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -886,13 +866,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -904,9 +882,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -917,13 +897,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1037,13 +1013,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -1055,9 +1029,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -1068,13 +1044,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1183,18 +1155,19 @@
       "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
       "expectedPathHints": [
         "conditionsAcces",
+        "accesEmploi",
         "accesEmploiMetier",
         "prerequis"
       ],
-      "detectedPaths": [],
+      "detectedPaths": [
+        "$.accesEmploi"
+      ],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -1206,9 +1179,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -1219,13 +1194,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1326,8 +1297,8 @@
           "recursivePathCount": 240
         }
       },
-      "status": "not_available_in_sample",
-      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
     },
     {
       "field": "certificationRefs",
@@ -1339,13 +1310,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -1357,9 +1326,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -1370,13 +1341,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1490,13 +1457,11 @@
       ],
       "detectedPaths": [],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -1508,9 +1473,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -1521,13 +1488,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1646,13 +1609,11 @@
         "$.appellations[2].emploiReglemente"
       ],
       "actualRootKeys": [
-        "code",
-        "libelle",
-        "romeCode",
         "accesEmploi",
         "appellations",
         "centresInterets",
         "centresInteretsLies",
+        "code",
         "codeIsco",
         "competencesMobilisees",
         "competencesMobiliseesEmergentes",
@@ -1664,9 +1625,11 @@
         "emploiCadre",
         "emploiReglemente",
         "formacodes",
+        "libelle",
         "obsolete",
         "riasecMajeur",
         "riasecMineur",
+        "romeCode",
         "secteursActivites",
         "secteursActivitesLies",
         "themes",
@@ -1677,13 +1640,9 @@
       ],
       "actualStructures": {
         "A1203": {
-          "found": true,
-          "rootKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ],
-          "recursivePathCount": 4
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
         },
         "K1303": {
           "found": true,
@@ -1790,55 +1749,12 @@
   ],
   "samples": {
     "A1203": {
-      "found": true,
-      "rootKeys": [
-        "code",
-        "libelle",
-        "romeCode"
-      ],
-      "recursivePaths": [
-        {
-          "path": "$",
-          "type": "object",
-          "childKeys": [
-            "code",
-            "libelle",
-            "romeCode"
-          ]
-        },
-        {
-          "path": "$.code",
-          "type": "string"
-        },
-        {
-          "path": "$.libelle",
-          "type": "string"
-        },
-        {
-          "path": "$.romeCode",
-          "type": "string"
-        }
-      ],
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
       "detectedFields": {
-        "code": [
-          {
-            "path": "$.code",
-            "key": "code",
-            "type": "string"
-          },
-          {
-            "path": "$.romeCode",
-            "key": "romeCode",
-            "type": "string"
-          }
-        ],
-        "title": [
-          {
-            "path": "$.libelle",
-            "key": "libelle",
-            "type": "string"
-          }
-        ],
+        "code": [],
+        "title": [],
         "description": [],
         "appellations": [],
         "characteristics": [],
@@ -1851,11 +1767,7 @@
         "relatedRomeCodes": [],
         "regulatoryTags": []
       },
-      "sanitizedSample": {
-        "code": "A1203",
-        "libelle": "Agent / Agente d'entretien des espaces verts",
-        "romeCode": "A1203"
-      }
+      "sanitizedSample": null
     },
     "K1303": {
       "found": true,
@@ -3858,7 +3770,13 @@
         "softSkillRefs": [],
         "knowledgeRefs": [],
         "contextRefs": [],
-        "accessConditions": [],
+        "accessConditions": [
+          {
+            "path": "$.accesEmploi",
+            "key": "accesEmploi",
+            "type": "string"
+          }
+        ],
         "certificationRefs": [],
         "relatedRomeCodes": [],
         "regulatoryTags": [
@@ -6470,7 +6388,13 @@
         "softSkillRefs": [],
         "knowledgeRefs": [],
         "contextRefs": [],
-        "accessConditions": [],
+        "accessConditions": [
+          {
+            "path": "$.accesEmploi",
+            "key": "accesEmploi",
+            "type": "string"
+          }
+        ],
         "certificationRefs": [],
         "relatedRomeCodes": [],
         "regulatoryTags": []
@@ -9201,7 +9125,13 @@
         "softSkillRefs": [],
         "knowledgeRefs": [],
         "contextRefs": [],
-        "accessConditions": [],
+        "accessConditions": [
+          {
+            "path": "$.accesEmploi",
+            "key": "accesEmploi",
+            "type": "string"
+          }
+        ],
         "certificationRefs": [],
         "relatedRomeCodes": [],
         "regulatoryTags": [

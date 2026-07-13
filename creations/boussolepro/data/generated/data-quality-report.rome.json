@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "reportId": "quality-2026-07-13",
-  "generatedAt": "2026-07-13T16:35:39.963Z",
+  "generatedAt": "2026-07-13T16:45:49.803Z",
   "branch": "soi-libre-codex",
   "datasetVersion": "rome-generated-2026-07-13",
   "status": "completed",
@@ -104,11 +104,18 @@
     {
       "name": "metiers_details",
       "status": "ok",
-      "count": 72,
+      "count": 71,
       "usedForDataset": true,
       "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
-      "failedCodesCount": 0,
-      "failedCodes": []
+      "failedCodesCount": 1,
+      "failedCodes": [
+        {
+          "code": "A1203",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=A1203"
+        }
+      ]
     },
     {
       "name": "metiers",
@@ -515,6 +522,11 @@
     },
     {
       "field": "accessConditions",
+      "count": 1,
+      "ratio": 0.01
+    },
+    {
+      "field": "market",
       "count": 1,
       "ratio": 0.01
     },

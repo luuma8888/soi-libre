@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T16:39:29.454Z.
+Généré le 2026-07-13T16:48:58.167Z.
 
 ## Synthèse
 
@@ -34,6 +34,7 @@ Généré le 2026-07-13T16:39:29.454Z.
 - description : 1
 - workContexts : 1
 - accessConditions : 1
+- market : 1
 - appellations : 1
 
 ## Marché officiel
@@ -56,7 +57,7 @@ Généré le 2026-07-13T16:39:29.454Z.
 - Entrées brutes : 35595
 - Doublons d'identifiants : 0
 - Identifiants manquants : 0
-- Checksum : `56f2a5b6f30d1cdc01477a8294cd7c84096767f5ffede82294a56aa71973565d`
+- Checksum : `81987e003329a52a8558eb15ce6aa5f9acaf072344235f0adf040dc275eba534`
 
 ## Taille et performance
 
