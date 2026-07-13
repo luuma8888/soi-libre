@@ -45,10 +45,10 @@ export function normalizeRomeMetier(raw = {}) {
   const appellationRefs = collectRelationRefs(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
   const appellations = unique(appellationRefs.map(ref => ref.label).filter(Boolean));
   const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques, ...findValuesByKeyHints(source, ["activite", "activites"]));
-  const requiredSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
+  const requiredSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.groupesCompetencesMobilisees, source.groupesCompetences, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
   const optionalSkillRefs = collectRelationRefs(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
   const softSkillRefs = collectRelationRefs(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
-  const knowledgeRefs = collectRelationRefs(source.knowledge, source.savoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
+  const knowledgeRefs = collectRelationRefs(source.knowledge, source.savoirs, source.groupesSavoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
   const contextRefs = collectRelationRefs(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail, ...findValuesByKeyHints(source, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"]));
   const requiredSkillLabels = unique(requiredSkillRefs.map(ref => ref.label).filter(Boolean));
   const optionalSkillLabels = unique(optionalSkillRefs.map(ref => ref.label).filter(Boolean));
@@ -680,6 +680,7 @@ function collectRawItems(...values) {
 
 function unwrapFiche(raw = {}) {
   if (Array.isArray(raw)) return raw[0] || {};
+  if (raw?.metier && (raw.code || raw.groupesCompetencesMobilisees || raw.groupesSavoirs || raw.obsolete !== undefined)) return raw;
   return raw.ficheMetier || raw.fiche || raw.resultat || raw.metier || raw.data || raw;
 }
 

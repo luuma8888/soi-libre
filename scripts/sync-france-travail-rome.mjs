@@ -27,6 +27,18 @@ async function main() {
   const generatedAt = new Date().toISOString();
   try {
     const token = await getFranceTravailAccessToken();
+    if (isEndpointDiagnosticEnabled()) {
+      await writeFicheEndpointDiagnostic(token, {
+        generatedAt,
+        branch: process.env.GITHUB_REF_NAME || "local",
+        endpointUrl: process.env.FT_ROME_FICHES_METIERS_URL || DEFAULT_FICHES_ENDPOINT,
+        codes: parseList(process.env.ROME_DIAGNOSTIC_CODES, requestedCodes.slice(0, 3))
+      });
+      if (isEndpointDiagnosticOnly()) {
+        console.log("[Boussole Pro] Diagnostic endpoint ROME termine sans regenerer le corpus.");
+        return;
+      }
+    }
     const syncResult = await fetchRomeFichesMetiers(token, requestedCodes);
     if (syncResult.fichesMetiers.length === 0) {
       const noDataError = new Error("Synchronisation ROME bloquee : 0 fiche exploitable.");
@@ -86,6 +98,7 @@ async function main() {
         "certifications.certifinfo.json",
         "mappings-rome-formations.json",
         "mappings-rome-certifications.json",
+        ...(isEndpointDiagnosticEnabled() ? ["debug/fiche-endpoint-diagnostic.json"] : []),
         ...(isRawDebugEnabled() ? ["debug/raw-structure-report.json"] : [])
       ],
       licenseSummary: "A verifier selon les droits d'usage France Travail IO.",
@@ -178,6 +191,7 @@ export async function fetchRomeFichesMetiers(token, codes = DEFAULT_ROME_CODES) 
 async function fetchRomeFicheMetier(endpointUrl, accessToken, code) {
   const attempts = buildFicheUrlAttempts(endpointUrl, code);
   const errors = [];
+  const successfulPayloads = [];
   for (const url of attempts) {
     try {
       const response = await fetch(url, {
@@ -192,11 +206,20 @@ async function fetchRomeFicheMetier(endpointUrl, accessToken, code) {
       }
       const json = await response.json();
       const payload = extractFichePayload(json, code);
-      if (payload) return { ok: true, payload, endpoint: url };
+      if (payload) {
+        const richness = analyzeFichePayload(payload);
+        successfulPayloads.push({ payload, endpoint: url, richness });
+        if (richness.isDetailed) return { ok: true, payload, endpoint: url, richness };
+        continue;
+      }
       errors.push({ status: "invalid_structure", message: "Reponse JSON sans fiche exploitable", endpoint: url });
     } catch (error) {
       errors.push({ status: "network_or_parse_error", message: error.message, endpoint: url });
     }
+  }
+  if (successfulPayloads.length) {
+    const best = successfulPayloads.sort((a, b) => b.richness.score - a.richness.score)[0];
+    return { ok: true, payload: best.payload, endpoint: best.endpoint, richness: best.richness };
   }
   const last = errors[errors.length - 1] || {};
   return { ok: false, status: last.status || "unknown", message: last.message || `Aucune fiche ROME exploitable pour ${code}.`, endpoint: last.endpoint || attempts[0] };
@@ -213,20 +236,26 @@ function buildFicheUrlAttempts(endpointUrl, code) {
     ];
   }
   const attempts = [];
+  const pathUrl = new URL(endpointUrl);
+  pathUrl.pathname = `${pathUrl.pathname.replace(/\/$/, "")}/${encodeURIComponent(code)}`;
+  attempts.push(pathUrl.toString());
   for (const paramName of parseList(process.env.FT_ROME_FICHE_CODE_PARAMS, ["codeRome", "code", "romeCode"])) {
     const url = new URL(endpointUrl);
     url.searchParams.set(paramName, code);
     attempts.push(url.toString());
   }
-  const pathUrl = new URL(endpointUrl);
-  pathUrl.pathname = `${pathUrl.pathname.replace(/\/$/, "")}/${encodeURIComponent(code)}`;
-  attempts.push(pathUrl.toString());
+  for (const paramName of ["codeMetier", "codeROME", "code_rome"]) {
+    const url = new URL(endpointUrl);
+    url.searchParams.set(paramName, code);
+    attempts.push(url.toString());
+  }
   return [...new Set(attempts)];
 }
 
 function extractFichePayload(json, code) {
   if (!json) return null;
   if (Array.isArray(json)) return findPayloadByCode(json, code) || json[0] || null;
+  if (looksLikeFicheMetier(json)) return json;
   for (const key of ["ficheMetier", "fiche", "resultat", "metier", "data"]) {
     if (json[key] && !Array.isArray(json[key])) return json[key];
     if (Array.isArray(json[key])) return findPayloadByCode(json[key], code) || json[key][0] || null;
@@ -235,6 +264,133 @@ function extractFichePayload(json, code) {
     if (Array.isArray(json[key])) return findPayloadByCode(json[key], code) || json[key][0] || null;
   }
   return json;
+}
+
+function looksLikeFicheMetier(value = {}) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  if (value.metier && (value.code || value.groupesCompetencesMobilisees || value.groupesSavoirs || value.obsolete !== undefined)) return true;
+  return Boolean(value.groupesCompetencesMobilisees || value.groupesSavoirs || value.groupesCompetences || value.competencesMobilisees);
+}
+
+function analyzeFichePayload(payload = {}) {
+  const candidates = {
+    competences: findCandidatePaths(payload, ["groupescompetencesmobilisees", "competence", "savoirfaire", "savoir-faire"]),
+    savoirs: findCandidatePaths(payload, ["groupessavoirs", "savoirs", "connaissance"]),
+    appellations: findCandidatePaths(payload, ["appellation"]),
+    contextesTravail: findCandidatePaths(payload, ["contextetravail", "conditionexercice", "environnementtravail"]),
+    conditionsAcces: findCandidatePaths(payload, ["conditionacces", "accesemploimetier", "accesmetier"]),
+    mobilites: findCandidatePaths(payload, ["mobilite", "metierproche", "prochemetier"])
+  };
+  const rootKeys = Object.keys(payload || {}).filter(key => !isSensitiveKey(key)).sort();
+  const nonEmptyGroups = Object.values(candidates).filter(rows => rows.length).length;
+  const hasKnownRichRoot = rootKeys.some(key => [
+    "groupesCompetencesMobilisees",
+    "groupesSavoirs",
+    "groupesCompetences",
+    "competencesMobilisees",
+    "appellations",
+    "contextesTravail"
+  ].includes(key));
+  const score = nonEmptyGroups + (hasKnownRichRoot ? 2 : 0) + Math.max(0, rootKeys.length - 2) * 0.25;
+  return {
+    rootKeys,
+    score: Number(score.toFixed(2)),
+    isDetailed: score >= 2,
+    isShell: score < 1 && rootKeys.every(key => ["code", "metier", "libelle"].includes(key)),
+    candidates: Object.fromEntries(Object.entries(candidates).map(([key, rows]) => [key, rows.slice(0, 8)]))
+  };
+}
+
+async function writeFicheEndpointDiagnostic(token, options = {}) {
+  await mkdir(DEBUG_DIR, { recursive: true });
+  const accessToken = token.access_token || token.token || token;
+  const endpointUrl = options.endpointUrl || process.env.FT_ROME_FICHES_METIERS_URL || DEFAULT_FICHES_ENDPOINT;
+  const codes = options.codes?.length ? options.codes : ["M1607", "G1202", "A1203"];
+  const results = [];
+  for (const code of codes) {
+    const attempts = [];
+    for (const endpoint of buildFicheUrlAttempts(endpointUrl, code)) {
+      const row = {
+        code,
+        endpoint: redactEndpoint(endpoint),
+        status: "not_called",
+        ok: false,
+        payloadShape: null,
+        richness: null,
+        message: ""
+      };
+      try {
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: "application/json"
+          }
+        });
+        row.status = response.status;
+        if (!response.ok) {
+          row.message = await safeResponseText(response);
+        } else {
+          const json = await response.json();
+          const payload = extractFichePayload(json, code);
+          row.ok = Boolean(payload);
+          row.payloadShape = describePayloadShape(payload || json);
+          row.richness = payload ? analyzeFichePayload(payload) : null;
+          row.message = payload ? (row.richness?.isDetailed ? "detail_sufficient" : "payload_too_poor") : "no_payload";
+        }
+      } catch (error) {
+        row.status = "network_or_parse_error";
+        row.message = shortMessage(error.message);
+      }
+      attempts.push(row);
+      await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
+    }
+    results.push({
+      code,
+      bestEndpoint: attempts
+        .filter(item => item.ok)
+        .sort((a, b) => (b.richness?.score || 0) - (a.richness?.score || 0))[0]?.endpoint || null,
+      bestScore: attempts
+        .filter(item => item.ok)
+        .sort((a, b) => (b.richness?.score || 0) - (a.richness?.score || 0))[0]?.richness?.score || 0,
+      attempts
+    });
+  }
+  const report = {
+    schemaVersion: "1.0.0",
+    generatedAt: options.generatedAt || new Date().toISOString(),
+    branch: options.branch || process.env.GITHUB_REF_NAME || "local",
+    source: "rome_fiche_endpoint_diagnostic",
+    requestedEndpoint: redactEndpoint(endpointUrl),
+    testedCodes: codes,
+    note: "Rapport sans token ni Authorization. Il compare les variantes d'appel pour trouver celle qui renvoie une FicheMetier enrichie.",
+    expectedRichFields: ["groupesCompetencesMobilisees", "groupesSavoirs", "appellations", "contextesTravail", "conditionsAcces"],
+    results,
+    recommendation: buildEndpointDiagnosticRecommendation(results)
+  };
+  await writeFile(new URL("fiche-endpoint-diagnostic.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  console.log(`[Boussole Pro] Diagnostic endpoint ROME: ${results.length} code(s), meilleur score ${Math.max(0, ...results.map(item => item.bestScore || 0))}.`);
+}
+
+function describePayloadShape(payload = {}) {
+  if (!payload || typeof payload !== "object") return { type: typeof payload };
+  return {
+    type: Array.isArray(payload) ? "array" : "object",
+    rootKeys: Object.keys(payload).filter(key => !isSensitiveKey(key)).sort(),
+    sampleChildKeys: Object.fromEntries(Object.entries(payload)
+      .filter(([, value]) => value && typeof value === "object")
+      .slice(0, 10)
+      .map(([key, value]) => [key, Array.isArray(value) ? { type: "array", length: value.length } : Object.keys(value).filter(childKey => !isSensitiveKey(childKey)).slice(0, 12)]))
+  };
+}
+
+function buildEndpointDiagnosticRecommendation(results = []) {
+  const best = results
+    .flatMap(item => item.attempts || [])
+    .filter(item => item.ok)
+    .sort((a, b) => (b.richness?.score || 0) - (a.richness?.score || 0))[0];
+  if (!best) return "Aucune variante n'a renvoye de payload exploitable. Verifier le scope, l'URL ou les droits API.";
+  if (best.richness?.isDetailed) return `Utiliser la variante ${best.endpoint}, qui expose des champs enrichis.`;
+  return "Toutes les variantes repondent avec un payload trop pauvre. Chercher une autre route de l'API Fiches metiers ou une API Metiers/Competences de liaison.";
 }
 
 async function fetchOptionalRomeReferentials(mainToken) {
@@ -401,6 +557,26 @@ function parseList(value, fallback = []) {
 
 function isRawDebugEnabled() {
   return String(process.env.ROME_RAW_DEBUG || "false").toLowerCase() === "true";
+}
+
+function isEndpointDiagnosticEnabled() {
+  return String(process.env.ROME_ENDPOINT_DIAGNOSTIC || "false").toLowerCase() === "true";
+}
+
+function isEndpointDiagnosticOnly() {
+  return String(process.env.ROME_ENDPOINT_DIAGNOSTIC_ONLY || "false").toLowerCase() === "true";
+}
+
+function redactEndpoint(value = "") {
+  try {
+    const url = new URL(value);
+    for (const key of [...url.searchParams.keys()]) {
+      if (isSensitiveKey(key)) url.searchParams.set(key, "REDACTED");
+    }
+    return url.toString();
+  } catch {
+    return shortMessage(value);
+  }
 }
 
 function logSyncSummary(dataset = {}, report = {}, syncMeta = {}) {

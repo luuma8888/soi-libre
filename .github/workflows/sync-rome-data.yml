@@ -11,6 +11,18 @@ on:
         description: "Generer debug/raw-structure-report.json pour auditer la structure brute sans valeurs sensibles."
         required: false
         default: "false"
+      endpoint_diagnostic:
+        description: "Tester plusieurs variantes d'appel fiche-metier sur quelques codes et generer debug/fiche-endpoint-diagnostic.json."
+        required: false
+        default: "false"
+      endpoint_diagnostic_only:
+        description: "Si true, lance seulement le diagnostic endpoint sans regenerer jobs.rome.json."
+        required: false
+        default: "false"
+      diagnostic_codes:
+        description: "Codes ROME pour le diagnostic endpoint, separes par des virgules."
+        required: false
+        default: "M1607,G1202,A1203"
   schedule:
     - cron: "0 3 1 * *"
 
@@ -44,6 +56,9 @@ jobs:
           ROME_CODES: ${{ inputs.rome_codes || vars.ROME_CODES || '' }}
           ROME_DEBUG_CODES: ${{ vars.ROME_DEBUG_CODES || 'M1607,M1805,K1303,A1203' }}
           ROME_RAW_DEBUG: ${{ inputs.raw_debug || vars.ROME_RAW_DEBUG || 'false' }}
+          ROME_ENDPOINT_DIAGNOSTIC: ${{ inputs.endpoint_diagnostic || 'false' }}
+          ROME_ENDPOINT_DIAGNOSTIC_ONLY: ${{ inputs.endpoint_diagnostic_only || 'false' }}
+          ROME_DIAGNOSTIC_CODES: ${{ inputs.diagnostic_codes || 'M1607,G1202,A1203' }}
       - name: Commit generated data
         run: |
           git config user.name "github-actions"
