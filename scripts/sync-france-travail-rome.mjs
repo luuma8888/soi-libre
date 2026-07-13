@@ -64,6 +64,7 @@ async function main() {
         filename: "rome-metiers-detail-samples.json",
         source: "rome_metiers_detail_api",
         endpoint: optionalReferentials.diagnostics.find(item => item.name === "metiers_details")?.endpoint,
+        usedForDataset: true,
         note: "Diagnostic structurel des enregistrements detailles ROME Metiers recuperes par code. Ces champs peuvent enrichir jobs.rome.json seulement quand les chemins sont presents et stables."
       });
     }
@@ -298,7 +299,7 @@ function analyzeFichePayload(payload = {}) {
     competences: findCandidatePaths(payload, ["groupescompetencesmobilisees", "competence", "savoirfaire", "savoir-faire"]),
     savoirs: findCandidatePaths(payload, ["groupessavoirs", "savoirs", "connaissance"]),
     appellations: findCandidatePaths(payload, ["appellation"]),
-    contextesTravail: findCandidatePaths(payload, ["contextetravail", "conditionexercice", "environnementtravail"]),
+    contextesTravail: findCandidatePaths(payload, ["contextestravail", "contextetravail", "conditionexercice", "environnementtravail"]),
     conditionsAcces: findCandidatePaths(payload, ["conditionacces", "accesemploimetier", "accesmetier"]),
     mobilites: findCandidatePaths(payload, ["mobilite", "metierproche", "prochemetier"])
   };
@@ -543,7 +544,11 @@ async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}, option
     return [code, buildRomeMetiersRecordSample(code, record)];
   }));
   const fieldAvailability = buildMetiersFieldAvailability(samples);
-  const conclusion = buildMetiersDiagnosticConclusion(fieldAvailability);
+  const baseConclusion = buildMetiersDiagnosticConclusion(fieldAvailability);
+  const conclusion = {
+    ...baseConclusion,
+    usedForDataset: options.usedForDataset ?? baseConclusion.usedForDataset
+  };
   const endpoint = options.endpoint || getMetiersDiagnosticEndpoint(syncMeta);
   const unavailableFieldReport = buildMetiersUnavailableFieldReport({ fieldAvailability, samples, endpoint });
   const report = {
@@ -583,7 +588,7 @@ function buildRomeMetiersRecordSample(code, record) {
     skillRefs: findCandidatePaths(record, ["competence", "savoirfaire", "savoir-faire"]),
     softSkillRefs: findCandidatePaths(record, ["savoiretre", "savoir-etre", "softskill"]),
     knowledgeRefs: findCandidatePaths(record, ["savoir", "connaissance", "knowledge"]),
-    contextRefs: findCandidatePaths(record, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail", "situationtravail"]),
+    contextRefs: findCandidatePaths(record, ["contextestravail", "contextetravail", "contexte-travail", "conditionexercice", "environnementtravail", "situationtravail"]),
     accessConditions: findCandidatePaths(record, ["conditionacces", "accesemploi", "accesemploimetier", "accesmetier", "prerequis", "pre-requis"]),
     certificationRefs: findCandidatePaths(record, ["certification", "habilitation", "reglementation"]),
     relatedRomeCodes: findCandidatePaths(record, ["mobilite", "metierproche", "prochemetier"]),
@@ -789,7 +794,7 @@ function buildRawStructureReport(rawSamples = {}, syncMeta = {}) {
     savoirs: ["savoirs", "connaissance", "knowledge"],
     savoirEtre: ["savoiretre", "savoir-etre", "softskill"],
     appellations: ["appellation"],
-    contextesTravail: ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"],
+    contextesTravail: ["contextestravail", "contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"],
     conditionsAcces: ["conditionacces", "accesemploi", "accesemploimetier", "accesmetier"],
     certifications: ["certification", "habilitation"],
     mobilites: ["mobilite", "metierproche", "prochemetier"]

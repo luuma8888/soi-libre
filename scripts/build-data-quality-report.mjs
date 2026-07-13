@@ -80,6 +80,9 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   if (rawSkills.length && linkedSkillIds.size === 0) {
     warnings.push(issue("warning", "referential_loaded_but_unlinked", "Des competences ROME globales sont chargees, mais aucune competence officielle n'est reliee aux metiers. Elles servent au profil, pas a prouver qu'un metier les exige.", "skills"));
   }
+  optionalReferentials
+    .filter(item => Number(item.failedCodesCount || 0) > 0)
+    .forEach(item => warnings.push(issue("warning", `optional_${item.name}_partial`, `${item.name} partiellement exploitable : ${item.failedCodesCount} code(s) sans donnée enrichie.`, item.name)));
   const metiersReferential = optionalReferentials.find(item => item.name === "metiers" && item.status === "ok");
   const metiersDetails = optionalReferentials.find(item => item.name === "metiers_details" && item.status === "ok" && item.usedForDataset);
   if (metiersReferential && metiersReferential.usedForDataset === false && !metiersDetails) {
