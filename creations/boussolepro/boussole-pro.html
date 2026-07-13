@@ -499,6 +499,37 @@ textarea {
   margin-top: 12px;
 }
 
+.skill-family-summary {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.skill-family-actions {
+  margin: 8px 0 12px;
+}
+
+.skill-family-grid .tag-option {
+  min-height: 92px;
+}
+
+.skill-family-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.skill-family-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
 .tag-option,
 .choice-option,
 .constraint-item {
@@ -2144,6 +2175,7 @@ const App = {
     jobIndex: null,
     skillRowIndex: null,
     skillLabelIndex: null,
+    skillSectorIndex: null,
     contextLabelIndex: null,
     explorationHaystackCache: new Map(),
     relatedVariantsCache: new Map(),
@@ -2358,6 +2390,61 @@ const SKILL_SECTOR_MAP_V051 = {
   "skill-environment": ["nature"],
   "skill-animal-care": ["animals", "nature"],
   "skill-animal-observation": ["animals", "nature"]
+};
+
+const SKILL_TAXONOMY_TO_BROWSER_SECTORS_V052 = {
+  administratif_support: ["administrative"],
+  numerique: ["digital"],
+  social_insertion: ["social"],
+  education_enfance: ["education", "children", "animation"],
+  sante_soin: ["care", "social"],
+  proprete_entretien: ["cleaning"],
+  hotellerie_hebergement: ["hospitality", "commerce"],
+  restauration_alimentation: ["food", "hospitality"],
+  commerce_vente: ["commerce"],
+  nature_agriculture: ["nature"],
+  batiment_construction: ["building"],
+  industrie_production: ["industry"],
+  logistique_transport: ["logistics"],
+  securite_prevention: ["security"],
+  culture_communication: ["creative", "culture"],
+  services_aux_collectivites: ["administrative", "social"],
+  animaux: ["animals", "nature"],
+  maintenance: ["building", "industry", "digital"]
+};
+
+const SKILL_FAMILY_RULES_V052 = [
+  { id: "relation_accueil", label: "Accueillir, écouter, informer", hint: "Contact public, écoute, orientation, relation client ou usager.", sectors: ["transversal", "social", "commerce", "hospitality"], taxonomySectors: ["social_insertion", "commerce_vente", "hotellerie_hebergement"], tokens: ["accueill", "ecout", "informer", "orienter", "renseigner", "conseill", "client", "public", "usager", "relation"] },
+  { id: "accompagnement_aide", label: "Accompagner, aider, soutenir", hint: "Soutien concret, suivi, autonomie, aide à la personne.", sectors: ["social", "care", "children"], taxonomySectors: ["social_insertion", "sante_soin", "education_enfance"], tokens: ["accompagn", "aider", "soutenir", "autonomie", "quotidien", "besoin", "vulnerable", "suivre", "adapter"] },
+  { id: "animation_pedagogie", label: "Animer, transmettre, faire apprendre", hint: "Activités, pédagogie, animation de groupe, transmission.", sectors: ["animation", "education", "children", "culture"], taxonomySectors: ["education_enfance", "culture_communication"], tokens: ["animer", "animation", "atelier", "activite", "transmettre", "enseigner", "former", "pedagog", "apprendre", "groupe"] },
+  { id: "enfance_education", label: "Enfance, sécurité éducative", hint: "Enfants, développement, cadre éducatif et vigilance.", sectors: ["children", "education", "animation", "care"], taxonomySectors: ["education_enfance", "sante_soin"], tokens: ["enfant", "enfance", "scolaire", "educatif", "developpement", "securite d'un enfant", "classe"] },
+  { id: "administration_dossiers", label: "Gérer des dossiers et informations", hint: "Documents, saisie, classement, suivi administratif.", sectors: ["administrative"], taxonomySectors: ["administratif_support", "services_aux_collectivites"], tokens: ["dossier", "document", "administr", "saisir", "classer", "archiv", "courrier", "planning", "rendez-vous", "secretariat"] },
+  { id: "organisation_coordination", label: "Organiser, planifier, coordonner", hint: "Priorités, étapes, projet, coordination d’actions.", sectors: ["transversal", "administrative", "logistics"], taxonomySectors: ["administratif_support", "logistique_transport"], tokens: ["organiser", "planifier", "coordonner", "preparer", "programmer", "gerer", "suivi", "priorit", "procedur"] },
+  { id: "communication_creation", label: "Communiquer, rédiger, créer", hint: "Écrit, contenus, image, médiation culturelle ou communication.", sectors: ["creative", "culture", "commerce"], taxonomySectors: ["culture_communication"], tokens: ["rediger", "communication", "contenu", "image", "video", "photo", "media", "creation", "creer", "valoriser", "culture"] },
+  { id: "vente_service", label: "Vendre, conseiller, servir", hint: "Vente, caisse, service, satisfaction client.", sectors: ["commerce", "hospitality", "food"], taxonomySectors: ["commerce_vente", "hotellerie_hebergement", "restauration_alimentation"], tokens: ["vendre", "vente", "commercial", "caisse", "encaisser", "servir", "clientele", "rayon", "commande", "reservation"] },
+  { id: "numerique_donnees", label: "Utiliser le numérique et les données", hint: "Outils numériques, support, données, logiciel, web.", sectors: ["digital", "administrative"], taxonomySectors: ["numerique", "administratif_support"], tokens: ["numerique", "informatique", "logiciel", "donnee", "data", "web", "reseau", "support utilisateur", "tableur", "systeme"] },
+  { id: "observer_analyser", label: "Observer, analyser, diagnostiquer", hint: "Observation, diagnostic, contrôle, analyse d’une situation.", sectors: ["transversal", "industry", "care", "nature"], taxonomySectors: ["industrie_production", "sante_soin", "nature_agriculture"], tokens: ["observer", "analyser", "diagnostiquer", "evaluer", "identifier", "detecter", "verifier", "mesurer", "controler"] },
+  { id: "qualite_regles", label: "Respecter règles, qualité et sécurité", hint: "Normes, consignes, réglementation, traçabilité, prévention.", sectors: ["industry", "security", "cleaning", "food"], taxonomySectors: ["industrie_production", "securite_prevention", "proprete_entretien", "restauration_alimentation"], tokens: ["regle", "norme", "qualite", "securite", "prevention", "tracabilite", "reglementation", "protocole", "conformite"] },
+  { id: "hygiene_nettoyage", label: "Nettoyer, désinfecter, entretenir", hint: "Propreté, hygiène, remise en état, entretien de locaux.", sectors: ["cleaning", "care", "food", "hospitality"], taxonomySectors: ["proprete_entretien", "sante_soin", "hotellerie_hebergement"], tokens: ["nettoy", "desinfect", "entretien", "proprete", "hygiene", "linge", "remettre en etat", "dechet", "local"] },
+  { id: "soin_confort", label: "Contribuer au soin et au confort", hint: "Hygiène, confort, vigilance, transmissions en contexte de soin.", sectors: ["care", "social", "children"], taxonomySectors: ["sante_soin", "social_insertion"], tokens: ["soin", "confort", "patient", "medical", "sante", "hygiene corporelle", "transmission", "alerter", "intimite"] },
+  { id: "cuisine_alimentation", label: "Préparer, cuisiner, servir des aliments", hint: "Cuisine, préparation, conservation, règles alimentaires.", sectors: ["food", "cleaning", "hospitality"], taxonomySectors: ["restauration_alimentation"], tokens: ["cuisine", "aliment", "repas", "preparation culinaire", "cuire", "produit alimentaire", "haccp", "chaine du froid", "plat"] },
+  { id: "nature_vegetal", label: "Entretenir le vivant végétal", hint: "Espaces verts, plantations, cultures, sol, arrosage.", sectors: ["nature"], taxonomySectors: ["nature_agriculture"], tokens: ["plante", "vegetal", "arbre", "jardin", "espace vert", "sol", "semis", "arrosage", "irrigation", "taille", "elaguer", "serre"] },
+  { id: "animaux_soins", label: "Observer et prendre soin des animaux", hint: "Animaux, bien-être animal, observation et soins courants.", sectors: ["animals", "nature"], taxonomySectors: ["animaux", "nature_agriculture"], tokens: ["animal", "animaux", "soin animal", "nourrir", "refuge", "veterinaire", "comportement animal"] },
+  { id: "batiment_travaux", label: "Réaliser des travaux et aménagements", hint: "Chantier, pose, construction, second œuvre, artisanat.", sectors: ["building"], taxonomySectors: ["batiment_construction"], tokens: ["chantier", "batiment", "poser", "maconner", "peindre", "revetement", "amenager", "construction", "travaux", "ouvrage"] },
+  { id: "outillage_maintenance", label: "Utiliser outils, machines, maintenance", hint: "Matériel, outillage, réglage, réparation, dépannage.", sectors: ["building", "industry", "digital"], taxonomySectors: ["maintenance", "industrie_production", "batiment_construction"], tokens: ["outil", "outillage", "materiel", "machine", "equipement", "regler", "installer", "reparer", "maintenance", "depanner"] },
+  { id: "production_fabrication", label: "Produire, fabriquer, transformer", hint: "Production, fabrication, transformation, gestes techniques.", sectors: ["industry", "food", "building"], taxonomySectors: ["industrie_production", "restauration_alimentation"], tokens: ["produire", "fabriquer", "transformer", "conditionner", "assembler", "production", "operation", "realiser des operations"] },
+  { id: "logistique_stock", label: "Stocker, préparer, expédier", hint: "Stocks, commandes, manutention, entrepôt, flux.", sectors: ["logistics", "commerce", "industry"], taxonomySectors: ["logistique_transport", "commerce_vente"], tokens: ["stock", "commande", "preparateur", "entrepot", "expedier", "receptionner", "inventaire", "manutention", "chargement"] },
+  { id: "transport_conduite", label: "Conduire, livrer, déplacer", hint: "Conduite, transport, déplacement, livraison.", sectors: ["logistics", "care", "nature"], taxonomySectors: ["logistique_transport"], tokens: ["conduire", "livrer", "transport", "deplacer", "vehicule", "permis", "trajet", "mobilite"] },
+  { id: "encadrement_projet", label: "Encadrer, piloter, décider", hint: "Responsabilité, équipe, projet, arbitrage.", sectors: ["transversal", "administrative", "industry"], taxonomySectors: ["administratif_support", "industrie_production"], tokens: ["encadrer", "manager", "piloter", "superviser", "responsable", "equipe", "decision", "budget", "projet"] },
+  { id: "gestes_generaux", label: "Gestes professionnels généraux", hint: "Actions concrètes utiles dans plusieurs secteurs.", sectors: ["transversal"], taxonomySectors: [], tokens: ["preparer", "realiser", "effectuer", "mettre en place", "participer", "appliquer", "utiliser"] }
+];
+
+const SKILL_FAMILY_FALLBACK_V052 = {
+  id: "transversal_general",
+  label: "Compétences générales à préciser",
+  hint: "Compétences utiles, mais encore peu rattachées à une famille précise.",
+  sectors: ["transversal"],
+  taxonomySectors: []
 };
 
 const SKILL_JOB_MAP_V051 = {
@@ -5991,16 +6078,18 @@ function renderExperienceDomainDetailsInPlace() {
 function renderSkillBrowser(profile, dataset) {
   const browser = App.state.skillBrowser;
   const groups = getSkillSectorGroups(profile, dataset);
+  const totalSkills = groups.reduce((sum, group) => sum + group.skills.length, 0);
   return `
     <details class="advanced-box" open>
-      <summary>Choisir des compétences par secteurs</summary>
-      <p class="field-help">Les compétences peuvent apparaître dans plusieurs groupes, mais elles ne sont stockées qu’une seule fois.</p>
+      <summary>Choisir des compétences par familles</summary>
+      <p class="field-help">Étape 1 : repère une famille de gestes professionnels. Étape 2 : ouvre la famille pour cocher les compétences officielles ROME qui te ressemblent. Les secteurs déjà cochés remontent en priorité.</p>
       <div class="form-grid">
         ${inputField("Rechercher une compétence", "skillBrowser.query", browser.query, "search", "Ex. enfant, écoute, nettoyage").replace('data-field="skillBrowser.query"', 'data-skill-browser="query"')}
         <label class="tag-option"><input type="checkbox" data-skill-browser="onlySelectedSectors" value="yes" ${browser.onlySelectedSectors ? "checked" : ""}><span><span class="tag-name">Afficher seulement mes secteurs</span><span class="tag-meta">Selon les domaines déjà explorés</span></span></label>
-        <label class="tag-option"><input type="checkbox" data-skill-browser="showTransversal" value="yes" ${browser.showTransversal ? "checked" : ""}><span><span class="tag-name">Voir les compétences transversales</span><span class="tag-meta">Écoute, organisation, rédaction, sécurité...</span></span></label>
+        <label class="tag-option"><input type="checkbox" data-skill-browser="showTransversal" value="yes" ${browser.showTransversal ? "checked" : ""}><span><span class="tag-name">Voir les familles générales</span><span class="tag-meta">Organisation, relation, gestes utiles dans plusieurs secteurs...</span></span></label>
         <label class="tag-option"><input type="checkbox" data-skill-browser="showAll" value="yes" ${browser.showAll ? "checked" : ""}><span><span class="tag-name">Afficher toutes les compétences</span><span class="tag-meta">Option avancée</span></span></label>
       </div>
+      <p class="field-help">${groups.length} famille(s) affichée(s), ${totalSkills} compétence(s) officielle(s) à affiner. Une compétence peut être visible dans une famille, mais elle n’est enregistrée qu’une seule fois.</p>
       <div class="button-row no-print" style="margin-top:12px">
         <button class="tiny-button" type="button" data-action="skills-expand-all">Tout déplier</button>
         <button class="tiny-button" type="button" data-action="skills-collapse-all">Tout replier</button>
@@ -6018,57 +6107,174 @@ function renderSkillSectorList(profile = App.state.profile, dataset = App.state.
 function getSkillSectorGroups(profile, dataset) {
   const query = normalizeText(App.state.skillBrowser.query);
   const selectedSectors = getSelectedSkillSectors(profile);
-  const optionsById = new Map(SKILL_SECTOR_OPTIONS_V051);
+  const selectedTaxonomySectors = new Set(getProfileSectorIds(profile));
+  const hasSelectedSectorFilter = Boolean(selectedSectors.size || selectedTaxonomySectors.size);
+  const selectedSkillIds = new Set(toArray(profile.skills));
   const groups = new Map();
   getProfileSkillOptions(dataset).forEach(skill => {
-    if (query && !normalizeText(`${skill.label} ${skill.category} ${skill.id}`).includes(query)) return;
-    const sectors = getSkillSectors(skill);
-    sectors.forEach(sector => {
-      const isSelected = selectedSectors.has(sector);
-      const canShow = App.state.skillBrowser.showAll ||
-        (sector === "transversal" && App.state.skillBrowser.showTransversal) ||
-        !App.state.skillBrowser.onlySelectedSectors ||
-        isSelected ||
-        profile.skills.includes(skill.id);
-      if (!canShow) return;
-      if (!groups.has(sector)) groups.set(sector, { id: sector, label: optionsById.get(sector) || sector, selected: isSelected, skills: [] });
-      groups.get(sector).skills.push(skill);
-    });
+    const sectors = getSkillSectors(skill, dataset);
+    const taxonomySectors = getSkillTaxonomySectors(skill, dataset);
+    const linkInfo = getSkillLinkInfo(skill.id, dataset);
+    const searchText = normalizeText(`${skill.label} ${skill.category} ${skill.id} ${taxonomySectors.map(sectorLabel).join(" ")} ${toArray(linkInfo.jobTitles).join(" ")}`);
+    if (query && !searchText.includes(query)) return;
+    const isSelectedSector = sectors.some(sector => selectedSectors.has(sector)) || taxonomySectors.some(sector => selectedTaxonomySectors.has(sector));
+    const isChecked = selectedSkillIds.has(skill.id);
+    const isGeneral = sectors.includes("transversal");
+    const canShow = App.state.skillBrowser.showAll ||
+      isChecked ||
+      !App.state.skillBrowser.onlySelectedSectors ||
+      !hasSelectedSectorFilter ||
+      isSelectedSector ||
+      (isGeneral && App.state.skillBrowser.showTransversal);
+    if (!canShow) return;
+    const family = getSkillFamily(skill, sectors, taxonomySectors);
+    const familyMatchesProfile = toArray(family.sectors).some(sector => selectedSectors.has(sector)) ||
+      toArray(family.taxonomySectors).some(sector => selectedTaxonomySectors.has(sector));
+    if (family.id === "transversal_general" && !App.state.skillBrowser.showTransversal && !isChecked && !isSelectedSector && !App.state.skillBrowser.showAll) return;
+    if (!groups.has(family.id)) {
+      groups.set(family.id, {
+        id: family.id,
+        label: family.label,
+        hint: family.hint,
+        selected: false,
+        directMatch: false,
+        checkedCount: 0,
+        score: 0,
+        sectorLabels: new Set(),
+        skills: []
+      });
+    }
+    const group = groups.get(family.id);
+    group.selected = group.selected || isSelectedSector || familyMatchesProfile;
+    group.directMatch = group.directMatch || familyMatchesProfile;
+    group.checkedCount += isChecked ? 1 : 0;
+    group.score += (familyMatchesProfile ? 80 : 0) + (isSelectedSector ? 8 : 0) + (isChecked ? 12 : 0) + Math.min(toArray(linkInfo.jobCodes).length, 4);
+    taxonomySectors.forEach(sector => group.sectorLabels.add(sectorLabel(sector)));
+    group.skills.push({ ...skill, _selectedSector: isSelectedSector, _linkedJobCount: toArray(linkInfo.jobCodes).length });
   });
   return [...groups.values()]
-    .map(group => ({ ...group, skills: uniqueBy(group.skills, "id").sort((a, b) => a.label.localeCompare(b.label, "fr")) }))
-    .sort((a, b) => Number(b.selected) - Number(a.selected) || (a.id === "transversal" ? -1 : b.id === "transversal" ? 1 : a.label.localeCompare(b.label, "fr")));
+    .map(group => ({
+      ...group,
+      sectorLabels: Array.from(group.sectorLabels).slice(0, 4),
+      skills: uniqueBy(group.skills, "id").sort((a, b) =>
+        Number(selectedSkillIds.has(b.id)) - Number(selectedSkillIds.has(a.id)) ||
+        Number(b._selectedSector) - Number(a._selectedSector) ||
+        Number(b._linkedJobCount || 0) - Number(a._linkedJobCount || 0) ||
+        a.label.localeCompare(b.label, "fr")
+      )
+    }))
+    .sort((a, b) => Number(b.directMatch) - Number(a.directMatch) || Number(b.selected) - Number(a.selected) || b.checkedCount - a.checkedCount || b.score - a.score || a.label.localeCompare(b.label, "fr"));
 }
 
 function renderSkillSectorGroup(group, profile) {
   const checkedCount = group.skills.filter(skill => profile.skills.includes(skill.id)).length;
-  const open = App.state.skillBrowser.openAll || group.selected || checkedCount > 0 || group.id === "transversal";
+  const open = App.state.skillBrowser.openAll || group.directMatch || checkedCount > 0;
+  const sectorText = group.sectorLabels?.length ? `Secteurs liés : ${group.sectorLabels.join(", ")}` : "Secteurs liés : à préciser";
   return `
     <details class="advanced-box skill-sector" ${open ? "open" : ""}>
-      <summary>${h(group.label)} <span class="badge outline">${group.skills.length}</span>${checkedCount ? ` <span class="badge sage">${checkedCount} cochée(s)</span>` : ""}</summary>
-      <div class="tag-grid">${group.skills.map(skill => checkboxTag("skills", skill.id, skill.label, skill.category || "compétence", profile.skills.includes(skill.id))).join("")}</div>
+      <summary>
+        <span>${h(group.label)} <span class="badge outline">${group.skills.length}</span>${checkedCount ? ` <span class="badge sage">${checkedCount} cochée(s)</span>` : ""}</span>
+        <span class="skill-family-hint">${h(group.hint || "")}</span>
+      </summary>
+      <div class="skill-family-summary">
+        <span>${h(sectorText)}</span>
+        <span>${group.directMatch ? "Prioritaire : cette famille correspond directement aux domaines cochés." : group.selected ? "Prioritaire selon les métiers liés à tes domaines cochés." : "Famille disponible pour élargir l’exploration."}</span>
+      </div>
+      <div class="button-row skill-family-actions no-print">
+        <button class="tiny-button" type="button" data-action="skills-select-family" data-skill-family="${h(group.id)}">Tout cocher dans ce groupe</button>
+        <button class="tiny-button" type="button" data-action="skills-clear-family" data-skill-family="${h(group.id)}">Décocher ce groupe</button>
+      </div>
+      <div class="tag-grid skill-family-grid">${group.skills.map(skill => checkboxTag("skills", skill.id, skill.label, skill.category || "compétence officielle", profile.skills.includes(skill.id))).join("")}</div>
     </details>`;
 }
 
-function getSkillSectors(skill) {
+function getSkillSectors(skill, dataset = App.state.dataset) {
   const mapped = SKILL_SECTOR_MAP_V051[skill.id];
-  if (mapped?.length) return mapped;
-  const category = normalizeText(skill.category || skill.type || "");
+  const linked = getSkillLinkInfo(skill.id, dataset).browserSectorIds || [];
+  const taxonomyInferred = getSkillTaxonomySectors(skill, dataset).flatMap(skillSectorsFromTaxonomySector);
+  const category = normalizeText(`${skill.label || ""} ${skill.category || ""} ${skill.type || ""}`);
   const inferred = [];
+  if (/(accueil|client|vente|commerce|caisse|renseigner|servir)/.test(category)) inferred.push("commerce");
+  if (/(hotel|tourisme|hebergement|reservation)/.test(category)) inferred.push("hospitality");
   if (/(social|mediation|accompagnement|relation)/.test(category)) inferred.push("social");
   if (/(education|transmission|enseignement|enfance|animation)/.test(category)) inferred.push("education");
+  if (/(enfant|petite enfance|scolaire)/.test(category)) inferred.push("children");
   if (/(soin|aide|sante)/.test(category)) inferred.push("care");
   if (/(proprete|nettoyage|hygiene|qualite)/.test(category)) inferred.push("cleaning");
   if (/(numerique|support|data|web|code|informatique)/.test(category)) inferred.push("digital");
   if (/(admin|gestion|organisation)/.test(category)) inferred.push("administrative");
   if (/(culture|creation|communication|image)/.test(category)) inferred.push("creative");
-  if (/(nature|environnement|agriculture)/.test(category)) inferred.push("nature");
-  if (/animaux/.test(category)) inferred.push("animals");
+  if (/(nature|environnement|agriculture|vegetal|plante|jardin|arbre|sol|irrigation)/.test(category)) inferred.push("nature");
+  if (/(animal|animaux)/.test(category)) inferred.push("animals");
   if (/(cuisine|restauration|aliment)/.test(category)) inferred.push("food");
-  if (/(batiment|artisan|maintenance|manuel)/.test(category)) inferred.push("building");
-  if (/(logistique|transport|mobilite)/.test(category)) inferred.push("logistics");
+  if (/(batiment|chantier|artisan|maintenance|outil|machine|manuel|reparer|installer)/.test(category)) inferred.push("building");
+  if (/(industrie|production|fabriquer|conditionner)/.test(category)) inferred.push("industry");
+  if (/(logistique|transport|mobilite|stock|commande|livrer|conduire)/.test(category)) inferred.push("logistics");
   if (/securite/.test(category)) inferred.push("security");
-  return inferred.length ? unique(inferred) : ["transversal"];
+  const sectors = unique([...(mapped || []), ...linked, ...taxonomyInferred, ...inferred]);
+  return sectors.length ? sectors : ["transversal"];
+}
+
+function getSkillTaxonomySectors(skill, dataset = App.state.dataset) {
+  const linked = getSkillLinkInfo(skill.id, dataset).taxonomySectorIds || [];
+  const text = normalizeText(`${skill.label || ""} ${skill.category || ""} ${skill.type || ""}`);
+  const inferred = Object.entries(SECTOR_TAXONOMY)
+    .filter(([, config]) => toArray(config.includes).some(token => text.includes(normalizeText(token))))
+    .map(([sectorId]) => sectorId);
+  return unique([...linked, ...inferred]);
+}
+
+function skillSectorsFromTaxonomySector(sectorId) {
+  return SKILL_TAXONOMY_TO_BROWSER_SECTORS_V052[sectorId] || [];
+}
+
+function getSkillFamily(skill, sectors = [], taxonomySectors = []) {
+  const text = normalizeText(`${skill.label || ""} ${skill.category || ""} ${skill.type || ""}`);
+  const scored = SKILL_FAMILY_RULES_V052.map(rule => {
+    const tokenScore = toArray(rule.tokens).reduce((sum, token) => {
+      const normalized = normalizeText(token);
+      return sum + (normalized && text.includes(normalized) ? (normalized.length > 7 ? 2 : 1) : 0);
+    }, 0);
+    const sectorScore = toArray(rule.sectors).filter(sector => sectors.includes(sector)).length;
+    const taxonomyScore = toArray(rule.taxonomySectors).filter(sector => taxonomySectors.includes(sector)).length;
+    return { rule, score: tokenScore * 3 + sectorScore + taxonomyScore * 2 };
+  }).sort((a, b) => b.score - a.score || a.rule.label.localeCompare(b.rule.label, "fr"));
+  return scored[0]?.score > 0 ? scored[0].rule : SKILL_FAMILY_FALLBACK_V052;
+}
+
+function getSkillLinkInfo(skillId, dataset = App.state.dataset) {
+  return getSkillLinkIndex(dataset).get(skillId) || { taxonomySectorIds: [], browserSectorIds: [], jobCodes: [], jobTitles: [] };
+}
+
+function getSkillLinkIndex(dataset = App.state.dataset) {
+  if (dataset === App.state.dataset && App.state.skillSectorIndex) return App.state.skillSectorIndex;
+  const index = new Map();
+  const jobs = toArray(dataset?.jobs);
+  const jobIndex = new Map();
+  jobs.forEach(job => {
+    [job.id, job.canonicalId, job.romeCode].filter(Boolean).forEach(key => jobIndex.set(key, job));
+  });
+  const addLink = (skillId, job) => {
+    if (!skillId || !job) return;
+    const sectorProfile = getJobSectorProfile(job);
+    const taxonomySectorIds = sectorProfile.allSectorIds.length ? sectorProfile.allSectorIds : [sectorProfile.primarySectorId].filter(Boolean);
+    const browserSectorIds = unique(taxonomySectorIds.flatMap(skillSectorsFromTaxonomySector));
+    if (!index.has(skillId)) index.set(skillId, { taxonomySectorIds: [], browserSectorIds: [], jobCodes: [], jobTitles: [] });
+    const entry = index.get(skillId);
+    entry.taxonomySectorIds = unique([...entry.taxonomySectorIds, ...taxonomySectorIds]);
+    entry.browserSectorIds = unique([...entry.browserSectorIds, ...browserSectorIds]);
+    entry.jobCodes = unique([...entry.jobCodes, job.romeCode].filter(Boolean));
+    entry.jobTitles = unique([...entry.jobTitles, job.title].filter(Boolean));
+  };
+  toArray(dataset?.mappings).forEach(mapping => {
+    const job = jobIndex.get(mapping.jobId) || jobIndex.get(mapping.romeCode);
+    toArray(mapping.skillIds).forEach(skillId => addLink(skillId, job));
+  });
+  jobs.forEach(job => {
+    [...toArray(job.requiredSkills), ...toArray(job.optionalSkills), ...toArray(job.softSkills)].forEach(skillId => addLink(skillId, job));
+  });
+  if (dataset === App.state.dataset) App.state.skillSectorIndex = index;
+  return index;
 }
 
 function getSelectedSkillSectors(profile) {
@@ -6096,7 +6302,9 @@ function getSelectedSkillSectors(profile) {
     culture: ["culture", "creative"],
     association: ["social", "administrative", "education"]
   };
-  return new Set(toArray(profile.experienceDomains).flatMap(domain => sectorMap[domain] || []));
+  const directSectors = toArray(profile.experienceDomains).flatMap(domain => sectorMap[domain] || []);
+  const taxonomySectors = getProfileSectorIds(profile).flatMap(skillSectorsFromTaxonomySector);
+  return new Set(unique([...directSectors, ...taxonomySectors]));
 }
 
 function optionLabel(options, value) {
@@ -8509,6 +8717,12 @@ function handleActionClick(event) {
     renderSkillSectorListInPlace();
     return;
   }
+  if (action === "skills-select-family" || action === "skills-clear-family") {
+    updateSkillFamilySelection(target.dataset.skillFamily, action === "skills-select-family");
+    renderSkillSectorListInPlace();
+    scheduleSaveAndMatch();
+    return;
+  }
   if (action === "load-curated-corpus") loadCuratedCorpusDataset({ replace: true });
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
   if (action === "clear-api-test") clearApiTestConfig();
@@ -8623,6 +8837,18 @@ function updateProfileFromTarget(target) {
       profile.marketPreference = normalizeMarketPreference(profile.marketPreference, profile.engineIntent);
     }
   }
+}
+
+function updateSkillFamilySelection(familyId, shouldSelect) {
+  if (!familyId) return;
+  const group = getSkillSectorGroups(App.state.profile, App.state.dataset).find(item => item.id === familyId);
+  if (!group) return;
+  const current = new Set(toArray(App.state.profile.skills));
+  group.skills.forEach(skill => {
+    if (shouldSelect) current.add(skill.id);
+    else current.delete(skill.id);
+  });
+  App.state.profile.skills = Array.from(current);
 }
 
 function syncSkillCheckboxes(skillId, checked) {
@@ -9822,6 +10048,7 @@ function invalidateDatasetIndexes() {
   App.state.jobIndex = null;
   App.state.skillRowIndex = null;
   App.state.skillLabelIndex = null;
+  App.state.skillSectorIndex = null;
   App.state.contextLabelIndex = null;
   App.state.explorationHaystackCache = new Map();
   App.state.relatedVariantsCache = new Map();
