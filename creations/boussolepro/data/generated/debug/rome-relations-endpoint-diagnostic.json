@@ -1,0 +1,1135 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-13T16:24:25.338Z",
+  "branch": "soi-libre-codex",
+  "codes": [
+    "M1607",
+    "G1202",
+    "A1203",
+    "K1303"
+  ],
+  "endpoints": [
+    {
+      "endpointAlias": "rome_fiches_metiers",
+      "status": "tested",
+      "scope": "configured",
+      "diagnostics": [
+        {
+          "endpointAlias": "rome_fiches_metiers",
+          "romeCode": "M1607",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "metier",
+            "groupesCompetencesMobilisees",
+            "groupesSavoirs"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier"
+        },
+        {
+          "endpointAlias": "rome_fiches_metiers",
+          "romeCode": "G1202",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "metier",
+            "groupesCompetencesMobilisees",
+            "groupesSavoirs"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier"
+        },
+        {
+          "endpointAlias": "rome_fiches_metiers",
+          "romeCode": "A1203",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "metier",
+            "groupesCompetencesMobilisees",
+            "groupesSavoirs"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier"
+        },
+        {
+          "endpointAlias": "rome_fiches_metiers",
+          "romeCode": "K1303",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "metier",
+            "groupesCompetencesMobilisees",
+            "groupesSavoirs"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier"
+        }
+      ]
+    },
+    {
+      "endpointAlias": "rome_metiers",
+      "status": "tested",
+      "scope": "configured",
+      "diagnostics": [
+        {
+          "endpointAlias": "rome_metiers",
+          "romeCode": "M1607",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "libelle",
+            "definition",
+            "accesEmploi",
+            "riasecMajeur",
+            "riasecMineur",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "codeIsco",
+            "domaineProfessionnel",
+            "appellations",
+            "themes",
+            "centresInterets",
+            "centresInteretsLies",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "competencesMobilisees",
+            "competencesMobiliseesPrincipales",
+            "competencesMobiliseesEmergentes",
+            "divisionsNaf",
+            "formacodes",
+            "contextesTravail"
+          ],
+          "detectedRelations": {
+            "appellations": [
+              {
+                "path": "$.appellations",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "libelleCourt",
+                  "transitionEcologique",
+                  "transitionEcologiqueDetaillee",
+                  "classification",
+                  "competencesCles"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "10349"
+              },
+              {
+                "path": "$.appellations[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Agent administratif / Agente administrative"
+              },
+              {
+                "path": "$.appellations[0].libelleCourt",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Agent administratif / Agente administrative"
+              },
+              {
+                "path": "$.appellations[0].transitionEcologique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologiqueDetaillee",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "EMPLOI_BLANC"
+              },
+              {
+                "path": "$.appellations[0].classification",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "SYNONYME"
+              },
+              {
+                "path": "$.appellations[0].competencesCles",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "competence",
+                  "frequence"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0].competence",
+                "type": "object",
+                "sampleKeys": [
+                  "type",
+                  "code",
+                  "libelle",
+                  "codeOgr"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0].competence.type",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "MACRO-SAVOIR-FAIRE"
+              }
+            ],
+            "description": [
+              {
+                "path": "$.definition",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "L'assistant administratif est chargé d'assurer le bon fonctionnement administratif d'un service, d'une entreprise ou d'une organisation. \\nO"
+              }
+            ],
+            "activities": [
+              {
+                "path": "$.secteursActivites",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "secteurActivite"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "143"
+              },
+              {
+                "path": "$.secteursActivites[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Gestion administrative"
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite.code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "103"
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite.libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Gestion administrative et ressources humaines"
+              },
+              {
+                "path": "$.secteursActivites[1]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "103"
+              },
+              {
+                "path": "$.secteursActivites[1].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Gestion administrative et ressources humaines"
+              },
+              {
+                "path": "$.secteursActivitesLies",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivitesLies[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "secteurActivite",
+                  "principal"
+                ],
+                "sample": null
+              }
+            ],
+            "workContexts": [],
+            "accessConditions": [
+              {
+                "path": "$.accesEmploi",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Ce métier est accessible avec un diplôme de niveau Bac à Bac+3 en dans le domaine administratif ou commercial.\\nLa pratique d'une ou plusieu"
+              }
+            ],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
+        },
+        {
+          "endpointAlias": "rome_metiers",
+          "romeCode": "G1202",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "libelle",
+            "definition",
+            "accesEmploi",
+            "riasecMajeur",
+            "riasecMineur",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "codeIsco",
+            "domaineProfessionnel",
+            "appellations",
+            "themes",
+            "centresInterets",
+            "centresInteretsLies",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "competencesMobilisees",
+            "competencesMobiliseesPrincipales",
+            "competencesMobiliseesEmergentes",
+            "divisionsNaf",
+            "formacodes",
+            "contextesTravail",
+            "emploiCadre",
+            "emploiReglemente",
+            "transitionDemographique"
+          ],
+          "detectedRelations": {
+            "appellations": [
+              {
+                "path": "$.appellations",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "libelleCourt",
+                  "transitionEcologique",
+                  "transitionEcologiqueDetaillee",
+                  "classification",
+                  "competencesCles"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "38577"
+              },
+              {
+                "path": "$.appellations[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Animateur / Animatrice d'activités ludiques (jeux, jouets)"
+              },
+              {
+                "path": "$.appellations[0].libelleCourt",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Animateur / Animatrice d'activités ludiques (jeux, jouets)"
+              },
+              {
+                "path": "$.appellations[0].transitionEcologique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologiqueDetaillee",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "EMPLOI_STRATEGIQUE"
+              },
+              {
+                "path": "$.appellations[0].classification",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "SYNONYME"
+              },
+              {
+                "path": "$.appellations[0].competencesCles",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "competence",
+                  "frequence"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0].competence",
+                "type": "object",
+                "sampleKeys": [
+                  "type",
+                  "code",
+                  "libelle",
+                  "codeOgr"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].competencesCles[0].competence.type",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "COMPETENCE-DETAILLEE"
+              }
+            ],
+            "description": [
+              {
+                "path": "$.definition",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "L'animateur d'atelier artistique ou ludique conçoit, organise et anime des activités qui éveillent et développent la créativité des particip"
+              }
+            ],
+            "activities": [
+              {
+                "path": "$.secteursActivites",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "93"
+              },
+              {
+                "path": "$.secteursActivites[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Sport, animation et loisir"
+              },
+              {
+                "path": "$.secteursActivites[1]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "secteurActivite"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "132"
+              },
+              {
+                "path": "$.secteursActivites[1].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Animation et loisir"
+              },
+              {
+                "path": "$.secteursActivites[1].secteurActivite",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].secteurActivite.code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "93"
+              },
+              {
+                "path": "$.secteursActivites[1].secteurActivite.libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Sport, animation et loisir"
+              },
+              {
+                "path": "$.secteursActivitesLies",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivitesLies[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "secteurActivite",
+                  "principal"
+                ],
+                "sample": null
+              }
+            ],
+            "workContexts": [],
+            "accessConditions": [
+              {
+                "path": "$.accesEmploi",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Cet emploi est accessible avec un diplôme de niveau CAP à Bac en animation sociale ou culturelle. Le BAFA est un atout pour certaines activi"
+              }
+            ],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
+        },
+        {
+          "endpointAlias": "rome_metiers",
+          "romeCode": "A1203",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "libelle",
+            "definition",
+            "accesEmploi",
+            "riasecMajeur",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "codeIsco",
+            "domaineProfessionnel",
+            "appellations",
+            "themes",
+            "centresInterets",
+            "centresInteretsLies",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "competencesMobilisees",
+            "competencesMobiliseesPrincipales",
+            "competencesMobiliseesEmergentes",
+            "divisionsNaf",
+            "formacodes",
+            "contextesTravail",
+            "emploiCadre",
+            "emploiReglemente",
+            "transitionDemographique"
+          ],
+          "detectedRelations": {
+            "appellations": [
+              {
+                "path": "$.appellations",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "libelleCourt",
+                  "emploiCadre",
+                  "emploiReglemente",
+                  "transitionEcologique",
+                  "transitionEcologiqueDetaillee",
+                  "transitionNumerique",
+                  "transitionDemographique",
+                  "classification",
+                  "competencesCles"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "510746"
+              },
+              {
+                "path": "$.appellations[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Agent / Agente technique (espaces verts)"
+              },
+              {
+                "path": "$.appellations[0].libelleCourt",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Agent / Agente technique (espaces verts)"
+              },
+              {
+                "path": "$.appellations[0].emploiCadre",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].emploiReglemente",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologiqueDetaillee",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "EMPLOI_STRATEGIQUE"
+              },
+              {
+                "path": "$.appellations[0].transitionNumerique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionDemographique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].classification",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "SYNONYME"
+              }
+            ],
+            "description": [
+              {
+                "path": "$.definition",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "L'agent d'entretien des espaces verts maintient la propreté, embellit les espaces verts, les parcs et jardins et participe à la préservation"
+              }
+            ],
+            "activities": [
+              {
+                "path": "$.secteursActivites",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "secteurActivite"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "115"
+              },
+              {
+                "path": "$.secteursActivites[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Élevage, pêche"
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite.code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "79"
+              },
+              {
+                "path": "$.secteursActivites[0].secteurActivite.libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Agriculture et élevage"
+              },
+              {
+                "path": "$.secteursActivites[1]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "secteurActivite"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "116"
+              },
+              {
+                "path": "$.secteursActivites[1].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Nettoyage"
+              },
+              {
+                "path": "$.secteursActivites[1].secteurActivite",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].secteurActivite.code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "81"
+              }
+            ],
+            "workContexts": [],
+            "accessConditions": [
+              {
+                "path": "$.accesEmploi",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Cet emploi est accessible sans qualification. Des formations de niveau CAP à Bac dans le domaine de l'aménagement paysager peuvent cependant"
+              }
+            ],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
+        },
+        {
+          "endpointAlias": "rome_metiers",
+          "romeCode": "K1303",
+          "status": 200,
+          "rootKeys": [
+            "obsolete",
+            "code",
+            "libelle",
+            "definition",
+            "accesEmploi",
+            "riasecMajeur",
+            "riasecMineur",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "codeIsco",
+            "domaineProfessionnel",
+            "appellations",
+            "themes",
+            "centresInterets",
+            "centresInteretsLies",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "competencesMobilisees",
+            "competencesMobiliseesPrincipales",
+            "competencesMobiliseesEmergentes",
+            "divisionsNaf",
+            "formacodes",
+            "contextesTravail",
+            "emploiCadre",
+            "emploiReglemente",
+            "transitionDemographique"
+          ],
+          "detectedRelations": {
+            "appellations": [
+              {
+                "path": "$.appellations",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle",
+                  "libelleCourt",
+                  "emploiCadre",
+                  "emploiReglemente",
+                  "transitionEcologique",
+                  "transitionEcologiqueDetaillee",
+                  "transitionNumerique",
+                  "transitionDemographique",
+                  "classification",
+                  "competencesCles"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "510086"
+              },
+              {
+                "path": "$.appellations[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Garde d'enfant"
+              },
+              {
+                "path": "$.appellations[0].libelleCourt",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Garde d'enfant"
+              },
+              {
+                "path": "$.appellations[0].emploiCadre",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].emploiReglemente",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionEcologiqueDetaillee",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "EMPLOI_BLANC"
+              },
+              {
+                "path": "$.appellations[0].transitionNumerique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].transitionDemographique",
+                "type": "boolean",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.appellations[0].classification",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "PRINCIPALE"
+              }
+            ],
+            "description": [
+              {
+                "path": "$.definition",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Un garde d'enfant est une personne qui s'occupe des enfants directement au domicile des parents. \\nAide les enfants dans la réalisation des "
+              }
+            ],
+            "activities": [
+              {
+                "path": "$.secteursActivites",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[0].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "86"
+              },
+              {
+                "path": "$.secteursActivites[0].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Service à la personne"
+              },
+              {
+                "path": "$.secteursActivites[1]",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivites[1].code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "109"
+              },
+              {
+                "path": "$.secteursActivites[1].libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Social"
+              },
+              {
+                "path": "$.secteursActivitesLies",
+                "type": "array",
+                "sampleKeys": [],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivitesLies[0]",
+                "type": "object",
+                "sampleKeys": [
+                  "secteurActivite",
+                  "principal"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivitesLies[0].secteurActivite",
+                "type": "object",
+                "sampleKeys": [
+                  "code",
+                  "libelle"
+                ],
+                "sample": null
+              },
+              {
+                "path": "$.secteursActivitesLies[0].secteurActivite.code",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "86"
+              },
+              {
+                "path": "$.secteursActivitesLies[0].secteurActivite.libelle",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Service à la personne"
+              }
+            ],
+            "workContexts": [],
+            "accessConditions": [
+              {
+                "path": "$.accesEmploi",
+                "type": "string",
+                "sampleKeys": [],
+                "sample": "Cet emploi est accessible avec ou sans diplôme, mais une expérience professionnelle auprès des enfants est un atout.\\nL'obtention du Titre à"
+              }
+            ],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier"
+        }
+      ]
+    },
+    {
+      "endpointAlias": "rome_contextes_travail",
+      "status": "tested",
+      "scope": "configured",
+      "diagnostics": [
+        {
+          "endpointAlias": "rome_contextes_travail",
+          "romeCode": "M1607",
+          "status": 500,
+          "rootKeys": [
+            "service",
+            "message",
+            "code"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
+        },
+        {
+          "endpointAlias": "rome_contextes_travail",
+          "romeCode": "G1202",
+          "status": 500,
+          "rootKeys": [
+            "service",
+            "message",
+            "code"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
+        },
+        {
+          "endpointAlias": "rome_contextes_travail",
+          "romeCode": "A1203",
+          "status": 500,
+          "rootKeys": [
+            "service",
+            "message",
+            "code"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
+        },
+        {
+          "endpointAlias": "rome_contextes_travail",
+          "romeCode": "K1303",
+          "status": 500,
+          "rootKeys": [
+            "service",
+            "message",
+            "code"
+          ],
+          "detectedRelations": {
+            "appellations": [],
+            "description": [],
+            "activities": [],
+            "workContexts": [],
+            "accessConditions": [],
+            "certifications": [],
+            "relatedJobs": []
+          },
+          "endpointTemplate": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "endpointsTested": 3,
+    "endpointsInError": 0,
+    "relationHintsFound": {
+      "appellations": 48,
+      "description": 4,
+      "activities": 48,
+      "workContexts": 0,
+      "accessConditions": 4,
+      "certifications": 0,
+      "relatedJobs": 0
+    },
+    "recommendation": "Des chemins candidats existent : analyser les paths avant toute normalisation."
+  }
+}
