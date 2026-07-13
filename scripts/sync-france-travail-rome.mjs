@@ -820,6 +820,10 @@ function toArray(value) {
   return [value];
 }
 
+function unique(items = []) {
+  return [...new Set(toArray(items).filter(Boolean))];
+}
+
 function isRawDebugEnabled() {
   return String(process.env.ROME_RAW_DEBUG || "false").toLowerCase() === "true";
 }
