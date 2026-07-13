@@ -27,6 +27,26 @@ on:
         description: "Generer debug/rome-relations-endpoint-diagnostic.json pour tester les routes de relations configurees."
         required: false
         default: "false"
+      rome_codes_file:
+        description: "Fichier JSON/TXT de codes ROME a utiliser si rome_codes est vide. Exemple: creations/boussolepro/data/local/rome-codes-500.json"
+        required: false
+        default: ""
+      rome_batch_index:
+        description: "Numero du lot a synchroniser. Laisser vide pour tout synchroniser. Pour ROME500: 1 a 5."
+        required: false
+        default: ""
+      rome_batch_size:
+        description: "Taille du lot ROME. Pour ROME500: 100."
+        required: false
+        default: "100"
+      rome_output_subdir:
+        description: "Sous-dossier de data/generated pour les sorties experimentales. Pour ROME500: rome500-experimental."
+        required: false
+        default: ""
+      rome_dataset_mode:
+        description: "Mode de dataset. Utiliser rome500 pour le corpus experimental."
+        required: false
+        default: ""
   schedule:
     - cron: "0 3 1 * *"
 
@@ -58,6 +78,11 @@ jobs:
           FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
           FT_RATE_LIMIT_MS: ${{ vars.FT_RATE_LIMIT_MS || '1100' }}
           ROME_CODES: ${{ inputs.rome_codes || vars.ROME_CODES || '' }}
+          ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.ROME_CODES_FILE || '' }}
+          ROME_BATCH_INDEX: ${{ inputs.rome_batch_index || vars.ROME_BATCH_INDEX || '' }}
+          ROME_BATCH_SIZE: ${{ inputs.rome_batch_size || vars.ROME_BATCH_SIZE || '100' }}
+          ROME_OUTPUT_SUBDIR: ${{ inputs.rome_output_subdir || vars.ROME_OUTPUT_SUBDIR || '' }}
+          ROME_DATASET_MODE: ${{ inputs.rome_dataset_mode || vars.ROME_DATASET_MODE || '' }}
           ROME_DEBUG_CODES: ${{ vars.ROME_DEBUG_CODES || 'M1607,M1805,K1303,A1203' }}
           ROME_RAW_DEBUG: ${{ inputs.raw_debug || vars.ROME_RAW_DEBUG || 'false' }}
           ROME_ENDPOINT_DIAGNOSTIC: ${{ inputs.endpoint_diagnostic || 'false' }}

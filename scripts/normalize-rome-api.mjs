@@ -313,31 +313,17 @@ export function normalizeOfficialRomeJob({ ficheMetierRecord = null, metierRecor
       source: SOURCE_OFFICIAL
     };
   }
-  const missingFields = buildMissingFields({
-    romeCode: merged.romeCode,
-    title: merged.title,
-    description: merged.description,
-    activities: merged.activities,
-    requiredSkills: merged.requiredSkills,
-    workContexts: merged.workContexts,
-    accessConditions: merged.accessConditions?.text,
-    requiredDiplomaLevel: merged.requiredDiplomaLevel,
-    recommendedDiplomaLevel: merged.recommendedDiplomaLevel,
-    market: merged.market || merged.marketIndicators
-  });
-  merged.dataQuality = {
-    ...(merged.dataQuality || {}),
+  const dataQuality = recomputeJobDataQuality(merged, {
+    keepWarnings: ["official_detail_unavailable"],
     normalizer: "normalizeOfficialRomeJob",
     relationIndexesAvailable: {
-      skills: Boolean(skillsIndex),
-      contexts: Boolean(contextsIndex)
-    },
-    missingFields,
-    completenessScore: completenessScore(missingFields),
-    confidence: completenessScore(missingFields)
-  };
-  merged.missingFields = missingFields;
-  merged.confidence = completenessScore(missingFields);
+      skills: Boolean(skillsIndex) || hasLinkedSkillEvidence(merged),
+      contexts: Boolean(contextsIndex) || hasLinkedContextEvidence(merged)
+    }
+  });
+  merged.dataQuality = dataQuality;
+  merged.missingFields = dataQuality.missingFields;
+  merged.confidence = dataQuality.confidence;
   return merged;
 }
 
@@ -355,35 +341,23 @@ function markOfficialDetailUnavailable(job = {}) {
     requiredDiplomaLevel: SOURCE_NOT_AVAILABLE,
     recommendedDiplomaLevel: SOURCE_NOT_AVAILABLE
   };
-  const missingFields = buildMissingFields({
-    romeCode: job.romeCode,
-    title: job.title,
-    description: job.description,
-    activities: job.activities,
-    requiredSkills: job.requiredSkills,
-    workContexts: job.workContexts,
-    accessConditions: job.accessConditions?.text,
-    requiredDiplomaLevel: job.requiredDiplomaLevel,
-    recommendedDiplomaLevel: job.recommendedDiplomaLevel,
-    market: job.market || job.marketIndicators
-  });
-  return {
+  const patched = {
     ...job,
     fieldSources,
     dataQuality: {
       ...(job.dataQuality || {}),
-      status: "generated_partial_api_exception",
-      warnings: unique([
-        ...toArray(job.dataQuality?.warnings),
-        "official_detail_unavailable",
-        ...missingFields.map(field => `missing_${field}`)
-      ]),
-      missingFields,
-      completenessScore: completenessScore(missingFields),
-      confidence: completenessScore(missingFields)
-    },
-    missingFields,
-    confidence: completenessScore(missingFields)
+      status: "generated_partial_api_exception"
+    }
+  };
+  const dataQuality = recomputeJobDataQuality(patched, {
+    status: "generated_partial_api_exception",
+    extraWarnings: ["official_detail_unavailable"]
+  });
+  return {
+    ...patched,
+    dataQuality,
+    missingFields: dataQuality.missingFields,
+    confidence: dataQuality.confidence
   };
 }
 
@@ -422,7 +396,16 @@ export function mergeRomeDatasets(parts = {}) {
   const metierOnlyJobs = toArray(parts.metiers)
     .filter(record => !ficheCodes.has(extractRecordRomeCode(record)))
     .map(metierRecord => normalizeOfficialRomeJob({ metierRecord }));
-  const jobs = uniqueBy([...ficheJobs, ...metierOnlyJobs], "id");
+  const jobs = uniqueBy([...ficheJobs, ...metierOnlyJobs], "id")
+    .map(job => ({
+      ...job,
+      dataQuality: recomputeJobDataQuality(job)
+    }))
+    .map(job => ({
+      ...job,
+      missingFields: job.dataQuality.missingFields,
+      confidence: job.dataQuality.confidence
+    }));
   const skillLayers = buildRomeSkillLayers(parts.competences || [], jobs);
   const workContexts = uniqueBy([
     ...(parts.contextes || []).map(normalizeRomeContexte),
@@ -546,6 +529,111 @@ function buildMissingFields(fields) {
     else if (value === undefined || value === null || value === "") missing.push(key);
   });
   return missing;
+}
+
+function hasKnownDiplomaLevel(job = {}) {
+  return (
+    job.requiredDiplomaLevel !== null &&
+    job.requiredDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.requiredDiplomaLevel))
+  ) || (
+    job.recommendedDiplomaLevel !== null &&
+    job.recommendedDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.recommendedDiplomaLevel))
+  );
+}
+
+function hasLinkedSkillEvidence(job = {}) {
+  return Boolean(
+    toArray(job.requiredSkills).length ||
+    toArray(job.optionalSkills).length ||
+    toArray(job.softSkills).length ||
+    toArray(job.matchableSkillIds).length ||
+    toArray(job.mobilizedSkillIds).length ||
+    toArray(job.romeSkillRefs?.required).length ||
+    toArray(job.romeSkillRefs?.optional).length ||
+    toArray(job.romeSkillRefs?.soft).length
+  );
+}
+
+function hasLinkedContextEvidence(job = {}) {
+  return Boolean(
+    toArray(job.workContexts).length ||
+    toArray(job.romeWorkContextRefs).length ||
+    toArray(job.romeWorkContextLabels).length
+  );
+}
+
+function calculateJobCompleteness(job = {}) {
+  return completenessScore(buildJobMissingFields(job));
+}
+
+function calculateJobDataConfidence(job = {}) {
+  const completeness = calculateJobCompleteness(job);
+  const officialEvidence = [
+    job.fieldSources?.title,
+    job.fieldSources?.description,
+    job.fieldSources?.appellations,
+    job.fieldSources?.requiredSkills,
+    job.fieldSources?.knowledge,
+    job.fieldSources?.workContexts,
+    job.fieldSources?.accessConditions
+  ].filter(source => source === SOURCE_OFFICIAL).length;
+  const evidenceBonus = Math.min(0.12, officialEvidence * 0.015);
+  const exceptionPenalty = toArray(job.dataQuality?.warnings).includes("official_detail_unavailable") ? 0.08 : 0;
+  return Number(Math.max(0.2, Math.min(0.92, completeness + evidenceBonus - exceptionPenalty)).toFixed(2));
+}
+
+function buildJobMissingFields(job = {}) {
+  const missingFields = [];
+  if (!job.romeCode) missingFields.push("romeCode");
+  if (!job.title) missingFields.push("title");
+  if (!job.description) missingFields.push("description");
+  if (!toArray(job.activities).length) missingFields.push("activities");
+  if (!toArray(job.appellations).length) missingFields.push("appellations");
+  if (!toArray(job.requiredSkills).length) missingFields.push("requiredSkills");
+  if (!toArray(job.knowledge).length) missingFields.push("knowledge");
+  if (!toArray(job.workContexts).length) missingFields.push("workContexts");
+  if (!job.accessConditions?.text) missingFields.push("accessConditions");
+  if (!hasKnownDiplomaLevel(job)) {
+    missingFields.push("requiredDiplomaLevel");
+    missingFields.push("recommendedDiplomaLevel");
+  }
+  return unique(missingFields);
+}
+
+function recomputeJobDataQuality(job = {}, options = {}) {
+  const missingFields = buildJobMissingFields(job);
+  const previousWarnings = toArray(job.dataQuality?.warnings)
+    .filter(warning => !String(warning).startsWith("missing_"))
+    .filter(warning => warning !== "computed_tags_to_verify")
+    .filter(warning => warning !== "computed_constraints_to_verify")
+    .filter(warning => warning !== "official_rome_generated");
+  const keep = new Set(options.keepWarnings || []);
+  const carriedWarnings = previousWarnings.filter(warning => keep.has(warning) || warning === "official_detail_unavailable");
+  const warnings = unique([
+    "official_rome_generated",
+    job.constraints?.source === "computed_low_confidence" ? "computed_constraints_to_verify" : null,
+    ...carriedWarnings,
+    ...toArray(options.extraWarnings),
+    ...missingFields.map(field => `missing_${field}`)
+  ]);
+  const relationIndexesAvailable = {
+    ...(job.dataQuality?.relationIndexesAvailable || {}),
+    ...(options.relationIndexesAvailable || {}),
+    skills: Boolean(options.relationIndexesAvailable?.skills) || hasLinkedSkillEvidence(job),
+    contexts: Boolean(options.relationIndexesAvailable?.contexts) || hasLinkedContextEvidence(job)
+  };
+  return {
+    ...(job.dataQuality || {}),
+    ...(options.normalizer ? { normalizer: options.normalizer } : {}),
+    status: options.status || (missingFields.length ? "generated_partial" : "generated_complete"),
+    missingFields,
+    warnings,
+    relationIndexesAvailable,
+    completenessScore: calculateJobCompleteness(job),
+    confidence: calculateJobDataConfidence({ ...job, dataQuality: { ...(job.dataQuality || {}), warnings } })
+  };
 }
 
 function inferConstraints(textPool) {

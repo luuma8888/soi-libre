@@ -69,6 +69,8 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   const jobsWithSkillsCount = Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length || job.mobilizedSkillIds?.length).length, jobsWithSkillMappings);
   const jobsWithContextsCount = Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings);
   const jobsWithAppellationsCount = Math.max(jobs.filter(job => job.appellations?.length).length, jobsWithAppellationMappings);
+  const jobsWithDiplomaLevelCount = jobs.filter(hasKnownDiplomaLevel).length;
+  const jobsWithMarketDataCount = jobs.filter(hasOfficialMarketData).length;
   const matchableSkillIds = new Set(matchableSkills.map(skill => skill.id).filter(Boolean));
   const linkedMatchableSkillIds = new Set([...linkedSkillIds].filter(skillId => matchableSkillIds.has(skillId)));
   const matchablePerJob = jobs.map(job => [...new Set([
@@ -193,10 +195,10 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       jobsWithAppellationsRatio: ratio(jobsWithAppellationsCount, jobs.length),
       jobsWithRelatedJobsCount: jobs.filter(job => job.relatedJobs?.length).length,
       jobsWithRelatedJobsRatio: ratio(jobs.filter(job => job.relatedJobs?.length).length, jobs.length),
-      jobsWithDiplomaLevelCount: jobs.filter(job => job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined).length,
-      jobsWithDiplomaLevelRatio: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined).length, jobs.length),
-      jobsWithMarketDataCount: jobs.filter(job => job.market?.source && job.market.source !== "unknown").length,
-      jobsWithMarketDataRatio: ratio(jobs.filter(job => job.market?.source && job.market.source !== "unknown").length, jobs.length)
+      jobsWithDiplomaLevelCount,
+      jobsWithDiplomaLevelRatio: ratio(jobsWithDiplomaLevelCount, jobs.length),
+      jobsWithMarketDataCount,
+      jobsWithMarketDataRatio: ratio(jobsWithMarketDataCount, jobs.length)
     },
     completenessScore: completionScore,
     globalCompletionScore: completionScore,
@@ -333,6 +335,31 @@ function getMissingFields(job) {
     if (!hasValue(job[field])) explicit.add(field);
   });
   return [...explicit];
+}
+
+function hasKnownDiplomaLevel(job = {}) {
+  return (
+    job.requiredDiplomaLevel !== null &&
+    job.requiredDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.requiredDiplomaLevel))
+  ) || (
+    job.recommendedDiplomaLevel !== null &&
+    job.recommendedDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.recommendedDiplomaLevel))
+  );
+}
+
+function hasOfficialMarketData(job = {}) {
+  return ["national", "regional", "departmental", "local_basin"].some(level => {
+    const row = job.marketStats?.[level];
+    return (
+      row &&
+      row.sourceName === "api_marche_travail" &&
+      row.marketAvailabilityStatus !== "official_unavailable_for_rome_code" &&
+      row.offers12m !== null &&
+      row.offers12m !== undefined
+    );
+  });
 }
 
 function hasValue(value) {

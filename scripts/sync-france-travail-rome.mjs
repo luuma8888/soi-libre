@@ -1,9 +1,10 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { buildRome500AuditArtifacts } from "./audit-rome-500-generated.mjs";
 import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 import { mergeRomeDatasets } from "./normalize-rome-api.mjs";
 
-const OUT_DIR = new URL("../creations/boussolepro/data/generated/", import.meta.url);
+const BASE_OUT_DIR = new URL("../creations/boussolepro/data/generated/", import.meta.url);
+const OUT_DIR = buildOutputDirUrl();
 const DEBUG_DIR = new URL("debug/", OUT_DIR);
 const DEFAULT_SCOPE = "nomenclatureRome api_rome-fiches-metiersv1";
 const DEFAULT_TOKEN_URL = "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire";
@@ -21,12 +22,39 @@ const DEFAULT_ROME_CODES = [
 ];
 const DEFAULT_METIERS_DIAGNOSTIC_CODES = ["A1203", "K1303", "M1607", "M1805"];
 const DEFAULT_RATE_LIMIT_MS = 1100;
+const ROME72_REFERENCE_VERSION = "rome72-reference-v0.6.4";
+const ROME500_EXPERIMENTAL_VERSION = "rome500-experimental-v0.7";
+
+function buildOutputDirUrl() {
+  const explicitSubdir = sanitizeRelativeDir(process.env.ROME_OUTPUT_SUBDIR || "");
+  const codesFile = process.env.ROME_CODES_FILE || "";
+  const automaticSubdir = !explicitSubdir && /500/.test(codesFile) ? "rome500-experimental" : "";
+  const subdir = explicitSubdir || automaticSubdir;
+  return subdir ? new URL(`${subdir.replace(/\/$/, "")}/`, BASE_OUT_DIR) : BASE_OUT_DIR;
+}
+
+function sanitizeRelativeDir(value = "") {
+  return String(value || "")
+    .replace(/\\/g, "/")
+    .split("/")
+    .map(part => part.trim())
+    .filter(part => part && part !== "." && part !== "..")
+    .join("/");
+}
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
-  const requestedCodes = parseList(process.env.ROME_CODES, DEFAULT_ROME_CODES);
+  await mkdir(DEBUG_DIR, { recursive: true });
+  let codeSelection = { codes: DEFAULT_ROME_CODES, source: "DEFAULT_ROME_CODES" };
+  let requestedCodes = DEFAULT_ROME_CODES;
+  let outputPlan = buildOutputPlan(codeSelection);
   const generatedAt = new Date().toISOString();
   try {
+    codeSelection = await resolveRequestedCodes();
+    requestedCodes = codeSelection.codes;
+    outputPlan = buildOutputPlan(codeSelection);
+    await mkdir(new URL(outputPlan.basePath, OUT_DIR), { recursive: true });
+    if (!requestedCodes.length) throw new Error("Aucun code ROME à synchroniser pour cette sélection ou ce lot.");
     const token = await getFranceTravailAccessToken();
     if (isEndpointDiagnosticEnabled()) {
       await writeFicheEndpointDiagnostic(token, {
@@ -54,7 +82,10 @@ async function main() {
       successfulCodes: syncResult.successfulCodes,
       failedCodes: syncResult.failedCodes,
       failures: syncResult.failedCodes,
-      optionalReferentials: optionalReferentials.diagnostics
+      optionalReferentials: optionalReferentials.diagnostics,
+      codeSelection,
+      datasetVersion: outputPlan.datasetVersion,
+      outputMode: outputPlan.mode
     };
     if (optionalReferentials.referentials?.metiers?.length) {
       await writeRomeMetiersRecordSamples(optionalReferentials.referentials.metiers, syncMeta);
@@ -73,12 +104,14 @@ async function main() {
       ...optionalReferentials.parts
     };
     const dataset = mergeRomeDatasets(parts);
+    dataset.datasetVersion = outputPlan.datasetVersion;
+    dataset.datasetName = outputPlan.datasetName;
     const report = buildDataQualityReport(dataset, syncMeta);
     logSyncSummary(dataset, report, syncMeta);
     if (isRawDebugEnabled()) await writeRawStructureReport(syncResult.rawSamples, syncMeta);
-    await writeGeneratedJson("jobs.rome.json", dataset.jobs);
-    await writeGeneratedJson("data-quality-report.rome.json", report);
-    await writeGeneratedJson("import-manifest.rome.json", {
+    await writeGeneratedJson(outputPlan.files.jobs, dataset.jobs);
+    await writeGeneratedJson(outputPlan.files.dataQuality, report);
+    await writeGeneratedJson(outputPlan.files.manifest, {
       schemaVersion: "1.0.0",
       datasetName: dataset.datasetName,
       datasetVersion: dataset.datasetVersion,
@@ -95,11 +128,14 @@ async function main() {
       failedCodes: syncResult.failedCodes,
       completionRate: Number((syncResult.successfulCodes.length / requestedCodes.length).toFixed(2)),
       branch: syncMeta.branch,
+      codeSelection,
+      outputMode: outputPlan.mode,
       optionalReferentials: optionalReferentials.diagnostics,
       generatedFiles: [
-        "jobs.rome.json",
-        "import-manifest.rome.json",
-        "data-quality-report.rome.json",
+        outputPlan.files.jobs,
+        outputPlan.files.manifest,
+        outputPlan.files.dataQuality,
+        ...(outputPlan.mode === "rome500_batch" ? [outputPlan.files.batchReport] : []),
         "rome-raw-skills.json",
         "skills.rome.json",
         "knowledge.rome.json",
@@ -138,16 +174,22 @@ async function main() {
     await writeGeneratedJson("certification-like.rome.json", dataset.certificationLike || []);
     await writeGeneratedJson("skills-matchable.rome.json", dataset.matchableSkills || []);
     await writeGeneratedJson("work-contexts.rome.json", dataset.workContexts || []);
-    await writeGeneratedJson("job-appellations.rome.json", dataset.jobAppellations || []);
-    await writeGeneratedJson("mappings.rome.json", dataset.mappings || []);
+    await writeGeneratedJson(outputPlan.files.appellations, dataset.jobAppellations || []);
+    await writeGeneratedJson(outputPlan.files.mappings, dataset.mappings || []);
     await writeGeneratedJson("formations.onisep.json", []);
     await writeGeneratedJson("certifications.certifinfo.json", []);
     await writeGeneratedJson("mappings-rome-formations.json", []);
     await writeGeneratedJson("mappings-rome-certifications.json", []);
-    const audit = await buildRome500AuditArtifacts();
-    console.log(`[Boussole Pro] Audit corpus ROME: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%, coquilles ${audit.quality?.shellJobs?.count || 0}/${audit.quality?.jobsTotal || 0}`);
+    if (outputPlan.mode === "rome500_batch") {
+      await writeGeneratedJson(outputPlan.files.batchReport, buildRome500BatchReport(dataset, report, syncMeta, outputPlan));
+      console.log(`[Boussole Pro] Lot ROME500 ${outputPlan.batchLabel}: ${dataset.jobs.length}/${requestedCodes.length} metiers ecrits dans ${outputPlan.basePath}`);
+    } else {
+      const audit = await buildRome500AuditArtifacts();
+      await writeGeneratedJson("rome72-reference-manifest.json", buildRome72ReferenceManifest(dataset, report, audit.quality));
+      console.log(`[Boussole Pro] Audit corpus ROME: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%, coquilles ${audit.quality?.shellJobs?.count || 0}/${audit.quality?.jobsTotal || 0}`);
+    }
   } catch (error) {
-    await writeGeneratedJson("sync-error.json", {
+    await writeGeneratedJson(outputPlan?.files?.syncError || "sync-error.json", {
       generatedAt,
       status: "error",
       message: error.message,
@@ -885,6 +927,93 @@ function getScope() {
   return process.env.FT_SCOPE || DEFAULT_SCOPE;
 }
 
+async function resolveRequestedCodes() {
+  const explicitCodes = parseList(process.env.ROME_CODES, []);
+  const filePath = process.env.ROME_CODES_FILE;
+  const fileCodes = explicitCodes.length ? [] : await readRomeCodesFile(filePath);
+  const sourceCodes = explicitCodes.length ? explicitCodes : fileCodes.length ? fileCodes : DEFAULT_ROME_CODES;
+  const batchSize = Math.max(0, Number(process.env.ROME_BATCH_SIZE || 0));
+  const batchIndex = Math.max(0, Number(process.env.ROME_BATCH_INDEX || 0));
+  const uniqueCodes = unique(sourceCodes.map(code => String(code).trim().toUpperCase()).filter(Boolean));
+  if (batchSize > 0 && batchIndex > 0) {
+    const start = (batchIndex - 1) * batchSize;
+    const end = start + batchSize;
+    return {
+      codes: uniqueCodes.slice(start, end),
+      allCodesCount: uniqueCodes.length,
+      source: explicitCodes.length ? "ROME_CODES" : fileCodes.length ? "ROME_CODES_FILE" : "DEFAULT_ROME_CODES",
+      filePath: filePath || null,
+      batchIndex,
+      batchSize,
+      batchStart: start + 1,
+      batchEnd: Math.min(end, uniqueCodes.length)
+    };
+  }
+  return {
+    codes: uniqueCodes,
+    allCodesCount: uniqueCodes.length,
+    source: explicitCodes.length ? "ROME_CODES" : fileCodes.length ? "ROME_CODES_FILE" : "DEFAULT_ROME_CODES",
+    filePath: filePath || null,
+    batchIndex: null,
+    batchSize: null,
+    batchStart: 1,
+    batchEnd: uniqueCodes.length
+  };
+}
+
+async function readRomeCodesFile(filePath = "") {
+  if (!filePath) return [];
+  const safePath = sanitizeRelativeDir(filePath);
+  if (!safePath) return [];
+  const content = await readFile(new URL(`../${safePath}`, import.meta.url), "utf8");
+  if (/\.json$/i.test(safePath)) {
+    const json = JSON.parse(content);
+    if (Array.isArray(json)) return json.map(item => typeof item === "string" ? item : item.romeCode || item.code).filter(Boolean);
+    if (Array.isArray(json.codes)) return json.codes.map(item => typeof item === "string" ? item : item.romeCode || item.code).filter(Boolean);
+  }
+  return parseList(content, []);
+}
+
+function buildOutputPlan(codeSelection = {}) {
+  const batchIndex = Number(codeSelection.batchIndex || 0);
+  const experimental = Boolean(batchIndex) || /500/.test(codeSelection.filePath || "") || process.env.ROME_DATASET_MODE === "rome500";
+  const batchLabel = batchIndex ? String(batchIndex).padStart(2, "0") : "";
+  if (experimental && batchLabel) {
+    return {
+      mode: "rome500_batch",
+      datasetName: "Boussole Pro - corpus ROME 500 expérimental",
+      datasetVersion: `${process.env.ROME_DATASET_VERSION || ROME500_EXPERIMENTAL_VERSION}-batch-${batchLabel}`,
+      batchLabel,
+      basePath: "batches/",
+      files: {
+        jobs: `batches/jobs.batch-${batchLabel}.json`,
+        mappings: `batches/mappings.batch-${batchLabel}.json`,
+        appellations: `batches/appellations.batch-${batchLabel}.json`,
+        dataQuality: `batches/data-quality.batch-${batchLabel}.json`,
+        batchReport: `batches/report.batch-${batchLabel}.json`,
+        manifest: `batches/import-manifest.batch-${batchLabel}.json`,
+        syncError: `batches/sync-error.batch-${batchLabel}.json`
+      }
+    };
+  }
+  return {
+    mode: experimental ? "rome500_full_experimental" : "rome72_reference",
+    datasetName: experimental ? "Boussole Pro - corpus ROME 500 expérimental" : "Boussole Pro - corpus ROME 72 de référence",
+    datasetVersion: process.env.ROME_DATASET_VERSION || (experimental ? ROME500_EXPERIMENTAL_VERSION : ROME72_REFERENCE_VERSION),
+    batchLabel,
+    basePath: "",
+    files: {
+      jobs: "jobs.rome.json",
+      mappings: "mappings.rome.json",
+      appellations: "job-appellations.rome.json",
+      dataQuality: "data-quality-report.rome.json",
+      batchReport: "data-quality-report.rome.json",
+      manifest: "import-manifest.rome.json",
+      syncError: "sync-error.json"
+    }
+  };
+}
+
 function parseList(value, fallback = []) {
   if (!value) return fallback;
   const parsed = String(value).split(/[,\n;\s]+/).map(item => item.trim()).filter(Boolean);
@@ -946,6 +1075,76 @@ function logSyncSummary(dataset = {}, report = {}, syncMeta = {}) {
   });
 }
 
+function buildRome72ReferenceManifest(dataset = {}, report = {}, auditQuality = {}) {
+  const warnings = toArray(report.warnings);
+  const blocking = warnings.filter(item => item.severity === "blocking" || item.severity === "critical").length;
+  const warningCount = warnings.filter(item => item.severity === "warning").length;
+  const infoCount = warnings.filter(item => item.severity === "info").length;
+  return {
+    schemaVersion: "1.0.0",
+    datasetVersion: ROME72_REFERENCE_VERSION,
+    generatedAt: new Date().toISOString(),
+    jobsCount: toArray(dataset.jobs).length,
+    dataReadiness: auditQuality.readiness?.dataReadiness || "enriched_usable",
+    engineReadiness: "validated_on_8_profiles",
+    performanceReadiness: auditQuality.readiness?.performanceReadiness || "needs_compaction",
+    overallReadiness: auditQuality.readiness?.overallReadiness || "usable_for_validation",
+    knownExceptions: toArray(dataset.jobs)
+      .filter(job => toArray(job.dataQuality?.warnings).includes("official_detail_unavailable"))
+      .map(job => job.romeCode)
+      .filter(Boolean),
+    benchmarkAnomalies: {
+      blocking,
+      warning: warningCount,
+      info: infoCount
+    },
+    files: [
+      "jobs.rome.json",
+      "mappings.rome.json",
+      "job-appellations.rome.json",
+      "skills.rome.json",
+      "skills-matchable.rome.json",
+      "knowledge.rome.json",
+      "work-contexts.rome.json",
+      "rome-corpus-quality-report.json",
+      "matching-regression-report.json"
+    ]
+  };
+}
+
+function buildRome500BatchReport(dataset = {}, report = {}, syncMeta = {}, outputPlan = {}) {
+  return {
+    schemaVersion: "1.0.0",
+    datasetVersion: outputPlan.datasetVersion,
+    generatedAt: new Date().toISOString(),
+    mode: "rome500_batch",
+    batchLabel: outputPlan.batchLabel,
+    codeSelection: syncMeta.codeSelection,
+    requestedCodesCount: toArray(syncMeta.requestedCodes).length,
+    successfulCodesCount: toArray(syncMeta.successfulCodes).length,
+    failedCodesCount: toArray(syncMeta.failedCodes).length,
+    successfulCodes: syncMeta.successfulCodes || [],
+    failedCodes: syncMeta.failedCodes || [],
+    jobsCount: toArray(dataset.jobs).length,
+    jobsWithDescriptionCount: toArray(dataset.jobs).filter(job => job.description).length,
+    jobsWithAppellationsCount: toArray(dataset.jobs).filter(job => toArray(job.appellations).length).length,
+    jobsWithContextsCount: toArray(dataset.jobs).filter(job => toArray(job.workContexts).length).length,
+    jobsWithAccessConditionsCount: toArray(dataset.jobs).filter(job => job.accessConditions?.text).length,
+    jobsWithSkillsCount: toArray(dataset.jobs).filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length,
+    jobsWithKnowledgeCount: toArray(dataset.jobs).filter(job => toArray(job.knowledge).length).length,
+    jobsWithPrimarySectorCount: toArray(dataset.jobs).filter(job => job.primarySectorId).length,
+    partialApiExceptions: toArray(dataset.jobs).filter(job => toArray(job.dataQuality?.warnings).includes("official_detail_unavailable")).map(job => job.romeCode),
+    emptyShellJobs: toArray(dataset.jobs).filter(job => !job.description && !toArray(job.requiredSkills).length).map(job => ({ romeCode: job.romeCode, title: job.title })),
+    qualityReport: {
+      status: report.status,
+      completionRate: report.completionRate,
+      completeness: report.completeness,
+      coverage: report.coverage,
+      warnings: toArray(report.warnings).slice(0, 20)
+    }
+  };
+}
+
 async function safeResponseText(response) {
   try {
     return shortMessage(await response.text());
@@ -971,6 +1170,10 @@ function sleep(ms) {
 
 export async function writeGeneratedJson(name, data, options = {}) {
   const pretty = options.pretty !== false;
+  if (String(name).includes("/")) {
+    const parent = String(name).split("/").slice(0, -1).join("/");
+    if (parent) await mkdir(new URL(`${parent}/`, OUT_DIR), { recursive: true });
+  }
   await writeFile(new URL(name, OUT_DIR), `${JSON.stringify(data, null, pretty ? 2 : 0)}\n`, "utf8");
 }
 

@@ -1,0 +1,26 @@
+name: Merge ROME 500 batches
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  merge-rome500-batches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - run: node scripts/merge-rome500-batches.mjs
+      - name: Commit merged ROME 500 data
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add creations/boussolepro/data/generated/rome500-experimental
+          git commit -m "Merge ROME 500 experimental batches" || echo "No changes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

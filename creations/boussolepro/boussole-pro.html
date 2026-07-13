@@ -1457,7 +1457,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.6.3-alpha",
+  version: "v0.6.4-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -3842,7 +3842,7 @@ function generateDataQualityReport(datasets) {
   if (duplicateCount > 0) issues.push(buildIssue("critical", "duplicate_job", "Dataset", "jobs", `${duplicateCount} doublon(s) d'identifiant metier.`, "Dedoublonner avant usage reel."));
 
   const jobsWithTraining = jobs.filter(job => trainings.some(training => (training.targetJobIds || []).includes(job.id))).length;
-  const jobsWithMarket = jobs.filter(job => job.marketStats?.sourceLevel || (job.marketIndicators || []).some(id => market.some(item => item.id === id))).length;
+  const jobsWithMarket = jobs.filter(hasOfficialMarketData).length;
   const linkedSkillIds = getLinkedSkillIdsFromJobs(jobs);
   const linkedContextIds = new Set(jobs.flatMap(job => toArray(job.workContexts)));
   const linkedAppellations = appellations.filter(item => item.jobId).length;
@@ -3850,7 +3850,7 @@ function generateDataQualityReport(datasets) {
   const jobsWithSkillsCount = jobs.filter(job => toArray(job.requiredSkills).length || toArray(job.optionalSkills).length || toArray(job.softSkills).length).length;
   const jobsWithContextsCount = jobs.filter(job => toArray(job.workContexts).length).length;
   const jobsWithTrainingCount = jobsWithTraining;
-  const jobsWithDiplomaLevelCount = jobs.filter(job => Number.isFinite(Number(job.recommendedDiplomaLevel)) || Number.isFinite(Number(job.requiredDiplomaLevel))).length;
+  const jobsWithDiplomaLevelCount = jobs.filter(hasKnownDiplomaLevel).length;
   const jobsWithMarketDataCount = jobsWithMarket;
   const rawMarketRows = countMarketDatasetRows(datasets);
   const activeMarketCoverage = calculateMarketCoverage(datasets, {});
@@ -4035,10 +4035,10 @@ function normalizeJob(raw) {
     matchableSkillIds: toArray(raw.matchableSkillIds),
     softSkillIds: toArray(raw.softSkillIds),
     knowledgeIds: toArray(raw.knowledgeIds),
-    requiredSkills: toArray(raw.requiredSkills),
+    requiredSkills: toArray(raw.requiredSkills).length ? toArray(raw.requiredSkills) : toArray(raw.matchableSkillIds),
     optionalSkills: toArray(raw.optionalSkills),
-    softSkills: toArray(raw.softSkills),
-    knowledge: toArray(raw.knowledge),
+    softSkills: toArray(raw.softSkills).length ? toArray(raw.softSkills) : toArray(raw.softSkillIds),
+    knowledge: toArray(raw.knowledge).length ? toArray(raw.knowledge) : toArray(raw.knowledgeIds),
     workContexts: toArray(raw.workContexts),
     constraints: raw.constraints || {
       physical: raw.physicalConstraints || { level: physical[0], tags: physical[1], source: "unknown", confidence: 0.2 },
@@ -5217,6 +5217,20 @@ function getProfileSectorIds(profile = App.state.profile) {
   ]);
 }
 
+function getExpectedPrimarySectorIdsForTop5(profile = App.state.profile) {
+  const domains = normalizeExperienceDomains(profile?.experienceDomains);
+  const sectorIds = getProfileSectorIds(profile);
+  if (domains.includes("proprete") && (domains.includes("accueil") || domains.includes("hotellerie") || domains.includes("cuisine"))) {
+    return unique([
+      "proprete_entretien",
+      "hotellerie_hebergement",
+      "restauration_alimentation",
+      ...sectorIds.filter(id => id !== "commerce_vente")
+    ]);
+  }
+  return sectorIds;
+}
+
 function getProfileSectorIdsByOrientation(profile = App.state.profile, orientations = []) {
   const wanted = new Set(toArray(orientations));
   const domainOrientation = normalizeDomainOrientation(profile?.domainOrientation, profile?.experienceDomains, profile?.experienceDomainDetails);
@@ -6270,6 +6284,7 @@ function buildCalibrationAudit(results = {}) {
     top5FilledByFallback,
     top5SelectionReasons: top5Reasons,
     coreProfileDistribution: scoreDistribution(complete.map(result => result.coreProfileMatchScore)),
+    scoreCalibration: buildScoreCalibrationReport(results),
     marketContext: results.marketContext || {},
     marketCoverage: results.marketContext?.marketCoverage || {},
     profilesWarnings,
@@ -6279,6 +6294,32 @@ function buildCalibrationAudit(results = {}) {
     highScoreLowConfidence,
     warnings,
     status: warnings.length ? "to_review" : "ok"
+  };
+}
+
+function buildScoreCalibrationReport(results = {}) {
+  const complete = toArray(results.completeList);
+  const top5 = toArray(results.top5);
+  const unknownEvidence = key => complete.filter(result => {
+    const details = result.scoreDetails?.[key] || {};
+    return details.state === "not_evaluated" ||
+      details.evidenceState === "not_evaluated" ||
+      toArray(details.unknownFields).length ||
+      toArray(result.missingData).some(item => normalizeText(item.field || item.message).includes(key));
+  }).length;
+  return {
+    top1ScoresByProfile: top5[0] ? [{ profileId: App.state.profile?.testProfileId || App.state.profile?.id || "current", score: top5[0].globalScore, romeCode: top5[0].romeCode, title: top5[0].title }] : [],
+    top5AverageByProfile: [{ profileId: App.state.profile?.testProfileId || App.state.profile?.id || "current", average: average(top5.map(result => result.globalScore)) }],
+    expectedJobsScores: [],
+    rawScoreDistribution: scoreDistribution(complete.map(result => result.globalScore)),
+    confidenceDistribution: scoreDistribution(complete.map(result => result.confidenceScore)),
+    dimensionsWithUnknownEvidence: {
+      skills: unknownEvidence("skills"),
+      training: unknownEvidence("training"),
+      constraints: unknownEvidence("constraints"),
+      context: unknownEvidence("context"),
+      market: unknownEvidence("market")
+    }
   };
 }
 
@@ -6323,6 +6364,7 @@ function diversifyTopResults(results) {
     .sort((a, b) => (b.selectionScore || b.globalScore) - (a.selectionScore || a.globalScore) || b.globalScore - a.globalScore);
   const selected = [];
   const variantsByJob = {};
+  const expectedPrimarySectorIds = new Set(getExpectedPrimarySectorIdsForTop5());
   const scoreOf = result => Number(result?.selectionScore || result?.globalScore || 0);
   const foundationRank = result => {
     const level = result?.coreProfileMatch?.coreProfileLevel || result?.coreProfileMatch?.level || "";
@@ -6338,6 +6380,19 @@ function diversifyTopResults(results) {
     ["heart_current", "heart_secondary"].includes(result?.coreProfileMatch?.coreProfileLevel) ||
     result?.coreProfileMatch?.level === "core"
   );
+  const primarySectorOf = result => result?.coreProfileMatch?.primarySectorId || result?.job?.primarySectorId || "";
+  const selectedExpectedSectorCount = () => selected.filter(result => expectedPrimarySectorIds.has(primarySectorOf(result))).length;
+  const shouldDelayOutsideExpectedSector = candidate => {
+    if (expectedPrimarySectorIds.size < 2 || selectedExpectedSectorCount() >= 3) return false;
+    if (expectedPrimarySectorIds.has(primarySectorOf(candidate))) return false;
+    const nearExpectedCandidates = ranked.filter(result =>
+      !selected.some(item => item.jobId === result.jobId) &&
+      result.jobId !== candidate.jobId &&
+      expectedPrimarySectorIds.has(primarySectorOf(result)) &&
+      scoreOf(result) >= scoreOf(candidate) - 4
+    );
+    return nearExpectedCandidates.length >= Math.max(1, 3 - selectedExpectedSectorCount());
+  };
   const bestScore = scoreOf(compatible[0]);
   const ranked = compatible.slice().sort((a, b) => {
     const relevantDelta = Number(isPrimaryRelevant(b)) - Number(isPrimaryRelevant(a));
@@ -6350,6 +6405,7 @@ function diversifyTopResults(results) {
     if (selected.length >= 5 || selected.some(item => item.jobId === candidate.jobId)) return false;
     const candidateSelectionScore = scoreOf(candidate);
     if (mode !== "fill" && candidateSelectionScore < bestScore - 12 && selected.length >= 3) return false;
+    if (mode !== "fill" && shouldDelayOutsideExpectedSector(candidate)) return false;
     const variantParent = selected.find(item => isVariantOf(candidate, item));
     if (variantParent && mode !== "fill") {
       variantsByJob[variantParent.jobId] = variantsByJob[variantParent.jobId] || [];
@@ -8046,6 +8102,7 @@ function renderDataPage() {
         <select data-corpus-mode>
           <option value="auto" ${App.state.corpusMode === "auto" ? "selected" : ""}>Automatique</option>
           <option value="generated_rome" ${App.state.corpusMode === "generated_rome" ? "selected" : ""}>ROME généré</option>
+          <option value="generated_rome_500_experimental" ${App.state.corpusMode === "generated_rome_500_experimental" ? "selected" : ""}>ROME 500 expérimental</option>
           <option value="curated" ${App.state.corpusMode === "curated" ? "selected" : ""}>Corpus local enrichi estimatif</option>
           <option value="sample" ${App.state.corpusMode === "sample" ? "selected" : ""}>Sample minimal</option>
         </select>
@@ -8167,7 +8224,8 @@ function renderDataPage() {
     <section class="results-section no-print">
       <h2>Actions données</h2>
       <div class="button-row">
-        <button class="primary-button" type="button" data-action="load-generated-rome">Charger les données générées</button>
+        <button class="primary-button" type="button" data-action="load-generated-rome">Charger les données générées ROME 72</button>
+        <button class="secondary-button" type="button" data-action="load-generated-rome500">Charger ROME 500 expérimental</button>
         <button class="primary-button" type="button" data-action="load-curated-corpus">Charger le corpus local enrichi</button>
         <button class="secondary-button" type="button" data-import-type="corpus">Importer un corpus JSON</button>
         <button class="secondary-button" type="button" data-action="export-corpus">Exporter corpus compact</button>
@@ -8306,6 +8364,14 @@ async function setCorpusMode(mode) {
     await loadGeneratedRomeDataset();
     return;
   }
+  if (mode === "generated_rome_500_experimental") {
+    await loadGeneratedRomeDataset({
+      basePath: "data/generated/rome500-experimental/",
+      label: "creations/boussolepro/data/generated/rome500-experimental",
+      corpusMode: "generated_rome_500_experimental"
+    });
+    return;
+  }
   if (mode === "auto") {
     const currentProvenance = App.state.dataset?.provenance || "";
     if (currentProvenance && !["sample", "curated_clairmetier_ai_logic"].includes(currentProvenance)) {
@@ -8321,8 +8387,10 @@ async function setCorpusMode(mode) {
   }
 }
 
-async function loadGeneratedRomeDataset() {
-  const basePath = "data/generated/";
+async function loadGeneratedRomeDataset(options = {}) {
+  const basePath = options.basePath || "data/generated/";
+  const corpusLabel = options.label || "données générées";
+  const corpusMode = options.corpusMode || "generated_rome";
   const files = {
     manifest: "import-manifest.rome.json",
     jobs: "jobs.rome.json",
@@ -8347,10 +8415,10 @@ async function loadGeneratedRomeDataset() {
     fapRomeMappings: "market/fap-rome-mappings.json"
   };
   try {
-    showLoading("Chargement des données générées", "Boussole Pro lit les fichiers JSON statiques dans data/generated/. Merci de patienter.");
+    showLoading("Chargement des données générées", `Boussole Pro lit les fichiers JSON statiques dans ${basePath}. Merci de patienter.`);
     await waitForUiFrame();
     App.state.generatedDataStatus = "chargement en cours";
-    App.state.generatedDataMessage = "Recherche de fichiers JSON générés dans data/generated/, relatif à Boussole Pro.";
+    App.state.generatedDataMessage = `Recherche de fichiers JSON générés dans ${basePath}, relatif à Boussole Pro.`;
     renderAll();
     const generated = {};
     for (const [key, filename] of Object.entries(files)) {
@@ -8359,7 +8427,7 @@ async function loadGeneratedRomeDataset() {
     const hasUsefulData = ["jobs", "skills", "matchableSkills", "workContexts", "jobAppellations", "mappings"].some(key => Array.isArray(generated[key]) && generated[key].length);
     if (!hasUsefulData) {
       App.state.generatedDataStatus = "non configuré";
-      App.state.generatedDataMessage = "Aucun fichier exploitable trouvé dans data/generated/ à côté de Boussole Pro. L’application reste sur le corpus local ou sample.";
+      App.state.generatedDataMessage = `Aucun fichier exploitable trouvé dans ${basePath} à côté de Boussole Pro. L’application reste sur le corpus local ou sample.`;
       hideLoading({ delay: 80 });
       renderAll();
       showToast("Données générées absentes. Le corpus actuel est conservé.");
@@ -8378,15 +8446,15 @@ async function loadGeneratedRomeDataset() {
     await waitForUiFrame();
     App.state.dataset = mergeGeneratedDatasetIntoApp(generated, { replace });
     markDatasetAsOfficialRome(App.state.dataset, generated.manifest);
-    App.state.corpusMode = "generated_rome";
-    saveSettings({ corpusMode: "generated_rome" });
+    App.state.corpusMode = corpusMode;
+    saveSettings({ corpusMode });
     saveDataset(App.state.dataset);
     calculateAndStoreResults();
     const marketRowsLoaded = countMarketDatasetRows(generated);
     const marketCoverageLoaded = calculateMarketCoverage(App.state.dataset, mapUserProfileToCriteria(App.state.profile));
     const marketStatus = generated.marketQualityReport?.status || "non renseigné";
     App.state.generatedDataStatus = "disponible via données générées";
-    App.state.generatedDataMessage = `Les fichiers creations/boussolepro/data/generated ont été chargés sans secret dans le navigateur. Marché : ${marketRowsLoaded.total} ligne(s) statistiques chargée(s), France ${marketCoverageLoaded.jobsWithNationalMarket || 0}, Occitanie ${marketCoverageLoaded.jobsWithRegionalMarket || 0}, Aude ${marketCoverageLoaded.jobsWithDepartmentalMarket || 0}. Statut ${marketStatus}. Donnée affichée : volume d’offres observé, pas tension complète.`;
+    App.state.generatedDataMessage = `Les fichiers ${corpusLabel} ont été chargés sans secret dans le navigateur. Marché : ${marketRowsLoaded.total} ligne(s) statistiques chargée(s), France ${marketCoverageLoaded.jobsWithNationalMarket || 0}, Occitanie ${marketCoverageLoaded.jobsWithRegionalMarket || 0}, Aude ${marketCoverageLoaded.jobsWithDepartmentalMarket || 0}. Statut ${marketStatus}. Donnée affichée : volume d’offres observé, pas tension complète.`;
     hideLoading({ delay: 120 });
     renderAll();
     showToast(`Données générées chargées. Marché : ${marketRowsLoaded.total} ligne(s).`);
@@ -8532,6 +8600,7 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
 function compactGeneratedDatasetForBrowser(generated = {}) {
   const jobs = toArray(generated.jobs);
   const mappings = toArray(generated.mappings);
+  const activeRomeCodes = new Set(jobs.map(job => job.romeCode).filter(Boolean));
   const matchableSkillIds = new Set(toArray(generated.matchableSkills).map(item => item.id).filter(Boolean));
   const referencedSkillIds = new Set([
     ...jobs.flatMap(job => [
@@ -8559,10 +8628,16 @@ function compactGeneratedDatasetForBrowser(generated = {}) {
     certificationLike: referencedCertificationIds.size
       ? toArray(generated.certificationLike).filter(item => referencedCertificationIds.has(item.id))
       : [],
-    marketNational: toArray(generated.marketNational).map(compactMarketRowForActiveCorpus),
-    marketOccitanie: toArray(generated.marketOccitanie).map(compactMarketRowForActiveCorpus),
-    marketAude: toArray(generated.marketAude).map(compactMarketRowForActiveCorpus)
+    marketNational: filterMarketRowsForActiveCodes(generated.marketNational, activeRomeCodes).map(compactMarketRowForActiveCorpus),
+    marketOccitanie: filterMarketRowsForActiveCodes(generated.marketOccitanie, activeRomeCodes).map(compactMarketRowForActiveCorpus),
+    marketAude: filterMarketRowsForActiveCodes(generated.marketAude, activeRomeCodes).map(compactMarketRowForActiveCorpus)
   };
+}
+
+function filterMarketRowsForActiveCodes(rows = [], activeRomeCodes = new Set()) {
+  const list = toArray(rows);
+  if (!activeRomeCodes.size) return [];
+  return list.filter(row => row?.romeCode && activeRomeCodes.has(row.romeCode));
 }
 
 function compactMarketRowForActiveCorpus(row = {}) {
@@ -9687,7 +9762,7 @@ function handleActionClick(event) {
   if (action === "reset-weights") applyWeightPreset("default");
   if (action === "preset-fast-access") applyWeightPreset("fast_access");
   if (action === "preset-values") applyWeightPreset("values");
-  if (action === "export-corpus") downloadFile(`boussole-pro-corpus-compact-${dateStamp()}.json`, JSON.stringify(prepareCompactDatasetExport(App.state.dataset), null, 2), "application/json");
+  if (action === "export-corpus") downloadFile(`boussole-pro-corpus-compact-${dateStamp()}.json`, JSON.stringify(prepareCompactDatasetExport(App.state.dataset)), "application/json");
   if (action === "export-corpus-diagnostic") downloadFile(`boussole-pro-corpus-diagnostic-${dateStamp()}.json`, JSON.stringify(App.state.dataset, null, 2), "application/json");
   if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
@@ -9709,6 +9784,11 @@ function handleActionClick(event) {
   }
   if (action === "load-curated-corpus") loadCuratedCorpusDataset({ replace: true });
   if (action === "load-generated-rome") loadGeneratedRomeDataset();
+  if (action === "load-generated-rome500") loadGeneratedRomeDataset({
+    basePath: "data/generated/rome500-experimental/",
+    label: "creations/boussolepro/data/generated/rome500-experimental",
+    corpusMode: "generated_rome_500_experimental"
+  });
   if (action === "clear-api-test") clearApiTestConfig();
   if (action === "test-ft-token") testFranceTravailToken();
   if (action === "test-rome-metiers") testRomeMetiers();
@@ -10537,7 +10617,11 @@ function calculateMarketCoverage(datasets = App.state.dataset, criteria = {}) {
   const statsByJob = jobs.map(job => getJobMarketStats(job, datasets));
   const hasOfficialLevel = (stats, level) => {
     const item = stats?.[level];
-    return item && item.sourceName === "api_marche_travail" && (Number.isFinite(item.offers12m) || item.absoluteOfferSignal !== "unknown");
+    return item &&
+      item.sourceName === "api_marche_travail" &&
+      item.marketAvailabilityStatus !== "official_unavailable_for_rome_code" &&
+      item.offers12m !== null &&
+      item.offers12m !== undefined;
   };
   const levelRows = level => statsByJob.map(stats => stats?.[level]).filter(Boolean);
   const signalDistribution = level => countSignals(levelRows(level).map(item => item.absoluteOfferSignal || absoluteOfferSignalFromVolume(item.offers12m)), ["zero", "low", "medium", "high", "unknown"]);
@@ -10598,14 +10682,17 @@ function findSuggestedTrainings(job, datasets) {
 }
 
 function prepareCompactDatasetExport(dataset = App.state.dataset) {
-  const compact = clone(dataset || {});
+  let compact = clone(dataset || {});
   compact.exportKind = "compact_dataset";
   compact.exportedAt = new Date().toISOString();
   compact.rawSkills = [];
+  compact.jobs = toArray(compact.jobs).map(compactJobForDatasetExport);
+  compact = filterCompactReferentialsForActiveJobs(compact);
+  const activeRomeCodes = new Set(compact.jobs.map(job => job.romeCode).filter(Boolean));
   compact.marketDatasets = {
-    national: toArray(compact.marketDatasets?.national).map(compactMarketRowForActiveCorpus),
-    occitanie: toArray(compact.marketDatasets?.occitanie).map(compactMarketRowForActiveCorpus),
-    aude: toArray(compact.marketDatasets?.aude).map(compactMarketRowForActiveCorpus),
+    national: filterMarketRowsForActiveCodes(compact.marketDatasets?.national, activeRomeCodes).map(compactMarketRowForActiveCorpus),
+    occitanie: filterMarketRowsForActiveCodes(compact.marketDatasets?.occitanie, activeRomeCodes).map(compactMarketRowForActiveCorpus),
+    aude: filterMarketRowsForActiveCodes(compact.marketDatasets?.aude, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     bmoFap2021: [],
     fapRomeMappings: []
   };
@@ -10619,6 +10706,61 @@ function prepareCompactDatasetExport(dataset = App.state.dataset) {
   compact.qualityReport = compactQualityReportSummary(compact.qualityReport);
   compact.note = "Export compact par défaut : référentiels bruts et historiques marché détaillés retirés. Utiliser l’export diagnostic complet pour l’audit complet.";
   return compact;
+}
+
+function filterCompactReferentialsForActiveJobs(compact = {}) {
+  const jobs = toArray(compact.jobs);
+  const mappings = toArray(compact.mappings);
+  const matchableSkillIds = new Set(toArray(compact.matchableSkills).map(item => item.id).filter(Boolean));
+  const referencedSkillIds = new Set([
+    ...jobs.flatMap(job => [
+      ...toArray(job.requiredSkills),
+      ...toArray(job.optionalSkills),
+      ...toArray(job.softSkills),
+      ...toArray(job.matchableSkillIds),
+      ...toArray(job.mobilizedSkillIds)
+    ]),
+    ...mappings.flatMap(mapping => toArray(mapping.skillIds)),
+    ...matchableSkillIds
+  ].filter(Boolean));
+  const referencedKnowledgeIds = new Set([
+    ...jobs.flatMap(job => [...toArray(job.knowledge), ...toArray(job.knowledgeIds)]),
+    ...mappings.flatMap(mapping => toArray(mapping.knowledgeIds))
+  ].filter(Boolean));
+  const referencedCertificationIds = new Set([
+    ...jobs.flatMap(job => [...toArray(job.requiredCertifications), ...toArray(job.recommendedCertifications)]),
+    ...mappings.flatMap(mapping => toArray(mapping.certificationIds))
+  ].filter(Boolean));
+  return {
+    ...compact,
+    skills: toArray(compact.skills).filter(item => referencedSkillIds.has(item.id)),
+    knowledge: toArray(compact.knowledge).filter(item => referencedKnowledgeIds.has(item.id)),
+    certificationLike: referencedCertificationIds.size
+      ? toArray(compact.certificationLike).filter(item => referencedCertificationIds.has(item.id))
+      : []
+  };
+}
+
+function compactJobForDatasetExport(job = {}) {
+  const compact = { ...job };
+  if (arraysEqualAsSets(compact.requiredSkills, compact.matchableSkillIds)) delete compact.requiredSkills;
+  if (arraysEqualAsSets(compact.softSkills, compact.softSkillIds)) delete compact.softSkills;
+  if (arraysEqualAsSets(compact.knowledge, compact.knowledgeIds)) delete compact.knowledge;
+  delete compact.romeSkillLabels;
+  delete compact.romeWorkContextLabels;
+  delete compact.romeKnowledgeLabels;
+  delete compact.romeSkillRefs;
+  delete compact.romeKnowledgeRefs;
+  delete compact.romeWorkContextRefs;
+  delete compact.romeAppellationRefs;
+  delete compact.romeCertificationRefs;
+  return compact;
+}
+
+function arraysEqualAsSets(a = [], b = []) {
+  const left = unique(toArray(a)).sort();
+  const right = unique(toArray(b)).sort();
+  return left.length > 0 && left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function compactQualityReportSummary(report = null) {
@@ -10949,6 +11091,31 @@ function allowsLongTraining(value) {
 
 function buildIssue(severity, type, entityType, entityId, message, recommendation) {
   return { id: `${type}-${slug(entityId || "dataset")}`, severity, type, entityType, entityId, message, recommendation };
+}
+
+function hasKnownDiplomaLevel(job = {}) {
+  return (
+    job.requiredDiplomaLevel !== null &&
+    job.requiredDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.requiredDiplomaLevel))
+  ) || (
+    job.recommendedDiplomaLevel !== null &&
+    job.recommendedDiplomaLevel !== undefined &&
+    Number.isFinite(Number(job.recommendedDiplomaLevel))
+  );
+}
+
+function hasOfficialMarketData(job = {}) {
+  return ["national", "regional", "departmental", "local_basin"].some(level => {
+    const row = job.marketStats?.[level];
+    return (
+      row &&
+      row.sourceName === "api_marche_travail" &&
+      row.marketAvailabilityStatus !== "official_unavailable_for_rome_code" &&
+      row.offers12m !== null &&
+      row.offers12m !== undefined
+    );
+  });
 }
 
 function exclusion(code, label, category, message) {
@@ -11347,6 +11514,11 @@ function numberOrNull(value) {
 
 function ratio(part, total) {
   return total ? Number((part / total).toFixed(2)) : 0;
+}
+
+function average(values = []) {
+  const numeric = toArray(values).map(Number).filter(Number.isFinite);
+  return numeric.length ? Math.round(numeric.reduce((sum, value) => sum + value, 0) / numeric.length) : 0;
 }
 
 function percent(value) {
