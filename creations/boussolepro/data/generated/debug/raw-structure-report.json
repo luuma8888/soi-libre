@@ -1,12 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T05:48:41.375Z",
+  "generatedAt": "2026-07-13T12:19:20.464Z",
   "branch": "soi-libre-codex",
   "requestedDebugCodes": [
-    "A1203",
-    "K1303",
     "M1607",
-    "M1805"
+    "A1203"
   ],
   "note": "Rapport structurel sans corps brut complet et sans jeton. Les chemins indiquent uniquement les zones candidates a verifier pour la normalisation.",
   "fields": {
@@ -19,58 +17,13 @@
     "mobilites": "Voir samples[CODE].candidates.mobilites"
   },
   "samples": {
-    "A1203": {
-      "rootKeys": [
-        "code",
-        "metier"
-      ],
-      "candidates": {
-        "title": [
-          {
-            "path": "$.metier.libelle",
-            "key": "libelle",
-            "type": "string"
-          }
-        ],
-        "description": [],
-        "competences": [],
-        "savoirs": [],
-        "savoirEtre": [],
-        "appellations": [],
-        "contextesTravail": [],
-        "conditionsAcces": [],
-        "certifications": [],
-        "mobilites": []
-      }
-    },
-    "K1303": {
-      "rootKeys": [
-        "code",
-        "metier"
-      ],
-      "candidates": {
-        "title": [
-          {
-            "path": "$.metier.libelle",
-            "key": "libelle",
-            "type": "string"
-          }
-        ],
-        "description": [],
-        "competences": [],
-        "savoirs": [],
-        "savoirEtre": [],
-        "appellations": [],
-        "contextesTravail": [],
-        "conditionsAcces": [],
-        "certifications": [],
-        "mobilites": []
-      }
-    },
     "M1607": {
       "rootKeys": [
         "code",
-        "metier"
+        "groupesCompetencesMobilisees",
+        "groupesSavoirs",
+        "metier",
+        "obsolete"
       ],
       "candidates": {
         "title": [
@@ -78,11 +31,310 @@
             "path": "$.metier.libelle",
             "key": "libelle",
             "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[6].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[7].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[6].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[6].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[6].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[7].libelle",
+            "key": "libelle",
+            "type": "string"
           }
         ],
         "description": [],
-        "competences": [],
-        "savoirs": [],
+        "competences": [
+          {
+            "path": "$.groupesCompetencesMobilisees",
+            "key": "groupesCompetencesMobilisees",
+            "type": "array",
+            "arrayLength": 11
+          }
+        ],
+        "savoirs": [
+          {
+            "path": "$.groupesSavoirs",
+            "key": "groupesSavoirs",
+            "type": "array",
+            "arrayLength": 4
+          }
+        ],
         "savoirEtre": [],
         "appellations": [],
         "contextesTravail": [],
@@ -91,10 +343,13 @@
         "mobilites": []
       }
     },
-    "M1805": {
+    "A1203": {
       "rootKeys": [
         "code",
-        "metier"
+        "groupesCompetencesMobilisees",
+        "groupesSavoirs",
+        "metier",
+        "obsolete"
       ],
       "candidates": {
         "title": [
@@ -102,11 +357,320 @@
             "path": "$.metier.libelle",
             "key": "libelle",
             "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[6].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[0].competences[7].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[1].competences[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[2].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[3].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[4].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[5].competences[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[6].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[6].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].enjeu.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesCompetencesMobilisees[7].competences[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[0].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[1].savoirs[6].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[2].savoirs[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].categorieSavoirs.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.groupesSavoirs[3].savoirs[2].libelle",
+            "key": "libelle",
+            "type": "string"
           }
         ],
         "description": [],
-        "competences": [],
-        "savoirs": [],
+        "competences": [
+          {
+            "path": "$.groupesCompetencesMobilisees",
+            "key": "groupesCompetencesMobilisees",
+            "type": "array",
+            "arrayLength": 11
+          }
+        ],
+        "savoirs": [
+          {
+            "path": "$.groupesSavoirs",
+            "key": "groupesSavoirs",
+            "type": "array",
+            "arrayLength": 5
+          }
+        ],
         "savoirEtre": [],
         "appellations": [],
         "contextesTravail": [],
