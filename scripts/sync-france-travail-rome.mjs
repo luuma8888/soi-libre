@@ -86,6 +86,7 @@ async function main() {
       failedCodes: syncResult.failedCodes,
       completionRate: Number((syncResult.successfulCodes.length / requestedCodes.length).toFixed(2)),
       branch: syncMeta.branch,
+      optionalReferentials: optionalReferentials.diagnostics,
       generatedFiles: [
         "jobs.rome.json",
         "import-manifest.rome.json",
@@ -469,6 +470,8 @@ async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
     const record = recordsByCode.get(code);
     return [code, buildRomeMetiersRecordSample(code, record)];
   }));
+  const fieldAvailability = buildMetiersFieldAvailability(samples);
+  const conclusion = buildMetiersDiagnosticConclusion(fieldAvailability);
   const report = {
     schemaVersion: "1.0.0",
     generatedAt: syncMeta.generatedAt || new Date().toISOString(),
@@ -476,7 +479,9 @@ async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
     source: "rome_metiers_api",
     totalRecords: records.length,
     diagnosticCodes: codes,
-    note: "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas encore utilisé pour enrichir jobs.rome.json tant que ces chemins ne sont pas validés.",
+    note: "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas utilisé pour enrichir jobs.rome.json tant qu'il ne contient que code/libelle ou tant que les chemins riches ne sont pas validés.",
+    fieldAvailability,
+    conclusion,
     samples
   };
   await writeFile(new URL("rome-metiers-record-samples.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
@@ -532,6 +537,49 @@ function emptyMetiersDetectedFields() {
     certificationRefs: [],
     relatedRomeCodes: [],
     regulatoryTags: []
+  };
+}
+
+function buildMetiersFieldAvailability(samples = {}) {
+  const foundSamples = Object.values(samples).filter(sample => sample?.found);
+  const fields = Object.keys(emptyMetiersDetectedFields());
+  return Object.fromEntries(fields.map(field => {
+    const samplesWithField = foundSamples.filter(sample => toArray(sample.detectedFields?.[field]).length).length;
+    return [field, {
+      samplesWithField,
+      samplesTotal: foundSamples.length,
+      status: samplesWithField ? "available_in_sample" : "not_available_in_sample"
+    }];
+  }));
+}
+
+function buildMetiersDiagnosticConclusion(fieldAvailability = {}) {
+  const richFields = [
+    "description",
+    "appellations",
+    "characteristics",
+    "skillRefs",
+    "softSkillRefs",
+    "knowledgeRefs",
+    "contextRefs",
+    "accessConditions",
+    "certificationRefs",
+    "relatedRomeCodes",
+    "regulatoryTags"
+  ];
+  const availableRichFields = richFields.filter(field => fieldAvailability[field]?.samplesWithField > 0);
+  const missingRichFields = richFields.filter(field => !availableRichFields.includes(field));
+  return {
+    status: availableRichFields.length ? "rich_fields_detected" : "shell_only_code_libelle",
+    usedForDataset: false,
+    normalizationAllowed: ["code", "title", ...availableRichFields],
+    missingRichFields,
+    message: availableRichFields.length
+      ? "Des champs riches semblent presents dans certains echantillons : valider les chemins avant d'enrichir jobs.rome.json."
+      : "Les echantillons ROME Metiers contiennent seulement code/libelle. Cette route ne doit pas etre utilisee pour inventer descriptions, appellations, contextes, conditions d'acces ou certifications.",
+    nextAction: availableRichFields.length
+      ? "Analyser les chemins detectes puis brancher uniquement les champs confirmes."
+      : "Identifier une route de detail ou de liaison officielle pour appellations, contextes, conditions d'acces et mobilites."
   };
 }
 

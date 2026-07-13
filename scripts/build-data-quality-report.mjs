@@ -80,6 +80,19 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   if (rawSkills.length && linkedSkillIds.size === 0) {
     warnings.push(issue("warning", "referential_loaded_but_unlinked", "Des competences ROME globales sont chargees, mais aucune competence officielle n'est reliee aux metiers. Elles servent au profil, pas a prouver qu'un metier les exige.", "skills"));
   }
+  const metiersReferential = optionalReferentials.find(item => item.name === "metiers" && item.status === "ok");
+  if (metiersReferential && metiersReferential.usedForDataset === false) {
+    warnings.push(issue("info", "rome_metiers_referential_not_used", "Le referentiel ROME Metiers global est charge a titre diagnostique mais n'enrichit pas les fiches : les echantillons disponibles ne fournissent pas encore descriptions, appellations, contextes ou conditions d'acces exploitables.", "metiers"));
+  }
+  if (jobs.length && officialDescriptionsCount === 0) {
+    warnings.push(issue("warning", "missing_official_descriptions", "Aucune description officielle exploitable n'est reliee aux metiers generes. L'interface doit afficher cette limite sans inventer de resume.", "description"));
+  }
+  if (jobs.length && jobsWithAppellationsCount === 0) {
+    warnings.push(issue("warning", "missing_official_appellations", "Aucune appellation officielle n'est reliee aux metiers generes. La recherche et la lisibilite restent limitees sur ce point.", "jobAppellations"));
+  }
+  if (workContexts.length && jobsWithContextMappings === 0) {
+    warnings.push(issue("warning", "context_referential_unlinked", "Le referentiel contextes ROME est charge, mais aucun contexte n'est encore relie aux metiers. Il ne doit pas etre utilise comme preuve forte dans le matching.", "workContexts"));
+  }
   if (matchableSkills.length > 900) {
     warnings.push(issue("warning", "too_many_matchable_skills", `${matchableSkills.length} competences matchables : reduire la liste pour le profil utilisateur.`, "matchableSkills"));
   }

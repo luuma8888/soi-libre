@@ -58,6 +58,28 @@ const PROFILE_SECTOR_FROM_GENERATED = {
   services_proprete: ["proprete_entretien"]
 };
 
+const GENERATED_SECTOR_FROM_PROFILE = {
+  administratif_support: "administratif",
+  numerique: "numerique",
+  sante_soin: "soin_sante",
+  social_insertion: "social_accompagnement",
+  education_enfance: "enfance_education",
+  nature_agriculture: "nature_agriculture_animaux",
+  animaux: "nature_agriculture_animaux",
+  batiment_construction: "artisanat_batiment_maintenance",
+  maintenance: "artisanat_batiment_maintenance",
+  commerce_vente: "commerce_relation_client",
+  restauration_alimentation: "restauration_hotellerie_tourisme",
+  hotellerie_hebergement: "restauration_hotellerie_tourisme",
+  industrie_production: "industrie_qualite",
+  logistique_transport: "logistique_transport_securite",
+  securite_prevention: "logistique_transport_securite",
+  culture_communication: "culture_communication_creation",
+  recherche_analyse: "recherche_analyse",
+  services_aux_collectivites: "droit_gestion_publique",
+  proprete_entretien: "services_proprete"
+};
+
 export function normalizeRomeMetier(raw = {}) {
   const source = unwrapFiche(raw);
   const romeCode = firstText(source.romeCode, source.codeRome, source.code, raw.romeCode, raw.codeRome, raw.code);
@@ -89,9 +111,12 @@ export function normalizeRomeMetier(raw = {}) {
   const explicitSectorMapping = getRomeSectorMapping(romeCode);
   const heuristicSectorMapping = mapProfileSectorsFromGenerated(boussoleSectorIds);
   const sectorMapping = explicitSectorMapping.primarySectorId ? explicitSectorMapping : heuristicSectorMapping;
+  const stableBoussoleSectorIds = explicitSectorMapping.primarySectorId
+    ? mapGeneratedSectorsFromProfile([sectorMapping.primarySectorId, ...sectorMapping.secondarySectorIds])
+    : boussoleSectorIds;
   const domainOfficial = officialRomeDomain.label;
   const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
-  const domain = boussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
+  const domain = stableBoussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
   const family = familyOfficial || domainOfficial || inferFamilyFromRomeCode(romeCode);
   const textPool = unique([title, description, domain, family, ...appellations, ...activities, ...contextLabels, ...requiredSkillLabels, ...knowledgeLabels].filter(Boolean));
   const constraints = inferConstraints(textPool);
@@ -145,7 +170,7 @@ export function normalizeRomeMetier(raw = {}) {
     domain,
     family,
     officialRomeDomain,
-    boussoleSectorIds,
+    boussoleSectorIds: stableBoussoleSectorIds,
     primarySectorId: sectorMapping.primarySectorId,
     secondarySectorIds: sectorMapping.secondarySectorIds,
     sectorMappingConfidence: sectorMapping.confidence,
@@ -909,6 +934,12 @@ function mapProfileSectorsFromGenerated(boussoleSectorIds = []) {
     source: mapped.length ? "generated_rome_heuristic_sector_mapping" : SOURCE_UNKNOWN,
     key: null
   };
+}
+
+function mapGeneratedSectorsFromProfile(profileSectorIds = []) {
+  return unique(toArray(profileSectorIds)
+    .map(id => GENERATED_SECTOR_FROM_PROFILE[id])
+    .filter(id => BOUSSOLE_SECTOR_LABELS[id]));
 }
 
 function getRomeSectorMapping(romeCode = "") {
