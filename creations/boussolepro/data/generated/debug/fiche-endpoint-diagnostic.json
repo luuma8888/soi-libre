@@ -1,0 +1,905 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-13T06:08:57.515Z",
+  "branch": "soi-libre-codex",
+  "source": "rome_fiche_endpoint_diagnostic",
+  "requestedEndpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier",
+  "testedCodes": [
+    "M1607",
+    "G1202",
+    "A1203"
+  ],
+  "note": "Rapport sans token ni Authorization. Il compare les variantes d'appel pour trouver celle qui renvoie une FicheMetier enrichie.",
+  "expectedRichFields": [
+    "groupesCompetencesMobilisees",
+    "groupesSavoirs",
+    "appellations",
+    "contextesTravail",
+    "conditionsAcces"
+  ],
+  "results": [
+    {
+      "code": "M1607",
+      "bestEndpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/M1607",
+      "bestScore": 4.75,
+      "attempts": [
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ],
+              "groupesCompetencesMobilisees": {
+                "type": "array",
+                "length": 11
+              },
+              "groupesSavoirs": {
+                "type": "array",
+                "length": 4
+              }
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "score": 4.75,
+            "isDetailed": true,
+            "isShell": false,
+            "candidates": {
+              "competences": [
+                {
+                  "path": "$.groupesCompetencesMobilisees",
+                  "key": "groupesCompetencesMobilisees",
+                  "type": "array",
+                  "arrayLength": 11
+                }
+              ],
+              "savoirs": [
+                {
+                  "path": "$.groupesSavoirs",
+                  "key": "groupesSavoirs",
+                  "type": "array",
+                  "arrayLength": 4
+                }
+              ],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "detail_sufficient"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeRome=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?romeCode=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeMetier=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeROME=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "M1607",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code_rome=M1607",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        }
+      ]
+    },
+    {
+      "code": "G1202",
+      "bestEndpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/G1202",
+      "bestScore": 4.75,
+      "attempts": [
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ],
+              "groupesCompetencesMobilisees": {
+                "type": "array",
+                "length": 15
+              },
+              "groupesSavoirs": {
+                "type": "array",
+                "length": 5
+              }
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "score": 4.75,
+            "isDetailed": true,
+            "isShell": false,
+            "candidates": {
+              "competences": [
+                {
+                  "path": "$.groupesCompetencesMobilisees",
+                  "key": "groupesCompetencesMobilisees",
+                  "type": "array",
+                  "arrayLength": 15
+                }
+              ],
+              "savoirs": [
+                {
+                  "path": "$.groupesSavoirs",
+                  "key": "groupesSavoirs",
+                  "type": "array",
+                  "arrayLength": 5
+                }
+              ],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "detail_sufficient"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeRome=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?romeCode=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeMetier=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeROME=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "G1202",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code_rome=G1202",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        }
+      ]
+    },
+    {
+      "code": "A1203",
+      "bestEndpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/A1203",
+      "bestScore": 4.75,
+      "attempts": [
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ],
+              "groupesCompetencesMobilisees": {
+                "type": "array",
+                "length": 11
+              },
+              "groupesSavoirs": {
+                "type": "array",
+                "length": 5
+              }
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "groupesCompetencesMobilisees",
+              "groupesSavoirs",
+              "metier",
+              "obsolete"
+            ],
+            "score": 4.75,
+            "isDetailed": true,
+            "isShell": false,
+            "candidates": {
+              "competences": [
+                {
+                  "path": "$.groupesCompetencesMobilisees",
+                  "key": "groupesCompetencesMobilisees",
+                  "type": "array",
+                  "arrayLength": 11
+                }
+              ],
+              "savoirs": [
+                {
+                  "path": "$.groupesSavoirs",
+                  "key": "groupesSavoirs",
+                  "type": "array",
+                  "arrayLength": 5
+                }
+              ],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "detail_sufficient"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeRome=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?romeCode=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeMetier=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?codeROME=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        },
+        {
+          "code": "A1203",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier?code_rome=A1203",
+          "status": 200,
+          "ok": true,
+          "payloadShape": {
+            "type": "object",
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "sampleChildKeys": {
+              "metier": [
+                "code",
+                "libelle"
+              ]
+            }
+          },
+          "richness": {
+            "rootKeys": [
+              "code",
+              "metier"
+            ],
+            "score": 0,
+            "isDetailed": false,
+            "isShell": true,
+            "candidates": {
+              "competences": [],
+              "savoirs": [],
+              "appellations": [],
+              "contextesTravail": [],
+              "conditionsAcces": [],
+              "mobilites": []
+            }
+          },
+          "message": "payload_too_poor"
+        }
+      ]
+    }
+  ],
+  "recommendation": "Utiliser la variante https://api.francetravail.io/partenaire/rome-fiches-metiers/v1/fiches-rome/fiche-metier/M1607, qui expose des champs enrichis."
+}
