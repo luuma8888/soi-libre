@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T15:46:51.931Z.
+Généré le 2026-07-13T16:08:14.380Z.
 
 ## Synthèse
 
@@ -61,7 +61,7 @@ Généré le 2026-07-13T15:46:51.931Z.
 
 ## Taille et performance
 
-- Taille totale générée : 37.22 Mo
+- Taille totale générée : 37.23 Mo
 - Nombre de fichiers : 42
 - Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.1 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
