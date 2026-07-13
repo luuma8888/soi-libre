@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
   "reportId": "quality-2026-07-13",
-  "generatedAt": "2026-07-13T18:50:11.409Z",
-  "branch": "local",
-  "datasetVersion": "generated",
-  "status": "completed",
+  "generatedAt": "2026-07-13T19:03:12.018Z",
+  "branch": "soi-libre-codex",
+  "datasetVersion": "rome72-reference-v0.6.4",
+  "status": "completed_with_warnings",
   "requestedCodesCount": 72,
   "successfulCodesCount": 72,
   "failedCodesCount": 0,
@@ -100,7 +100,48 @@
     ],
     "missingDomains": []
   },
-  "optionalReferentials": [],
+  "optionalReferentials": [
+    {
+      "name": "metiers_details",
+      "status": "ok",
+      "count": 71,
+      "usedForDataset": true,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "failedCodesCount": 1,
+      "failedCodes": [
+        {
+          "code": "A1203",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?code_rome=A1203"
+        }
+      ]
+    },
+    {
+      "name": "metiers",
+      "status": "ok",
+      "count": 1911,
+      "usedForDataset": false,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier",
+      "scope": "configured"
+    },
+    {
+      "name": "competences",
+      "status": "ok",
+      "count": 35595,
+      "usedForDataset": true,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-competences/v1/competences/competence",
+      "scope": "configured"
+    },
+    {
+      "name": "contextes",
+      "status": "ok",
+      "count": 191,
+      "usedForDataset": true,
+      "endpoint": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail",
+      "scope": "configured"
+    }
+  ],
   "provenanceDistribution": {
     "jobs": {
       "official_rome_api": 72,
@@ -347,7 +388,7 @@
     "linkedSkills": 1876,
     "matchableSkills": 500,
     "knowledge": 14881,
-    "certificationLike": 0,
+    "certificationLike": 2252,
     "workContexts": 191,
     "linkedContexts": 115,
     "linkedAppellations": 2456,
@@ -491,7 +532,15 @@
     }
   ],
   "issues": [],
-  "warnings": [],
+  "warnings": [
+    {
+      "id": "optional_metiers_details_partial-metiers-details",
+      "severity": "warning",
+      "type": "optional_metiers_details_partial",
+      "target": "metiers_details",
+      "message": "metiers_details partiellement exploitable : 1 code(s) sans donnée enrichie."
+    }
+  ],
   "recommendations": [
     "Ce corpus ROME genere est utilisable pour tester la chaine officielle, mais reste partiel tant que peu de codes sont synchronises.",
     "Les tags de valeurs, envies et contraintes sont des deductions techniques : les verifier avant usage professionnel.",
