@@ -19,6 +19,7 @@ const DEFAULT_ROME_CODES = [
   "A1405", "D1202", "D1505", "E1307", "F1201", "F1302", "G1501", "G1601",
   "H1206", "H2502", "J1304", "K2204", "M1704", "M1801", "N1202", "N2203"
 ];
+const DEFAULT_METIERS_DIAGNOSTIC_CODES = ["A1203", "K1303", "M1607", "M1805"];
 const DEFAULT_RATE_LIMIT_MS = 1100;
 
 async function main() {
@@ -46,11 +47,6 @@ async function main() {
       throw noDataError;
     }
     const optionalReferentials = await fetchOptionalRomeReferentials(token);
-    const parts = {
-      fichesMetiers: syncResult.fichesMetiers,
-      ...optionalReferentials.parts
-    };
-    const dataset = mergeRomeDatasets(parts);
     const syncMeta = {
       generatedAt,
       branch: process.env.GITHUB_REF_NAME || "local",
@@ -60,6 +56,14 @@ async function main() {
       failures: syncResult.failedCodes,
       optionalReferentials: optionalReferentials.diagnostics
     };
+    if (optionalReferentials.referentials?.metiers?.length) {
+      await writeRomeMetiersRecordSamples(optionalReferentials.referentials.metiers, syncMeta);
+    }
+    const parts = {
+      fichesMetiers: syncResult.fichesMetiers,
+      ...optionalReferentials.parts
+    };
+    const dataset = mergeRomeDatasets(parts);
     const report = buildDataQualityReport(dataset, syncMeta);
     logSyncSummary(dataset, report, syncMeta);
     if (isRawDebugEnabled()) await writeRawStructureReport(syncResult.rawSamples, syncMeta);
@@ -98,6 +102,13 @@ async function main() {
         "certifications.certifinfo.json",
         "mappings-rome-formations.json",
         "mappings-rome-certifications.json",
+        "rome-corpus-quality-report.json",
+        "rome-corpus-performance-report.json",
+        "rome-corpus-audit.md",
+        "rome-500-quality-report.json",
+        "rome-500-performance-report.json",
+        "rome-500-audit.md",
+        ...(optionalReferentials.referentials?.metiers?.length ? ["debug/rome-metiers-record-samples.json"] : []),
         ...(isEndpointDiagnosticEnabled() ? ["debug/fiche-endpoint-diagnostic.json"] : []),
         ...(isRawDebugEnabled() ? ["debug/raw-structure-report.json"] : [])
       ],
@@ -123,7 +134,7 @@ async function main() {
     await writeGeneratedJson("mappings-rome-formations.json", []);
     await writeGeneratedJson("mappings-rome-certifications.json", []);
     const audit = await buildRome500AuditArtifacts();
-    console.log(`[Boussole Pro] Audit ROME500: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%, coquilles ${audit.quality?.shellJobs?.count || 0}/${audit.quality?.jobsTotal || 0}`);
+    console.log(`[Boussole Pro] Audit corpus ROME: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%, coquilles ${audit.quality?.shellJobs?.count || 0}/${audit.quality?.jobsTotal || 0}`);
   } catch (error) {
     await writeGeneratedJson("sync-error.json", {
       generatedAt,
@@ -396,6 +407,7 @@ function buildEndpointDiagnosticRecommendation(results = []) {
 async function fetchOptionalRomeReferentials(mainToken) {
   const diagnostics = [];
   const parts = {};
+  const referentials = {};
   const configs = [
     { name: "metiers", envUrl: "FT_ROME_METIERS_URL", envScope: "FT_SCOPE_METIERS", partKey: null },
     { name: "competences", envUrl: "FT_ROME_COMPETENCES_URL", envScope: "FT_SCOPE_COMPETENCES", partKey: "competences" },
@@ -422,6 +434,7 @@ async function fetchOptionalRomeReferentials(mainToken) {
       }
       const json = await response.json();
       const rows = extractArrayFromApiResponse(json);
+      if (config.name === "metiers") referentials.metiers = rows;
       if (config.partKey) parts[config.partKey] = rows;
       diagnostics.push({ name: config.name, status: "ok", count: rows.length, usedForDataset: Boolean(config.partKey), endpoint, scope: scope ? "configured" : "default" });
     } catch (error) {
@@ -429,7 +442,7 @@ async function fetchOptionalRomeReferentials(mainToken) {
     }
     await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
   }
-  return { parts, diagnostics };
+  return { parts, diagnostics, referentials };
 }
 
 function extractArrayFromApiResponse(json) {
@@ -442,6 +455,155 @@ function extractArrayFromApiResponse(json) {
     if (Array.isArray(value)) return value;
   }
   return [];
+}
+
+async function writeRomeMetiersRecordSamples(records = [], syncMeta = {}) {
+  await mkdir(DEBUG_DIR, { recursive: true });
+  const codes = parseList(process.env.ROME_METIERS_DIAGNOSTIC_CODES, DEFAULT_METIERS_DIAGNOSTIC_CODES);
+  const recordsByCode = new Map();
+  toArray(records).forEach(record => {
+    const code = extractRomeCodeFromRecord(record);
+    if (code && !recordsByCode.has(code)) recordsByCode.set(code, record);
+  });
+  const samples = Object.fromEntries(codes.map(code => {
+    const record = recordsByCode.get(code);
+    return [code, buildRomeMetiersRecordSample(code, record)];
+  }));
+  const report = {
+    schemaVersion: "1.0.0",
+    generatedAt: syncMeta.generatedAt || new Date().toISOString(),
+    branch: syncMeta.branch || process.env.GITHUB_REF_NAME || "local",
+    source: "rome_metiers_api",
+    totalRecords: records.length,
+    diagnosticCodes: codes,
+    note: "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas encore utilisé pour enrichir jobs.rome.json tant que ces chemins ne sont pas validés.",
+    samples
+  };
+  await writeFile(new URL("rome-metiers-record-samples.json", DEBUG_DIR), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  console.log(`[Boussole Pro] Diagnostic API Metiers: ${records.length} enregistrement(s), ${codes.filter(code => samples[code]?.found).length}/${codes.length} code(s) trouves.`);
+}
+
+function buildRomeMetiersRecordSample(code, record) {
+  if (!record) {
+    return {
+      found: false,
+      rootKeys: [],
+      recursivePaths: [],
+      detectedFields: emptyMetiersDetectedFields(),
+      sanitizedSample: null
+    };
+  }
+  const detectedFields = {
+    code: findCandidatePaths(record, ["code", "coderome", "codemetier"]),
+    title: findCandidatePaths(record, ["libelle", "intitule", "nom", "titre"]),
+    description: findCandidatePaths(record, ["definition", "description", "descriptif", "resume", "finalite"]),
+    appellations: findCandidatePaths(record, ["appellation"]),
+    characteristics: findCandidatePaths(record, ["caracteristique", "conditionexercice", "situationtravail"]),
+    skillRefs: findCandidatePaths(record, ["competence", "savoirfaire", "savoir-faire"]),
+    softSkillRefs: findCandidatePaths(record, ["savoiretre", "savoir-etre", "softskill"]),
+    knowledgeRefs: findCandidatePaths(record, ["savoir", "connaissance", "knowledge"]),
+    contextRefs: findCandidatePaths(record, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail", "situationtravail"]),
+    accessConditions: findCandidatePaths(record, ["conditionacces", "accesemploimetier", "accesmetier", "prerequis", "pre-requis"]),
+    certificationRefs: findCandidatePaths(record, ["certification", "habilitation", "reglementation"]),
+    relatedRomeCodes: findCandidatePaths(record, ["mobilite", "metierproche", "prochemetier"]),
+    regulatoryTags: findCandidatePaths(record, ["reglement", "obligatoire", "autorisation"])
+  };
+  return {
+    found: true,
+    rootKeys: Object.keys(record || {}).filter(key => !isSensitiveKey(key)).sort(),
+    recursivePaths: collectRecursivePaths(record).slice(0, 240),
+    detectedFields,
+    sanitizedSample: sanitizeDiagnosticSample(record)
+  };
+}
+
+function emptyMetiersDetectedFields() {
+  return {
+    code: [],
+    title: [],
+    description: [],
+    appellations: [],
+    characteristics: [],
+    skillRefs: [],
+    softSkillRefs: [],
+    knowledgeRefs: [],
+    contextRefs: [],
+    accessConditions: [],
+    certificationRefs: [],
+    relatedRomeCodes: [],
+    regulatoryTags: []
+  };
+}
+
+function collectRecursivePaths(source) {
+  const paths = [];
+  const seen = new Set();
+  const visit = (value, path = "$", depth = 0) => {
+    if (value === undefined || value === null || depth > 7 || paths.length >= 500) return;
+    if (isSensitiveKey(path)) return;
+    paths.push({
+      path,
+      type: Array.isArray(value) ? "array" : typeof value,
+      arrayLength: Array.isArray(value) ? value.length : undefined,
+      childKeys: value && typeof value === "object" && !Array.isArray(value)
+        ? Object.keys(value).filter(key => !isSensitiveKey(key)).slice(0, 20)
+        : undefined
+    });
+    if (typeof value !== "object") return;
+    if (seen.has(value)) return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      value.slice(0, 6).forEach((item, index) => visit(item, `${path}[${index}]`, depth + 1));
+      return;
+    }
+    Object.entries(value)
+      .filter(([key]) => !isSensitiveKey(key))
+      .forEach(([key, child]) => visit(child, `${path}.${key}`, depth + 1));
+  };
+  visit(source);
+  return paths;
+}
+
+function sanitizeDiagnosticSample(value, depth = 5) {
+  if (value === undefined || value === null) return value;
+  if (typeof value === "string") return shortMessage(value);
+  if (typeof value === "number" || typeof value === "boolean") return value;
+  if (depth <= 0) {
+    if (Array.isArray(value)) return { type: "array", length: value.length };
+    if (typeof value === "object") return { type: "object", keys: Object.keys(value).filter(key => !isSensitiveKey(key)).slice(0, 20) };
+    return null;
+  }
+  if (Array.isArray(value)) return value.slice(0, 8).map(item => sanitizeDiagnosticSample(item, depth - 1));
+  if (typeof value === "object") {
+    return Object.fromEntries(Object.entries(value)
+      .filter(([key]) => !isSensitiveKey(key))
+      .slice(0, 80)
+      .map(([key, child]) => [key, sanitizeDiagnosticSample(child, depth - 1)]));
+  }
+  return null;
+}
+
+function extractRomeCodeFromRecord(record = {}) {
+  if (!record) return "";
+  if (typeof record === "string" || typeof record === "number") {
+    const match = String(record).toUpperCase().match(/[A-Z][0-9]{4}/);
+    return match ? match[0] : "";
+  }
+  const direct = [
+    record.code,
+    record.codeRome,
+    record.romeCode,
+    record.codeROME,
+    record.codeMetier,
+    record.metier?.code,
+    record.metier?.codeRome,
+    record.id
+  ].find(Boolean);
+  const match = String(direct || "").toUpperCase().match(/[A-Z][0-9]{4}/);
+  if (match) return match[0];
+  const text = JSON.stringify(sanitizeDiagnosticSample(record, 2));
+  const deepMatch = text.toUpperCase().match(/[A-Z][0-9]{4}/);
+  return deepMatch ? deepMatch[0] : "";
 }
 
 async function writeRawStructureReport(rawSamples = {}, syncMeta = {}) {
@@ -553,6 +715,12 @@ function parseList(value, fallback = []) {
   if (!value) return fallback;
   const parsed = String(value).split(/[,\n;\s]+/).map(item => item.trim()).filter(Boolean);
   return parsed.length ? parsed : fallback;
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (value === undefined || value === null || value === "") return [];
+  return [value];
 }
 
 function isRawDebugEnabled() {

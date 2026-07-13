@@ -46,6 +46,7 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   const completeness = buildCompleteness(dataset, syncMeta, jobCompleteness);
   const completionScore = completeness.global.score;
   const optionalReferentials = syncMeta.optionalReferentials || [];
+  const provenanceDistribution = buildProvenanceDistribution(dataset);
   if (jobs.length > 0 && jobs.length < 50) {
     warnings.push(issue("warning", "partial_official_corpus", "Corpus officiel partiel : ce jeu de donnees sert a tester la chaine ROME, pas encore a couvrir tous les metiers.", "dataset"));
   }
@@ -104,6 +105,14 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       missingDomains
     },
     optionalReferentials,
+    provenanceDistribution,
+    replacementReadiness: {
+      generatedOfficialJobs: provenanceDistribution.jobs.official_rome_api || 0,
+      sampleJobs: provenanceDistribution.jobs.sample_non_official || 0,
+      curatedJobs: provenanceDistribution.jobs.curated_estimated || 0,
+      generatedOfficialAppellations: provenanceDistribution.jobAppellations.official_rome_api || 0,
+      generatedOfficialMappings: provenanceDistribution.mappings.generated_rome || provenanceDistribution.mappings.official_rome_api || 0
+    },
     sync: {
       requestedCodes,
       requestedCodesCount: requestedCodes.length,
@@ -320,6 +329,40 @@ function hasValue(value) {
 
 function issue(severity, type, message, target) {
   return { id: `${type}-${stableId(target || message)}`, severity, type, target, message };
+}
+
+function buildProvenanceDistribution(dataset = {}) {
+  const collections = {
+    jobs: dataset.jobs || [],
+    skills: dataset.skills || [],
+    matchableSkills: dataset.matchableSkills || [],
+    workContexts: dataset.workContexts || [],
+    jobAppellations: dataset.jobAppellations || [],
+    mappings: dataset.mappings || [],
+    trainings: dataset.trainings || [],
+    certifications: dataset.certifications || [],
+    marketIndicators: dataset.marketIndicators || []
+  };
+  return Object.fromEntries(Object.entries(collections).map(([name, rows]) => [name, countProvenance(rows)]));
+}
+
+function countProvenance(rows = []) {
+  const counts = {
+    official_rome_api: 0,
+    generated_rome: 0,
+    sample_non_official: 0,
+    curated_estimated: 0,
+    unknown: 0
+  };
+  rows.forEach(row => {
+    const value = row?.source || row?.provenance || row?.officialStatus || "unknown";
+    if (value === "official_rome_api") counts.official_rome_api += 1;
+    else if (value === "generated_rome") counts.generated_rome += 1;
+    else if (String(value).includes("sample")) counts.sample_non_official += 1;
+    else if (String(value).includes("curated") || String(value).includes("estimated")) counts.curated_estimated += 1;
+    else counts.unknown += 1;
+  });
+  return counts;
 }
 
 function ratio(part, total) {

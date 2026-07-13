@@ -1457,7 +1457,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.6.1-alpha",
+  version: "v0.6.2-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1939,6 +1939,49 @@ const LEGACY_SKILL_ALIAS_RULES_V061 = [
   { ids: ["skill-teamwork", "skill-team", "skill-rome-avoir-l-esprit-d-equipe"], all: ["esprit", "equipe"] }
 ];
 
+const SEMANTIC_SKILL_CONCEPTS_V062 = {
+  software_development: {
+    legacyIds: ["skill-code"],
+    labels: ["développer un logiciel", "développer une application", "programmer", "intégrer des éléments graphiques"],
+    officialSkillIds: []
+  },
+  group_animation: {
+    legacyIds: ["skill-animation"],
+    labels: ["animer un groupe", "animer un atelier", "concevoir une activité", "organiser des activités d'animation"],
+    officialSkillIds: []
+  },
+  administrative_documents: {
+    legacyIds: ["skill-admin-doc"],
+    labels: ["gérer un dossier", "classer", "archiver", "traiter des documents", "mettre à jour une base de données"],
+    officialSkillIds: []
+  },
+  cleaning_hygiene: {
+    legacyIds: ["skill-cleaning", "skill-cleanliness", "skill-cleaning-protocol"],
+    labels: ["nettoyer", "désinfecter", "entretenir un espace", "appliquer des règles d'hygiène"],
+    officialSkillIds: []
+  },
+  gardening_nature: {
+    legacyIds: ["skill-gardening", "skill-environment"],
+    labels: ["entretenir des espaces verts", "cultiver", "préserver l'environnement", "identifier des végétaux"],
+    officialSkillIds: []
+  },
+  care_relationship: {
+    legacyIds: ["skill-active-listening", "skill-care-basic", "skill-early-childhood"],
+    labels: ["écouter", "faire preuve d'empathie", "accompagner une personne", "veiller à la sécurité d'un enfant"],
+    officialSkillIds: []
+  },
+  customer_support: {
+    legacyIds: ["skill-communication", "skill-customer-care", "skill-support-user"],
+    labels: ["accueillir", "informer", "conseiller", "renseigner un public"],
+    officialSkillIds: []
+  },
+  logistics_driving: {
+    legacyIds: ["skill-logistics", "skill-driving"],
+    labels: ["réceptionner", "préparer une commande", "conduire un véhicule", "livrer"],
+    officialSkillIds: []
+  }
+};
+
 const SKILL_TESTS = [
   {
     id: "relationnel",
@@ -2008,12 +2051,14 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Administratif calme",
     description: "Teste les métiers de bureau avec fortes contraintes physiques et bruit à éviter.",
     expectedFamilies: ["Administration et support", "Administration et gestion"],
+    expectedRomeCodes: ["M1607", "M1601", "M1609", "M1501", "M1203"],
     unexpectedFamilies: ["Bâtiment", "Industrie", "Logistique et transport"],
     mustNotContain: ["Maçon", "Couvreur", "Manutentionnaire"],
     profile: {
       profileName: "Profil test - administratif calme",
       diplomaLevel: 4,
       skills: ["skill-admin-doc", "skill-organisation", "skill-writing", "skill-data"],
+      semanticSkillKeys: ["administrative_documents"],
       weakSkills: ["skill-sales"],
       interests: ["organiser", "analyser", "aider"],
       values: ["stability", "clarity", "service"],
@@ -2034,12 +2079,14 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Enfance et relation",
     description: "Teste les pistes d’animation, transmission et soin avec attention à la charge physique.",
     expectedFamilies: ["Petite enfance", "Transmission et enfance", "Social et accompagnement"],
+    expectedRomeCodes: ["G1202", "K1303", "J1304", "K2106", "K1204"],
     unexpectedFamilies: ["Bâtiment", "Industrie lourde", "Logistique et transport"],
     mustNotContain: ["Soudeur", "Maçon", "Préparateur de commandes"],
     profile: {
       profileName: "Profil test - enfance et relation",
       diplomaLevel: 3,
       skills: ["skill-animation", "skill-early-childhood", "skill-active-listening", "skill-communication"],
+      semanticSkillKeys: ["group_animation", "care_relationship", "customer_support"],
       weakSkills: ["skill-data"],
       interests: ["enfants", "transmettre", "accompagner"],
       values: ["care", "meaning", "service"],
@@ -2060,12 +2107,14 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Numérique à distance",
     description: "Teste les métiers numériques avec besoin fort de télétravail et peu de déplacements.",
     expectedFamilies: ["Numérique et données", "Support informatique", "Accompagnement"],
+    expectedRomeCodes: ["M1805", "M1810", "M1801", "M1808", "E1205"],
     unexpectedFamilies: ["Bâtiment", "Restauration", "Transport"],
     mustNotContain: ["Chauffeur", "Plombier", "Employé d'étage"],
     profile: {
       profileName: "Profil test - numérique à distance",
       diplomaLevel: 5,
       skills: ["skill-code", "skill-data", "skill-analysis", "skill-writing", "skill-support-user"],
+      semanticSkillKeys: ["software_development", "customer_support"],
       absentSkills: ["skill-driving"],
       interests: ["numerique", "analyser", "technique"],
       values: ["autonomy", "clarity", "freedom"],
@@ -2086,12 +2135,14 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Terrain nature prudent",
     description: "Teste les métiers nature avec intérêt fort, mais prudence sur charges, horaires et mobilité.",
     expectedFamilies: ["Nature et vivant", "Vivant et territoire", "Environnement"],
+    expectedRomeCodes: ["A1203", "A1202", "A1204", "A1401", "A1405", "A1414", "A1501", "A1503"],
     unexpectedFamilies: ["Administration et support", "Commerce et relation client"],
     mustNotContain: ["Téléconseiller", "Gestionnaire paie"],
     profile: {
       profileName: "Profil test - terrain nature prudent",
       diplomaLevel: 3,
       skills: ["skill-environment", "skill-gardening", "skill-animal-care", "skill-writing"],
+      semanticSkillKeys: ["gardening_nature"],
       weakSkills: ["skill-driving"],
       interests: ["nature", "animaux", "proteger"],
       values: ["ecology", "meaning", "concrete"],
@@ -2112,6 +2163,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Propreté / hôtellerie accessible",
     description: "Vérifie que la propreté et l’hôtellerie ne sont pas confondues avec bâtiment.",
     expectedFamilies: ["Accueil et tourisme", "Cuisine et alimentation", "Services", "Manuel et technique"],
+    expectedRomeCodes: ["K2204", "G1501", "G1703", "G1803"],
     unexpectedFamilies: ["Bâtiment", "Administration et support"],
     mustNotContain: ["Maçon", "Couvreur"],
     profile: {
@@ -2119,6 +2171,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
       diplomaLevel: 0,
       experienceDomains: ["proprete", "accueil"],
       skills: ["skill-cleaning", "skill-customer-care", "skill-organisation"],
+      semanticSkillKeys: ["cleaning_hygiene", "customer_support"],
       interests: ["nourrir", "organiser", "aider"],
       values: ["stability", "service", "concrete"],
       preferredWorkStyles: ["structured", "manual"],
@@ -2151,6 +2204,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     title: "Social / éducation, commerce évité",
     description: "Vérifie que social, animation et éducation restent prioritaires quand le commerce est exclu.",
     expectedFamilies: ["Relation d'aide", "Transmission et enfance", "Social et accompagnement"],
+    expectedRomeCodes: ["G1202", "K1303", "K1204", "K1801", "K2106", "K2111"],
     unexpectedFamilies: ["Commerce et relation client"],
     mustNotContain: ["Hôte de caisse", "Vendeur"],
     profile: {
@@ -2158,6 +2212,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
       diplomaLevel: 4,
       experienceDomains: ["social", "education", "animation"],
       skills: ["skill-active-listening", "skill-animation", "skill-teaching", "skill-communication"],
+      semanticSkillKeys: ["care_relationship", "group_animation", "customer_support"],
       interests: ["accompagner", "transmettre", "enfants"],
       values: ["solidarity", "meaning", "service"],
       preferredWorkStyles: ["team", "relational"],
@@ -2194,6 +2249,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
         communication: "support"
       },
       skills: ["skill-code", "skill-data", "skill-design", "skill-writing", "skill-teaching", "skill-animation", "skill-active-listening", "skill-communication"],
+      semanticSkillKeys: ["software_development", "group_animation", "care_relationship", "customer_support"],
       interests: ["transmettre", "enfants", "accompagner", "creer"],
       values: ["meaning", "service", "solidarity", "clarity"],
       preferredWorkStyles: ["team", "relational"],
@@ -3060,11 +3116,15 @@ function getLocalTrainingPaths() {
 
 function finalizeDatasetForV051(dataset, options = {}) {
   if (!dataset) return dataset;
+  const isGeneratedRomeDataset = dataset.provenance === "generated_rome";
   const finalized = {
     ...dataset,
     skills: mergeLocalHumanSkills(toArray(dataset.skills).map(normalizeSkill)),
     matchableSkills: mergeLocalHumanSkills(toArray(dataset.matchableSkills || dataset.skills).map(normalizeSkill)),
-    trainings: uniqueBy([...toArray(dataset.trainings).map(normalizeTraining), ...getLocalTrainingPaths()], "id")
+    trainings: uniqueBy([
+      ...toArray(dataset.trainings).map(normalizeTraining),
+      ...(isGeneratedRomeDataset ? [] : getLocalTrainingPaths())
+    ], "id")
   };
   finalized.jobs = toArray(dataset.jobs).map(job => repairJobForV051(normalizeJob(job)));
   const jobById = new Map(finalized.jobs.map(job => [job.id, job]));
@@ -3673,6 +3733,7 @@ function generateDataQualityReport(datasets) {
       jobsWithDiplomaLevel: ratio(jobs.filter(job => job.recommendedDiplomaLevel !== undefined).length, jobs.length),
       jobsWithMarketData: ratio(jobsWithMarket, jobs.length)
     },
+    provenanceDistribution: buildLocalProvenanceDistribution(datasets),
     completeness: {
       skills: {
         rawCount: rawSkills.length,
@@ -3708,6 +3769,34 @@ function getLinkedSkillIdsFromJobs(jobs = []) {
     ...toArray(job.optionalSkills),
     ...toArray(job.softSkills)
   ]).filter(Boolean));
+}
+
+function buildLocalProvenanceDistribution(dataset = {}) {
+  const collections = {
+    jobs: dataset.jobs,
+    skills: dataset.skills,
+    matchableSkills: dataset.matchableSkills,
+    workContexts: dataset.workContexts,
+    jobAppellations: dataset.jobAppellations,
+    mappings: dataset.mappings,
+    trainings: dataset.trainings,
+    certifications: dataset.certifications,
+    marketIndicators: dataset.marketIndicators
+  };
+  return Object.fromEntries(Object.entries(collections).map(([name, rows]) => [name, countLocalProvenance(rows)]));
+}
+
+function countLocalProvenance(rows = []) {
+  const counts = { official_rome_api: 0, generated_rome: 0, sample_non_official: 0, curated_estimated: 0, unknown: 0 };
+  toArray(rows).forEach(row => {
+    const value = row?.source || row?.provenance || row?.officialStatus || "unknown";
+    if (value === "official_rome_api") counts.official_rome_api += 1;
+    else if (value === "generated_rome") counts.generated_rome += 1;
+    else if (String(value).includes("sample")) counts.sample_non_official += 1;
+    else if (String(value).includes("curated") || String(value).includes("estimated")) counts.curated_estimated += 1;
+    else counts.unknown += 1;
+  });
+  return counts;
 }
 
 function getProfileSkillOptions(dataset = App.state.dataset) {
@@ -5617,8 +5706,7 @@ function normalizeMarketTerritoryStats(raw = {}) {
     offers12mRankInTerritory: numberOrNull(raw?.offers12mRankInTerritory),
     marketFreshness: normalizeMarketFreshness(raw?.marketFreshness),
     confidence: clamp(Number(raw?.confidence || 0), 0, 1),
-    territoryLabel: raw?.territoryLabel || null,
-    rawMeasureHints: toArray(raw?.rawMeasureHints).slice(0, 24)
+    territoryLabel: raw?.territoryLabel || null
   };
 }
 
@@ -7523,6 +7611,15 @@ function detectTestBenchAnomalies(results = {}, test = {}) {
   const anomalies = [];
   const expectedSectorIds = getExpectedSectorIdsForTest(test);
   const forbiddenPrimarySectorIds = getForbiddenPrimarySectorIdsForTest(test);
+  const expectedRomeCodes = toArray(test.expectedRomeCodes);
+  const availableExpectedCodes = expectedRomeCodes.filter(code => toArray(App.state.dataset?.jobs).some(job => job.romeCode === code));
+  if (expectedRomeCodes.length && !availableExpectedCodes.length) {
+    anomalies.push({ type: "insufficient_rome_coverage", severity: "info", message: `Codes attendus absents du corpus actif : ${expectedRomeCodes.join(", ")}.` });
+  } else if (availableExpectedCodes.length) {
+    const topCodes = new Set(top.map(result => result.romeCode).filter(Boolean));
+    const foundCount = availableExpectedCodes.filter(code => topCodes.has(code)).length;
+    if (foundCount === 0) anomalies.push({ type: "expected_rome_missing_from_top5", severity: "warning", message: `Aucun code ROME attendu dans le Top 5 malgré leur présence dans le corpus : ${availableExpectedCodes.join(", ")}.` });
+  }
   const familyCounts = countBy(top.map(result => result.job?.family || "inconnu"));
   if (Object.values(familyCounts).some(count => count >= 4)) anomalies.push({ type: "top5_family_concentration", severity: "warning", message: "Top 5 concentré sur une seule famille." });
   const scoreCounts = countBy(top.map(result => String(Math.round(result.globalScore || 0))));
@@ -7554,7 +7651,7 @@ function getExpectedSectorIdsForTest(test = {}) {
     "numerique-distance": ["numerique"],
     "terrain-nature-prudent": ["nature_agriculture", "animaux"],
     "proprete-hotellerie-accessible": ["proprete_entretien", "hotellerie_hebergement"],
-    "social-education": ["social_insertion", "education_enfance"],
+    "social-education-commerce-exclu": ["social_insertion", "education_enfance"],
     "education-numerique-outil": ["education_enfance", "social_insertion"]
   };
   return toArray(test.expectedSectorIds || map[test.id]);
@@ -7566,7 +7663,7 @@ function getForbiddenPrimarySectorIdsForTest(test = {}) {
     "enfance-relation": ["batiment_construction", "industrie_production", "logistique_transport", "restauration_alimentation"],
     "numerique-distance": ["nature_agriculture", "restauration_alimentation", "hotellerie_hebergement", "logistique_transport"],
     "terrain-nature-prudent": ["administratif_support", "restauration_alimentation"],
-    "social-education": ["industrie_production", "maintenance", "restauration_alimentation"],
+    "social-education-commerce-exclu": ["industrie_production", "maintenance", "restauration_alimentation", "commerce_vente"],
     "education-numerique-outil": ["industrie_production", "maintenance", "commerce_vente"]
   };
   return toArray(test.forbiddenPrimarySectorIds || map[test.id]);
@@ -7654,6 +7751,7 @@ function renderDataPage() {
   const report = dataset.qualityReport || generateDataQualityReport(dataset);
   const summary = report.summary || {};
   const coverage = report.coverage || {};
+  const provenance = report.provenanceDistribution || {};
   const coverageRatio = (ratioKey, legacyKey, countKey) => {
     if (coverage[ratioKey] !== undefined) return coverage[ratioKey];
     if (coverage[legacyKey] !== undefined) return coverage[legacyKey];
@@ -7758,6 +7856,8 @@ function renderDataPage() {
         <li>Contextes liés aux métiers : ${h(generatedSummary.linkedContextsCount)}</li>
         <li>Appellations liées : ${h(generatedSummary.linkedAppellationsCount)}</li>
         <li>Descriptions officielles : ${h(generatedSummary.officialDescriptionsCount)}</li>
+        <li>Provenance métiers : officiel ${h(provenance.jobs?.official_rome_api || 0)}, généré ${h(provenance.jobs?.generated_rome || 0)}, sample ${h(provenance.jobs?.sample_non_official || 0)}, estimatif ${h(provenance.jobs?.curated_estimated || 0)}</li>
+        <li>Provenance appellations : officiel ${h(provenance.jobAppellations?.official_rome_api || 0)}, généré ${h(provenance.jobAppellations?.generated_rome || 0)}, sample ${h(provenance.jobAppellations?.sample_non_official || 0)}, estimatif ${h(provenance.jobAppellations?.curated_estimated || 0)}</li>
       </ul>
     </section>
     <section class="results-section print-section">
@@ -8029,8 +8129,45 @@ async function fetchJsonIfExists(url) {
   }
 }
 
+function createEmptyGeneratedDatasetBase() {
+  return {
+    schemaVersion: CONFIG.schemaVersion,
+    datasetName: "Boussole Pro - données ROME générées",
+    datasetVersion: `rome-generated-${dateStamp()}`,
+    sourceDate: dateStamp(),
+    importedAt: new Date().toISOString(),
+    provenance: "generated_rome",
+    confidence: 0.75,
+    manifest: {},
+    jobs: [],
+    skills: [],
+    matchableSkills: [],
+    knowledge: [],
+    certificationLike: [],
+    workContexts: [],
+    jobAppellations: [],
+    mappings: [],
+    trainings: [],
+    certifications: [],
+    diplomaLevels: loadSampleData().diplomaLevels,
+    marketIndicators: [],
+    marketManifest: null,
+    marketQualityReport: null,
+    marketDatasets: {
+      national: [],
+      occitanie: [],
+      aude: [],
+      bmoFap2021: [],
+      fapRomeMappings: []
+    },
+    mappingsRomeFormations: [],
+    mappingsRomeCertifications: [],
+    sources: []
+  };
+}
+
 function mergeGeneratedDatasetIntoApp(generated, options = {}) {
-  const base = options.replace ? loadSampleData() : clone(App.state.dataset || loadSampleData());
+  const base = options.replace ? createEmptyGeneratedDatasetBase() : clone(App.state.dataset || loadSampleData());
   const manifest = generated.manifest || {};
   const importedAt = new Date().toISOString();
   const generatedSkills = Array.isArray(generated.skills) ? generated.skills.map(normalizeSkill) : [];
@@ -8045,15 +8182,15 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     importedAt,
     provenance: "generated_rome",
     confidence: 0.75,
-    manifest: { ...(base.manifest || {}), ...manifest, provenance: "generated_rome", importedAt },
+    manifest: { ...(options.replace ? {} : (base.manifest || {})), ...manifest, provenance: "generated_rome", importedAt },
     jobs: jobsWithGeneratedMarket,
     skills: mergeLocalHumanSkills(generatedSkills.length && !looksLikeLegacyRawSkillDump ? generatedSkills : base.skills),
-    knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : (base.knowledge || []),
-    certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : (base.certificationLike || []),
-    matchableSkills: mergeLocalHumanSkills(Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : (base.matchableSkills || [])),
-    workContexts: Array.isArray(generated.workContexts) && generated.workContexts.length ? generated.workContexts : base.workContexts,
-    jobAppellations: Array.isArray(generated.jobAppellations) && generated.jobAppellations.length ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : base.jobAppellations,
-    mappings: Array.isArray(generated.mappings) && generated.mappings.length ? generated.mappings.map(normalizeGeneratedMappingIds) : base.mappings,
+    knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : base.knowledge,
+    certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : base.certificationLike,
+    matchableSkills: mergeLocalHumanSkills(Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : base.matchableSkills),
+    workContexts: Array.isArray(generated.workContexts) ? generated.workContexts : base.workContexts,
+    jobAppellations: Array.isArray(generated.jobAppellations) ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : base.jobAppellations,
+    mappings: Array.isArray(generated.mappings) ? generated.mappings.map(normalizeGeneratedMappingIds) : base.mappings,
     trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
     certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : [],
     marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : [],
@@ -8066,8 +8203,8 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
       bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
       fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : []
     },
-    mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : (base.mappingsRomeFormations || []),
-    mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : (base.mappingsRomeCertifications || [])
+    mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : base.mappingsRomeFormations,
+    mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : base.mappingsRomeCertifications
   };
   merged.qualityReport = generated.qualityReport || generateDataQualityReport(merged);
   return finalizeDatasetForV051(merged, { regenerateReport: false });
@@ -8606,6 +8743,7 @@ function normalizeProfile(raw) {
   merged.avoidedSkills = toArray(raw.avoidedSkills);
   merged.skillSelections = toArray(raw.skillSelections);
   merged.skillMigration = raw.skillMigration || null;
+  merged.semanticSkillKeys = toArray(raw.semanticSkillKeys).filter(key => SEMANTIC_SKILL_CONCEPTS_V062[key]);
   merged.skillSignals = toArray(raw.skillSignals);
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
@@ -8642,6 +8780,7 @@ function normalizeProfile(raw) {
 
 function migrateProfileSkillSelections(profile, dataset = App.state.dataset) {
   if (!profile || !dataset) return null;
+  profile.semanticSkillKeys = toArray(profile.semanticSkillKeys).filter(key => SEMANTIC_SKILL_CONCEPTS_V062[key]);
   const report = {
     sourceDatasetVersion: profile.skillMigration?.targetDatasetVersion || profile.skillMigration?.sourceDatasetVersion || "profile_legacy_or_unknown",
     targetDatasetVersion: dataset.datasetVersion || CONFIG.version,
@@ -8666,12 +8805,17 @@ function migrateProfileSkillSelections(profile, dataset = App.state.dataset) {
     .map(selection => resolveSkillSelection(selection, dataset))
     .filter(result => result.status === "matched")
     .map(result => result.id);
-  profile.skills = migrateList([...toArray(profile.skills), ...resolvedSelections], "skills");
+  const semanticSkillIds = resolveSemanticSkillKeys(profile.semanticSkillKeys, dataset);
+  profile.skills = migrateList([...toArray(profile.skills), ...resolvedSelections, ...semanticSkillIds], "skills");
   profile.weakSkills = migrateList(profile.weakSkills, "weakSkills").filter(id => !profile.skills.includes(id));
   profile.absentSkills = migrateList(profile.absentSkills, "absentSkills").filter(id => !profile.skills.includes(id));
   profile.avoidedSkills = migrateList(profile.avoidedSkills, "avoidedSkills").filter(id => !profile.skills.includes(id));
   profile.skillMigration = {
     ...report,
+    semanticConcepts: profile.semanticSkillKeys.map(key => ({
+      key,
+      resolvedSkillIds: resolveSemanticSkillKeys([key], dataset)
+    })),
     migrated: uniqueObjectsBy(report.migrated, item => `${item.field}:${item.from}:${item.to}`),
     unresolved: uniqueObjectsBy(report.unresolved, item => `${item.field}:${item.value}`),
     ambiguous: uniqueObjectsBy(report.ambiguous, item => `${item.field}:${item.value}`)
@@ -8698,6 +8842,38 @@ function resolveSkillIdsForDataset(ids = [], dataset = App.state.dataset) {
     const resolved = resolveSkillSelection(id, dataset);
     return resolved.status === "matched" ? resolved.id : id;
   }));
+}
+
+function resolveSemanticSkillKeys(keys = [], dataset = App.state.dataset) {
+  const index = getSkillMigrationIndex(dataset);
+  return unique(toArray(keys).flatMap(key => {
+    const concept = SEMANTIC_SKILL_CONCEPTS_V062[key];
+    if (!concept) return [];
+    const directIds = toArray(concept.officialSkillIds).filter(id => index.byCanonicalId.has(id));
+    const fromLegacy = toArray(concept.legacyIds).flatMap(id => {
+      const resolved = resolveSkillSelection(id, dataset);
+      if (resolved.status === "matched") return [resolved.id];
+      if (resolved.status === "ambiguous") return resolved.candidates.map(candidate => candidate.id);
+      return [];
+    });
+    const fromLabels = toArray(concept.labels).flatMap(label => {
+      const normalized = normalizedSkillLabel(label);
+      return toArray(index.byNormalizedLabel.get(normalized))
+        .concat(findSkillsContainingTokens(index, normalized))
+        .map(skill => skill.id);
+    });
+    return unique([...directIds, ...fromLegacy, ...fromLabels]).slice(0, 12);
+  }));
+}
+
+function findSkillsContainingTokens(index, normalizedLabel = "") {
+  const tokens = normalizedLabel.split(/\s+/).filter(token => token.length >= 4);
+  if (!tokens.length) return [];
+  const all = [...index.byCanonicalId.values()];
+  return uniqueObjectsBy(all.filter(skill => {
+    const text = normalizedSkillLabel(`${skill.label} ${skill.aliases?.join(" ") || ""}`);
+    return tokens.every(token => text.includes(token));
+  }), "id").slice(0, 8);
 }
 
 function resolveSkillSelection(selection, dataset = App.state.dataset) {

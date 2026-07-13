@@ -80,6 +80,9 @@ export async function buildRome500AuditArtifacts(options = {}) {
 
   const performance = await buildPerformanceReport(generatedDir, startedAt);
   const markdown = buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport });
+  await writeJson(path.join(generatedDir, "rome-corpus-quality-report.json"), quality);
+  await writeJson(path.join(generatedDir, "rome-corpus-performance-report.json"), performance);
+  await writeFile(path.join(generatedDir, "rome-corpus-audit.md"), markdown, "utf8");
   await writeJson(path.join(generatedDir, "rome-500-quality-report.json"), quality);
   await writeJson(path.join(generatedDir, "rome-500-performance-report.json"), performance);
   await writeFile(path.join(generatedDir, "rome-500-audit.md"), markdown, "utf8");
@@ -218,7 +221,7 @@ async function buildPerformanceReport(generatedDir, startedAt) {
 function buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport }) {
   const linked = quality.linkedDataCoverage;
   const market = quality.marketAvailability.levelCoverage;
-  return `# Audit Boussole Pro - ROME 500
+  return `# Audit Boussole Pro - corpus ROME
 
 Généré le ${quality.generatedAt}.
 

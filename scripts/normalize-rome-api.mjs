@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+
 const SOURCE_OFFICIAL = "official_rome_api";
 const SOURCE_COMPUTED = "computed";
 const SOURCE_UNKNOWN = "unknown";
 const MATCHABLE_SKILLS_LIMIT = 500;
+const ROME_SECTOR_MAPPING = loadRomeSectorMapping();
 const ROME_DOMAIN_BY_LETTER = {
   A: "Agriculture et pêche, espaces naturels et espaces verts, soins aux animaux",
   B: "Arts et façonnage d'ouvrages d'art",
@@ -83,7 +86,9 @@ export function normalizeRomeMetier(raw = {}) {
   const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers, ...findValuesByKeyHints(source, ["metierproche", "mobilite", "prochemetier"]));
   const officialRomeDomain = buildOfficialRomeDomain(romeCode, firstText(source.domain, source.domaine, source.grandDomaine));
   const boussoleSectorIds = mapBoussoleSectors({ romeCode, title, description, activities, appellations });
-  const sectorMapping = mapProfileSectorsFromGenerated(boussoleSectorIds);
+  const explicitSectorMapping = getRomeSectorMapping(romeCode);
+  const heuristicSectorMapping = mapProfileSectorsFromGenerated(boussoleSectorIds);
+  const sectorMapping = explicitSectorMapping.primarySectorId ? explicitSectorMapping : heuristicSectorMapping;
   const domainOfficial = officialRomeDomain.label;
   const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
   const domain = boussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
@@ -145,8 +150,8 @@ export function normalizeRomeMetier(raw = {}) {
     secondarySectorIds: sectorMapping.secondarySectorIds,
     sectorMappingConfidence: sectorMapping.confidence,
     sectorEvidence: [{
-      source: officialRomeDomain.source === SOURCE_OFFICIAL ? "official_rome_domain" : "rome_code_domain_mapping",
-      value: domainOfficial || officialRomeDomain.label || romeCode
+      source: sectorMapping.source || (officialRomeDomain.source === SOURCE_OFFICIAL ? "official_rome_domain" : "rome_code_domain_mapping"),
+      value: sectorMapping.key || domainOfficial || officialRomeDomain.label || romeCode
     }],
     appellations,
     description: description || null,
@@ -900,16 +905,36 @@ function mapProfileSectorsFromGenerated(boussoleSectorIds = []) {
   return {
     primarySectorId: mapped[0] || null,
     secondarySectorIds: mapped.slice(1, 3),
-    confidence: mapped.length ? 0.82 : 0
+    confidence: mapped.length ? 0.82 : 0,
+    source: mapped.length ? "generated_rome_heuristic_sector_mapping" : SOURCE_UNKNOWN,
+    key: null
   };
+}
+
+function getRomeSectorMapping(romeCode = "") {
+  const code = String(romeCode || "").toUpperCase();
+  const direct = ROME_SECTOR_MAPPING.mappings?.[code];
+  if (direct) return { ...direct, secondarySectorIds: toArray(direct.secondarySectorIds).filter(id => id !== direct.primarySectorId).slice(0, 2), source: "local_rome_sector_mapping_v062", key: code };
+  const fallback = ROME_SECTOR_MAPPING.prefixFallbacks?.[code.charAt(0)];
+  if (fallback) return { ...fallback, secondarySectorIds: toArray(fallback.secondarySectorIds).filter(id => id !== fallback.primarySectorId).slice(0, 1), source: "local_rome_sector_prefix_fallback_v062", key: code.charAt(0) };
+  return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
 }
 
 function collectSkillGroups(...values) {
   return collectRawItems(...values).flatMap((group, index) => {
     if (!group || typeof group !== "object" || Array.isArray(group)) return [];
     const issueId = firstText(group.id, group.code, group.identifiant) || `issue-${index + 1}`;
-    const issueLabel = firstText(group.libelle, group.label, group.intitule, group.nom) || `Groupe de compétences ${index + 1}`;
-    const refs = collectRelationRefs(group);
+    const issueLabel = firstText(group.enjeu?.libelle, group.enjeu?.label, group.enjeu?.intitule, group.libelle, group.label, group.intitule, group.nom) || `Groupe de compétences ${index + 1}`;
+    const refs = collectRelationRefs(
+      group.competences,
+      group.competencesMobilisees,
+      group.competencesDetaillees,
+      group.savoirFaire,
+      group.savoirsFaire,
+      group.items,
+      group.elements,
+      group.lignes
+    );
     return [{
       issueId,
       issueLabel,
@@ -988,6 +1013,15 @@ function normalizeText(value) {
 
 function normalizedSkillLabel(value) {
   return normalizeText(value).replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function loadRomeSectorMapping() {
+  try {
+    const url = new URL("../creations/boussolepro/data/local/rome-sector-mapping.json", import.meta.url);
+    return JSON.parse(readFileSync(url, "utf8"));
+  } catch {
+    return { mappings: {}, prefixFallbacks: {} };
+  }
 }
 
 function slug(value) {
