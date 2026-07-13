@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
   "reportId": "quality-2026-07-13",
-  "generatedAt": "2026-07-13T14:42:49.825Z",
+  "generatedAt": "2026-07-13T15:10:30.464Z",
   "branch": "soi-libre-codex",
   "datasetVersion": "rome-generated-2026-07-13",
-  "status": "completed",
+  "status": "completed_with_warnings",
   "requestedCodesCount": 72,
   "successfulCodesCount": 72,
   "failedCodesCount": 0,
@@ -1018,7 +1018,36 @@
     }
   ],
   "issues": [],
-  "warnings": [],
+  "warnings": [
+    {
+      "id": "rome_metiers_referential_not_used-metiers",
+      "severity": "info",
+      "type": "rome_metiers_referential_not_used",
+      "target": "metiers",
+      "message": "Le referentiel ROME Metiers global est charge a titre diagnostique mais n'enrichit pas les fiches : les echantillons disponibles ne fournissent pas encore descriptions, appellations, contextes ou conditions d'acces exploitables."
+    },
+    {
+      "id": "missing_official_descriptions-description",
+      "severity": "warning",
+      "type": "missing_official_descriptions",
+      "target": "description",
+      "message": "Aucune description officielle exploitable n'est reliee aux metiers generes. L'interface doit afficher cette limite sans inventer de resume."
+    },
+    {
+      "id": "missing_official_appellations-jobappellations",
+      "severity": "warning",
+      "type": "missing_official_appellations",
+      "target": "jobAppellations",
+      "message": "Aucune appellation officielle n'est reliee aux metiers generes. La recherche et la lisibilite restent limitees sur ce point."
+    },
+    {
+      "id": "context_referential_unlinked-workcontexts",
+      "severity": "warning",
+      "type": "context_referential_unlinked",
+      "target": "workContexts",
+      "message": "Le referentiel contextes ROME est charge, mais aucun contexte n'est encore relie aux metiers. Il ne doit pas etre utilise comme preuve forte dans le matching."
+    }
+  ],
   "recommendations": [
     "Ce corpus ROME genere est utilisable pour tester la chaine officielle, mais reste partiel tant que peu de codes sont synchronises.",
     "Les tags de valeurs, envies et contraintes sont des deductions techniques : les verifier avant usage professionnel.",

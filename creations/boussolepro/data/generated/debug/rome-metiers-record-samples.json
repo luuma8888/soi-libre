@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T14:42:49.825Z",
+  "generatedAt": "2026-07-13T15:10:30.464Z",
   "branch": "soi-libre-codex",
   "source": "rome_metiers_api",
   "totalRecords": 1911,
@@ -10,7 +10,97 @@
     "M1607",
     "M1805"
   ],
-  "note": "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas encore utilisé pour enrichir jobs.rome.json tant que ces chemins ne sont pas validés.",
+  "note": "Diagnostic structurel uniquement. Le référentiel ROME Métiers n'est pas utilisé pour enrichir jobs.rome.json tant qu'il ne contient que code/libelle ou tant que les chemins riches ne sont pas validés.",
+  "fieldAvailability": {
+    "code": {
+      "samplesWithField": 4,
+      "samplesTotal": 4,
+      "status": "available_in_sample"
+    },
+    "title": {
+      "samplesWithField": 4,
+      "samplesTotal": 4,
+      "status": "available_in_sample"
+    },
+    "description": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "appellations": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "characteristics": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "skillRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "softSkillRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "knowledgeRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "contextRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "accessConditions": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "certificationRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "relatedRomeCodes": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    },
+    "regulatoryTags": {
+      "samplesWithField": 0,
+      "samplesTotal": 4,
+      "status": "not_available_in_sample"
+    }
+  },
+  "conclusion": {
+    "status": "shell_only_code_libelle",
+    "usedForDataset": false,
+    "normalizationAllowed": [
+      "code",
+      "title"
+    ],
+    "missingRichFields": [
+      "description",
+      "appellations",
+      "characteristics",
+      "skillRefs",
+      "softSkillRefs",
+      "knowledgeRefs",
+      "contextRefs",
+      "accessConditions",
+      "certificationRefs",
+      "relatedRomeCodes",
+      "regulatoryTags"
+    ],
+    "message": "Les echantillons ROME Metiers contiennent seulement code/libelle. Cette route ne doit pas etre utilisee pour inventer descriptions, appellations, contextes, conditions d'acces ou certifications.",
+    "nextAction": "Identifier une route de detail ou de liaison officielle pour appellations, contextes, conditions d'acces et mobilites."
+  },
   "samples": {
     "A1203": {
       "found": true,
