@@ -1,23 +1,23 @@
 # Audit Boussole Pro - ROME 500
 
-Généré le 2026-07-13T12:19:31.443Z.
+Généré le 2026-07-13T12:25:34.964Z.
 
 ## Synthèse
 
-- Métiers demandés : 3
-- Métiers récupérés : 3
+- Métiers demandés : 72
+- Métiers récupérés : 72
 - Échecs : 0
-- Coquilles code + titre : 0/3
+- Coquilles code + titre : 0/72
 - Score de préparation matching : 60%
 
 ## Données réellement reliées aux métiers
 
-- Mappings compétences : 3/3
-- Mappings contextes : 0/3
-- Mappings appellations : 0/3
-- Mappings savoirs : 3/3
-- Activités : 0/3
-- Descriptions officielles : 0/3
+- Mappings compétences : 72/72
+- Mappings contextes : 0/72
+- Mappings appellations : 0/72
+- Mappings savoirs : 72/72
+- Activités : 0/72
+- Descriptions officielles : 0/72
 
 ## Endpoints et sources
 
@@ -27,28 +27,28 @@ Généré le 2026-07-13T12:19:31.443Z.
 
 ## Champs absents ou insuffisants
 
-- description : 3
-- activities : 3
-- workContexts : 3
-- accessConditions : 3
-- requiredDiplomaLevel : 3
-- recommendedDiplomaLevel : 3
-- market : 3
-- appellations : 3
-- relatedJobs : 3
+- description : 72
+- activities : 72
+- workContexts : 72
+- accessConditions : 72
+- requiredDiplomaLevel : 72
+- recommendedDiplomaLevel : 72
+- market : 72
+- appellations : 72
+- relatedJobs : 72
 
 ## Marché officiel
 
-- France : 3/3, zéros 7, absents 0
-- Occitanie : 3/3, zéros 48, absents 0
-- Aude : 3/3, zéros 145, absents 0
-- Codes sans statistique nationale : 0
+- France : 63/72, zéros 7, absents 9
+- Occitanie : 63/72, zéros 48, absents 9
+- Aude : 63/72, zéros 145, absents 9
+- Codes sans statistique nationale : 9
 
 ## Domaines et secteurs
 
-- Domaine officiel estimable depuis code ROME : 3/3
-- Secteur Boussole explicite : 3/3
-- Fallback générique : 0/3
+- Domaine officiel estimable depuis code ROME : 72/72
+- Secteur Boussole explicite : 71/72
+- Fallback générique : 1/72
 
 ## Référentiel brut compétences
 
@@ -59,9 +59,9 @@ Généré le 2026-07-13T12:19:31.443Z.
 
 ## Taille et performance
 
-- Taille totale générée : 26.36 Mo
+- Taille totale générée : 29.39 Mo
 - Nombre de fichiers : 38
-- Plus gros fichiers : rome-raw-skills.json (14.73 Mo), knowledge.rome.json (4.7 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo), market/market-aude.rome.json (1.44 Mo)
+- Plus gros fichiers : rome-raw-skills.json (14.73 Mo), knowledge.rome.json (5.13 Mo), market/market-national.rome.json (1.76 Mo), jobs.rome.json (1.7 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
 ## Limite actuelle
 
@@ -70,3 +70,5 @@ Le corpus ROME 500 est techniquement chargeable, mais il ne doit pas encore êtr
 ## Warnings
 
 - Aucun contexte officiel n'est relié aux métiers : les contraintes doivent rester neutres ou faiblement pondérées.
+- 1 métier(s) utilisent encore un fallback de secteur générique.
+- 9 code(s) n'ont pas de ligne marché nationale dans le lot actuel.

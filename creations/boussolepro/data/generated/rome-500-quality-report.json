@@ -1,18 +1,18 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T12:19:31.443Z",
+  "generatedAt": "2026-07-13T12:25:34.964Z",
   "source": "local_generated_files_audit",
-  "jobsTotal": 3,
-  "requestedCodesCount": 3,
-  "successfulCodesCount": 3,
+  "jobsTotal": 72,
+  "requestedCodesCount": 72,
+  "successfulCodesCount": 72,
   "failedCodesCount": 0,
   "completionRate": 1,
   "linkedDataCoverage": {
-    "mappingsTotal": 3,
-    "jobsWithSkillMappings": 3,
+    "mappingsTotal": 72,
+    "jobsWithSkillMappings": 72,
     "jobsWithContextMappings": 0,
     "jobsWithAppellationMappings": 0,
-    "jobsWithKnowledgeMappings": 3,
+    "jobsWithKnowledgeMappings": 72,
     "jobsWithRelatedRomeCodes": 0,
     "jobsWithActivities": 0,
     "jobsWithOfficialDescription": 0,
@@ -20,11 +20,19 @@
     "jobsWithDiplomaLevel": 0
   },
   "sectorMappingCoverage": {
-    "jobsTotal": 3,
-    "jobsWithOfficialDomain": 3,
-    "jobsWithBoussoleSector": 3,
-    "jobsWithGenericFallback": 0,
-    "ambiguousMappings": []
+    "jobsTotal": 72,
+    "jobsWithOfficialDomain": 72,
+    "jobsWithBoussoleSector": 71,
+    "jobsWithGenericFallback": 1,
+    "ambiguousMappings": [
+      {
+        "jobId": "rome-K1302",
+        "romeCode": "K1302",
+        "title": "Assistant / Assistante de vie dépendance",
+        "domain": "Services à la personne et à la collectivité",
+        "family": "Services à la personne et à la collectivité"
+      }
+    ]
   },
   "rawReferentialIntegrity": {
     "previousCount": null,
@@ -41,29 +49,39 @@
     "levelCoverage": {
       "national": {
         "rows": 437,
-        "jobsWithOfficialMarket": 3,
+        "jobsWithOfficialMarket": 63,
         "jobsWithZeroOffers": 7,
-        "jobsUnavailable": 0,
+        "jobsUnavailable": 9,
         "staleRows": 0
       },
       "regional": {
         "rows": 429,
-        "jobsWithOfficialMarket": 3,
+        "jobsWithOfficialMarket": 63,
         "jobsWithZeroOffers": 48,
-        "jobsUnavailable": 0,
+        "jobsUnavailable": 9,
         "staleRows": 5
       },
       "departmental": {
         "rows": 382,
-        "jobsWithOfficialMarket": 3,
+        "jobsWithOfficialMarket": 63,
         "jobsWithZeroOffers": 145,
-        "jobsUnavailable": 0,
+        "jobsUnavailable": 9,
         "staleRows": 41
       }
     },
-    "unsupportedMarketRomeCodes": [],
-    "unsupportedMarketRomeCodesCount": 0,
-    "optimizationHint": "Aucun code indisponible au national dans ce lot."
+    "unsupportedMarketRomeCodes": [
+      "A1503",
+      "K1103",
+      "M1403",
+      "N4303",
+      "E1307",
+      "H2502",
+      "M1704",
+      "N1202",
+      "N2203"
+    ],
+    "unsupportedMarketRomeCodesCount": 9,
+    "optimizationHint": "Eviter les appels regional/departemental pour 9 code(s) indisponibles au national pendant le meme run."
   },
   "shellJobs": {
     "count": 0,
@@ -71,12 +89,14 @@
     "samples": []
   },
   "matchingReadiness": {
-    "usableForMatchingJobs": 3,
+    "usableForMatchingJobs": 72,
     "usableForMatchingRatio": 1,
     "score": 0.6,
     "status": "matching_ready"
   },
   "warnings": [
-    "Aucun contexte officiel n'est relié aux métiers : les contraintes doivent rester neutres ou faiblement pondérées."
+    "Aucun contexte officiel n'est relié aux métiers : les contraintes doivent rester neutres ou faiblement pondérées.",
+    "1 métier(s) utilisent encore un fallback de secteur générique.",
+    "9 code(s) n'ont pas de ligne marché nationale dans le lot actuel."
   ]
 }
