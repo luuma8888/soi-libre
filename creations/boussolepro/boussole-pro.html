@@ -3007,6 +3007,28 @@ function mergeLocalHumanSkills(skills = []) {
   return uniqueBy([...toArray(skills), ...getLocalHumanSkills()], "id");
 }
 
+function createGenericDiplomaLevels() {
+  return [
+    [0, "Non renseigné ou sans diplôme", ["Aucun diplôme déclaré"]],
+    [3, "CAP / BEP", ["CAP", "BEP"]],
+    [4, "Bac", ["Baccalauréat", "BP"]],
+    [5, "Bac +2", ["BTS", "DUT", "DEUST"]],
+    [6, "Bac +3 / +4", ["Licence", "BUT", "Maîtrise"]],
+    [7, "Bac +5", ["Master", "Diplôme d’ingénieur"]],
+    [8, "Doctorat", ["Doctorat", "HDR"]]
+  ].map(row => ({
+    id: `diploma-level-${row[0]}`,
+    schemaVersion: CONFIG.schemaVersion,
+    level: row[0],
+    label: row[1],
+    examples: row[2],
+    description: "Repère générique local pour la saisie du profil, non relié aux fiches ROME.",
+    source: "local_reference",
+    provenance: "local_reference",
+    confidence: 0.5
+  }));
+}
+
 const LOCAL_VARIANT_ROME_MAP_V051 = {
   "curated-coordinateur-administratif-associatif": "M1605",
   "curated-ux-ui-designer-junior": "E1205",
@@ -3117,10 +3139,12 @@ function getLocalTrainingPaths() {
 function finalizeDatasetForV051(dataset, options = {}) {
   if (!dataset) return dataset;
   const isGeneratedRomeDataset = dataset.provenance === "generated_rome";
+  const normalizedSkills = toArray(dataset.skills).map(normalizeSkill);
+  const normalizedMatchableSkills = toArray(dataset.matchableSkills || dataset.skills).map(normalizeSkill);
   const finalized = {
     ...dataset,
-    skills: mergeLocalHumanSkills(toArray(dataset.skills).map(normalizeSkill)),
-    matchableSkills: mergeLocalHumanSkills(toArray(dataset.matchableSkills || dataset.skills).map(normalizeSkill)),
+    skills: isGeneratedRomeDataset ? normalizedSkills : mergeLocalHumanSkills(normalizedSkills),
+    matchableSkills: isGeneratedRomeDataset ? normalizedMatchableSkills : mergeLocalHumanSkills(normalizedMatchableSkills),
     trainings: uniqueBy([
       ...toArray(dataset.trainings).map(normalizeTraining),
       ...(isGeneratedRomeDataset ? [] : getLocalTrainingPaths())
@@ -3691,6 +3715,8 @@ function generateDataQualityReport(datasets) {
   const linkedContextIds = new Set(jobs.flatMap(job => toArray(job.workContexts)));
   const linkedAppellations = appellations.filter(item => item.jobId).length;
   const officialDescriptions = jobs.filter(job => job.description && job.fieldSources?.description === "official_rome_api").length;
+  const rawMarketRows = countMarketDatasetRows(datasets);
+  const activeMarketCoverage = calculateMarketCoverage(datasets, {});
   const hasSampleSource = datasets.provenance === "sample" || (datasets.sources || []).some(source => source.id === "sample_non_official" || source.provenance === "sample");
   const baseWarnings = hasSampleSource ? [
     buildIssue("warning", "sample_data", "Dataset", datasets.datasetName || "dataset", "Les donnees actives sont des exemples ou contiennent des enrichissements manuels.", "Importer un corpus officiel normalise pour un usage professionnel.")
@@ -3734,6 +3760,23 @@ function generateDataQualityReport(datasets) {
       jobsWithMarketData: ratio(jobsWithMarket, jobs.length)
     },
     provenanceDistribution: buildLocalProvenanceDistribution(datasets),
+    marketCoverage: {
+      rawFiles: {
+        nationalRows: rawMarketRows.national,
+        regionalRows: rawMarketRows.occitanie,
+        departmentalRows: rawMarketRows.aude,
+        bmoRows: rawMarketRows.bmo
+      },
+      activeCorpus: {
+        jobsTotal: jobs.length,
+        jobsWithOfficialMarket: activeMarketCoverage.jobsWithOfficialMarket || 0,
+        jobsWithEstimatedMarket: activeMarketCoverage.jobsWithEstimatedMarket || 0,
+        jobsWithoutMarket: activeMarketCoverage.jobsWithoutMarket || 0,
+        nationalJobsWithMarket: activeMarketCoverage.jobsWithNationalMarket || 0,
+        regionalJobsWithMarket: activeMarketCoverage.jobsWithRegionalMarket || 0,
+        departmentalJobsWithMarket: activeMarketCoverage.jobsWithDepartmentalMarket || 0
+      }
+    },
     completeness: {
       skills: {
         rawCount: rawSkills.length,
@@ -8078,6 +8121,8 @@ async function loadGeneratedRomeDataset() {
     fapRomeMappings: "market/fap-rome-mappings.json"
   };
   try {
+    showLoading("Chargement des données générées", "Boussole Pro lit les fichiers JSON statiques dans data/generated/. Merci de patienter.");
+    await waitForUiFrame();
     App.state.generatedDataStatus = "chargement en cours";
     App.state.generatedDataMessage = "Recherche de fichiers JSON générés dans data/generated/, relatif à Boussole Pro.";
     renderAll();
@@ -8089,11 +8134,22 @@ async function loadGeneratedRomeDataset() {
     if (!hasUsefulData) {
       App.state.generatedDataStatus = "non configuré";
       App.state.generatedDataMessage = "Aucun fichier exploitable trouvé dans data/generated/ à côté de Boussole Pro. L’application reste sur le corpus local ou sample.";
+      hideLoading({ delay: 80 });
       renderAll();
       showToast("Données générées absentes. Le corpus actuel est conservé.");
       return;
     }
-    const replace = window.confirm("Remplacer le corpus actif par les données ROME générées ? Choisissez Annuler pour fusionner avec le corpus actuel.");
+    hideLoading();
+    const replace = await askGeneratedDatasetMode(generated);
+    if (replace === null) {
+      App.state.generatedDataStatus = "chargement annulé";
+      App.state.generatedDataMessage = "Les fichiers générés ont été trouvés, mais aucun changement n’a été appliqué.";
+      renderAll();
+      showToast("Chargement des données générées annulé.");
+      return;
+    }
+    showLoading(replace ? "Remplacement du corpus" : "Fusion du corpus", replace ? "Les données ROME générées remplacent les collections actives. Les anciennes données sample ne seront pas conservées." : "Les données ROME générées sont fusionnées avec le corpus actif. Merci de patienter.");
+    await waitForUiFrame();
     App.state.dataset = mergeGeneratedDatasetIntoApp(generated, { replace });
     markDatasetAsOfficialRome(App.state.dataset, generated.manifest);
     App.state.corpusMode = "generated_rome";
@@ -8105,14 +8161,67 @@ async function loadGeneratedRomeDataset() {
     const marketStatus = generated.marketQualityReport?.status || "non renseigné";
     App.state.generatedDataStatus = "disponible via données générées";
     App.state.generatedDataMessage = `Les fichiers creations/boussolepro/data/generated ont été chargés sans secret dans le navigateur. Marché : ${marketRowsLoaded.total} ligne(s) statistiques chargée(s), France ${marketCoverageLoaded.jobsWithNationalMarket || 0}, Occitanie ${marketCoverageLoaded.jobsWithRegionalMarket || 0}, Aude ${marketCoverageLoaded.jobsWithDepartmentalMarket || 0}. Statut ${marketStatus}. Donnée affichée : volume d’offres observé, pas tension complète.`;
+    hideLoading({ delay: 120 });
     renderAll();
     showToast(`Données générées chargées. Marché : ${marketRowsLoaded.total} ligne(s).`);
   } catch (error) {
     App.state.generatedDataStatus = "erreur";
     App.state.generatedDataMessage = error.message || "Chargement impossible. Le corpus actuel reste actif.";
+    hideLoading({ delay: 80 });
     renderAll();
     showImportError(App.state.generatedDataMessage);
   }
+}
+
+function askGeneratedDatasetMode(generated = {}) {
+  const dialog = App.dom?.jobDialog || document.getElementById("jobDialog");
+  const content = App.dom?.jobDialogContent || document.getElementById("jobDialogContent");
+  if (!dialog || !content || typeof dialog.showModal !== "function") {
+    return Promise.resolve(window.confirm("Remplacer le corpus actif par les données ROME générées ? Choisissez Annuler pour fusionner.") ? true : false);
+  }
+  const rows = countMarketDatasetRows(generated);
+  const jobsCount = toArray(generated.jobs).length;
+  const skillsCount = toArray(generated.skills).length;
+  const matchableCount = toArray(generated.matchableSkills).length;
+  const contextsCount = toArray(generated.workContexts).length;
+  const appellationsCount = toArray(generated.jobAppellations).length;
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = value => {
+      if (settled) return;
+      settled = true;
+      dialog.removeEventListener("close", onClose);
+      content.querySelectorAll("[data-generated-choice]").forEach(button => button.removeEventListener("click", onChoice));
+      if (dialog.open) dialog.close();
+      resolve(value);
+    };
+    const onClose = () => finish(null);
+    const onChoice = event => {
+      const choice = event.currentTarget?.dataset.generatedChoice;
+      if (choice === "replace") finish(true);
+      else if (choice === "merge") finish(false);
+      else finish(null);
+    };
+    content.innerHTML = `
+      <h2>Charger les données générées</h2>
+      <div class="launch-box">
+        <strong>Corpus ROME détecté</strong>
+        <p>Boussole Pro a trouvé ${h(jobsCount)} métier(s), ${h(skillsCount)} compétence(s) filtrée(s), ${h(matchableCount)} compétence(s) de profil, ${h(contextsCount)} contexte(s) globaux et ${h(appellationsCount)} appellation(s) liée(s).</p>
+        <p>Marché : ${h(rows.total)} ligne(s) statistiques disponibles dans les fichiers générés.</p>
+      </div>
+      <div class="reason-box warning">
+        <strong>Choix recommandé : remplacer</strong>
+        <p>Le remplacement évite de mélanger les données ROME générées avec les anciennes données sample ou estimatives. La fusion est utile seulement pour comparer ou compléter provisoirement.</p>
+      </div>
+      <div class="button-row">
+        <button class="primary-button" type="button" data-generated-choice="replace">Remplacer le corpus actif</button>
+        <button class="secondary-button" type="button" data-generated-choice="merge">Fusionner avec le corpus actuel</button>
+        <button class="ghost-button" type="button" data-generated-choice="cancel">Annuler</button>
+      </div>`;
+    content.querySelectorAll("[data-generated-choice]").forEach(button => button.addEventListener("click", onChoice));
+    dialog.addEventListener("close", onClose);
+    dialog.showModal();
+  });
 }
 
 async function fetchJsonIfExists(url) {
@@ -8149,7 +8258,7 @@ function createEmptyGeneratedDatasetBase() {
     mappings: [],
     trainings: [],
     certifications: [],
-    diplomaLevels: loadSampleData().diplomaLevels,
+    diplomaLevels: createGenericDiplomaLevels(),
     marketIndicators: [],
     marketManifest: null,
     marketQualityReport: null,
@@ -8174,6 +8283,9 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   const looksLikeLegacyRawSkillDump = generatedSkills.length > 5000 && !generatedSkills.some(skill => skill.classification || skill.matchingUse || skill.matchingScope);
   const generatedJobs = Array.isArray(generated.jobs) && generated.jobs.length ? generated.jobs.map(normalizeJob) : base.jobs;
   const jobsWithGeneratedMarket = applyGeneratedMarketStatsToJobs(generatedJobs, generated);
+  const collectionPatch = options.replace
+    ? replaceDatasetCollections(base, generated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket })
+    : mergeDatasetCollections(base, generated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket });
   const merged = {
     ...base,
     datasetName: manifest.datasetName || "Boussole Pro - données ROME générées",
@@ -8183,31 +8295,95 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     provenance: "generated_rome",
     confidence: 0.75,
     manifest: { ...(options.replace ? {} : (base.manifest || {})), ...manifest, provenance: "generated_rome", importedAt },
-    jobs: jobsWithGeneratedMarket,
-    skills: mergeLocalHumanSkills(generatedSkills.length && !looksLikeLegacyRawSkillDump ? generatedSkills : base.skills),
+    ...collectionPatch
+  };
+  merged.qualityReports = buildGeneratedQualityReports(generated, merged);
+  merged.qualityReport = buildActiveMergedQualityReport(merged, generated);
+  return finalizeDatasetForV051(merged, { regenerateReport: false });
+}
+
+function replaceDatasetCollections(base, generated, prepared = {}) {
+  const generatedSkills = prepared.generatedSkills || [];
+  const skills = generatedSkills.length && !prepared.looksLikeLegacyRawSkillDump ? generatedSkills : [];
+  return {
+    jobs: prepared.jobsWithGeneratedMarket || [],
+    skills,
+    knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : [],
+    certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : [],
+    matchableSkills: Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : [],
+    workContexts: Array.isArray(generated.workContexts) ? generated.workContexts : [],
+    jobAppellations: Array.isArray(generated.jobAppellations) ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : [],
+    mappings: Array.isArray(generated.mappings) ? generated.mappings.map(normalizeGeneratedMappingIds) : [],
+    trainings: Array.isArray(generated.trainings) ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
+    certifications: Array.isArray(generated.certifications) ? generated.certifications : [],
+    diplomaLevels: Array.isArray(generated.diplomaLevels) && generated.diplomaLevels.length ? generated.diplomaLevels : base.diplomaLevels,
+    marketIndicators: Array.isArray(generated.marketIndicators) ? generated.marketIndicators : [],
+    marketManifest: generated.marketManifest || null,
+    marketQualityReport: generated.marketQualityReport || null,
+    marketDatasets: buildGeneratedMarketDatasets(generated),
+    mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : [],
+    mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : []
+  };
+}
+
+function mergeDatasetCollections(base, generated, prepared = {}) {
+  const generatedSkills = prepared.generatedSkills || [];
+  return {
+    jobs: prepared.jobsWithGeneratedMarket || base.jobs,
+    skills: mergeLocalHumanSkills(generatedSkills.length && !prepared.looksLikeLegacyRawSkillDump ? generatedSkills : base.skills),
     knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : base.knowledge,
     certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : base.certificationLike,
     matchableSkills: mergeLocalHumanSkills(Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : base.matchableSkills),
     workContexts: Array.isArray(generated.workContexts) ? generated.workContexts : base.workContexts,
     jobAppellations: Array.isArray(generated.jobAppellations) ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : base.jobAppellations,
     mappings: Array.isArray(generated.mappings) ? generated.mappings.map(normalizeGeneratedMappingIds) : base.mappings,
-    trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
-    certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : [],
-    marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : [],
+    trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : base.trainings,
+    certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : base.certifications,
+    diplomaLevels: Array.isArray(generated.diplomaLevels) && generated.diplomaLevels.length ? generated.diplomaLevels : base.diplomaLevels,
+    marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : base.marketIndicators,
     marketManifest: generated.marketManifest || base.marketManifest || null,
     marketQualityReport: generated.marketQualityReport || base.marketQualityReport || null,
-    marketDatasets: {
-      national: Array.isArray(generated.marketNational) ? generated.marketNational : [],
-      occitanie: Array.isArray(generated.marketOccitanie) ? generated.marketOccitanie : [],
-      aude: Array.isArray(generated.marketAude) ? generated.marketAude : [],
-      bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
-      fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : []
-    },
+    marketDatasets: buildGeneratedMarketDatasets(generated),
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : base.mappingsRomeFormations,
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : base.mappingsRomeCertifications
   };
-  merged.qualityReport = generated.qualityReport || generateDataQualityReport(merged);
-  return finalizeDatasetForV051(merged, { regenerateReport: false });
+}
+
+function buildGeneratedMarketDatasets(generated = {}) {
+  return {
+    national: Array.isArray(generated.marketNational) ? generated.marketNational : [],
+    occitanie: Array.isArray(generated.marketOccitanie) ? generated.marketOccitanie : [],
+    aude: Array.isArray(generated.marketAude) ? generated.marketAude : [],
+    bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
+    fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : []
+  };
+}
+
+function buildGeneratedQualityReports(generated = {}, merged = {}) {
+  return {
+    romeGeneration: generated.qualityReport || null,
+    marketGeneration: generated.marketQualityReport || null,
+    activeMergedDataset: generateDataQualityReport(merged)
+  };
+}
+
+function buildActiveMergedQualityReport(merged = {}, generated = {}) {
+  const activeReport = merged.qualityReports?.activeMergedDataset || generateDataQualityReport(merged);
+  const generatedWarnings = toArray(generated.qualityReport?.warnings);
+  const known = new Set(toArray(activeReport.warnings).map(item => item.type || item.id || item.message));
+  generatedWarnings.forEach(item => {
+    const key = item.type || item.id || item.message;
+    if (!known.has(key)) {
+      activeReport.warnings.push(item);
+      known.add(key);
+    }
+  });
+  activeReport.sourceReports = {
+    romeGeneration: Boolean(generated.qualityReport),
+    marketGeneration: Boolean(generated.marketQualityReport),
+    activeMergedDataset: true
+  };
+  return activeReport;
 }
 
 function applyGeneratedMarketStatsToJobs(jobs = [], generated = {}) {
@@ -9983,7 +10159,7 @@ function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
     ...marketScores
       .filter(item => item.sourceLevel !== "none")
       .map(item => item.sourceName || item.source)
-  ].filter(Boolean));
+  ].filter(source => source && source !== "unknown"));
   const sourceLevels = unique(marketScores.map(item => item.sourceLevel || "none"));
   const averageReliability = marketScores.length
     ? marketScores.reduce((sum, item) => sum + Number(item.marketReliability ?? item.confidence ?? 0), 0) / marketScores.length
@@ -10740,6 +10916,16 @@ function extractArrayFromApiResponse(response) {
 
 function sleep(ms) {
   return new Promise(resolve => window.setTimeout(resolve, ms));
+}
+
+function waitForUiFrame() {
+  return new Promise(resolve => {
+    if (typeof window.requestAnimationFrame !== "function") {
+      window.setTimeout(resolve, 20);
+      return;
+    }
+    window.requestAnimationFrame(() => window.setTimeout(resolve, 0));
+  });
 }
 
 function isProfileFieldFilled(profile, field) {

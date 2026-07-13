@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T15:21:45.781Z.
+Généré le 2026-07-13T15:34:12.374Z.
 
 ## Synthèse
 
@@ -39,6 +39,8 @@ Généré le 2026-07-13T15:21:45.781Z.
 
 ## Marché officiel
 
+- Lignes brutes : France 437, région 429, département 382
+- Couverture corpus actif : 63/72 métier(s), sans marché 9
 - France : 63/72, zéros 7, absents 9
 - Occitanie : 63/72, zéros 48, absents 9
 - Aude : 63/72, zéros 145, absents 9
@@ -59,8 +61,8 @@ Généré le 2026-07-13T15:21:45.781Z.
 
 ## Taille et performance
 
-- Taille totale générée : 37.22 Mo
-- Nombre de fichiers : 42
+- Taille totale générée : 37.26 Mo
+- Nombre de fichiers : 43
 - Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.1 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
 ## Limite actuelle

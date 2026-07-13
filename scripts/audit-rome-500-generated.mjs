@@ -177,11 +177,35 @@ function buildMarketAvailability(jobs = [], national = [], regional = [], depart
     }];
   }));
   const nationallyUnavailable = [...requestedCodes].filter(code => !new Set(national.map(row => row.romeCode)).has(code));
+  const codesWithAnyOfficialMarket = new Set([
+    ...national,
+    ...regional,
+    ...departmental
+  ].map(row => row.romeCode).filter(code => requestedCodes.has(code)));
+  const rawMarketFileCoverage = {
+    nationalRows: national.length,
+    regionalRows: regional.length,
+    departmentalRows: departmental.length
+  };
+  const activeCorpusMarketCoverage = {
+    jobsTotal: jobs.length,
+    jobsWithOfficialMarket: codesWithAnyOfficialMarket.size,
+    jobsWithoutMarket: Math.max(0, jobs.length - codesWithAnyOfficialMarket.size),
+    nationalJobsWithMarket: levelCoverage.national?.jobsWithOfficialMarket || 0,
+    regionalJobsWithMarket: levelCoverage.regional?.jobsWithOfficialMarket || 0,
+    departmentalJobsWithMarket: levelCoverage.departmental?.jobsWithOfficialMarket || 0
+  };
   return {
     source: "api_marche_travail",
     method: report.apiMethod || report.marketApi?.method || "POST",
     bmoUsedInScore: false,
     fapRomeUsedInScore: false,
+    rawMarketFileCoverage,
+    activeCorpusMarketCoverage,
+    marketCoverage: {
+      rawFiles: rawMarketFileCoverage,
+      activeCorpus: activeCorpusMarketCoverage
+    },
     levelCoverage,
     unsupportedMarketRomeCodes: nationallyUnavailable,
     unsupportedMarketRomeCodesCount: nationallyUnavailable.length,
@@ -221,6 +245,8 @@ async function buildPerformanceReport(generatedDir, startedAt) {
 function buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport }) {
   const linked = quality.linkedDataCoverage;
   const market = quality.marketAvailability.levelCoverage;
+  const rawMarket = quality.marketAvailability.rawMarketFileCoverage || {};
+  const activeMarket = quality.marketAvailability.activeCorpusMarketCoverage || {};
   return `# Audit Boussole Pro - corpus ROME
 
 Généré le ${quality.generatedAt}.
@@ -254,6 +280,8 @@ ${(qualityReport.topMissingFields || []).slice(0, 12).map(item => `- ${item.fiel
 
 ## Marché officiel
 
+- Lignes brutes : France ${rawMarket.nationalRows || 0}, région ${rawMarket.regionalRows || 0}, département ${rawMarket.departmentalRows || 0}
+- Couverture corpus actif : ${activeMarket.jobsWithOfficialMarket || 0}/${activeMarket.jobsTotal || quality.jobsTotal} métier(s), sans marché ${activeMarket.jobsWithoutMarket || 0}
 - France : ${market.national.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.national.jobsWithZeroOffers}, absents ${market.national.jobsUnavailable}
 - Occitanie : ${market.regional.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.regional.jobsWithZeroOffers}, absents ${market.regional.jobsUnavailable}
 - Aude : ${market.departmental.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.departmental.jobsWithZeroOffers}, absents ${market.departmental.jobsUnavailable}
