@@ -2,27 +2,71 @@ const SOURCE_OFFICIAL = "official_rome_api";
 const SOURCE_COMPUTED = "computed";
 const SOURCE_UNKNOWN = "unknown";
 const MATCHABLE_SKILLS_LIMIT = 500;
+const ROME_DOMAIN_BY_LETTER = {
+  A: "Agriculture et pêche, espaces naturels et espaces verts, soins aux animaux",
+  B: "Arts et façonnage d'ouvrages d'art",
+  C: "Banque, assurance, immobilier",
+  D: "Commerce, vente et grande distribution",
+  E: "Communication, média et multimédia",
+  F: "Construction, bâtiment et travaux publics",
+  G: "Hôtellerie-restauration, tourisme, loisirs et animation",
+  H: "Industrie",
+  I: "Installation et maintenance",
+  J: "Santé",
+  K: "Services à la personne et à la collectivité",
+  L: "Spectacle",
+  M: "Support à l'entreprise",
+  N: "Transport et logistique"
+};
+
+const BOUSSOLE_SECTOR_LABELS = {
+  administratif: "Administration, bureau et gestion",
+  numerique: "Numérique, data et support",
+  soin_sante: "Santé, soin et bien-être",
+  social_accompagnement: "Social, insertion et accompagnement",
+  enfance_education: "Enfance, éducation et animation",
+  nature_agriculture_animaux: "Nature, agriculture, animaux et écologie",
+  artisanat_batiment_maintenance: "Artisanat, bâtiment et maintenance",
+  commerce_relation_client: "Commerce et relation client",
+  restauration_hotellerie_tourisme: "Restauration, hôtellerie, tourisme et accueil",
+  industrie_qualite: "Industrie, laboratoire et qualité",
+  logistique_transport_securite: "Logistique, transport et sécurité",
+  culture_communication_creation: "Culture, communication et création",
+  recherche_analyse: "Recherche, analyse et conseil",
+  droit_gestion_publique: "Droit, gestion publique et protection",
+  services_proprete: "Services, propreté et aide pratique"
+};
 
 export function normalizeRomeMetier(raw = {}) {
   const source = unwrapFiche(raw);
   const romeCode = firstText(source.romeCode, source.codeRome, source.code, raw.romeCode, raw.codeRome, raw.code);
   const title = firstText(source.title, source.libelle, source.intitule, source.nom, source.appellation, source.metier?.libelle);
   const description = firstText(source.description, source.resume, source.definition, source.presentation);
-  const appellations = collectLabels(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
+  const appellationRefs = collectRelationRefs(source.appellations, source.appellationsMetier, source.appellationsPrincipales, source.libelles, source.intitules, ...findValuesByKeyHints(source, ["appellation"]));
+  const appellations = unique(appellationRefs.map(ref => ref.label).filter(Boolean));
   const activities = collectLabels(source.activities, source.activites, source.activitesPrincipales, source.activitesDeBase, source.activitesSpecifiques, ...findValuesByKeyHints(source, ["activite", "activites"]));
-  const requiredSkillLabels = collectLabels(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
-  const optionalSkillLabels = collectLabels(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
-  const softSkillLabels = collectLabels(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
-  const knowledgeLabels = collectLabels(source.knowledge, source.savoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
-  const contextLabels = collectLabels(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail, ...findValuesByKeyHints(source, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"]));
+  const requiredSkillRefs = collectRelationRefs(source.requiredSkills, source.competences, source.competencesMobilisees, source.savoirFaire, source.savoirsFaire, source["savoir-faire"], ...findValuesByKeyHints(source, ["competence", "savoirfaire", "savoir-faire"]));
+  const optionalSkillRefs = collectRelationRefs(source.optionalSkills, source.competencesSpecifiques, ...findValuesByKeyHints(source, ["competencespecifique", "competence-specifique"]));
+  const softSkillRefs = collectRelationRefs(source.softSkills, source.savoirEtre, source.savoirEtreProfessionnels, source["savoir-être"], ...findValuesByKeyHints(source, ["savoiretre", "savoir-etre"]));
+  const knowledgeRefs = collectRelationRefs(source.knowledge, source.savoirs, source.connaissances, ...findValuesByKeyHints(source, ["savoirs", "connaissance", "knowledge"]));
+  const contextRefs = collectRelationRefs(source.workContexts, source.contextesTravail, source.conditionsExerciceActivite, source.environnementsTravail, ...findValuesByKeyHints(source, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"]));
+  const requiredSkillLabels = unique(requiredSkillRefs.map(ref => ref.label).filter(Boolean));
+  const optionalSkillLabels = unique(optionalSkillRefs.map(ref => ref.label).filter(Boolean));
+  const softSkillLabels = unique(softSkillRefs.map(ref => ref.label).filter(Boolean));
+  const knowledgeLabels = unique(knowledgeRefs.map(ref => ref.label).filter(Boolean));
+  const contextLabels = unique(contextRefs.map(ref => ref.label).filter(Boolean));
   const accessText = firstText(source.accessConditions, source.conditionsAcces, source.accesEmploiMetier, source.accesMetier, ...findValuesByKeyHints(source, ["conditionacces", "accesemploimetier", "accesmetier"]));
-  const requiredCertifications = collectLabels(source.requiredCertifications, source.certificationsObligatoires, source.habilitationsObligatoires, ...findValuesByKeyHints(source, ["certificationobligatoire", "habilitationobligatoire"]));
-  const recommendedCertifications = collectLabels(source.recommendedCertifications, source.certificationsRecommandees, source.habilitations, ...findValuesByKeyHints(source, ["certification", "habilitation"]));
+  const requiredCertificationRefs = collectRelationRefs(source.requiredCertifications, source.certificationsObligatoires, source.habilitationsObligatoires, ...findValuesByKeyHints(source, ["certificationobligatoire", "habilitationobligatoire"]));
+  const recommendedCertificationRefs = collectRelationRefs(source.recommendedCertifications, source.certificationsRecommandees, source.habilitations, ...findValuesByKeyHints(source, ["certification", "habilitation"]));
+  const requiredCertifications = unique(requiredCertificationRefs.map(ref => toStableCertificationId(ref.label, ref.officialId)));
+  const recommendedCertifications = unique(recommendedCertificationRefs.map(ref => toStableCertificationId(ref.label, ref.officialId)));
   const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers, ...findValuesByKeyHints(source, ["metierproche", "mobilite", "prochemetier"]));
-  const domainOfficial = firstText(source.domain, source.domaine, source.grandDomaine);
+  const officialRomeDomain = buildOfficialRomeDomain(romeCode, firstText(source.domain, source.domaine, source.grandDomaine));
+  const boussoleSectorIds = mapBoussoleSectors({ romeCode, title, description, activities, appellations });
+  const domainOfficial = officialRomeDomain.label;
   const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
-  const domain = domainOfficial || inferDomainFromRomeCode(romeCode);
-  const family = familyOfficial || inferFamilyFromRomeCode(romeCode);
+  const domain = boussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
+  const family = familyOfficial || domainOfficial || inferFamilyFromRomeCode(romeCode);
   const textPool = unique([title, description, domain, family, ...appellations, ...activities, ...contextLabels, ...requiredSkillLabels, ...knowledgeLabels].filter(Boolean));
   const constraints = inferConstraints(textPool);
   const transitionTags = deriveTransitionTags({ romeCode, title, domain, family, textPool });
@@ -74,14 +118,16 @@ export function normalizeRomeMetier(raw = {}) {
     title: title || "Metier ROME sans titre",
     domain,
     family,
+    officialRomeDomain,
+    boussoleSectorIds,
     appellations,
     description: description || null,
     activities,
-    requiredSkills: requiredSkillLabels.map(toStableSkillId),
-    optionalSkills: optionalSkillLabels.map(toStableSkillId),
-    softSkills: softSkillLabels.map(toStableSkillId),
-    knowledge: knowledgeLabels,
-    workContexts: contextLabels.map(toStableContextId),
+    requiredSkills: unique(requiredSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    optionalSkills: unique(optionalSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    softSkills: unique(softSkillRefs.map(ref => toStableSkillId(ref.label, ref.officialId))),
+    knowledge: unique(knowledgeRefs.map(ref => toStableKnowledgeId(ref.label, ref.officialId))),
+    workContexts: unique(contextRefs.map(ref => toStableContextId(ref.label, ref.officialId))),
     constraints,
     accessConditions: { text: accessText || null, source: accessText ? SOURCE_OFFICIAL : SOURCE_UNKNOWN, confidence: accessText ? 0.8 : 0 },
     physicalConstraints: constraints.physical,
@@ -110,6 +156,19 @@ export function normalizeRomeMetier(raw = {}) {
       optional: optionalSkillLabels,
       soft: softSkillLabels
     },
+    romeSkillRefs: {
+      required: requiredSkillRefs,
+      optional: optionalSkillRefs,
+      soft: softSkillRefs
+    },
+    romeKnowledgeRefs: knowledgeRefs,
+    romeWorkContextRefs: contextRefs,
+    romeAppellationRefs: appellationRefs,
+    romeCertificationRefs: {
+      required: requiredCertificationRefs,
+      recommended: recommendedCertificationRefs
+    },
+    romeKnowledgeLabels: knowledgeLabels,
     romeWorkContextLabels: contextLabels,
     dataQuality: {
       status: missingFields.length ? "generated_partial" : "generated_complete",
@@ -130,11 +189,12 @@ export function normalizeRomeCompetence(raw = {}) {
   const label = firstText(raw.label, raw.libelle, raw.intitule, raw.nom) || "Competence ROME";
   const classification = classifyRomeSkill(raw);
   const rawType = firstText(raw.type, raw.categorie, raw.famille, raw.nature, raw.typeCompetence, raw.typeSavoir);
+  const rawId = officialId(raw);
   const matchableCandidate = isMatchableSkillCandidate(label, raw, classification);
   return {
-    id: toStableSkillId(label),
-    rawId: firstText(raw.id, raw.code, raw.identifiant, raw.uuid) || null,
-    rawKeyOrId: firstText(raw.id, raw.code, raw.identifiant, raw.uuid) || toStableSkillId(label),
+    id: toStableSkillId(label, rawId),
+    rawId: rawId || null,
+    rawKeyOrId: rawId || toStableSkillId(label),
     schemaVersion: "1.0.0",
     label,
     type: typeForSkillClassification(classification, rawType),
@@ -287,7 +347,7 @@ function inferConstraints(textPool) {
   const source = hasSignal ? "computed_low_confidence" : SOURCE_UNKNOWN;
   return {
     source,
-    physical: { level: physicalTags.includes("load") ? "high" : physicalTags.length ? "medium" : "unknown", tags: unique(physicalTags), source, confidence: hasSignal ? 0.3 : 0 },
+    physical: { level: physicalTags.length ? "medium" : "unknown", tags: unique(physicalTags), source, confidence: hasSignal ? 0.25 : 0 },
     schedule: { nightWork, weekendWork, irregularHours: nightWork === "possible" || weekendWork === "possible" ? "possible" : "unknown", source, confidence: hasSignal ? 0.25 : 0 },
     mobility: { travelFrequency, driverLicenseRequired, driverLicenseTypes: driverLicenseRequired ? ["B"] : [], source, confidence: hasSignal ? 0.25 : 0 }
   };
@@ -401,20 +461,22 @@ function deriveValueTags(textPool, transitionTags) {
 
 function deriveSkillsFromJobs(jobs) {
   return jobs.flatMap(job => {
-    const labels = job.romeSkillLabels || {};
+    const refs = job.romeSkillRefs || {};
     return [
-      ...toArray(labels.required).map(label => skillFromLabel(label, "savoir-faire", "rome-required")),
-      ...toArray(labels.optional).map(label => skillFromLabel(label, "savoir-faire", "rome-optional")),
-      ...toArray(labels.soft).map(label => skillFromLabel(label, "savoir-etre", "rome-soft"))
+      ...toArray(refs.required).map(ref => skillFromRef(ref, "savoir-faire", "rome-required")),
+      ...toArray(refs.optional).map(ref => skillFromRef(ref, "savoir-faire", "rome-optional")),
+      ...toArray(refs.soft).map(ref => skillFromRef(ref, "savoir-etre", "rome-soft"))
     ];
   });
 }
 
-function skillFromLabel(label, type, category) {
+function skillFromRef(ref, type, category) {
+  const label = ref?.label || String(ref || "");
   return {
-    id: toStableSkillId(label),
+    id: toStableSkillId(label, ref?.officialId),
     schemaVersion: "1.0.0",
     label,
+    rawId: ref?.officialId || null,
     type,
     category,
     aliases: [],
@@ -425,10 +487,11 @@ function skillFromLabel(label, type, category) {
 }
 
 function deriveKnowledgeFromJobs(jobs) {
-  return jobs.flatMap(job => toArray(job.knowledge).map(label => ({
-    id: toStableKnowledgeId(label),
+  return jobs.flatMap(job => toArray(job.romeKnowledgeRefs).map(ref => ({
+    id: toStableKnowledgeId(ref.label, ref.officialId),
     schemaVersion: "1.0.0",
-    label,
+    rawId: ref.officialId || null,
+    label: ref.label,
     jobId: job.id,
     romeCode: job.romeCode,
     type: "knowledge",
@@ -439,10 +502,14 @@ function deriveKnowledgeFromJobs(jobs) {
 }
 
 function deriveCertificationLikeFromJobs(jobs) {
-  return jobs.flatMap(job => [...toArray(job.requiredCertifications), ...toArray(job.recommendedCertifications)].map(label => ({
-    id: String(label).startsWith("cert-") ? String(label) : `cert-rome-${slug(label)}`,
+  return jobs.flatMap(job => [
+    ...toArray(job.romeCertificationRefs?.required),
+    ...toArray(job.romeCertificationRefs?.recommended)
+  ].map(ref => ({
+    id: toStableCertificationId(ref.label, ref.officialId),
     schemaVersion: "1.0.0",
-    label,
+    rawId: ref.officialId || null,
+    label: ref.label,
     jobId: job.id,
     romeCode: job.romeCode,
     classification: "certification_like",
@@ -519,13 +586,15 @@ function startsWithActionVerb(text) {
 }
 
 function deriveContextsFromJobs(jobs) {
-  return jobs.flatMap(job => toArray(job.romeWorkContextLabels).map(label => buildContextFromLabel(label)));
+  return jobs.flatMap(job => toArray(job.romeWorkContextRefs).map(ref => buildContextFromLabel(ref.label, { id: ref.officialId, sourcePath: ref.sourcePath })));
 }
 
 function buildContextFromLabel(label, raw = {}) {
+  const rawId = officialId(raw);
   return {
-    id: toStableContextId(raw.id || raw.code || label),
+    id: toStableContextId(label, rawId),
     schemaVersion: "1.0.0",
+    rawId: rawId || null,
     label,
     category: raw.category || raw.type || "rome",
     constraintTags: inferContextTags(label),
@@ -553,12 +622,13 @@ function inferContextTags(label) {
 }
 
 function deriveAppellationsFromJobs(jobs) {
-  return jobs.flatMap(job => toArray(job.appellations).map(label => ({
-    id: `appellation-${job.romeCode || slug(job.id)}-${slug(label)}`,
+  return jobs.flatMap(job => toArray(job.romeAppellationRefs).map(ref => ({
+    id: toStableAppellationId(job, ref),
     schemaVersion: "1.0.0",
     jobId: job.id,
     romeCode: job.romeCode,
-    label,
+    rawId: ref.officialId || null,
+    label: ref.label,
     source: SOURCE_OFFICIAL,
     provenance: "generated_rome",
     confidence: 0.75
@@ -573,8 +643,8 @@ function deriveMappingsFromJobs(jobs) {
     romeCode: job.romeCode,
     skillIds: [...toArray(job.requiredSkills), ...toArray(job.optionalSkills), ...toArray(job.softSkills)],
     contextIds: toArray(job.workContexts),
-    appellationIds: toArray(job.appellations).map(label => `appellation-${job.romeCode || slug(job.id)}-${slug(label)}`),
-    knowledgeIds: toArray(job.knowledge).map(toStableKnowledgeId),
+    appellationIds: toArray(job.romeAppellationRefs).map(ref => toStableAppellationId(job, ref)),
+    knowledgeIds: toArray(job.romeKnowledgeRefs).map(ref => toStableKnowledgeId(ref.label, ref.officialId)),
     relatedJobIds: toArray(job.relatedJobs),
     relatedRomeCodes: toArray(job.relatedJobs)
       .map(value => String(value).replace(/^job-/, "").replace(/^rome-/, ""))
@@ -647,6 +717,35 @@ function collectLabels(...values) {
   return unique(labels.map(item => item.trim()).filter(Boolean));
 }
 
+function collectRelationRefs(...values) {
+  const refs = [];
+  const visit = (value, path = "$") => {
+    if (value === undefined || value === null || value === "") return;
+    if (typeof value === "string" || typeof value === "number") {
+      refs.push({ officialId: null, label: String(value), sourcePath: path });
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => visit(item, `${path}[${index}]`));
+      return;
+    }
+    if (typeof value === "object") {
+      const label = firstText(value.libelle, value.intitule, value.label, value.title, value.nom, value.texte);
+      const id = officialId(value);
+      if (label || id) refs.push({ officialId: id || null, label: label || id, sourcePath: path, rawType: firstText(value.type, value.categorie, value.famille, value.nature) || null });
+      Object.entries(value)
+        .filter(([, child]) => Array.isArray(child))
+        .forEach(([key, child]) => visit(child, `${path}.${key}`));
+    }
+  };
+  values.forEach((value, index) => visit(value, `$[${index}]`));
+  return uniqueBy(refs.filter(ref => ref.label || ref.officialId), ref => `${ref.officialId || ""}|${normalizeText(ref.label)}`);
+}
+
+function officialId(raw = {}) {
+  return firstText(raw.id, raw.code, raw.identifiant, raw.uuid, raw.idCompetence, raw.codeCompetence, raw.idContexte, raw.codeContexte, raw.idAppellation, raw.codeAppellation);
+}
+
 function findValuesByKeyHints(source, hints = []) {
   const matches = [];
   const normalizedHints = hints.map(normalizeText).filter(Boolean);
@@ -671,16 +770,61 @@ function findValuesByKeyHints(source, hints = []) {
   return matches;
 }
 
-function toStableSkillId(value) {
-  return String(value || "").startsWith("skill-") ? String(value) : `skill-rome-${slug(value || "competence")}`;
+function buildOfficialRomeDomain(romeCode = "", fallbackLabel = "") {
+  const code = String(romeCode || "").charAt(0).toUpperCase();
+  return {
+    code: code || null,
+    label: fallbackLabel || ROME_DOMAIN_BY_LETTER[code] || "Domaine ROME non renseigné",
+    source: fallbackLabel ? SOURCE_OFFICIAL : ROME_DOMAIN_BY_LETTER[code] ? SOURCE_COMPUTED : SOURCE_UNKNOWN
+  };
 }
 
-function toStableContextId(value) {
-  return String(value || "").startsWith("ctx-") ? String(value) : `ctx-rome-${slug(value || "contexte")}`;
+function mapBoussoleSectors({ romeCode = "", title = "", description = "", activities = [], appellations = [] } = {}) {
+  const code = String(romeCode || "").toUpperCase();
+  const text = normalizeText([title, description, ...activities, ...appellations].join(" "));
+  const sectors = [];
+  const add = id => { if (BOUSSOLE_SECTOR_LABELS[id] && !sectors.includes(id)) sectors.push(id); };
+  if (/^M18/.test(code) || /(informatique|logiciel|developp|développ|data|donnee|donnée|reseau|réseau|numerique|numérique|cyber|web)/.test(text)) add("numerique");
+  if (/^M1[256]/.test(code) || /(administratif|secretariat|secrétariat|bureau|comptab|paie|ressources humaines|dossier)/.test(text)) add("administratif");
+  if (/^J/.test(code)) add("soin_sante");
+  if (/^K1[1248]/.test(code) || /(social|insertion|mediation|médiation|accompagn|aide a domicile|aide à domicile)/.test(text)) add("social_accompagnement");
+  if (/^K1303|^K21|^G1202/.test(code) || /(enfant|petite enfance|education|éducation|formation|animation)/.test(text)) add("enfance_education");
+  if (/^A/.test(code) || /(agric|jardin|paysage|animal|nature|environnement)/.test(text)) add("nature_agriculture_animaux");
+  if (/^F|^I|^B/.test(code) || /(batiment|bâtiment|chantier|maintenance|artisan|reparer|réparer|fabrication|atelier)/.test(text)) add("artisanat_batiment_maintenance");
+  if (/^D|^M17/.test(code) || /(vente|commerce|client|relation client|magasin)/.test(text)) add("commerce_relation_client");
+  if (/^G/.test(code) || /(restauration|hotel|hôtel|tourisme|accueil|cuisine)/.test(text)) add("restauration_hotellerie_tourisme");
+  if (/^H/.test(code) || /(industrie|production|qualite|qualité|laboratoire)/.test(text)) add("industrie_qualite");
+  if (/^N|^K25/.test(code) || /(logistique|transport|livraison|stock|securite|sécurité|surveillance)/.test(text)) add("logistique_transport_securite");
+  if (/^E|^L/.test(code) || /(communication|media|média|culture|spectacle|creation|création|artistique|documentaire)/.test(text)) add("culture_communication_creation");
+  if (/^M14|^K24|^C/.test(code) || /(analyse|conseil|etude|étude|recherche|audit|assurance|banque|immobilier)/.test(text)) add("recherche_analyse");
+  if (/^K19|^K14/.test(code) || /(juridique|judiciaire|droit|protection des majeurs|administration publique)/.test(text)) add("droit_gestion_publique");
+  if (/^K22/.test(code) || /(proprete|propreté|nettoyage|entretien des locaux)/.test(text)) add("services_proprete");
+  return sectors;
 }
 
-function toStableKnowledgeId(value) {
-  return String(value || "").startsWith("knowledge-") ? String(value) : `knowledge-rome-${slug(value || "savoir")}`;
+function toStableSkillId(value, official = null) {
+  if (String(value || "").startsWith("skill-")) return String(value);
+  return official ? `skill-rome-${slug(official)}` : `skill-rome-${slug(value || "competence")}`;
+}
+
+function toStableContextId(value, official = null) {
+  if (String(value || "").startsWith("ctx-")) return String(value);
+  return official ? `ctx-rome-${slug(official)}` : `ctx-rome-${slug(value || "contexte")}`;
+}
+
+function toStableKnowledgeId(value, official = null) {
+  if (String(value || "").startsWith("knowledge-")) return String(value);
+  return official ? `knowledge-rome-${slug(official)}` : `knowledge-rome-${slug(value || "savoir")}`;
+}
+
+function toStableCertificationId(value, official = null) {
+  if (String(value || "").startsWith("cert-")) return String(value);
+  return official ? `cert-rome-${slug(official)}` : `cert-rome-${slug(value || "certification")}`;
+}
+
+function toStableAppellationId(job = {}, ref = {}) {
+  if (ref.officialId) return `appellation-rome-${slug(ref.officialId)}`;
+  return `appellation-${job.romeCode || slug(job.id)}-${slug(ref.label || "appellation")}`;
 }
 
 function toArray(value) {
@@ -692,7 +836,7 @@ function toArray(value) {
 function uniqueBy(items, key) {
   const seen = new Set();
   return items.filter(item => {
-    const value = item[key];
+    const value = typeof key === "function" ? key(item) : item[key];
     if (!value || seen.has(value)) return false;
     seen.add(value);
     return true;

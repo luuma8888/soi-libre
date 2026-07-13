@@ -57,9 +57,13 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   }
   if (!skills.length) warnings.push(issue("warning", "empty_generated_skills", "Aucun referentiel de competences genere. Le moteur utilisera les IDs metier mais affichera moins de libelles.", "skills"));
   if (!workContexts.length) warnings.push(issue("warning", "empty_generated_contexts", "Aucun contexte de travail genere. Le score cadre ideal sera moins precis.", "workContexts"));
-  const linkedSkillIds = getLinkedSkillIds(jobs);
-  const linkedContextIds = getLinkedContextIds(jobs);
-  const linkedAppellationIds = new Set((dataset.jobAppellations || []).filter(item => item.jobId).map(item => item.id));
+  const mappings = dataset.mappings || [];
+  const linkedSkillIds = getLinkedSkillIds(jobs, mappings);
+  const linkedContextIds = getLinkedContextIds(jobs, mappings);
+  const linkedAppellationIds = getLinkedAppellationIds(jobs, mappings, dataset.jobAppellations || []);
+  const jobsWithSkillMappings = mappings.filter(mapping => mapping.skillIds?.length).length;
+  const jobsWithContextMappings = mappings.filter(mapping => mapping.contextIds?.length).length;
+  const jobsWithAppellationMappings = mappings.filter(mapping => mapping.appellationIds?.length).length;
   const officialDescriptionsCount = jobs.filter(job => hasValue(job.description) && job.fieldSources?.description === "official_rome_api").length;
   if (rawSkills.length && linkedSkillIds.size === 0) {
     warnings.push(issue("warning", "referential_loaded_but_unlinked", "Des competences ROME globales sont chargees, mais aucune competence officielle n'est reliee aux metiers. Elles servent au profil, pas a prouver qu'un metier les exige.", "skills"));
@@ -121,15 +125,19 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       officialDescriptions: officialDescriptionsCount,
       trainings: (dataset.trainings || []).length,
       certifications: (dataset.certifications || []).length,
-      mappings: (dataset.mappings || []).length,
+      mappings: mappings.length,
+      jobsWithSkillMappings,
+      jobsWithContextMappings,
+      jobsWithAppellationMappings,
       marketIndicators: (dataset.marketIndicators || []).length
     },
     completeness,
     coverage: {
       jobsWithSkills: ratio(jobs.filter(job => job.requiredSkills?.length).length, jobs.length),
       jobsWithContexts: ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length),
-      linkedJobsWithSkillsCount: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length,
-      linkedJobsWithContextsCount: jobs.filter(job => job.workContexts?.length).length,
+      linkedJobsWithSkillsCount: Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobsWithSkillMappings),
+      linkedJobsWithContextsCount: Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings),
+      linkedJobsWithAppellationsCount: Math.max(jobs.filter(job => job.appellations?.length).length, jobsWithAppellationMappings),
       jobsWithOfficialDescription: ratio(officialDescriptionsCount, jobs.length),
       jobsWithActivities: ratio(jobs.filter(job => job.activities?.length).length, jobs.length),
       jobsWithAppellations: ratio(jobs.filter(job => job.appellations?.length).length, jobs.length),
@@ -174,12 +182,16 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
   const appellations = dataset.jobAppellations || [];
   const trainings = dataset.trainings || [];
   const certifications = dataset.certifications || [];
-  const linkedSkillIds = getLinkedSkillIds(jobs);
-  const linkedContextIds = getLinkedContextIds(jobs);
-  const jobsWithAppellations = jobs.filter(job => job.appellations?.length).length;
+  const mappings = dataset.mappings || [];
+  const linkedSkillIds = getLinkedSkillIds(jobs, mappings);
+  const linkedContextIds = getLinkedContextIds(jobs, mappings);
+  const linkedAppellationIds = getLinkedAppellationIds(jobs, mappings, appellations);
+  const jobsWithSkillMappings = mappings.filter(mapping => mapping.skillIds?.length).length;
+  const jobsWithContextMappings = mappings.filter(mapping => mapping.contextIds?.length).length;
+  const jobsWithAppellations = Math.max(jobs.filter(job => job.appellations?.length).length, mappings.filter(mapping => mapping.appellationIds?.length).length);
   const jobsScore = jobCompleteness.length ? average(jobCompleteness) : 0;
-  const skillsScore = ratio(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobs.length);
-  const contextsScore = ratio(jobs.filter(job => job.workContexts?.length).length, jobs.length);
+  const skillsScore = ratio(Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobsWithSkillMappings), jobs.length);
+  const contextsScore = ratio(Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings), jobs.length);
   const appellationsScore = ratio(jobsWithAppellations, jobs.length);
   const globalScore = average([jobsScore, skillsScore, contextsScore, appellationsScore].filter(value => Number.isFinite(value)));
   return {
@@ -197,7 +209,7 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
       filteredCount: skills.length,
       linkedCount: linkedSkillIds.size,
       matchableCount: matchableSkills.length,
-      jobsWithData: jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length,
+      jobsWithData: Math.max(jobs.filter(job => job.requiredSkills?.length || job.optionalSkills?.length || job.softSkills?.length).length, jobsWithSkillMappings),
       score: skillsScore,
       label: `Compétences : ${linkedSkillIds.size} liées aux ${jobs.length} métiers, ${skills.length} filtrées, ${matchableSkills.length} matchables, ${rawSkills.length} brutes`
     },
@@ -205,16 +217,17 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
       status: contexts.length || linkedContextIds.size ? "connected" : "missing",
       count: contexts.length,
       linkedCount: linkedContextIds.size,
-      jobsWithData: jobs.filter(job => job.workContexts?.length).length,
+      jobsWithData: Math.max(jobs.filter(job => job.workContexts?.length).length, jobsWithContextMappings),
       score: contextsScore,
       label: `Contextes : ${linkedContextIds.size} liés aux ${jobs.length} métiers, ${contexts.length} globaux`
     },
     appellations: {
       status: appellations.length || jobsWithAppellations ? "connected" : "missing",
       count: appellations.length,
+      linkedCount: linkedAppellationIds.size,
       jobsWithData: jobsWithAppellations,
       score: appellationsScore,
-      label: `Appellations : ${appellations.length} liées aux ${jobs.length} métiers`
+      label: `Appellations : ${linkedAppellationIds.size || appellations.length} liées aux ${jobs.length} métiers`
     },
     trainings: {
       status: trainings.length ? "connected" : "source_not_connected",
@@ -239,12 +252,26 @@ function buildCompleteness(dataset = {}, syncMeta = {}, jobCompleteness = []) {
   };
 }
 
-function getLinkedSkillIds(jobs = []) {
-  return new Set(jobs.flatMap(job => [...(job.requiredSkills || []), ...(job.optionalSkills || []), ...(job.softSkills || [])]).filter(Boolean));
+function getLinkedSkillIds(jobs = [], mappings = []) {
+  return new Set([
+    ...jobs.flatMap(job => [...(job.requiredSkills || []), ...(job.optionalSkills || []), ...(job.softSkills || [])]),
+    ...mappings.flatMap(mapping => mapping.skillIds || [])
+  ].filter(Boolean));
 }
 
-function getLinkedContextIds(jobs = []) {
-  return new Set(jobs.flatMap(job => job.workContexts || []).filter(Boolean));
+function getLinkedContextIds(jobs = [], mappings = []) {
+  return new Set([
+    ...jobs.flatMap(job => job.workContexts || []),
+    ...mappings.flatMap(mapping => mapping.contextIds || [])
+  ].filter(Boolean));
+}
+
+function getLinkedAppellationIds(jobs = [], mappings = [], appellations = []) {
+  return new Set([
+    ...appellations.filter(item => item.jobId).map(item => item.id),
+    ...mappings.flatMap(mapping => mapping.appellationIds || []),
+    ...jobs.flatMap(job => job.appellations || []).map(value => `label:${value}`)
+  ].filter(Boolean));
 }
 
 function getMissingFields(job) {

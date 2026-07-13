@@ -3311,7 +3311,7 @@ function importProfile(fileOrText) {
 
 function exportResults(format = "json") {
   if (!App.state.results) calculateAndStoreResults({ force: true, persist: false });
-  const results = prepareResultsForExport(App.state.results);
+  const results = format === "markdown" ? prepareResultsForExport(App.state.results) : prepareCompactResultsForExport(App.state.results);
   if (format === "markdown") {
     downloadFile(`boussole-pro-resultats-${dateStamp()}.md`, resultsToMarkdown(results), "text/markdown");
     showToast("Resultats exportes en Markdown.");
@@ -3648,6 +3648,12 @@ function normalizeJob(raw) {
     evidenceNotes: toArray(raw.evidenceNotes),
     marketScoreSeed: Number(raw.marketScoreSeed ?? raw.market?.value ?? raw.market?.score ?? raw.market?.tensionScore ?? (typeof raw.market === "number" ? raw.market : null) ?? 0.5)
   };
+}
+
+function isGeneratedRomeJob(job = {}) {
+  return job.provenance === "generated_rome" ||
+    job.source === "official_rome_api" ||
+    toArray(job.sourceRefs).includes("france_travail_rome_generated");
 }
 
 function normalizeSkill(raw) {
@@ -5321,8 +5327,13 @@ function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) 
 }
 
 function normalizeMarketStats(raw = null, job = {}) {
+  if (isGeneratedRomeJob(job)) {
+    const rawLevel = normalizeMarketSourceLevel(raw?.sourceLevel || raw?.level || "none");
+    const rawSource = normalizeText(raw?.sourceName || raw?.source || "");
+    if (!raw || rawLevel === "estimated" || rawSource.includes("estimated")) return buildUnavailableMarketStats(job);
+  }
   if (raw && typeof raw === "object") {
-    const sourceLevel = normalizeMarketSourceLevel(raw.sourceLevel || raw.level || "estimated");
+    const sourceLevel = normalizeMarketSourceLevel(raw.sourceLevel || raw.level || (isGeneratedRomeJob(job) ? "none" : "estimated"));
     return {
       romeCode: raw.romeCode || job.romeCode || job.localVariantOfRomeCode || "",
       sourceLevel,
@@ -5422,6 +5433,28 @@ function buildEstimatedMarketStats(job = {}) {
   };
 }
 
+function buildUnavailableMarketStats(job = {}) {
+  const emptyStats = level => normalizeMarketTerritoryStats({
+    sourceLevel: "none",
+    sourceName: null,
+    marketDataKind: "not_connected",
+    marketInterpretationLabel: "Statistique marché non disponible",
+    confidence: 0
+  });
+  return {
+    romeCode: job.romeCode || job.localVariantOfRomeCode || "",
+    sourceLevel: "none",
+    sourceName: null,
+    sourceUpdatedAt: null,
+    marketDataKind: "not_connected",
+    marketInterpretationLabel: "Statistique marché non disponible",
+    national: emptyStats("national"),
+    regional: emptyStats("regional"),
+    departmental: emptyStats("departmental"),
+    bmo: normalizeBmoStats({ confidence: 0, mappingConfidence: 0, usedInMarketScore: false })
+  };
+}
+
 function estimateTerritoryMarketModifiers(job = {}) {
   const text = normalizeText([job.title, job.domain, job.family, ...(job.transitionTags || []), ...(job.interestTags || [])].join(" "));
   const has = words => words.some(word => text.includes(normalizeText(word)));
@@ -5513,6 +5546,7 @@ function getJobMarketStats(job = {}, datasets = App.state.dataset) {
       departmental: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 }
     }, job);
   }
+  if (isGeneratedRomeJob(job) || datasets?.provenance === "generated_rome") return buildUnavailableMarketStats(job);
   return buildEstimatedMarketStats(job);
 }
 
@@ -9172,10 +9206,21 @@ function engineWeightsOriginText(origin) {
 }
 
 function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
-  const marketScores = toArray(datasets?.jobs).map(job => calculateMarketScore(job, datasets, criteria));
+  const jobs = toArray(datasets?.jobs);
+  const marketScores = jobs.map(job => calculateMarketScore(job, datasets, criteria));
   const numericScores = marketScores.map(item => item.score).filter(Number.isFinite);
   const uniqueScores = unique(numericScores);
-  const sourceSet = unique(marketScores.map(item => item.sourceName || item.source || "unknown"));
+  const sourceSet = unique([
+    ...jobs.flatMap(job => [
+      job.marketStats?.sourceName,
+      job.marketStats?.national?.sourceName,
+      job.marketStats?.regional?.sourceName,
+      job.marketStats?.departmental?.sourceName
+    ]),
+    ...marketScores
+      .filter(item => item.sourceLevel !== "none")
+      .map(item => item.sourceName || item.source)
+  ].filter(Boolean));
   const sourceLevels = unique(marketScores.map(item => item.sourceLevel || "none"));
   const averageReliability = marketScores.length
     ? marketScores.reduce((sum, item) => sum + Number(item.marketReliability ?? item.confidence ?? 0), 0) / marketScores.length
@@ -9200,7 +9245,7 @@ function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
     marketDiscriminant: uniqueScores.length > 1 && averageReliability >= 0.35 && marketDataLevel !== "estimated",
     highPriority,
     uniformScore: uniqueScores.length === 1 ? uniqueScores[0] : null,
-    sources: sourceSet,
+    sources: sourceSet.length ? sourceSet : [],
     marketCoverage: calculateMarketCoverage(datasets, criteria),
     reason: marketDataLevel === "estimated"
       ? "Les données marché sont structurées, mais restent estimatives et non officielles."
@@ -9320,6 +9365,92 @@ function findSuggestedTrainings(job, datasets) {
     toArray(job.requiredCertifications).includes(training.certificationId) ||
     toArray(job.recommendedCertifications).includes(training.certificationId)
   ).slice(0, 5);
+}
+
+function prepareCompactResultsForExport(results = {}) {
+  const compactResult = result => ({
+    jobId: result.jobId,
+    romeCode: result.romeCode,
+    title: result.title,
+    globalScore: result.globalScore,
+    confidenceScore: result.confidenceScore,
+    status: result.status,
+    top5SelectionReason: result.top5SelectionReason || "",
+    top5SelectionLabel: result.top5SelectionLabel || "",
+    coreProfileMatchScore: result.coreProfileMatchScore || 0,
+    resultFoundation: result.resultInterpretation?.resultFoundation || "",
+    scores: result.scores,
+    market: compactMarketForExport(result.scoreDetails?.market),
+    positiveReasons: toArray(result.positiveReasons).slice(0, 3).map(compactReasonForExport),
+    negativeReasons: toArray(result.negativeReasons).slice(0, 3).map(compactReasonForExport),
+    exclusionReasons: toArray(result.exclusionReasons).slice(0, 5).map(compactReasonForExport),
+    missingData: toArray(result.missingData).slice(0, 8).map(compactReasonForExport),
+    actionsToImprove: toArray(result.actionsToImprove).slice(0, 5),
+    relatedVariants: toArray(result.relatedVariants).slice(0, 5).map(variant => ({
+      jobId: variant.jobId,
+      romeCode: variant.romeCode,
+      title: variant.title,
+      globalScore: variant.globalScore
+    }))
+  });
+  const complete = toArray(results.completeList);
+  return {
+    app: "boussole-pro-results",
+    exportKind: "compact_results",
+    version: CONFIG.version,
+    exportedAt: new Date().toISOString(),
+    generatedAt: results.generatedAt,
+    profileId: results.profileId,
+    datasetVersion: results.datasetVersion,
+    engineIntent: results.engineIntent,
+    engineIntentLabel: results.engineIntentLabel,
+    weightMode: results.weightMode,
+    weightOrigin: results.weightOrigin,
+    criterionWeights: results.criterionWeights,
+    marketContext: results.marketContext,
+    diversityExplanation: results.diversityExplanation,
+    stats: results.stats,
+    counts: {
+      top5: toArray(results.top5).length,
+      recommended: toArray(results.recommended).length,
+      possibleAfterTraining: toArray(results.possibleAfterTraining).length,
+      weakButInteresting: toArray(results.weakButInteresting).length,
+      compatibleWeak: toArray(results.compatibleWeak).length,
+      excluded: toArray(results.excluded).length,
+      completeList: complete.length
+    },
+    top5: toArray(results.top5).map(compactResult),
+    visibleRecommended: toArray(results.visibleRecommended).map(compactResult),
+    visibleSecondary: toArray(results.visibleSecondary).map(compactResult),
+    visibleExcludedButRelevant: toArray(results.visibleExcludedButRelevant).map(compactResult),
+    completeListSummary: {
+      averageScore: complete.length ? Math.round(complete.reduce((sum, result) => sum + Number(result.globalScore || 0), 0) / complete.length) : 0,
+      statusCounts: countBy(complete.map(result => result.status || "unknown")),
+      confidenceCounts: scoreDistribution(complete.map(result => result.confidenceScore))
+    },
+    note: "Export compact par défaut. Utiliser l’export diagnostic JSON pour obtenir les détails complets de chaque résultat."
+  };
+}
+
+function compactMarketForExport(market = {}) {
+  if (!market) return null;
+  return {
+    score: market.score,
+    sourceLevel: market.sourceLevel,
+    sourceName: market.sourceName || market.source || null,
+    territoryLabel: market.territoryLabel || market.territory?.label || "",
+    offers12m: market.offers12m,
+    latestPeriodLabel: market.latestPeriodLabel || null,
+    marketReliability: market.marketReliability ?? market.confidence ?? 0,
+    isEstimated: Boolean(market.isEstimated),
+    rankingUse: market.rankingUse || ""
+  };
+}
+
+function compactReasonForExport(reason) {
+  if (typeof reason === "string") return reason;
+  if (!reason || typeof reason !== "object") return String(reason || "");
+  return reason.message || reason.text || reason.label || reason.code || reason.field || JSON.stringify(reason);
 }
 
 function prepareResultsForExport(results) {

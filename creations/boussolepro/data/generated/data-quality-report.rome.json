@@ -1,9 +1,9 @@
 {
   "schemaVersion": "1.0.0",
-  "reportId": "quality-2026-07-12",
-  "generatedAt": "2026-07-12T17:35:58.015Z",
-  "branch": "soi-libre-codex",
-  "datasetVersion": "rome-generated-2026-07-12",
+  "reportId": "quality-2026-07-13",
+  "generatedAt": "2026-07-13T05:40:27.057Z",
+  "branch": "local",
+  "datasetVersion": "rome-generated-local-audit",
   "status": "completed_with_warnings",
   "requestedCodesCount": 500,
   "successfulCodesCount": 500,
@@ -531,32 +531,7 @@
     ],
     "missingDomains": []
   },
-  "optionalReferentials": [
-    {
-      "name": "metiers",
-      "status": "ok",
-      "count": 1911,
-      "usedForDataset": false,
-      "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier",
-      "scope": "configured"
-    },
-    {
-      "name": "competences",
-      "status": "ok",
-      "count": 35595,
-      "usedForDataset": true,
-      "endpoint": "https://api.francetravail.io/partenaire/rome-competences/v1/competences/competence",
-      "scope": "configured"
-    },
-    {
-      "name": "contextes",
-      "status": "ok",
-      "count": 191,
-      "usedForDataset": true,
-      "endpoint": "https://api.francetravail.io/partenaire/rome-contextes-travail/v1/situations-travail/contexte-travail",
-      "scope": "configured"
-    }
-  ],
+  "optionalReferentials": [],
   "sync": {
     "requestedCodes": [
       "A1101",
@@ -1587,6 +1562,9 @@
     "trainings": 0,
     "certifications": 0,
     "mappings": 500,
+    "jobsWithSkillMappings": 0,
+    "jobsWithContextMappings": 0,
+    "jobsWithAppellationMappings": 0,
     "marketIndicators": 0
   },
   "completeness": {
@@ -1619,6 +1597,7 @@
     "appellations": {
       "status": "missing",
       "count": 0,
+      "linkedCount": 0,
       "jobsWithData": 0,
       "score": 0,
       "label": "Appellations : 0 liées aux 500 métiers"
@@ -1649,6 +1628,7 @@
     "jobsWithContexts": 0,
     "linkedJobsWithSkillsCount": 0,
     "linkedJobsWithContextsCount": 0,
+    "linkedJobsWithAppellationsCount": 0,
     "jobsWithOfficialDescription": 0,
     "jobsWithActivities": 0,
     "jobsWithAppellations": 0,

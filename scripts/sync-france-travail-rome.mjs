@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { buildRome500AuditArtifacts } from "./audit-rome-500-generated.mjs";
 import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 import { mergeRomeDatasets } from "./normalize-rome-api.mjs";
 
@@ -108,6 +109,8 @@ async function main() {
     await writeGeneratedJson("certifications.certifinfo.json", []);
     await writeGeneratedJson("mappings-rome-formations.json", []);
     await writeGeneratedJson("mappings-rome-certifications.json", []);
+    const audit = await buildRome500AuditArtifacts();
+    console.log(`[Boussole Pro] Audit ROME500: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%, coquilles ${audit.quality?.shellJobs?.count || 0}/${audit.quality?.jobsTotal || 0}`);
   } catch (error) {
     await writeGeneratedJson("sync-error.json", {
       generatedAt,
