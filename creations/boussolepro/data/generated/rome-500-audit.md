@@ -1,6 +1,6 @@
 # Audit Boussole Pro - ROME 500
 
-Généré le 2026-07-13T12:25:34.964Z.
+Généré le 2026-07-13T13:53:00.854Z.
 
 ## Synthèse
 
@@ -55,13 +55,13 @@ Généré le 2026-07-13T12:25:34.964Z.
 - Entrées brutes : 35595
 - Doublons d'identifiants : 0
 - Identifiants manquants : 0
-- Checksum : `9bb7f23b7adef835fc19cc6dbee6e3278559360fa315793b62b77ae3a9ef3a60`
+- Checksum : `81987e003329a52a8558eb15ce6aa5f9acaf072344235f0adf040dc275eba534`
 
 ## Taille et performance
 
-- Taille totale générée : 29.39 Mo
+- Taille totale générée : 37.2 Mo
 - Nombre de fichiers : 38
-- Plus gros fichiers : rome-raw-skills.json (14.73 Mo), knowledge.rome.json (5.13 Mo), market/market-national.rome.json (1.76 Mo), jobs.rome.json (1.7 Mo), market/market-occitanie.rome.json (1.69 Mo)
+- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.11 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
 
 ## Limite actuelle
 
