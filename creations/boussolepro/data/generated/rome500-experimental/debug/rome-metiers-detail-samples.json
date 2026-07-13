@@ -1,0 +1,3987 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-07-13T19:13:32.516Z",
+  "branch": "soi-libre-codex",
+  "source": "rome_metiers_detail_api",
+  "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+  "totalRecords": 99,
+  "diagnosticCodes": [
+    "A1203",
+    "K1303",
+    "M1607",
+    "M1805"
+  ],
+  "note": "Diagnostic structurel des enregistrements detailles ROME Metiers recuperes par code. Ces champs peuvent enrichir jobs.rome.json seulement quand les chemins sont presents et stables.",
+  "fieldAvailability": {
+    "code": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "title": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "description": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "appellations": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "characteristics": {
+      "samplesWithField": 0,
+      "samplesTotal": 1,
+      "status": "not_available_in_sample"
+    },
+    "skillRefs": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "softSkillRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 1,
+      "status": "not_available_in_sample"
+    },
+    "knowledgeRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 1,
+      "status": "not_available_in_sample"
+    },
+    "contextRefs": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "accessConditions": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    },
+    "certificationRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 1,
+      "status": "not_available_in_sample"
+    },
+    "relatedRomeCodes": {
+      "samplesWithField": 0,
+      "samplesTotal": 1,
+      "status": "not_available_in_sample"
+    },
+    "regulatoryTags": {
+      "samplesWithField": 1,
+      "samplesTotal": 1,
+      "status": "available_in_sample"
+    }
+  },
+  "conclusion": {
+    "status": "rich_fields_detected",
+    "usedForDataset": true,
+    "normalizationAllowed": [
+      "code",
+      "title",
+      "description",
+      "appellations",
+      "skillRefs",
+      "contextRefs",
+      "accessConditions",
+      "regulatoryTags"
+    ],
+    "missingRichFields": [
+      "characteristics",
+      "softSkillRefs",
+      "knowledgeRefs",
+      "certificationRefs",
+      "relatedRomeCodes"
+    ],
+    "message": "Des champs riches semblent presents dans certains echantillons : valider les chemins avant d'enrichir jobs.rome.json.",
+    "nextAction": "Analyser les chemins detectes puis brancher uniquement les champs confirmes."
+  },
+  "unavailableFieldReport": [
+    {
+      "field": "description",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "definition",
+        "description",
+        "descriptif",
+        "resume",
+        "finalite"
+      ],
+      "detectedPaths": [
+        "$.definition"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    },
+    {
+      "field": "appellations",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "appellations",
+        "appellationsMetier",
+        "libelles",
+        "intitules"
+      ],
+      "detectedPaths": [
+        "$.appellations"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    },
+    {
+      "field": "characteristics",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "caracteristiques",
+        "conditionsExercice",
+        "situationsTravail"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "skillRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "competences",
+        "savoirFaire",
+        "groupesCompetences"
+      ],
+      "detectedPaths": [
+        "$.appellations[0].competencesCles",
+        "$.appellations[1].competencesCles",
+        "$.appellations[2].competencesCles",
+        "$.appellations[3].competencesCles",
+        "$.appellations[4].competencesCles",
+        "$.appellations[5].competencesCles",
+        "$.appellations[6].competencesCles",
+        "$.appellations[7].competencesCles",
+        "$.competencesMobilisees",
+        "$.competencesMobiliseesPrincipales",
+        "$.competencesMobiliseesEmergentes"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    },
+    {
+      "field": "softSkillRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "savoirEtre",
+        "savoirEtreProfessionnels"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "knowledgeRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "savoirs",
+        "connaissances",
+        "groupesSavoirs"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "contextRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "contextesTravail",
+        "conditionsExerciceActivite",
+        "environnementsTravail"
+      ],
+      "detectedPaths": [
+        "$.contextesTravail"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    },
+    {
+      "field": "accessConditions",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "conditionsAcces",
+        "accesEmploi",
+        "accesEmploiMetier",
+        "prerequis"
+      ],
+      "detectedPaths": [
+        "$.accesEmploi"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    },
+    {
+      "field": "certificationRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "certifications",
+        "habilitations",
+        "reglementation"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "relatedRomeCodes",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "mobilites",
+        "metiersProches",
+        "prochesMetiers"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "regulatoryTags",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "reglementation",
+        "obligatoire",
+        "autorisation"
+      ],
+      "detectedPaths": [
+        "$.appellations[0].emploiReglemente",
+        "$.appellations[1].emploiReglemente",
+        "$.emploiReglemente"
+      ],
+      "actualRootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "actualStructures": {
+        "A1203": {
+          "found": true,
+          "rootKeys": [
+            "accesEmploi",
+            "appellations",
+            "centresInterets",
+            "centresInteretsLies",
+            "code",
+            "codeIsco",
+            "competencesMobilisees",
+            "competencesMobiliseesEmergentes",
+            "competencesMobiliseesPrincipales",
+            "contextesTravail",
+            "definition",
+            "divisionsNaf",
+            "domaineProfessionnel",
+            "emploiCadre",
+            "emploiReglemente",
+            "formacodes",
+            "libelle",
+            "obsolete",
+            "riasecMajeur",
+            "romeCode",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "themes",
+            "transitionDemographique",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique"
+          ],
+          "recursivePathCount": 240
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "candidate_path_detected",
+      "reason": "Chemin candidat detecte : a valider avant normalisation."
+    }
+  ],
+  "samples": {
+    "A1203": {
+      "found": true,
+      "rootKeys": [
+        "accesEmploi",
+        "appellations",
+        "centresInterets",
+        "centresInteretsLies",
+        "code",
+        "codeIsco",
+        "competencesMobilisees",
+        "competencesMobiliseesEmergentes",
+        "competencesMobiliseesPrincipales",
+        "contextesTravail",
+        "definition",
+        "divisionsNaf",
+        "domaineProfessionnel",
+        "emploiCadre",
+        "emploiReglemente",
+        "formacodes",
+        "libelle",
+        "obsolete",
+        "riasecMajeur",
+        "romeCode",
+        "secteursActivites",
+        "secteursActivitesLies",
+        "themes",
+        "transitionDemographique",
+        "transitionEcologique",
+        "transitionEcologiqueDetaillee",
+        "transitionNumerique"
+      ],
+      "recursivePaths": [
+        {
+          "path": "$",
+          "type": "object",
+          "childKeys": [
+            "obsolete",
+            "code",
+            "libelle",
+            "definition",
+            "accesEmploi",
+            "riasecMajeur",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "codeIsco",
+            "domaineProfessionnel",
+            "appellations",
+            "themes",
+            "centresInterets",
+            "centresInteretsLies",
+            "secteursActivites",
+            "secteursActivitesLies",
+            "competencesMobilisees",
+            "competencesMobiliseesPrincipales",
+            "competencesMobiliseesEmergentes"
+          ]
+        },
+        {
+          "path": "$.obsolete",
+          "type": "boolean"
+        },
+        {
+          "path": "$.code",
+          "type": "string"
+        },
+        {
+          "path": "$.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.definition",
+          "type": "string"
+        },
+        {
+          "path": "$.accesEmploi",
+          "type": "string"
+        },
+        {
+          "path": "$.riasecMajeur",
+          "type": "string"
+        },
+        {
+          "path": "$.transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.transitionNumerique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.codeIsco",
+          "type": "string"
+        },
+        {
+          "path": "$.domaineProfessionnel",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "grandDomaine"
+          ]
+        },
+        {
+          "path": "$.domaineProfessionnel.code",
+          "type": "string"
+        },
+        {
+          "path": "$.domaineProfessionnel.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.domaineProfessionnel.grandDomaine",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.domaineProfessionnel.grandDomaine.code",
+          "type": "string"
+        },
+        {
+          "path": "$.domaineProfessionnel.grandDomaine.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations",
+          "type": "array",
+          "arrayLength": 10
+        },
+        {
+          "path": "$.appellations[0]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "emploiCadre",
+            "emploiReglemente",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "transitionDemographique",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[0].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].emploiCadre",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[0].emploiReglemente",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[0].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[0].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].transitionNumerique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[0].transitionDemographique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[0].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles",
+          "type": "array",
+          "arrayLength": 3
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[0].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[1]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "emploiCadre",
+            "emploiReglemente",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "transitionNumerique",
+            "transitionDemographique",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[1].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].emploiCadre",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[1].emploiReglemente",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[1].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[1].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].transitionNumerique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[1].transitionDemographique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[1].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles",
+          "type": "array",
+          "arrayLength": 3
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[1].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[2]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[2].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[2].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles",
+          "type": "array",
+          "arrayLength": 3
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[2].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[3]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[3].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[3].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles",
+          "type": "array",
+          "arrayLength": 3
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[3].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[4]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[4].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[4].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles",
+          "type": "array",
+          "arrayLength": 5
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[3].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[4].competencesCles[4].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[5]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "libelleCourt",
+            "transitionEcologique",
+            "transitionEcologiqueDetaillee",
+            "classification",
+            "competencesCles"
+          ]
+        },
+        {
+          "path": "$.appellations[5].code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].libelleCourt",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].transitionEcologique",
+          "type": "boolean"
+        },
+        {
+          "path": "$.appellations[5].transitionEcologiqueDetaillee",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].classification",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles",
+          "type": "array",
+          "arrayLength": 3
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[0].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[1].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2]",
+          "type": "object",
+          "childKeys": [
+            "competence",
+            "frequence"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].competence",
+          "type": "object",
+          "childKeys": [
+            "type",
+            "code",
+            "libelle",
+            "codeOgr"
+          ]
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].competence.type",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].competence.code",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].competence.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].competence.codeOgr",
+          "type": "string"
+        },
+        {
+          "path": "$.appellations[5].competencesCles[2].frequence",
+          "type": "number"
+        },
+        {
+          "path": "$.themes",
+          "type": "array",
+          "arrayLength": 2
+        },
+        {
+          "path": "$.themes[0]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.themes[0].code",
+          "type": "string"
+        },
+        {
+          "path": "$.themes[0].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.themes[1]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.themes[1].code",
+          "type": "string"
+        },
+        {
+          "path": "$.themes[1].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets",
+          "type": "array",
+          "arrayLength": 4
+        },
+        {
+          "path": "$.centresInterets[0]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.centresInterets[0].code",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[0].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[1]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.centresInterets[1].code",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[1].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[2]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.centresInterets[2].code",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[2].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[3]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.centresInterets[3].code",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInterets[3].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInteretsLies",
+          "type": "array",
+          "arrayLength": 4
+        },
+        {
+          "path": "$.centresInteretsLies[0]",
+          "type": "object",
+          "childKeys": [
+            "centreInteret",
+            "principal"
+          ]
+        },
+        {
+          "path": "$.centresInteretsLies[0].centreInteret",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
+        },
+        {
+          "path": "$.centresInteretsLies[0].centreInteret.code",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInteretsLies[0].centreInteret.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInteretsLies[0].principal",
+          "type": "boolean"
+        }
+      ],
+      "detectedFields": {
+        "code": [
+          {
+            "path": "$.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.codeIsco",
+            "key": "codeIsco",
+            "type": "string"
+          },
+          {
+            "path": "$.domaineProfessionnel.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.domaineProfessionnel.grandDomaine.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[3].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[3].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[4].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[4].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[1].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[1].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[2].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].competencesCles[0].competence.code",
+            "key": "code",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].competencesCles[0].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          }
+        ],
+        "title": [
+          {
+            "path": "$.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.domaineProfessionnel.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.domaineProfessionnel.grandDomaine.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[0].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[1].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[2].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[3].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[3].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[4].competencesCles[4].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[5].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].libelleCourt",
+            "key": "libelleCourt",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].competencesCles[0].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].competencesCles[1].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[7].competencesCles[2].competence.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.themes[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.themes[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInterets[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInterets[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInterets[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInterets[3].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInteretsLies[0].centreInteret.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInteretsLies[1].centreInteret.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInteretsLies[2].centreInteret.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.centresInteretsLies[3].centreInteret.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.secteursActivites[0].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.secteursActivites[0].secteurActivite.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.secteursActivites[1].libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.secteursActivites[1].secteurActivite.libelle",
+            "key": "libelle",
+            "type": "string"
+          },
+          {
+            "path": "$.secteursActivites[2].libelle",
+            "key": "libelle",
+            "type": "string"
+          }
+        ],
+        "description": [
+          {
+            "path": "$.definition",
+            "key": "definition",
+            "type": "string"
+          }
+        ],
+        "appellations": [
+          {
+            "path": "$.appellations",
+            "key": "appellations",
+            "type": "array",
+            "arrayLength": 10
+          }
+        ],
+        "characteristics": [],
+        "skillRefs": [
+          {
+            "path": "$.appellations[0].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[1].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[2].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[3].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[4].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 5
+          },
+          {
+            "path": "$.appellations[5].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[6].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.appellations[7].competencesCles",
+            "key": "competencesCles",
+            "type": "array",
+            "arrayLength": 3
+          },
+          {
+            "path": "$.competencesMobilisees",
+            "key": "competencesMobilisees",
+            "type": "array",
+            "arrayLength": 54
+          },
+          {
+            "path": "$.competencesMobiliseesPrincipales",
+            "key": "competencesMobiliseesPrincipales",
+            "type": "array",
+            "arrayLength": 13
+          },
+          {
+            "path": "$.competencesMobiliseesEmergentes",
+            "key": "competencesMobiliseesEmergentes",
+            "type": "array",
+            "arrayLength": 0
+          }
+        ],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [
+          {
+            "path": "$.contextesTravail",
+            "key": "contextesTravail",
+            "type": "array",
+            "arrayLength": 8
+          }
+        ],
+        "accessConditions": [
+          {
+            "path": "$.accesEmploi",
+            "key": "accesEmploi",
+            "type": "string"
+          }
+        ],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": [
+          {
+            "path": "$.appellations[0].emploiReglemente",
+            "key": "emploiReglemente",
+            "type": "boolean"
+          },
+          {
+            "path": "$.appellations[1].emploiReglemente",
+            "key": "emploiReglemente",
+            "type": "boolean"
+          },
+          {
+            "path": "$.emploiReglemente",
+            "key": "emploiReglemente",
+            "type": "boolean"
+          }
+        ]
+      },
+      "sanitizedSample": {
+        "obsolete": false,
+        "code": "A1203",
+        "libelle": "Agent / Agente d'entretien des espaces verts",
+        "definition": "L'agent d'entretien des espaces verts maintient la propreté, embellit les espaces verts, les parcs et jardins et participe à la préservation de l'environnement.\\nRéalise des opérations de plantation, de taille et d'élaga",
+        "accesEmploi": "Cet emploi est accessible sans qualification. Des formations de niveau CAP à Bac dans le domaine de l'aménagement paysager peuvent cependant en faciliter l'accès. \\nDes Certificats d'aptitude à la conduite en sécurité (C",
+        "riasecMajeur": "R",
+        "transitionEcologique": true,
+        "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+        "transitionNumerique": false,
+        "codeIsco": "6113",
+        "domaineProfessionnel": {
+          "code": "A12",
+          "libelle": "Espaces naturels et espaces verts",
+          "grandDomaine": {
+            "code": "A",
+            "libelle": "Agriculture et Pêche, Espaces naturels et Espaces verts, Soins aux animaux"
+          }
+        },
+        "appellations": [
+          {
+            "code": "510746",
+            "libelle": "Agent / Agente technique (espaces verts)",
+            "libelleCourt": "Agent / Agente technique (espaces verts)",
+            "emploiCadre": false,
+            "emploiReglemente": false,
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "transitionNumerique": false,
+            "transitionDemographique": false,
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 89
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 80
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 77
+              }
+            ]
+          },
+          {
+            "code": "510747",
+            "libelle": "Adjoint / Adjointe technique (espaces verts)",
+            "libelleCourt": "Adjoint / Adjointe technique (espaces verts)",
+            "emploiCadre": false,
+            "emploiReglemente": false,
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "transitionNumerique": false,
+            "transitionDemographique": false,
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 91
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 84
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              }
+            ]
+          },
+          {
+            "code": "488644",
+            "libelle": "Technicien / Technicienne espaces verts",
+            "libelleCourt": "Technicien / Technicienne espaces verts",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 91
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 84
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 83
+              }
+            ]
+          },
+          {
+            "code": "488643",
+            "libelle": "Agent / Agente d'entretien des espaces verts",
+            "libelleCourt": "Agent / Agente d'entretien des espaces verts",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "PRINCIPALE",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 89
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 79
+              }
+            ]
+          },
+          {
+            "code": "488832",
+            "libelle": "Jardinier municipal / Jardinière municipale",
+            "libelleCourt": "Jardinier municipal / Jardinière municipale",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 90
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 94
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 97
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 94
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 91
+              }
+            ]
+          },
+          {
+            "code": "38436",
+            "libelle": "Aide jardinier / Aide jardinière",
+            "libelleCourt": "Aide jardinier / Aide jardinière",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 67
+              }
+            ]
+          },
+          {
+            "code": "38437",
+            "libelle": "Manœuvre des espaces verts",
+            "libelleCourt": "Manœuvre des espaces verts",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 81
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 78
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 57
+              }
+            ]
+          },
+          {
+            "code": "17475",
+            "libelle": "Ouvrier / Ouvrière d'entretien des espaces verts",
+            "libelleCourt": "Ouvrier / Ouvrière d'entretien des espaces verts",
+            "transitionEcologique": true,
+            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+            "classification": "SYNONYME",
+            "competencesCles": [
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 92
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 82
+              }
+            ]
+          }
+        ],
+        "themes": [
+          {
+            "code": "01",
+            "libelle": "Métiers de l'environnement et du développement durable"
+          },
+          {
+            "code": "17",
+            "libelle": "Métiers accessibles sans diplôme et sans expérience"
+          }
+        ],
+        "centresInterets": [
+          {
+            "code": "13",
+            "libelle": "J'aime l'activité physique"
+          },
+          {
+            "code": "9",
+            "libelle": "J'aime être au contact de la nature"
+          },
+          {
+            "code": "14",
+            "libelle": "J'aime le travail manuel"
+          },
+          {
+            "code": "20",
+            "libelle": "Je souhaite contribuer à la protection de l'environnement"
+          }
+        ],
+        "centresInteretsLies": [
+          {
+            "centreInteret": {
+              "code": "13",
+              "libelle": "J'aime l'activité physique"
+            },
+            "principal": false
+          },
+          {
+            "centreInteret": {
+              "code": "9",
+              "libelle": "J'aime être au contact de la nature"
+            },
+            "principal": true
+          },
+          {
+            "centreInteret": {
+              "code": "14",
+              "libelle": "J'aime le travail manuel"
+            },
+            "principal": false
+          },
+          {
+            "centreInteret": {
+              "code": "20",
+              "libelle": "Je souhaite contribuer à la protection de l'environnement"
+            },
+            "principal": false
+          }
+        ],
+        "secteursActivites": [
+          {
+            "code": "115",
+            "libelle": "Élevage, pêche",
+            "secteurActivite": {
+              "code": "79",
+              "libelle": "Agriculture et élevage"
+            }
+          },
+          {
+            "code": "116",
+            "libelle": "Nettoyage",
+            "secteurActivite": {
+              "code": "81",
+              "libelle": "Maintenance, entretien et nettoyage"
+            }
+          },
+          {
+            "code": "80",
+            "libelle": "Environnement"
+          },
+          {
+            "code": "147",
+            "libelle": "Service public",
+            "secteurActivite": {
+              "code": "111",
+              "libelle": "Service public, défense et sécurité"
+            }
+          }
+        ],
+        "secteursActivitesLies": [
+          {
+            "secteurActivite": {
+              "code": "115",
+              "libelle": "Élevage, pêche",
+              "secteurActivite": {
+                "code": "79",
+                "libelle": "Agriculture et élevage"
+              }
+            },
+            "principal": false
+          },
+          {
+            "secteurActivite": {
+              "code": "116",
+              "libelle": "Nettoyage",
+              "secteurActivite": {
+                "code": "81",
+                "libelle": "Maintenance, entretien et nettoyage"
+              }
+            },
+            "principal": false
+          },
+          {
+            "secteurActivite": {
+              "code": "80",
+              "libelle": "Environnement"
+            },
+            "principal": true
+          },
+          {
+            "secteurActivite": {
+              "code": "147",
+              "libelle": "Service public",
+              "secteurActivite": {
+                "code": "111",
+                "libelle": "Service public, défense et sécurité"
+              }
+            },
+            "principal": false
+          }
+        ],
+        "competencesMobilisees": [
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "121159",
+            "libelle": "Sécuriser le périmètre d'intervention",
+            "codeOgr": "121159",
+            "riasecMajeur": "C"
+          },
+          {
+            "type": "SAVOIR",
+            "code": "122569",
+            "libelle": "Spécificités des végétaux",
+            "codeOgr": "122569"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "405390",
+            "libelle": "Respecter les règles de sécurité dont le port des EPI et la tenue vestimentaire adaptée",
+            "codeOgr": "405390"
+          },
+          {
+            "type": "MACRO-SAVOIR-ETRE-PROFESSIONNEL",
+            "code": "300497",
+            "libelle": "Faire preuve de créativité, d'inventivité",
+            "codeOgr": "300497",
+            "riasecMajeur": "A",
+            "riasecMineur": "I"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "489398",
+            "libelle": "Participer à la préparation des plantes en serre (semis, bouturage)",
+            "codeOgr": "489398"
+          },
+          {
+            "type": "SAVOIR",
+            "code": "100050",
+            "libelle": "Réglementation des espaces et espèces protégés",
+            "codeOgr": "100050"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "122833",
+            "libelle": "Régler un équipement d'irrigation et d'arrosage",
+            "codeOgr": "122833"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "122580",
+            "libelle": "Elaguer les branches d'un arbre",
+            "codeOgr": "122580",
+            "riasecMajeur": "R"
+          }
+        ],
+        "competencesMobiliseesPrincipales": [
+          {
+            "type": "SAVOIR",
+            "code": "116714",
+            "libelle": "Procédures d'entretiens de mobiliers urbains",
+            "codeOgr": "116714"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "122570",
+            "libelle": "Effectuer l'entretien de végétaux",
+            "codeOgr": "122570"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "483173",
+            "libelle": "Nettoyer les allées et les surfaces pavées",
+            "codeOgr": "483173"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "500199",
+            "libelle": "Assurer la maintenance de premier niveau des équipements",
+            "codeOgr": "500199"
+          },
+          {
+            "type": "SAVOIR",
+            "code": "122739",
+            "libelle": "Techniques d'engazonnement",
+            "codeOgr": "122739"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "506244",
+            "libelle": "Analyser l'état de santé des arbres et des plantes",
+            "codeOgr": "506244"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "486074",
+            "libelle": "Choisir des fleurs adaptées à la situation",
+            "codeOgr": "486074"
+          },
+          {
+            "type": "COMPETENCE-DETAILLEE",
+            "code": "122843",
+            "libelle": "Planter un arbre, une plante, un végétal",
+            "codeOgr": "122843",
+            "riasecMajeur": "R"
+          }
+        ],
+        "competencesMobiliseesEmergentes": [],
+        "divisionsNaf": [
+          {
+            "code": "01",
+            "libelle": "Culture et production animale, chasse et services annexes"
+          },
+          {
+            "code": "72",
+            "libelle": "Recherche-développement scientifique"
+          },
+          {
+            "code": "81",
+            "libelle": "Services relatifs aux bâtiments et aménagement paysager"
+          }
+        ],
+        "formacodes": [
+          {
+            "code": "21046",
+            "libelle": "Travaux paysagers"
+          },
+          {
+            "code": "21050",
+            "libelle": "Maçonnerie paysagère"
+          },
+          {
+            "code": "12510",
+            "libelle": "Aménagement gestion rivière"
+          }
+        ],
+        "contextesTravail": [
+          {
+            "code": "300783",
+            "libelle": "En extérieur",
+            "categorie": "CONDITIONS_TRAVAIL"
+          },
+          {
+            "code": "300794",
+            "libelle": "Manipulation d'un engin, équipement ou outil dangereux",
+            "categorie": "CONDITIONS_TRAVAIL"
+          },
+          {
+            "code": "38055",
+            "libelle": "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
+            "categorie": "CONDITIONS_TRAVAIL"
+          },
+          {
+            "code": "300795",
+            "libelle": "Port et manipulation de charges lourdes ou encombrantes",
+            "categorie": "CONDITIONS_TRAVAIL"
+          },
+          {
+            "code": "300806",
+            "libelle": "Travail en journée",
+            "categorie": "HORAIRE_ET_DUREE_TRAVAIL"
+          },
+          {
+            "code": "403103",
+            "libelle": "Salarié secteur privé (CDI, CDD)",
+            "categorie": "STATUT_EMPLOI"
+          },
+          {
+            "code": "403104",
+            "libelle": "Salarié secteur public",
+            "categorie": "STATUT_EMPLOI"
+          },
+          {
+            "code": "405285",
+            "libelle": "Collectivités territoriales",
+            "categorie": "TYPE_STRUCTURE_ACCUEIL"
+          }
+        ],
+        "emploiCadre": false,
+        "emploiReglemente": false,
+        "transitionDemographique": false,
+        "romeCode": "A1203"
+      }
+    },
+    "K1303": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    },
+    "M1607": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    },
+    "M1805": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    }
+  }
+}
