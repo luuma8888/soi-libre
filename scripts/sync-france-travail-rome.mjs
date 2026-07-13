@@ -491,20 +491,31 @@ async function fetchRomeMetiersDetails(endpointUrl, token, codes = []) {
   const failedCodes = [];
   for (const code of codes) {
     const result = await fetchRomeFicheMetier(endpointUrl, accessToken, code);
-    if (result.ok) {
+    if (result.ok && hasMetiersDetailPayload(result.payload)) {
       const raw = result.payload || {};
       records.push({ ...raw, code: raw.code || raw.codeRome || raw.romeCode || code, romeCode: raw.romeCode || raw.codeRome || raw.code || code });
     } else {
       failedCodes.push({
         code,
         status: result.status || "unknown",
-        message: shortMessage(result.message || "Detail ROME Metiers non exploitable."),
+        message: shortMessage(result.message || (result.ok ? "Detail ROME Metiers limite a code/libelle." : "Detail ROME Metiers non exploitable.")),
         endpoint: result.endpoint || endpointUrl
       });
     }
     await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
   }
   return { records, failedCodes };
+}
+
+function hasMetiersDetailPayload(payload = {}) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  return Boolean(
+    payload.definition ||
+    payload.accesEmploi ||
+    toArray(payload.appellations).length ||
+    toArray(payload.contextesTravail).length ||
+    toArray(payload.competencesMobilisees).length
+  );
 }
 
 function extractArrayFromApiResponse(json) {
@@ -573,7 +584,7 @@ function buildRomeMetiersRecordSample(code, record) {
     softSkillRefs: findCandidatePaths(record, ["savoiretre", "savoir-etre", "softskill"]),
     knowledgeRefs: findCandidatePaths(record, ["savoir", "connaissance", "knowledge"]),
     contextRefs: findCandidatePaths(record, ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail", "situationtravail"]),
-    accessConditions: findCandidatePaths(record, ["conditionacces", "accesemploimetier", "accesmetier", "prerequis", "pre-requis"]),
+    accessConditions: findCandidatePaths(record, ["conditionacces", "accesemploi", "accesemploimetier", "accesmetier", "prerequis", "pre-requis"]),
     certificationRefs: findCandidatePaths(record, ["certification", "habilitation", "reglementation"]),
     relatedRomeCodes: findCandidatePaths(record, ["mobilite", "metierproche", "prochemetier"]),
     regulatoryTags: findCandidatePaths(record, ["reglement", "obligatoire", "autorisation"])
@@ -670,7 +681,7 @@ function buildMetiersUnavailableFieldReport({ fieldAvailability = {}, samples = 
     softSkillRefs: ["savoirEtre", "savoirEtreProfessionnels"],
     knowledgeRefs: ["savoirs", "connaissances", "groupesSavoirs"],
     contextRefs: ["contextesTravail", "conditionsExerciceActivite", "environnementsTravail"],
-    accessConditions: ["conditionsAcces", "accesEmploiMetier", "prerequis"],
+    accessConditions: ["conditionsAcces", "accesEmploi", "accesEmploiMetier", "prerequis"],
     certificationRefs: ["certifications", "habilitations", "reglementation"],
     relatedRomeCodes: ["mobilites", "metiersProches", "prochesMetiers"],
     regulatoryTags: ["reglementation", "obligatoire", "autorisation"]
@@ -779,7 +790,7 @@ function buildRawStructureReport(rawSamples = {}, syncMeta = {}) {
     savoirEtre: ["savoiretre", "savoir-etre", "softskill"],
     appellations: ["appellation"],
     contextesTravail: ["contextetravail", "contexte-travail", "conditionexercice", "environnementtravail"],
-    conditionsAcces: ["conditionacces", "accesemploimetier", "accesmetier"],
+    conditionsAcces: ["conditionacces", "accesemploi", "accesemploimetier", "accesmetier"],
     certifications: ["certification", "habilitation"],
     mobilites: ["mobilite", "metierproche", "prochemetier"]
   };
