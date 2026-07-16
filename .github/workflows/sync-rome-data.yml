@@ -104,6 +104,8 @@ jobs:
           FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
           FT_RATE_LIMIT_MS: ${{ vars.FT_RATE_LIMIT_MS || '1100' }}
           ROME_RELATIONS_DIAGNOSTIC_CODES: ${{ inputs.diagnostic_codes || 'M1607,G1202,A1203' }}
+      - name: Prepare Boussole v0.7.0 generated indexes
+        run: node scripts/prepare-v070-local.mjs
       - name: Commit generated data
         run: |
           git config user.name "github-actions"

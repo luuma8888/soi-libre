@@ -468,6 +468,17 @@ label,
   font-size: 0.88rem;
 }
 
+.multiline-text {
+  white-space: pre-line;
+}
+
+.display-mode-control {
+  align-items: end;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 input,
 select,
 textarea {
@@ -1525,7 +1536,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.6.5-alpha",
+  version: "v0.7.0-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -2525,6 +2536,7 @@ const App = {
     profile: null,
     results: null,
     resultDiagnosticsEnabled: false,
+    displayMode: "essential",
     resultsDirty: false,
     testBenchProfiles: [],
     testBenchReport: null,
@@ -2534,7 +2546,11 @@ const App = {
     skillLabelIndex: null,
     skillSectorIndex: null,
     skillMigrationIndex: null,
+    skillEngineIndex: null,
     contextLabelIndex: null,
+    appellationsByJobId: null,
+    jobsByNormalizedAppellation: null,
+    explorationFacetAudit: null,
     explorationHaystackCache: new Map(),
     relatedVariantsCache: new Map(),
     jobDerivedCache: new Map(),
@@ -3606,6 +3622,7 @@ function loadStoredData() {
     const settings = JSON.parse(localStorage.getItem(CONFIG.storageKeys.settings) || "{}");
     if (settings.theme) document.body.dataset.theme = settings.theme;
     if (settings.corpusMode) App.state.corpusMode = settings.corpusMode;
+    if (["essential", "detailed", "diagnostic"].includes(settings.displayMode)) App.state.displayMode = settings.displayMode;
   } catch (error) {
     console.warn("Preferences locales illisibles", error);
   }
@@ -4132,6 +4149,12 @@ function normalizeJob(raw) {
     raw.mobilityConstraints?.travelFrequency || "unknown",
     Boolean(raw.mobilityConstraints?.driverLicenseRequired)
   ];
+  const accessConditions = typeof raw.accessConditions === "string"
+    ? { text: normalizeMultilineText(raw.accessConditions), source: "official_rome_api", confidence: 0.65 }
+    : { ...(raw.accessConditions || { text: null, source: "unknown", confidence: 0 }) };
+  if (accessConditions && typeof accessConditions === "object") {
+    accessConditions.text = normalizeMultilineText(accessConditions.text);
+  }
   return {
     id,
     canonicalId,
@@ -4144,9 +4167,9 @@ function normalizeJob(raw) {
     appellations: toArray(raw.appellations).map(frText),
     domain: frText(raw.domain || "Domaine non renseigné"),
     family: frText(raw.family || "Famille non renseignée"),
-    description: raw.description ? frText(raw.description) : null,
-    activities: toArray(raw.activities).map(frText),
-    accessConditions: raw.accessConditions || { text: null, source: "unknown", confidence: 0 },
+    description: normalizeMultilineText(raw.description),
+    activities: toArray(raw.activities).map(item => normalizeMultilineText(item)).filter(Boolean),
+    accessConditions,
     primarySectorId: raw.primarySectorId || raw.primarySector || null,
     secondarySectorIds: toArray(raw.secondarySectorIds || raw.sectorIds),
     sectorMappingConfidence: raw.sectorMappingConfidence ?? null,
@@ -4155,6 +4178,9 @@ function normalizeJob(raw) {
     skillGroups: toArray(raw.skillGroups),
     mobilizedSkillIds: toArray(raw.mobilizedSkillIds),
     matchableSkillIds: toArray(raw.matchableSkillIds),
+    scorableSkillIds: toArray(raw.scorableSkillIds).length ? toArray(raw.scorableSkillIds) : (toArray(raw.matchableSkillIds).length ? toArray(raw.matchableSkillIds) : toArray(raw.requiredSkills)),
+    userConceptIds: toArray(raw.userConceptIds),
+    skillVector: raw.skillVector || null,
     softSkillIds: toArray(raw.softSkillIds),
     knowledgeIds: toArray(raw.knowledgeIds),
     requiredSkills: toArray(raw.requiredSkills).length ? toArray(raw.requiredSkills) : toArray(raw.matchableSkillIds),
@@ -5371,8 +5397,14 @@ function profileCompletenessLevel(value) {
 }
 
 function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
-  const required = toArray(job.matchableSkillIds).length ? toArray(job.matchableSkillIds) : toArray(job.requiredSkills);
-  const optional = unique([...toArray(job.optionalSkills), ...toArray(job.softSkills), ...toArray(job.softSkillIds)]);
+  const sourceRequired = toArray(job.scorableSkillIds).length
+    ? toArray(job.scorableSkillIds)
+    : (toArray(job.matchableSkillIds).length ? toArray(job.matchableSkillIds) : toArray(job.requiredSkills));
+  const requiredResolution = sourceRequired.map(skillId => resolveSkillDisplay(skillId, datasets, { mode: "diagnostic" }));
+  const unresolvedSkillIds = requiredResolution.filter(item => !item.resolved).map(item => item.requestedId);
+  const required = requiredResolution.filter(item => item.resolved).map(item => item.requestedId);
+  const optionalSource = unique([...toArray(job.optionalSkills), ...toArray(job.softSkills), ...toArray(job.softSkillIds)]);
+  const optional = optionalSource.filter(skillId => resolveSkillDisplay(skillId, datasets).resolved);
   const missingData = [];
   const missingSkills = [];
   const missingSkillLabels = [];
@@ -5386,9 +5418,10 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
   const profileSkillsUsed = [];
   const confidenceOnlyWarnings = [];
   if (required.length === 0) {
+    const hasUnresolvedOfficialSkills = sourceRequired.length > 0 && unresolvedSkillIds.length === sourceRequired.length;
     return {
       score: 12,
-      missingData: [missing("job.requiredSkills", "medium", "Compétences ROME non encore reliées à ce métier dans le corpus.")],
+      missingData: [missing("job.requiredSkills", "medium", hasUnresolvedOfficialSkills ? "Compétences ROME référencées mais non résolues dans le référentiel fermé." : "Compétences ROME non encore reliées à ce métier dans le corpus.")],
       missingSkills,
       missingSkillLabels,
       unassessedSkills,
@@ -5401,7 +5434,8 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
       missingNonPenalizingSkills: [],
       missingNonPenalizingSkillLabels: [],
       skillStates: { strong: [], weak: [], absent: [], unassessed: [] },
-      confidenceOnlyWarnings: ["Compétences officielles non reliées : confiance réduite, score conservé neutre."],
+      unresolvedSkillIds,
+      confidenceOnlyWarnings: [hasUnresolvedOfficialSkills ? "Compétences officielles non résolues : score conservé neutre, résultat à vérifier." : "Compétences officielles non reliées : confiance réduite, score conservé neutre."],
       confidencePenalty: 0.25,
       unlinkedOfficialSkills: job.provenance === "generated_rome" || toArray(job.sourceRefs).includes("france_travail_rome_generated")
     };
@@ -5456,6 +5490,9 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     missingData.push(missing("profile.skillEvidence", "medium", label));
     confidenceOnlyWarnings.push(label);
   }
+  if (unresolvedSkillIds.length) {
+    confidenceOnlyWarnings.push(`${unresolvedSkillIds.length} compétence(s) métier n’ont pas été résolues dans le référentiel fermé.`);
+  }
   return {
     score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + recognizedSkillBonus + experienceBonus - weakPenalty - absentPenalty, 0, 25)),
     missingData,
@@ -5468,6 +5505,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     explicitlyAbsentSkillLabels,
     missingNonPenalizingSkills: unassessedSkills,
     missingNonPenalizingSkillLabels: unassessedSkillLabels,
+    unresolvedSkillIds,
     matchedRequiredSkills: unique(matchedRequiredSkills),
     matchedOptionalSkills: unique(matchedOptionalSkills),
     profileSkillsUsed: unique(profileSkillsUsed),
@@ -5478,7 +5516,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
       unassessed: unique(unassessedSkills)
     },
     confidenceOnlyWarnings,
-    confidencePenalty: (criteria.hasEnoughSkillEvidence ? 0 : 0.18) + (unassessedSkills.length / Math.max(required.length, 1) * 0.08) + (explicitWeak * 0.04) + (explicitAbsent * 0.06)
+    confidencePenalty: (criteria.hasEnoughSkillEvidence ? 0 : 0.18) + (unassessedSkills.length / Math.max(required.length, 1) * 0.08) + (unresolvedSkillIds.length / Math.max(sourceRequired.length, 1) * 0.06) + (explicitWeak * 0.04) + (explicitAbsent * 0.06)
   };
 }
 
@@ -6321,24 +6359,60 @@ function determineFeasibilityStatus(globalScore, scores, criteria, job, details 
   return "discouraged";
 }
 
+function inferCareerPathway(job = {}) {
+  const text = normalizeText(`${job.title || ""} ${job.domain || ""} ${job.family || ""} ${toArray(job.appellations).join(" ")}`);
+  if (/animation|animateur|atelier|loisir|jeu|lud/.test(text)) return "animation_ateliers";
+  if (/petite enfance|garde d enfant|assistant maternel|creche/.test(text)) return "petite_enfance";
+  if (/professeur|enseign|formateur|formation/.test(text)) return "enseignement_formation";
+  if (/educateur|social|insertion|accompagn/.test(text)) return "intervention_socioeducative";
+  if (/culture|document|bibli|mediat|ludothe/.test(text)) return "mediation_culture_jeu";
+  if (/coord|projet|responsable|chef/.test(text)) return "coordination_projets";
+  if (/informatique|web|data|logiciel|numerique/.test(text)) return "numerique_creatif";
+  if (/nature|environnement|jardin|agric|animal|foret/.test(text)) return "nature_sensibilisation";
+  if (/hotel|reception|restauration|serveur|etage/.test(text)) return "hotellerie_service";
+  if (/nettoyage|proprete|entretien/.test(text)) return "proprete_entretien";
+  return "voie_a_preciser";
+}
+
+function careerPathwayLabel(pathwayId) {
+  return {
+    animation_ateliers: "Voie animation / ateliers",
+    petite_enfance: "Voie petite enfance",
+    enseignement_formation: "Voie transmission",
+    intervention_socioeducative: "Voie socio-éducative",
+    mediation_culture_jeu: "Voie culture / jeu",
+    coordination_projets: "Voie coordination",
+    numerique_creatif: "Voie numérique",
+    nature_sensibilisation: "Voie nature",
+    hotellerie_service: "Voie service",
+    proprete_entretien: "Voie propreté"
+  }[pathwayId] || "Voie à préciser";
+}
+
 function buildVisibleRecommended(compatible, top5) {
+  const startedAt = nowMs();
+  const bestScore = Math.max(...toArray(compatible).map(result => result.globalScore || 0), 0);
+  const threshold = Math.max(45, bestScore - 8);
   const byId = new Map();
-  [...top5, ...compatible.filter(isUsefulResult)].forEach(result => {
+  [...top5, ...compatible.filter(result => isUsefulResult(result, threshold))].forEach(result => {
     if (!byId.has(result.jobId)) byId.set(result.jobId, result);
   });
-  return [...byId.values()].slice(0, 9);
+  const grouped = [...byId.values()].sort((a, b) => (b.globalScore || 0) - (a.globalScore || 0));
+  recordPerformanceMetric("resultsGroupingMs", startedAt);
+  return grouped.slice(0, 15);
 }
 
 function buildVisibleSecondary(compatible, primary) {
   const primaryIds = new Set(primary.map(result => result.jobId));
+  const bestScore = Math.max(...toArray(compatible).map(result => result.globalScore || 0), 0);
   return compatible
     .filter(result => !primaryIds.has(result.jobId))
-    .filter(result => result.globalScore >= 48 || result.scores.values >= 11 || result.scores.training >= 15 || result.scores.market >= 4 || result.status === "explore_with_caution")
-    .slice(0, 6);
+    .filter(result => result.globalScore >= Math.max(36, bestScore - 16) || result.scores.values >= 11 || result.scores.training >= 15 || result.scores.market >= 4 || result.status === "explore_with_caution")
+    .slice(0, 18);
 }
 
-function isUsefulResult(result) {
-  return result.globalScore >= 68 ||
+function isUsefulResult(result, threshold = 68) {
+  return result.globalScore >= threshold ||
     result.scores.values >= 12 ||
     result.scores.training >= 16 ||
     isCloseToFavorite(result.job);
@@ -7152,6 +7226,14 @@ function renderResults() {
         ${metric("Exclus", results.stats.excluded)}
       </div>
       <div class="button-row no-print" style="margin-top:12px">
+        <label class="display-mode-control">
+          <span class="field-label">Mode d’affichage</span>
+          <select data-display-mode>
+            <option value="essential" ${App.state.displayMode === "essential" ? "selected" : ""}>Essentiel</option>
+            <option value="detailed" ${App.state.displayMode === "detailed" ? "selected" : ""}>Détaillé</option>
+            <option value="diagnostic" ${App.state.displayMode === "diagnostic" ? "selected" : ""}>Diagnostic</option>
+          </select>
+        </label>
         <button class="secondary-button" type="button" data-action="toggle-result-diagnostics">${App.state.resultDiagnosticsEnabled ? "Masquer le diagnostic" : "Activer le diagnostic"}</button>
         <button class="ghost-button" type="button" data-action="export-diagnostic-json">Exporter diagnostic JSON</button>
       </div>
@@ -7165,8 +7247,8 @@ function renderResults() {
       <div class="job-list">${top5.map(result => renderJobCard(result, { featured: true, showVariants: true })).join("") || emptyState("Aucun Top 5 disponible avec le profil actuel.")}</div>
     </section>
     <section class="results-section print-section">
-      <h2>Autres pistes principales</h2>
-      <p>Ces métiers sont les plus utiles à regarder maintenant. La diversité n’est appliquée qu’entre pistes proches en pertinence.</p>
+      <h2>Pistes principales élargies</h2>
+      <p>Ces métiers restent proches du Top 5 ou ouvrent une voie professionnelle cohérente. Les seuils sont relatifs au meilleur résultat du profil.</p>
       <div class="job-list">${primary.map(result => renderJobCard(result)).join("") || emptyState("Aucune autre piste principale à ajouter pour l’instant.")}</div>
     </section>
     ${exploratory.length ? `<section class="results-section print-section"><h2>Pistes à explorer</h2><p>Ces pistes ne remplacent pas les principales, mais elles apportent une direction différente ou une hypothèse à vérifier.</p><div class="job-list">${exploratory.map(renderJobCard).join("")}</div></section>` : ""}
@@ -7249,6 +7331,7 @@ function renderJobCard(result, options = {}) {
   const isCurated = job?.provenance === "curated_clairmetier_ai_logic";
   const displayedScore = result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : result.globalScore;
   const scoreLabelText = result.status === "excluded_for_now" ? "si contrainte ajustée" : "/100";
+  const pathwayLabel = careerPathwayLabel(inferCareerPathway(job || result));
   return `
     <article class="job-card ${options.featured ? "featured" : ""} ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
       <div class="job-head">
@@ -7262,6 +7345,7 @@ function renderJobCard(result, options = {}) {
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
             ${result.resultInterpretation?.informationDepth ? `<span class="badge outline">${h(informationDepthLabel(result.resultInterpretation.informationDepth))}</span>` : ""}
+            <span class="badge outline">${h(pathwayLabel)}</span>
             <span class="badge outline">Fiabilité ${h(reliabilityText(result.dataReliability))}</span>
             <span class="badge gold">${h((job?.provenance || "sample") === "sample" ? "Corpus sample" : job?.provenance)}</span>
           </div>
@@ -7297,11 +7381,12 @@ function renderJobCard(result, options = {}) {
 function renderJobDetailsPanelContent(result = {}) {
   const job = result.job || findJob(result.jobId);
   const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
+  const appellations = getJobAppellations(job).map(item => item.label);
   return `
     <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
-    <p><strong>Description :</strong> ${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</p>
-    <p><strong>Appellations :</strong> ${take(job?.appellations || [], 5).map(h).join(", ") || "Non renseignées."}</p>
-    <p><strong>Accès au métier :</strong> ${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</p>
+    <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
+    <p><strong>Appellations :</strong> ${take(appellations, App.state.displayMode === "essential" ? 5 : 18).map(h).join(", ") || "Non renseignées."}${appellations.length > 18 ? ` <span class="field-help">(${appellations.length - 18} autres en diagnostic/export)</span>` : ""}</p>
+    <p><strong>Accès au métier :</strong> <span class="multiline-text">${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
     <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
     <p><strong>Données manquantes :</strong> ${toArray(result.missingData).map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
     ${renderMarketBox(result.scoreDetails?.market, job)}
@@ -7360,7 +7445,10 @@ function renderScoreDetails(details = {}) {
   const constraints = details.constraints || {};
   const training = details.training || {};
   const market = details.market || {};
-  const listLabels = items => toArray(items).map(item => h(item.label || item)).join(", ") || "aucun élément renseigné";
+  const listLabels = items => toArray(items).map(item => {
+    if (typeof item === "string") return h(resolveSkillDisplay(item, App.state.dataset).label);
+    return h(item.label || item.message || item.id || item);
+  }).join(", ") || "aucun élément renseigné";
   return `
     <div class="summary-box">
       <h3>Détail du score</h3>
@@ -7505,10 +7593,73 @@ function renderHomePage() {
     </section>`;
 }
 
+function buildExplorationFacetAudit(dataset = App.state.dataset) {
+  if (App.state.explorationFacetAudit) return App.state.explorationFacetAudit;
+  const startedAt = nowMs();
+  const jobs = toArray(dataset?.jobs);
+  const countMatches = matcher => jobs.filter(matcher).length;
+  const domainCounts = countBy(jobs.map(job => job.domain).filter(Boolean));
+  const domains = Object.entries(domainCounts)
+    .sort((a, b) => a[0].localeCompare(b[0], "fr"))
+    .map(([value, count]) => ({ value, label: value, resultCount: count, unknownDataCount: 0 }));
+  const diplomas = [
+    ["quick", "Accès rapide / formation courte"],
+    ["0_3", "Sans diplôme à CAP/BEP"],
+    ["4", "Bac"],
+    ["5_plus", "Bac +2 et plus"],
+    ["unknown", "Niveau non renseigné"]
+  ].map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationDiplomaMatches(job, value)), unknownDataCount: jobs.filter(job => numberOrNull(job.requiredDiplomaLevel ?? job.recommendedDiplomaLevel) === null).length }));
+  const constraints = [
+    ["low_physical", "Physique faible confirmé"],
+    ["no_night", "Sans nuit confirmée"],
+    ["no_weekend", "Sans week-end confirmé"],
+    ["no_driver_license", "Sans permis obligatoire confirmé"],
+    ["remote", "Télétravail possible"]
+  ].map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationConstraintMatches(job, value)), unknownDataCount: jobs.filter(job => !explorationConstraintIsKnown(job, value)).length }));
+  const contexts = buildExplorationContextOptions()
+    .filter(([value]) => value !== "all")
+    .map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationContextMatches(job, value)), unknownDataCount: 0 }));
+  const market = [
+    ["available", "Données disponibles"],
+    ["high_tension", "Volume fort"],
+    ["favorable", "Signal favorable"],
+    ["aude", "Signal Aude"],
+    ["occitanie", "Signal Occitanie"],
+    ["national", "National seulement"],
+    ["confirm", "Données à confirmer"]
+  ].map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationMarketMatches(job, value)), unknownDataCount: 0 }));
+  const audit = { domains, diplomas, constraints, contexts, market };
+  recordPerformanceMetric("facetAuditMs", startedAt);
+  App.state.explorationFacetAudit = audit;
+  return audit;
+}
+
+function facetOptionsWithCounts(rows = [], allOption = ["all", "Tous"], currentValue = "all") {
+  const mode = App.state.displayMode || "essential";
+  const options = toArray(rows)
+    .filter(row => mode === "diagnostic" || row.resultCount > 0 || row.value === currentValue)
+    .map(row => [row.value, `${row.label} (${row.resultCount})${row.resultCount === 0 ? " - indisponible" : ""}`]);
+  return [allOption, ...options];
+}
+
+function explorationConstraintIsKnown(job, filter) {
+  if (filter === "low_physical") return Boolean(job.physicalConstraints?.level && job.physicalConstraints.level !== "unknown");
+  if (filter === "no_night") return Boolean(job.scheduleConstraints?.nightWork && job.scheduleConstraints.nightWork !== "unknown");
+  if (filter === "no_weekend") return Boolean(job.scheduleConstraints?.weekendWork && job.scheduleConstraints.weekendWork !== "unknown");
+  if (filter === "no_driver_license") return job.mobilityConstraints?.source !== "unknown";
+  if (filter === "remote") return Boolean(job.remoteCompatibility && job.remoteCompatibility !== "unknown");
+  return true;
+}
+
 function renderExplorationPage() {
   const filters = App.state.explorationFilters;
+  const facetAudit = buildExplorationFacetAudit(App.state.dataset);
   const jobs = getFilteredExplorationJobs();
-  const domainOptions = [["all", "Tous les domaines"], ...unique(toArray(App.state.dataset?.jobs).map(job => job.domain).filter(Boolean)).sort().map(domain => [domain, domain])];
+  const domainOptions = facetOptionsWithCounts(facetAudit.domains, ["all", `Tous les domaines (${toArray(App.state.dataset?.jobs).length})`], filters.domain);
+  const diplomaOptions = facetOptionsWithCounts(facetAudit.diplomas, ["all", "Tous niveaux"], filters.diplomaLevel);
+  const constraintOptions = facetOptionsWithCounts(facetAudit.constraints, ["all", "Toutes contraintes"], filters.constraint);
+  const contextOptions = facetOptionsWithCounts(facetAudit.contexts, ["all", "Tous contextes"], filters.context);
+  const marketOptions = facetOptionsWithCounts(facetAudit.market, ["all", "Tous marchés"], filters.market);
   return `
     <section class="results-section print-section">
       <h2>Exploration métiers</h2>
@@ -7516,10 +7667,10 @@ function renderExplorationPage() {
       <div class="form-grid no-print">
         ${inputField("Recherche titre, code ROME ou appellation", "exploration.query", filters.query, "search", "Ex. K1303, administratif, enfant").replace('data-field="exploration.query"', 'data-exploration-filter="query"')}
         ${selectField("Domaine", "exploration.domain", filters.domain, domainOptions).replace('data-field="exploration.domain"', 'data-exploration-filter="domain"')}
-        ${selectField("Diplôme / accès", "exploration.diplomaLevel", filters.diplomaLevel, [["all", "Tous niveaux"], ["quick", "Accès rapide / formation courte"], ["0_3", "Sans diplôme à CAP/BEP"], ["4", "Bac"], ["5_plus", "Bac +2 et plus"]]).replace('data-field="exploration.diplomaLevel"', 'data-exploration-filter="diplomaLevel"')}
-        ${selectField("Contrainte à limiter", "exploration.constraint", filters.constraint, [["all", "Toutes contraintes"], ["low_physical", "Physique faible"], ["no_night", "Sans nuit fréquente"], ["no_weekend", "Sans week-end fréquent"], ["no_driver_license", "Sans permis obligatoire"], ["remote", "Télétravail possible"]]).replace('data-field="exploration.constraint"', 'data-exploration-filter="constraint"')}
-        ${selectField("Contexte", "exploration.context", filters.context, buildExplorationContextOptions()).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
-        ${selectField("Marché", "exploration.market", filters.market, [["all", "Tous marchés"], ["available", "Données disponibles"], ["high_tension", "Volume fort"], ["favorable", "Signal favorable"], ["aude", "Signal Aude"], ["occitanie", "Signal Occitanie"], ["national", "National seulement"], ["confirm", "Données à confirmer"]]).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
+        ${selectField("Diplôme / accès", "exploration.diplomaLevel", filters.diplomaLevel, diplomaOptions).replace('data-field="exploration.diplomaLevel"', 'data-exploration-filter="diplomaLevel"')}
+        ${selectField("Contrainte à limiter", "exploration.constraint", filters.constraint, constraintOptions).replace('data-field="exploration.constraint"', 'data-exploration-filter="constraint"')}
+        ${selectField("Contexte", "exploration.context", filters.context, contextOptions).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
+        ${selectField("Marché", "exploration.market", filters.market, marketOptions).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
         ${selectField("Territoire", "exploration.territory", filters.territory, TERRITORIES.map(item => [item.id, item.label])).replace('data-field="exploration.territory"', 'data-exploration-filter="territory"')}
         ${selectField("Tri", "exploration.sort", filters.sort, [["profile", "Pertinence profil"], ["title", "Titre"], ["domain", "Domaine"], ["quick_access", "Accès rapide"], ["market", "Marché"], ["low_constraints", "Contraintes faibles"], ["remote", "Télétravail"]]).replace('data-field="exploration.sort"', 'data-exploration-filter="sort"')}
         <label class="form-row full tag-option"><input type="checkbox" data-exploration-filter="favoritesOnly" value="yes" ${filters.favoritesOnly ? "checked" : ""}><span><span class="tag-name">Afficher seulement les favoris</span><span class="tag-meta">${App.state.favoriteJobs.length} favori(s) localement</span></span></label>
@@ -7539,6 +7690,7 @@ function updateExplorationFilter(target) {
   const key = target.dataset.explorationFilter;
   if (!key) return;
   App.state.explorationFilters[key] = target.type === "checkbox" ? target.checked : target.value;
+  App.state.explorationFacetAudit = null;
 }
 
 function renderExplorationResultsInPlace() {
@@ -7589,6 +7741,7 @@ function renderExplorationJobCard(job) {
   const result = findResult(job.id);
   const isFavorite = isFavoriteJob(job.id);
   const market = getJobMarketSnapshot(job, App.state.dataset, { territory: App.state.explorationFilters.territory });
+  const matchingAppellation = getMatchingAppellationForJob(job);
   return `
     <article class="job-card" data-job-id="${h(job.id)}">
       <div class="job-head">
@@ -7603,9 +7756,10 @@ function renderExplorationJobCard(job) {
             ${result ? `<span class="badge gold">Profil ${Math.round(result.globalScore)}/100</span>` : ""}
             ${isFavorite ? `<span class="badge sage">Favori</span>` : ""}
           </div>
+          ${matchingAppellation ? `<p class="field-help">Appellation correspondante : ${h(matchingAppellation.label)}</p>` : ""}
         </div>
       </div>
-      <p>${h(job.description || "Information métier à compléter.")}</p>
+      <p class="multiline-text">${h(job.description || "Information métier à compléter.")}</p>
       ${renderMarketBox(market, job, { compact: true })}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-explore-action="details" data-job-id="${h(job.id)}">Fiche</button>
@@ -7625,7 +7779,7 @@ function explorationHaystack(job) {
     job.romeCode,
     job.domain,
     job.family,
-    ...toArray(job.appellations),
+    ...getJobAppellations(job).map(item => item.label),
     ...toArray(job.transitionTags),
     ...toArray(job.interestTags)
   ].join(" "));
@@ -7634,8 +7788,10 @@ function explorationHaystack(job) {
 }
 
 function explorationDiplomaMatches(job, filter) {
-  const level = Number(job.requiredDiplomaLevel ?? job.recommendedDiplomaLevel ?? 0);
   if (filter === "all") return true;
+  const level = numberOrNull(job.requiredDiplomaLevel ?? job.recommendedDiplomaLevel);
+  if (filter === "unknown") return level === null;
+  if (level === null) return false;
   if (filter === "quick") return level <= 4 && !toArray(job.requiredCertifications).length;
   if (filter === "0_3") return level <= 3;
   if (filter === "4") return level === 4;
@@ -7645,10 +7801,10 @@ function explorationDiplomaMatches(job, filter) {
 
 function explorationConstraintMatches(job, filter) {
   if (filter === "all") return true;
-  if (filter === "low_physical") return ["low", "unknown"].includes(job.physicalConstraints?.level);
-  if (filter === "no_night") return !["frequent", "required"].includes(job.scheduleConstraints?.nightWork);
-  if (filter === "no_weekend") return !["frequent", "required"].includes(job.scheduleConstraints?.weekendWork);
-  if (filter === "no_driver_license") return !job.mobilityConstraints?.driverLicenseRequired;
+  if (filter === "low_physical") return job.physicalConstraints?.level === "low";
+  if (filter === "no_night") return ["none", "unlikely", "no", "never"].includes(job.scheduleConstraints?.nightWork);
+  if (filter === "no_weekend") return ["none", "unlikely", "no", "never"].includes(job.scheduleConstraints?.weekendWork);
+  if (filter === "no_driver_license") return job.mobilityConstraints?.driverLicenseRequired === false && job.mobilityConstraints?.source !== "unknown";
   if (filter === "remote") return ["high", "partial"].includes(job.remoteCompatibility);
   return true;
 }
@@ -8346,6 +8502,7 @@ function renderDataPage() {
   const marketConnectedLabel = totalJobs ? `${jobsWithOfficialMarket}/${totalJobs} (${percent(ratio(jobsWithOfficialMarket, totalJobs))})` : "0/0";
   const hasOfficialMarketStats = jobsWithOfficialMarket > 0 && ["national", "regional", "departmental", "local_basin"].includes(marketContext.availableDataLevel || marketContext.marketDataLevel);
   const marketReport = dataset.marketQualityReport || {};
+  const skillIntegrity = dataset.skillIntegrityReport || {};
   return `
     <section class="results-section print-section">
       <h2>Corpus actif</h2>
@@ -8367,6 +8524,7 @@ function renderDataPage() {
         ${metric("Qualité", report.status || "à vérifier")}
         ${metric("Métiers", summary.jobs ?? toArray(dataset.jobs).length)}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
+        ${metric("Référentiel score", toArray(dataset.skillsEngine).length || "non chargé")}
         ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
         ${metric("Contextes globaux", generatedSummary.globalContextsCount)}
         ${metric("Contextes liés", generatedSummary.linkedContextsCount)}
@@ -8382,6 +8540,7 @@ function renderDataPage() {
         <li><strong>Codes ROME chargés :</strong> ${h(generatedSummary.codesLabel)}</li>
         <li><strong>Codes ROME échoués :</strong> ${h(generatedSummary.failedLabel)}</li>
         <li><strong>Champs manquants principaux :</strong> ${h(generatedSummary.missingLabel)}</li>
+        <li><strong>Intégrité compétences :</strong> ${skillIntegrity.status ? `${h(skillIntegrity.status)} · ${h(skillIntegrity.resolvedIdsCount || 0)}/${h(skillIntegrity.referencedIdsCount || 0)} IDs résolus` : "rapport non chargé"}</li>
         <li><strong>Complétude par référentiel :</strong> ${generatedSummary.completenessLines.length ? `<ul class="compact-list">${generatedSummary.completenessLines.map(line => `<li>${h(line)}</li>`).join("")}</ul>` : "non renseignée"}</li>
         <li><strong>Note :</strong> ${isOfficial ? "corpus généré depuis fichiers statiques publics, sans secret dans le navigateur." : isCurated ? "corpus local enrichi estimatif, non officiel, à vérifier avec des sources métier." : "les données sample ne sont pas des données officielles ROME, RNCP ou Onisep."}</li>
       </ul>
@@ -8393,6 +8552,7 @@ function renderDataPage() {
         ${metric(isCurated ? "Compétences locales" : "Compétences brutes ROME", isCurated ? summary.skills : generatedSummary.rawSkillsCount)}
         ${metric(isCurated ? "Compétences utilisées" : "Compétences filtrées", generatedSummary.filteredSkillsCount)}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
+        ${metric("Référentiel score", toArray(dataset.skillsEngine).length || "non chargé")}
         ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
         ${metric("Savoirs", generatedSummary.knowledgeCount)}
         ${metric("Certification-like", generatedSummary.certificationLikeCount)}
@@ -8659,6 +8819,8 @@ async function loadGeneratedRomeDataset(options = {}) {
     manifest: "import-manifest.rome.json",
     jobs: "jobs.rome.json",
     skills: "skills.rome.json",
+    skillsEngine: "skills-engine.rome.json",
+    skillIntegrityReport: "skill-reference-integrity-report.json",
     knowledge: "knowledge.rome.json",
     certificationLike: "certification-like.rome.json",
     matchableSkills: "skills-matchable.rome.json",
@@ -8768,6 +8930,7 @@ function askGeneratedDatasetMode(generated = {}) {
   const rows = countMarketDatasetRows(generated);
   const jobsCount = toArray(generated.jobs).length;
   const skillsCount = toArray(generated.skills).length;
+  const skillsEngineCount = toArray(generated.skillsEngine).length;
   const matchableCount = toArray(generated.matchableSkills).length;
   const contextsCount = toArray(generated.workContexts).length;
   const appellationsCount = toArray(generated.jobAppellations).length;
@@ -8792,7 +8955,7 @@ function askGeneratedDatasetMode(generated = {}) {
       <h2>Charger les données générées</h2>
       <div class="launch-box">
         <strong>Corpus ROME détecté</strong>
-        <p>Boussole Pro a trouvé ${h(jobsCount)} métier(s), ${h(skillsCount)} compétence(s) filtrée(s), ${h(matchableCount)} compétence(s) de profil, ${h(contextsCount)} contexte(s) globaux et ${h(appellationsCount)} appellation(s) liée(s).</p>
+        <p>Boussole Pro a trouvé ${h(jobsCount)} métier(s), ${h(skillsCount)} compétence(s) filtrée(s), ${h(skillsEngineCount)} compétence(s) fermées pour le score, ${h(matchableCount)} compétence(s) de profil, ${h(contextsCount)} contexte(s) globaux et ${h(appellationsCount)} appellation(s) liée(s).</p>
         <p>Marché : ${h(rows.total)} ligne(s) statistiques disponibles dans les fichiers générés.</p>
       </div>
       <div class="reason-box warning">
@@ -8836,6 +8999,8 @@ function createEmptyGeneratedDatasetBase() {
     manifest: {},
     jobs: [],
     skills: [],
+    skillsEngine: [],
+    skillIntegrityReport: null,
     matchableSkills: [],
     knowledge: [],
     certificationLike: [],
@@ -8916,6 +9081,7 @@ function compactGeneratedDatasetForBrowser(generated = {}) {
   return {
     ...generated,
     skills: toArray(generated.skills).filter(keepSkill),
+    skillsEngine: toArray(generated.skillsEngine).filter(item => referencedSkillIds.has(item.id)),
     knowledge: toArray(generated.knowledge).filter(item => referencedKnowledgeIds.has(item.id)),
     certificationLike: referencedCertificationIds.size
       ? toArray(generated.certificationLike).filter(item => referencedCertificationIds.has(item.id))
@@ -8965,6 +9131,8 @@ function replaceDatasetCollections(base, generated, prepared = {}) {
   return {
     jobs: prepared.jobsWithGeneratedMarket || [],
     skills,
+    skillsEngine: Array.isArray(generated.skillsEngine) ? generated.skillsEngine.map(normalizeSkill) : [],
+    skillIntegrityReport: generated.skillIntegrityReport || null,
     knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : [],
     certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : [],
     matchableSkills: Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : [],
@@ -8988,6 +9156,8 @@ function mergeDatasetCollections(base, generated, prepared = {}) {
   return {
     jobs: prepared.jobsWithGeneratedMarket || base.jobs,
     skills: mergeLocalHumanSkills(generatedSkills.length && !prepared.looksLikeLegacyRawSkillDump ? generatedSkills : base.skills),
+    skillsEngine: Array.isArray(generated.skillsEngine) ? generated.skillsEngine.map(normalizeSkill) : toArray(base.skillsEngine),
+    skillIntegrityReport: generated.skillIntegrityReport || base.skillIntegrityReport || null,
     knowledge: Array.isArray(generated.knowledge) ? generated.knowledge : base.knowledge,
     certificationLike: Array.isArray(generated.certificationLike) ? generated.certificationLike.map(normalizeSkill) : base.certificationLike,
     matchableSkills: mergeLocalHumanSkills(Array.isArray(generated.matchableSkills) ? generated.matchableSkills.map(normalizeSkill) : base.matchableSkills),
@@ -9509,6 +9679,8 @@ function createEmptyProfile() {
     skillSignals: [],
     softSkills: [],
     customSkills: [],
+    externalAssessments: [],
+    skillConceptEvidence: {},
     freeCertifications: [],
     interests: [],
     values: [],
@@ -9580,6 +9752,8 @@ function normalizeProfile(raw) {
   merged.skillSignals = toArray(raw.skillSignals);
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
+  merged.externalAssessments = toArray(raw.externalAssessments);
+  merged.skillConceptEvidence = raw.skillConceptEvidence && typeof raw.skillConceptEvidence === "object" ? raw.skillConceptEvidence : {};
   merged.freeCertifications = toArray(raw.freeCertifications);
   merged.interests = toArray(raw.interests);
   merged.values = toArray(raw.values);
@@ -9948,6 +10122,13 @@ function handleProfileInput(event) {
     setCorpusMode(target.value);
     return;
   }
+  if (target.dataset.displayMode !== undefined) {
+    App.state.displayMode = ["essential", "detailed", "diagnostic"].includes(target.value) ? target.value : "essential";
+    App.state.resultDiagnosticsEnabled = App.state.displayMode === "diagnostic";
+    saveSettings({ displayMode: App.state.displayMode });
+    renderResults();
+    return;
+  }
   if (target.dataset.explorationFilter !== undefined) {
     updateExplorationFilter(target);
     if (target.dataset.explorationFilter === "query" && event.type === "input") renderExplorationResultsInPlace();
@@ -10052,6 +10233,8 @@ function handleActionClick(event) {
   }
   if (action === "toggle-result-diagnostics") {
     App.state.resultDiagnosticsEnabled = !App.state.resultDiagnosticsEnabled;
+    App.state.displayMode = App.state.resultDiagnosticsEnabled ? "diagnostic" : "detailed";
+    saveSettings({ displayMode: App.state.displayMode });
     renderResults();
     return;
   }
@@ -10267,6 +10450,7 @@ function applyMarketTerritoryChange() {
   const selected = App.state.profile.marketPreference?.territory?.selected || "DEP-11";
   App.state.explorationFilters.territory = selected;
   App.state.intentComparisonCache = null;
+  App.state.explorationFacetAudit = null;
   saveProfile();
   if (shouldCalculateResults()) {
     showLoading("Actualisation du territoire", "Boussole Pro recalcule les signaux marché pour le territoire choisi.");
@@ -11758,7 +11942,11 @@ function invalidateDatasetIndexes() {
   App.state.skillLabelIndex = null;
   App.state.skillSectorIndex = null;
   App.state.skillMigrationIndex = null;
+  App.state.skillEngineIndex = null;
   App.state.contextLabelIndex = null;
+  App.state.appellationsByJobId = null;
+  App.state.jobsByNormalizedAppellation = null;
+  App.state.explorationFacetAudit = null;
   App.state.explorationHaystackCache = new Map();
   App.state.relatedVariantsCache = new Map();
   App.state.jobDerivedCache = new Map();
@@ -11796,7 +11984,11 @@ function getSkillLabelIndex(datasets = App.state.dataset) {
   if (datasets === App.state.dataset && App.state.skillLabelIndex) return App.state.skillLabelIndex;
   const index = new Map();
   getAllSkillRows(datasets).forEach(skill => {
-    if (skill?.id) index.set(skill.id, skill.label || skill.title || skill.id);
+    if (!skill?.id) return;
+    const label = skill.label || skill.title || skill.id;
+    [skill.id, skill.officialId && `skill-rome-${skill.officialId}`, skill.rawId && `skill-rome-${skill.rawId}`, ...toArray(skill.aliases)]
+      .filter(Boolean)
+      .forEach(id => index.set(id, label));
   });
   if (datasets === App.state.dataset) App.state.skillLabelIndex = index;
   return index;
@@ -11804,10 +11996,15 @@ function getSkillLabelIndex(datasets = App.state.dataset) {
 
 function getSkillRowIndex(datasets = App.state.dataset) {
   if (datasets === App.state.dataset && App.state.skillRowIndex) return App.state.skillRowIndex;
+  const startedAt = nowMs();
   const index = new Map();
   getAllSkillRows(datasets).forEach(skill => {
-    if (skill?.id) index.set(skill.id, skill);
+    if (!skill?.id) return;
+    [skill.id, skill.officialId && `skill-rome-${skill.officialId}`, skill.rawId && `skill-rome-${skill.rawId}`, ...toArray(skill.aliases)]
+      .filter(Boolean)
+      .forEach(id => index.set(id, skill));
   });
+  if (datasets === App.state.dataset) recordPerformanceMetric("skillIndexBuildMs", startedAt);
   if (datasets === App.state.dataset) App.state.skillRowIndex = index;
   return index;
 }
@@ -11842,8 +12039,65 @@ function findResult(jobId) {
   return getResultIndex().get(jobId);
 }
 
+function getAppellationsByJobId(datasets = App.state.dataset) {
+  if (datasets === App.state.dataset && App.state.appellationsByJobId) return App.state.appellationsByJobId;
+  const startedAt = nowMs();
+  const index = new Map();
+  toArray(datasets?.jobAppellations).forEach(row => {
+    const jobId = row?.jobId || canonicalJobId(row?.romeCode);
+    const label = frText(row?.label || row?.title || row?.appellation || "");
+    if (!jobId || !label) return;
+    index.set(jobId, [...(index.get(jobId) || []), { ...row, jobId, label }]);
+  });
+  if (datasets === App.state.dataset) recordPerformanceMetric("appellationIndexBuildMs", startedAt);
+  if (datasets === App.state.dataset) App.state.appellationsByJobId = index;
+  return index;
+}
+
+function getJobAppellations(job = {}, datasets = App.state.dataset) {
+  const byJob = getAppellationsByJobId(datasets);
+  return uniqueObjectsBy([
+    ...toArray(job.appellations).map(label => ({ jobId: job.id, label })),
+    ...toArray(byJob.get(job.id)),
+    ...toArray(byJob.get(job.canonicalId)),
+    ...toArray(byJob.get(canonicalJobId(job.romeCode)))
+  ].filter(item => item?.label), item => normalizeText(item.label));
+}
+
+function getMatchingAppellationForJob(job = {}, query = App.state.explorationFilters?.query) {
+  const normalizedQuery = normalizeText(query);
+  if (!normalizedQuery) return null;
+  return getJobAppellations(job).find(item => normalizeText(item.label).includes(normalizedQuery)) || null;
+}
+
 function getSkillLabel(skillId, datasets = App.state.dataset) {
-  return getSkillLabelIndex(datasets).get(skillId) || skillId;
+  return resolveSkillDisplay(skillId, datasets).label;
+}
+
+function resolveSkillDisplay(skillId, datasets = App.state.dataset, options = {}) {
+  const mode = options.mode || App.state.displayMode || "essential";
+  const row = getSkillRowIndex(datasets).get(skillId);
+  if (row?.label || row?.title) {
+    const label = row.label || row.title;
+    return {
+      id: row.id || skillId,
+      requestedId: skillId,
+      label: mode === "diagnostic" && row.id && row.id !== skillId ? `${label} (${skillId})` : label,
+      resolved: true,
+      type: row.type || row.rawType || "unknown",
+      classification: row.classification || "unknown",
+      source: row.source || row.provenance || "generated"
+    };
+  }
+  return {
+    id: skillId,
+    requestedId: skillId,
+    label: mode === "diagnostic" ? `Compétence non résolue (${skillId})` : "Compétence officielle non résolue",
+    resolved: false,
+    type: "unknown",
+    classification: "unknown",
+    source: "missing_local_reference"
+  };
 }
 
 function getContextLabel(contextId, datasets = App.state.dataset) {
@@ -11852,6 +12106,7 @@ function getContextLabel(contextId, datasets = App.state.dataset) {
 
 function getAllSkillRows(datasets = App.state.dataset) {
   return uniqueBy([
+    ...toArray(datasets?.skillsEngine),
     ...toArray(datasets?.skills),
     ...toArray(datasets?.matchableSkills),
     ...toArray(datasets?.certificationLike)
@@ -12074,6 +12329,18 @@ function frText(value) {
   return replacements.reduce((text, pair) => text.replaceAll(pair[0], pair[1]), String(value || ""));
 }
 
+function normalizeMultilineText(value) {
+  if (value === undefined || value === null || value === "") return null;
+  return frText(String(value)
+    .replace(/\\r\\n|\\n|\\r/g, "\n")
+    .replace(/\r\n|\r/g, "\n")
+    .split("\n")
+    .map(line => line.trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim());
+}
+
 function h(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -12183,6 +12450,7 @@ function saveSettings(partial = {}) {
   localStorage.setItem(CONFIG.storageKeys.settings, JSON.stringify({
     ...current,
     corpusMode: App.state.corpusMode || "auto",
+    displayMode: App.state.displayMode || "essential",
     ...partial
   }));
 }
