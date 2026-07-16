@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0.0",
+  "datasetName": "Boussole Pro - mapping contraintes depuis contextes ROME officiels",
+  "version": "v0.7.1-alpha",
+  "generatedAt": "2026-07-16T19:47:08.810Z",
+  "confirmedRules": [
+    {
+      "contextId": "ctx-rome-300803",
+      "label": "Travail de nuit",
+      "target": "schedule.nightWork",
+      "value": "frequent_or_possible",
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-23376",
+      "label": "Travail les week-ends et jours fériés",
+      "target": "schedule.weekendWork",
+      "value": "frequent_or_possible",
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-522277",
+      "label": "Travail en horaires fixes",
+      "target": "schedule.pattern",
+      "value": "fixed",
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-522278",
+      "label": "Travail en horaires variables",
+      "target": "schedule.pattern",
+      "value": "variable",
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-300805",
+      "label": "Travail en horaires décalés",
+      "target": "schedule.shiftedHours",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-400005",
+      "label": "Travail en horaires fractionnés",
+      "target": "schedule.splitHours",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-300800",
+      "label": "Station debout prolongée",
+      "target": "physical.prolongedStanding",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-300795",
+      "label": "Port et manipulation de charges lourdes ou encombrantes",
+      "target": "physical.heavyLoad",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-300779",
+      "label": "Déplacements professionnels",
+      "target": "mobility.professionalTravel",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-300783",
+      "label": "En extérieur",
+      "target": "environment.outdoor",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    },
+    {
+      "contextId": "ctx-rome-403020",
+      "label": "En contact avec du public",
+      "target": "publicContact",
+      "value": true,
+      "source": "official_work_context_label",
+      "confidence": 0.8
+    }
+  ],
+  "warnings": []
+}

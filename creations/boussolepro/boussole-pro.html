@@ -754,6 +754,11 @@ details.advanced-box summary {
   background: transparent;
   color: var(--primary);
   text-align: left;
+  text-decoration: none;
+}
+
+.link-button:hover,
+.link-button:focus-visible {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -881,6 +886,104 @@ details.advanced-box summary {
 
 .job-card.excluded {
   border-color: rgba(144, 53, 79, 0.24);
+}
+
+.job-card.is-essential {
+  gap: 10px;
+}
+
+.job-card.is-essential .job-title {
+  font-size: 1.04rem;
+}
+
+.job-card.is-essential .score-pill {
+  width: 62px;
+  min-height: 54px;
+}
+
+.essential-vigilance-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
+.market-one-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: var(--ink-soft);
+  font-weight: 800;
+}
+
+.pathway-group {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.pathway-group h3 {
+  margin: 0 0 8px;
+}
+
+.pathway-alt-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.compare-float {
+  position: fixed;
+  right: 18px;
+  bottom: 82px;
+  z-index: 35;
+  display: none;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--read-bg);
+  box-shadow: var(--shadow);
+}
+
+.compare-float.is-visible {
+  display: flex;
+}
+
+.compare-modal-grid {
+  display: grid;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.compare-modal-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.compare-modal-table th,
+.compare-modal-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.compare-modal-table .best {
+  background: var(--sage);
+}
+
+.compare-modal-table .weak {
+  background: var(--rose);
+}
+
+.compare-modal-table .missing {
+  color: var(--muted);
+  font-style: italic;
 }
 
 .job-head {
@@ -1513,6 +1616,7 @@ body[data-theme="dark"] .compare-table td {
   </main>
 
   <div id="toast" class="toast no-print" role="status" aria-live="polite"></div>
+  <div id="floatingCompare" class="compare-float no-print" aria-live="polite"></div>
 
   <dialog id="jobDialog" class="job-dialog">
     <form method="dialog">
@@ -1536,7 +1640,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.7.0-alpha",
+  version: "v0.7.1-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -1557,6 +1661,30 @@ const CONFIG = {
 
 const TOP5_DIVERSITY_SCORE_DELTA = 4;
 
+const DISPLAY_MODE_POLICY = {
+  essential: {
+    showTechnicalBadges: false,
+    showFullMarketBox: false,
+    showIntentComparison: false,
+    showOfficialSkillBrowser: false,
+    contextFacetMinCount: 1
+  },
+  detailed: {
+    showTechnicalBadges: false,
+    showFullMarketBox: false,
+    showIntentComparison: false,
+    showOfficialSkillBrowser: true,
+    contextFacetMinCount: 1
+  },
+  diagnostic: {
+    showTechnicalBadges: true,
+    showFullMarketBox: true,
+    showIntentComparison: true,
+    showOfficialSkillBrowser: true,
+    contextFacetMinCount: 0
+  }
+};
+
 const ENGINE_INTENTS = {
   balanced: "Équilibre général",
   quickEmployment: "Trouver rapidement un emploi",
@@ -1576,6 +1704,35 @@ const ENGINE_INTENT_WEIGHTS = {
   comfortAndConstraints: { skills: 18, training: 12, constraints: 35, values: 15, context: 15, market: 5 },
   exploration: { skills: 20, training: 15, constraints: 15, values: 20, context: 15, market: 15 }
 };
+
+const SKILL_CONCEPTS_V071 = [
+  ["accompagner_ecouter", "Accompagner et écouter", ["enfants", "handicap", "insertion", "autonomie quotidienne", "médiation"]],
+  ["animer_transmettre", "Animer et transmettre", ["atelier créatif", "activité ludique", "formation adulte", "enseignement", "animation de groupe"]],
+  ["soigner_securiser", "Prendre soin et sécuriser", ["hygiène", "prévention", "premiers secours"]],
+  ["accueillir_servir", "Accueillir et rendre service", ["accueil public", "service client", "réception", "service en restauration"]],
+  ["organiser_coordonner", "Organiser et coordonner", ["planning", "coordination", "réunions"]],
+  ["communiquer_creer", "Communiquer et créer", ["rédaction", "création visuelle", "communication numérique"]],
+  ["observer_analyser_resoudre", "Observer, analyser et résoudre", ["analyse", "diagnostic", "amélioration"]],
+  ["gerer_dossiers_informations", "Gérer des dossiers et des informations", ["classement", "saisie", "suivi administratif"]],
+  ["numerique_donnees", "Utiliser le numérique et les données", ["bureautique", "support", "données"]],
+  ["fabriquer_reparer", "Fabriquer, installer et réparer", ["réparation", "installation", "chantier"]],
+  ["nettoyer_entretenir", "Nettoyer et entretenir", ["locaux", "protocoles d’hygiène", "linge"]],
+  ["produire_cuisiner", "Préparer, produire et cuisiner", ["préparation", "production alimentaire", "hygiène alimentaire"]],
+  ["cultiver_proteger_vivant", "Cultiver et protéger le vivant", ["espaces verts", "plantes", "environnement"]],
+  ["soigner_animaux", "Prendre soin des animaux", ["soins animaux", "surveillance", "conduite animale"]],
+  ["conduire_gerer_flux", "Conduire et gérer des flux", ["stock", "transport", "livraisons"]],
+  ["qualite_securite", "Contrôler qualité et sécurité", ["contrôle qualité", "prévention des risques", "sécurité de site"]],
+  ["encadrer_piloter", "Encadrer et piloter", ["équipe", "activité", "budget"]],
+  ["concevoir_rechercher", "Concevoir, étudier et rechercher", ["conception", "étude", "synthèse"]]
+];
+
+const SKILL_CONCEPT_STATES = [
+  ["known", "Je sais faire"],
+  ["practiced", "Je l’ai déjà pratiqué"],
+  ["develop", "J’aimerais le développer"],
+  ["avoid", "Je préfère éviter"],
+  ["unknown", "Non renseigné"]
+];
 
 const DOMAIN_ORIENTATION_OPTIONS = [
   ["heart", "Mon cœur actuel"],
@@ -2554,6 +2711,9 @@ const App = {
     explorationHaystackCache: new Map(),
     relatedVariantsCache: new Map(),
     jobDerivedCache: new Map(),
+    marketSummaryCache: new Map(),
+    officialConstraintCache: new Map(),
+    skillConceptCache: new Map(),
     intentComparisonCache: null,
     compareIds: [],
     intentComparisonIntent: "quickEmployment",
@@ -3048,6 +3208,7 @@ function initApp() {
     loadingTitle: document.getElementById("loadingTitle"),
     loadingMessage: document.getElementById("loadingMessage"),
     toast: document.getElementById("toast"),
+    floatingCompare: document.getElementById("floatingCompare"),
     jobDialog: document.getElementById("jobDialog"),
     jobDialogContent: document.getElementById("jobDialogContent"),
     profileFileInput: document.getElementById("profileFileInput"),
@@ -4170,6 +4331,8 @@ function normalizeJob(raw) {
     description: normalizeMultilineText(raw.description),
     activities: toArray(raw.activities).map(item => normalizeMultilineText(item)).filter(Boolean),
     accessConditions,
+    accessSummary: raw.accessSummary || null,
+    officialConstraintSummary: raw.officialConstraintSummary || null,
     primarySectorId: raw.primarySectorId || raw.primarySector || null,
     secondarySectorIds: toArray(raw.secondarySectorIds || raw.sectorIds),
     sectorMappingConfidence: raw.sectorMappingConfidence ?? null,
@@ -4491,6 +4654,7 @@ function mapUserProfileToCriteria(profile) {
     },
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
     skillEvidence,
+    skillConceptEvidence: profile.skillConceptEvidence || {},
     hasEnoughSkillEvidence: directSkillIds.length + toArray(profile.customSkills).length + getSkillSignalCount(profile) >= 3,
     customSkills: toArray(profile.customSkills).map(normalizeText),
     softSkills: toArray(profile.softSkills),
@@ -5477,6 +5641,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     }
   });
   const experienceBonus = experienceBonusForJob(criteria, job);
+  const conceptBonus = skillConceptBonusForJob(criteria, job);
   const positiveRatio = matched / required.length;
   const optionalRatio = optional.length ? optionalMatched / optional.length : 0.5;
   const neutralSkillScore = criteria.hasEnoughSkillEvidence ? 11 : 12;
@@ -5494,7 +5659,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     confidenceOnlyWarnings.push(`${unresolvedSkillIds.length} compétence(s) métier n’ont pas été résolues dans le référentiel fermé.`);
   }
   return {
-    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + recognizedSkillBonus + experienceBonus - weakPenalty - absentPenalty, 0, 25)),
+    score: Math.round(clamp(neutralSkillScore + positiveBonus + optionalBonus + recognizedSkillBonus + experienceBonus + conceptBonus.score - weakPenalty - absentPenalty, 0, 25)),
     missingData,
     missingSkills,
     missingSkillLabels,
@@ -5509,6 +5674,7 @@ function calculateSkillScore(criteria, job, datasets = App.state.dataset) {
     matchedRequiredSkills: unique(matchedRequiredSkills),
     matchedOptionalSkills: unique(matchedOptionalSkills),
     profileSkillsUsed: unique(profileSkillsUsed),
+    conceptEvidenceBonus: conceptBonus,
     skillStates: {
       strong: unique([...matchedRequiredSkills, ...matchedOptionalSkills]),
       weak: unique(weakSkills),
@@ -5534,6 +5700,30 @@ function experienceBonusForJob(criteria, job) {
     return Math.max(max, score);
   }, 0);
   return Math.round(best * 2);
+}
+
+function skillConceptBonusForJob(criteria = {}, job = {}) {
+  const evidence = criteria.skillConceptEvidence || {};
+  const text = normalizeText(`${job.title} ${job.domain} ${job.family} ${toArray(job.appellations).join(" ")} ${toArray(job.romeSkillLabels).join(" ")}`);
+  let score = 0;
+  const matchedConcepts = [];
+  Object.entries(evidence).forEach(([conceptId, item]) => {
+    if (!item || item.state === "unknown") return;
+    const concept = SKILL_CONCEPTS_V071.find(([id]) => id === conceptId);
+    if (!concept) return;
+    const tokens = normalizeText(`${concept[1]} ${concept[2].join(" ")}`).split(/\s+/).filter(token => token.length > 4);
+    const matches = tokens.some(token => text.includes(token));
+    if (!matches) return;
+    if (item.state === "avoid") {
+      score -= 2;
+      matchedConcepts.push({ conceptId, state: item.state, label: concept[1], effect: "avoid" });
+      return;
+    }
+    const value = item.state === "known" ? 2 : item.state === "practiced" ? 1.5 : 0.8;
+    score += value;
+    matchedConcepts.push({ conceptId, state: item.state, label: concept[1], effect: "support" });
+  });
+  return { score: clamp(score, -3, 4), matchedConcepts };
 }
 
 function getExperienceDomainsForJob(job) {
@@ -6364,7 +6554,8 @@ function inferCareerPathway(job = {}) {
   if (/animation|animateur|atelier|loisir|jeu|lud/.test(text)) return "animation_ateliers";
   if (/petite enfance|garde d enfant|assistant maternel|creche/.test(text)) return "petite_enfance";
   if (/professeur|enseign|formateur|formation/.test(text)) return "enseignement_formation";
-  if (/educateur|social|insertion|accompagn/.test(text)) return "intervention_socioeducative";
+  if (/insertion|orientation|conseiller|accompagn/.test(text)) return "insertion_accompagnement";
+  if (/educateur|social|socio/.test(text)) return "intervention_socioeducative";
   if (/culture|document|bibli|mediat|ludothe/.test(text)) return "mediation_culture_jeu";
   if (/coord|projet|responsable|chef/.test(text)) return "coordination_projets";
   if (/informatique|web|data|logiciel|numerique/.test(text)) return "numerique_creatif";
@@ -6382,6 +6573,7 @@ function careerPathwayLabel(pathwayId) {
     intervention_socioeducative: "Voie socio-éducative",
     mediation_culture_jeu: "Voie culture / jeu",
     coordination_projets: "Voie coordination",
+    insertion_accompagnement: "Voie insertion / accompagnement",
     numerique_creatif: "Voie numérique",
     nature_sensibilisation: "Voie nature",
     hotellerie_service: "Voie service",
@@ -6777,9 +6969,10 @@ function renderSkillBrowser(profile, dataset) {
   const groups = getSkillSectorGroups(profile, dataset);
   const totalSkills = groups.reduce((sum, group) => sum + group.skills.length, 0);
   return `
-    <details class="advanced-box" open>
-      <summary>Choisir des compétences par familles</summary>
-      <p class="field-help">Étape 1 : repère une famille de gestes professionnels. Étape 2 : ouvre la famille pour cocher les compétences officielles ROME qui te ressemblent. Les secteurs déjà cochés remontent en priorité.</p>
+    ${renderSkillConceptSelector(profile)}
+    <details class="advanced-box">
+      <summary>Affiner avec les compétences officielles</summary>
+      <p class="field-help">Option avancée : les compétences officielles servent à préciser un concept déjà repéré. Vous n’avez pas besoin de lire toute la liste pour utiliser Boussole Pro.</p>
       <div class="form-grid">
         ${inputField("Rechercher une compétence", "skillBrowser.query", browser.query, "search", "Ex. enfant, écoute, nettoyage").replace('data-field="skillBrowser.query"', 'data-skill-browser="query"')}
         <label class="tag-option"><input type="checkbox" data-skill-browser="onlySelectedSectors" value="yes" ${browser.onlySelectedSectors ? "checked" : ""}><span><span class="tag-name">Afficher seulement mes secteurs</span><span class="tag-meta">Selon les domaines déjà explorés</span></span></label>
@@ -6794,6 +6987,32 @@ function renderSkillBrowser(profile, dataset) {
       ${renderSkillSectorList(profile, dataset)}
       ${textareaField("Ajouter une compétence non listée", "customSkillsText", toArray(profile.customSkills).join(", "), "Ex. accueil, tableur, bricolage, écoute")}
     </details>`;
+}
+
+function renderSkillConceptSelector(profile = App.state.profile) {
+  const startedAt = nowMs();
+  const evidence = profile.skillConceptEvidence || {};
+  const html = `
+    <div class="summary-box">
+      <h3>Compétences en langage simple</h3>
+      <p class="field-help">Choisissez d’abord de grands gestes professionnels. Les compétences officielles restent disponibles ensuite pour affiner.</p>
+      <div class="skill-sector-list">
+        ${SKILL_CONCEPTS_V071.map(([id, label, facets]) => {
+          const current = evidence[id]?.state || "unknown";
+          const shouldShowFacets = ["known", "practiced", "develop"].includes(current);
+          return `
+            <div class="summary-box">
+              <strong>${h(label)}</strong>
+              <div class="mini-grid">
+                ${SKILL_CONCEPT_STATES.map(([state, stateLabel]) => `<label class="tag-option"><input type="radio" name="skill-concept-${h(id)}" data-skill-concept="${h(id)}" value="${h(state)}" ${current === state ? "checked" : ""}><span><span class="tag-name">${h(stateLabel)}</span></span></label>`).join("")}
+              </div>
+              ${shouldShowFacets ? `<p class="field-help">À préciser ensuite : ${facets.slice(0, 8).map(h).join(", ")}.</p>` : ""}
+            </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  recordPerformanceMetric("skillConceptRenderMs", startedAt);
+  return html;
 }
 
 function renderSkillSectorList(profile = App.state.profile, dataset = App.state.dataset) {
@@ -7238,8 +7457,8 @@ function renderResults() {
         <button class="ghost-button" type="button" data-action="export-diagnostic-json">Exporter diagnostic JSON</button>
       </div>
       ${App.state.resultDiagnosticsEnabled ? renderResultsDiagnosticPanel(results) : ""}
-      ${renderComparePanel()}
-      ${renderIntentComparisonPanel(results)}
+      ${displayPolicy().showTechnicalBadges ? renderComparePanel() : ""}
+      ${displayPolicy().showIntentComparison ? renderIntentComparisonPanel(results) : ""}
     </section>
     <section class="results-section top-results-section print-section">
       <h2>Top 5 diversifié</h2>
@@ -7247,9 +7466,9 @@ function renderResults() {
       <div class="job-list">${top5.map(result => renderJobCard(result, { featured: true, showVariants: true })).join("") || emptyState("Aucun Top 5 disponible avec le profil actuel.")}</div>
     </section>
     <section class="results-section print-section">
-      <h2>Pistes principales élargies</h2>
-      <p>Ces métiers restent proches du Top 5 ou ouvrent une voie professionnelle cohérente. Les seuils sont relatifs au meilleur résultat du profil.</p>
-      <div class="job-list">${primary.map(result => renderJobCard(result)).join("") || emptyState("Aucune autre piste principale à ajouter pour l’instant.")}</div>
+      <h2>Autres voies qui méritent un regard</h2>
+      <p>Ces métiers restent proches du Top 5 ou ouvrent une voie professionnelle cohérente. Une piste principale est proposée par voie, avec ses alternatives locales.</p>
+      ${renderComplementaryPathwayGroups(primary)}
     </section>
     ${exploratory.length ? `<section class="results-section print-section"><h2>Pistes à explorer</h2><p>Ces pistes ne remplacent pas les principales, mais elles apportent une direction différente ou une hypothèse à vérifier.</p><div class="job-list">${exploratory.map(renderJobCard).join("")}</div></section>` : ""}
     ${renderExcludedJobs(excluded)}
@@ -7264,6 +7483,52 @@ function renderResults() {
       </div>
       <p class="field-help">${results.completeList.length} métiers ont été calculés en interne. L’interface n’affiche que les pistes utiles à mentionner pour éviter une liste trop large.</p>
     </section>`;
+}
+
+function renderComplementaryPathwayGroups(results = []) {
+  const groups = buildComplementaryPathwayGroups(results);
+  if (!groups.length) return emptyState("Aucune autre piste principale à ajouter pour l’instant.");
+  return `<div class="pathway-list">${groups.map(group => `
+    <div class="pathway-group">
+      <h3>${h(careerPathwayLabel(group.pathwayId))}</h3>
+      ${renderJobCard(group.main, { pathwayMain: true })}
+      ${group.alternatives.length ? `
+        <div class="pathway-alt-list" aria-label="Alternatives ${h(careerPathwayLabel(group.pathwayId))}">
+          ${group.alternatives.map(result => `<button class="tiny-button" type="button" data-action="open-job" data-job-id="${h(result.jobId)}">${h(result.title)} · ${Math.round(result.globalScore || 0)}/100</button>`).join("")}
+        </div>` : ""}
+    </div>`).join("")}</div>`;
+}
+
+function buildComplementaryPathwayGroups(results = []) {
+  const ranked = toArray(results).filter(result => result?.job).sort((a, b) => (b.globalScore || 0) - (a.globalScore || 0));
+  const groups = new Map();
+  ranked.forEach(result => {
+    const pathwayId = inferCareerPathway(result.job || result);
+    if (!groups.has(pathwayId)) groups.set(pathwayId, []);
+    groups.get(pathwayId).push(result);
+  });
+  const preferredOrder = [
+    "animation_ateliers",
+    "petite_enfance",
+    "enseignement_formation",
+    "intervention_socioeducative",
+    "mediation_culture_jeu",
+    "coordination_projets",
+    "insertion_accompagnement",
+    "numerique_creatif",
+    "nature_sensibilisation",
+    "hotellerie_service",
+    "proprete_entretien",
+    "voie_a_preciser"
+  ];
+  return [...groups.entries()]
+    .map(([pathwayId, items]) => ({ pathwayId, main: items[0], alternatives: items.slice(1, 4), bestScore: items[0]?.globalScore || 0 }))
+    .sort((a, b) => {
+      const orderA = preferredOrder.includes(a.pathwayId) ? preferredOrder.indexOf(a.pathwayId) : preferredOrder.length;
+      const orderB = preferredOrder.includes(b.pathwayId) ? preferredOrder.indexOf(b.pathwayId) : preferredOrder.length;
+      return orderA - orderB || b.bestScore - a.bestScore;
+    })
+    .slice(0, 9);
 }
 
 function renderMarketBox(market = {}, job = {}, options = {}) {
@@ -7322,7 +7587,225 @@ function renderMarketVolumeRows(job = {}) {
     </ul>`;
 }
 
+function renderMarketOneLineSummary(job = {}, result = {}) {
+  const territory = App.state.profile?.marketPreference?.territory?.selected || "DEP-11";
+  const cacheKey = `${job.id || result.jobId || job.romeCode || ""}|${territory}|${App.state.dataset?.datasetVersion || ""}`;
+  if (cacheKey && App.state.marketSummaryCache.has(cacheKey)) return App.state.marketSummaryCache.get(cacheKey);
+  const data = getJobMarketSnapshot(job, App.state.dataset, App.state.profile?.marketPreference);
+  const level = marketOpportunityLevel(data);
+  const labels = {
+    very_favorable: "Offres dans votre zone : très favorables",
+    favorable: "Offres dans votre zone : favorables",
+    moderate: "Offres dans votre zone : modérées",
+    limited: "Offres dans votre zone : limitées",
+    zero: "Offres dans votre zone : aucune offre observée",
+    unknown: "Offres locales : aucune donnée"
+  };
+  const html = `
+    <div class="market-one-line">
+      <span>${h(labels[level] || labels.unknown)}</span>
+      <button class="tiny-button" type="button" data-action="open-market" data-job-id="${h(job.id || result.jobId || "")}">Voir le marché</button>
+    </div>`;
+  if (cacheKey) App.state.marketSummaryCache.set(cacheKey, html);
+  return html;
+}
+
+function marketOpportunityLevel(data = {}) {
+  if (!data || data.sourceLevel === "none" || data.sourceLevel === "estimated") return "unknown";
+  const signal = data.territorialOfferSignal || data.absoluteOfferSignal || "unknown";
+  if (signal === "top_local" || signal === "high") return "very_favorable";
+  if (signal === "strong_local" || signal === "medium") return "favorable";
+  if (signal === "medium_local") return "moderate";
+  if (signal === "weak_local" || signal === "low") return "limited";
+  if (signal === "zero_local" || signal === "zero") return "zero";
+  const offers = Number(data.offers12m);
+  if (!Number.isFinite(offers)) return "unknown";
+  if (offers === 0) return "zero";
+  if (offers < 100) return "limited";
+  if (offers < 1000) return "moderate";
+  return "favorable";
+}
+
+function renderMarketDetailModal(job = {}, result = {}) {
+  const stats = getJobMarketStats(job, App.state.dataset);
+  const rows = [
+    ["Aude", stats.departmental],
+    ["Occitanie", stats.regional],
+    ["France", stats.national]
+  ];
+  return `
+    <h2 data-dialog-job-id="${h(job.id)}">Marché observé — ${h(job.title)}</h2>
+    <p class="field-help">Ces chiffres décrivent des volumes d’offres observés. Tension du métier : non encore disponible.</p>
+    <div class="compare-modal-grid">
+      <table class="compare-modal-table">
+        <thead><tr><th>Territoire</th><th>Volume 12 mois</th><th>Période</th><th>Position relative</th><th>Fraîcheur</th><th>Source</th><th>Limites</th></tr></thead>
+        <tbody>${rows.map(([label, item]) => `
+          <tr>
+            <td>${h(label)}</td>
+            <td>${Number.isFinite(item?.offers12m) ? h(formatNumberFr(item.offers12m)) : '<span class="missing">non disponible</span>'}</td>
+            <td>${h(item?.latestPeriodLabel || item?.latestPeriodCode || "non renseignée")}</td>
+            <td>${h(marketLabel(item?.territorialOfferSignal || item?.absoluteOfferSignal || "unknown"))}</td>
+            <td>${h(marketFreshnessLabel(item?.marketFreshness || "unknown"))}</td>
+            <td>${h(marketSourceNameLabel(item?.sourceName || item?.source || "non connectée"))}</td>
+            <td>Tension non calculée ; offres individuelles non affichées.</td>
+          </tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+}
+
+function getResultVariants(result = {}, job = result.job || findJob(result.jobId)) {
+  return toArray(App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || findRelatedVariants(job, App.state.dataset)).slice(0, 8);
+}
+
+function getAccessDisplayLabel(job = {}) {
+  const summary = job.accessSummary;
+  if (summary?.displayLabel) return summary.displayLabel;
+  if (job.requiredDiplomaLevel !== null && job.requiredDiplomaLevel !== undefined) return "Diplôme explicitement demandé";
+  if (job.recommendedDiplomaLevel !== null && job.recommendedDiplomaLevel !== undefined) return "Diplôme conseillé";
+  return "Niveau exact à vérifier";
+}
+
+function getAccessDetails(job = {}) {
+  const summary = job.accessSummary || {};
+  return {
+    label: summary.displayLabel || getAccessDisplayLabel(job),
+    citedDiplomas: toArray(summary.citedDiplomas),
+    citedCertifications: toArray(summary.citedCertifications),
+    regulated: Boolean(summary.regulated),
+    confidence: summary.confidence ?? 0
+  };
+}
+
+function getOfficialConstraintSummary(job = {}) {
+  const cacheKey = job?.id || job?.romeCode || "";
+  if (cacheKey && App.state.officialConstraintCache.has(cacheKey)) return App.state.officialConstraintCache.get(cacheKey);
+  const summary = job.officialConstraintSummary || { confirmedSignals: [], unknownDimensions: ["schedule", "physical", "mobility", "environment", "publicContact"], source: "unknown", confidence: 0 };
+  if (cacheKey) App.state.officialConstraintCache.set(cacheKey, summary);
+  return summary;
+}
+
+function getConfirmedConstraintLabels(job = {}) {
+  return toArray(getOfficialConstraintSummary(job).confirmedSignals).map(signal => signal.label).filter(Boolean);
+}
+
+function getUnknownConstraintLabel(job = {}) {
+  const unknown = toArray(getOfficialConstraintSummary(job).unknownDimensions);
+  return unknown.length ? "Le niveau exact et certaines contraintes restent à vérifier." : "";
+}
+
+function getHumanContextLabels(job = {}) {
+  return unique([...toArray(job.romeWorkContextLabels), ...toArray(job.workContexts).map(id => getContextLabel(id))])
+    .filter(label => label && label !== "unknown");
+}
+
+function getJobSkillConceptLabels(job = {}, result = {}) {
+  const cacheKey = job?.id || result?.jobId || "";
+  if (cacheKey && App.state.skillConceptCache.has(cacheKey)) return App.state.skillConceptCache.get(cacheKey);
+  const labels = unique([
+    ...take(toArray(result.scoreDetails?.skills?.matchedRequiredSkills), 8).map(id => resolveSkillDisplay(id).label),
+    ...take(toArray(job.skillGroups), 5).map(group => group.label || group.id),
+    ...take(toArray(job.requiredSkills), 5).map(id => resolveSkillDisplay(id).label)
+  ]).filter(label => label && !/^skill-rome-/.test(label));
+  if (cacheKey) App.state.skillConceptCache.set(cacheKey, labels);
+  return labels;
+}
+
+function humanEvidenceText(value) {
+  return String(value || "")
+    .replace(/\bunknown\b/gi, "à vérifier")
+    .replace(/\bmedium\b/gi, "à vérifier")
+    .replace(/\blow\b/gi, "faible")
+    .replace(/\bhigh\b/gi, "élevé")
+    .replace(/computed_low_confidence/gi, "estimation à vérifier");
+}
+
+function shortHumanText(value) {
+  const text = humanEvidenceText(value);
+  return text.length > 95 ? `${text.slice(0, 92)}...` : text;
+}
+
 function renderJobCard(result, options = {}) {
+  const startedAt = nowMs();
+  const mode = App.state.displayMode || "essential";
+  const html = mode === "diagnostic"
+    ? renderDiagnosticJobCard(result, options)
+    : mode === "detailed"
+      ? renderDetailedJobCard(result, options)
+      : renderEssentialJobCard(result, options);
+  recordPerformanceMetric("resultCardRenderMs", startedAt);
+  return html;
+}
+
+function renderEssentialJobCard(result, options = {}) {
+  const job = result.job || findJob(result.jobId);
+  const variants = getResultVariants(result, job);
+  const vigilances = result.status === "excluded_for_now" ? result.exclusionReasons.map(item => item.message) : result.negativeReasons;
+  const isCompared = App.state.compareIds.includes(result.jobId);
+  const isFavorite = isFavoriteJob(result.jobId);
+  const displayedScore = result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : result.globalScore;
+  const mainReason = result.resultInterpretation?.mainReason || take(result.positiveReasons, 1)[0] || "Piste possible à vérifier avec le terrain.";
+  return `
+    <article class="job-card is-essential ${options.featured ? "featured" : ""} ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
+      <div class="job-head">
+        <div>
+          <h3 class="job-title">${h(result.title)}</h3>
+          <p>${h(mainReason)}</p>
+        </div>
+        <div class="score-pill"><span>${Math.round(displayedScore)}</span><small>/100</small></div>
+      </div>
+      ${take(vigilances, 2).length ? `<div><strong>À vérifier :</strong><ul class="essential-vigilance-list">${take(vigilances, 2).map(item => `<li>${h(shortHumanText(item))}</li>`).join("")}</ul></div>` : ""}
+      ${renderMarketOneLineSummary(job, result)}
+      <div class="button-row no-print">
+        <button class="tiny-button" type="button" data-result-action="details">Fiche</button>
+        <button class="tiny-button" type="button" data-result-action="why">Pourquoi</button>
+        <button class="tiny-button" type="button" data-result-action="variants">${variants.length ? `${variants.length} variantes` : "Variantes"}</button>
+        <button class="tiny-button ${isFavorite ? "is-active" : ""}" type="button" data-result-action="favorite" aria-pressed="${isFavorite ? "true" : "false"}">${isFavorite ? "Favori ajouté" : "Favori"}</button>
+        <button class="tiny-button ${isCompared ? "is-active" : ""}" type="button" data-result-action="compare" aria-pressed="${isCompared ? "true" : "false"}">${isCompared ? "Comparé" : "Comparer"}</button>
+      </div>
+    </article>`;
+}
+
+function renderDetailedJobCard(result, options = {}) {
+  const job = result.job || findJob(result.jobId);
+  const variants = getResultVariants(result, job);
+  const vigilances = result.status === "excluded_for_now" ? result.exclusionReasons.map(item => item.message) : result.negativeReasons;
+  const isCompared = App.state.compareIds.includes(result.jobId);
+  const isFavorite = isFavoriteJob(result.jobId);
+  const displayedScore = result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : result.globalScore;
+  return `
+    <article class="job-card ${options.featured ? "featured" : ""} ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
+      <div class="job-head">
+        <div>
+          <h3 class="job-title">${h(result.title)}</h3>
+          <p class="job-subtitle">${h(job?.domain || "Domaine à vérifier")} · ${h(careerPathwayLabel(inferCareerPathway(job || result)))}</p>
+          <div class="badge-row">
+            <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
+            <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
+            <span class="badge outline">${h(getAccessDisplayLabel(job))}</span>
+          </div>
+        </div>
+        <div class="score-pill"><span>${Math.round(displayedScore)}</span><small>/100</small></div>
+      </div>
+      <div class="reason-grid">
+        <div class="reason-box"><h4>Points forts</h4><ul>${take(result.positiveReasons, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier.</li>"}</ul></div>
+        <div class="reason-box"><h4>À vérifier</h4><ul>${take(vigilances, 3).map(item => `<li>${h(humanEvidenceText(item))}</li>`).join("") || "<li>Aucune vigilance majeure.</li>"}</ul></div>
+      </div>
+      <p class="field-help"><strong>Compétences :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 5).map(h).join(", ") || "concepts à préciser"}.</p>
+      <p class="field-help"><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 4).map(h).join(", ") || "contextes officiels à vérifier"}.</p>
+      ${renderMarketOneLineSummary(job, result)}
+      ${variants.length ? `<p class="field-help">${variants.length} variante(s) proche(s) disponible(s).</p>` : ""}
+      <div class="button-row no-print">
+        <button class="tiny-button" type="button" data-result-action="details">Fiche</button>
+        <button class="tiny-button" type="button" data-result-action="why">Pourquoi</button>
+        <button class="tiny-button" type="button" data-action="open-market" data-job-id="${h(result.jobId)}">Voir le marché</button>
+        <button class="tiny-button" type="button" data-result-action="variants">Variantes</button>
+        <button class="tiny-button ${isFavorite ? "is-active" : ""}" type="button" data-result-action="favorite" aria-pressed="${isFavorite ? "true" : "false"}">${isFavorite ? "Retirer favori" : "Favori"}</button>
+        <button class="tiny-button ${isCompared ? "is-active" : ""}" type="button" data-result-action="compare" aria-pressed="${isCompared ? "true" : "false"}">${isCompared ? "Retirer du comparatif" : "Comparer"}</button>
+      </div>
+    </article>`;
+}
+
+function renderDiagnosticJobCard(result, options = {}) {
   const job = result.job || findJob(result.jobId);
   const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
   const vigilances = result.status === "excluded_for_now" ? result.exclusionReasons.map(item => item.message) : result.negativeReasons;
@@ -7379,6 +7862,8 @@ function renderJobCard(result, options = {}) {
 }
 
 function renderJobDetailsPanelContent(result = {}) {
+  if (App.state.displayMode === "essential") return renderEssentialJobDetails(result);
+  if (App.state.displayMode === "detailed") return renderDetailedJobDetails(result);
   const job = result.job || findJob(result.jobId);
   const variants = (App.state.results?.variantsByJob?.[result.jobId] || result.relatedVariants || []).slice(0, 4);
   const appellations = getJobAppellations(job).map(item => item.label);
@@ -7393,6 +7878,81 @@ function renderJobDetailsPanelContent(result = {}) {
     ${renderEvidenceSummary(result.evidenceSummary)}
     ${renderScoreDetails(result.scoreDetails)}
     ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
+}
+
+function renderEssentialJobDetails(result = {}) {
+  const job = result.job || findJob(result.jobId);
+  const variants = getResultVariants(result, job).slice(0, 6);
+  const constraints = getConfirmedConstraintLabels(job);
+  const unknownLabel = getUnknownConstraintLabel(job);
+  return `
+    <div data-dialog-job-id="${h(result.jobId)}">
+      <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
+      <p><strong>Conditions d’accès :</strong> ${h(getAccessDisplayLabel(job))}</p>
+      <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 6).map(h).join(", ") || "à préciser avec votre profil."}</p>
+      <p><strong>Contextes principaux :</strong> ${getHumanContextLabels(job).slice(0, 5).map(h).join(", ") || "contextes à vérifier."}</p>
+      <p><strong>Contraintes confirmées :</strong> ${constraints.slice(0, 5).map(h).join(", ") || "aucune contrainte officielle confirmée dans le corpus."}</p>
+      ${unknownLabel ? `<p class="field-help">${h(unknownLabel)}</p>` : ""}
+      ${renderMarketOneLineSummary(job, result)}
+      <p><strong>Variantes :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante proche dans ce corpus."}</p>
+      <details><summary>Pourquoi ce métier ?</summary>${renderEssentialWhyBlock(result)}</details>
+      <details><summary>Toutes les compétences</summary><p>${renderAllJobSkillsText(job)}</p></details>
+      <details><summary>Toutes les appellations</summary><p>${getJobAppellations(job).map(item => h(item.label)).join(", ") || "Non renseignées."}</p></details>
+      <details><summary>Marché détaillé</summary>${renderMarketBox(result.scoreDetails?.market, job)}</details>
+      <details><summary>Données techniques</summary><p class="field-help">Passez en mode Diagnostic pour afficher les données internes complètes.</p></details>
+      <details><summary>Sources</summary><p>${renderJobSourcesText(job)}</p></details>
+    </div>`;
+}
+
+function renderDetailedJobDetails(result = {}) {
+  const job = result.job || findJob(result.jobId);
+  const access = getAccessDetails(job);
+  const variants = getResultVariants(result, job).slice(0, 8);
+  return `
+    <div data-dialog-job-id="${h(result.jobId)}">
+      <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
+      <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
+      <p><strong>Conditions d’accès :</strong> ${h(access.label)}${access.citedDiplomas.length ? ` · diplômes cités : ${access.citedDiplomas.map(h).join(", ")}` : ""}${access.citedCertifications.length ? ` · certifications : ${access.citedCertifications.map(h).join(", ")}` : ""}</p>
+      <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 10).map(h).join(", ") || "à préciser."}</p>
+      <p><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 10).map(h).join(", ") || "contextes à vérifier."}</p>
+      <p><strong>Contraintes confirmées :</strong> ${getConfirmedConstraintLabels(job).slice(0, 8).map(h).join(", ") || "aucune contrainte officielle confirmée."}</p>
+      ${getUnknownConstraintLabel(job) ? `<p class="field-help">${h(getUnknownConstraintLabel(job))}</p>` : ""}
+      ${renderMarketBox(result.scoreDetails?.market, job)}
+      <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
+      ${renderEvidenceSummary(result.evidenceSummary)}
+      ${renderScoreDetails(result.scoreDetails)}
+      <details><summary>Toutes les compétences</summary><p>${renderAllJobSkillsText(job)}</p></details>
+      <details><summary>Toutes les appellations</summary><p>${getJobAppellations(job).map(item => h(item.label)).join(", ") || "Non renseignées."}</p></details>
+      <details><summary>Sources</summary><p>${renderJobSourcesText(job)}</p></details>
+      <details><summary>Données techniques</summary>${renderResultDiagnostic(result)}</details>
+    </div>`;
+}
+
+function renderEssentialWhyBlock(result = {}) {
+  const positives = take(result.positiveReasons, 4).map(humanEvidenceText);
+  const vigilances = take(result.negativeReasons, 3).map(humanEvidenceText);
+  return `
+    <h3>Pourquoi ce métier ressort</h3>
+    <ul class="compact-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>
+    <h3>Ce qui peut limiter le classement</h3>
+    <ul class="compact-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans le corpus actuel.</li>"}</ul>`;
+}
+
+function renderAllJobSkillsText(job = {}) {
+  const labels = unique([
+    ...toArray(job.romeSkillLabels),
+    ...toArray(job.requiredSkills).map(id => resolveSkillDisplay(id).label),
+    ...toArray(job.optionalSkills).map(id => resolveSkillDisplay(id).label),
+    ...toArray(job.softSkills).map(id => resolveSkillDisplay(id).label),
+    ...toArray(job.knowledge).map(id => resolveSkillDisplay(id).label)
+  ]).filter(label => label && !/^skill-rome-/.test(label));
+  return labels.slice(0, 80).map(h).join(", ") || "Compétences officielles non reliées ou non disponibles dans ce corpus.";
+}
+
+function renderJobSourcesText(job = {}) {
+  const refs = toArray(job.sourceRefs).map(ref => ref.label || ref.source || ref.id || ref.url || "").filter(Boolean);
+  if (job.provenance === "generated_rome") refs.unshift("France Travail ROME, via fichiers générés localement/GitHub Actions");
+  return unique(refs).slice(0, 12).map(h).join(", ") || "Source non renseignée dans le corpus actif.";
 }
 
 function renderLinkedJobBadge(item = {}) {
@@ -7642,6 +8202,17 @@ function facetOptionsWithCounts(rows = [], allOption = ["all", "Tous"], currentV
   return [allOption, ...options];
 }
 
+function buildAccessDiplomaFacetRows(dataset = App.state.dataset) {
+  const jobs = toArray(dataset?.jobs);
+  const rows = [
+    ["access_no_diploma", "Accès possible sans diplôme", job => job.accessSummary?.noDiplomaPossible],
+    ["access_cap_bac", "CAP, Bac ou équivalent cité", job => ["cap_or_equivalent", "bac", "mixed_or_multiple_routes"].includes(job.accessSummary?.accessLevelCategory)],
+    ["access_higher", "Études supérieures citées", job => ["bac_plus_2", "bac_plus_3", "bac_plus_5"].includes(job.accessSummary?.accessLevelCategory)],
+    ["access_unknown", "Accès à vérifier", job => !job.accessSummary || job.accessSummary.accessLevelCategory === "unknown"]
+  ];
+  return rows.map(([value, label, matcher]) => ({ value, label, resultCount: jobs.filter(matcher).length, unknownDataCount: jobs.filter(job => !job.accessSummary || job.accessSummary.accessLevelCategory === "unknown").length }));
+}
+
 function explorationConstraintIsKnown(job, filter) {
   if (filter === "low_physical") return Boolean(job.physicalConstraints?.level && job.physicalConstraints.level !== "unknown");
   if (filter === "no_night") return Boolean(job.scheduleConstraints?.nightWork && job.scheduleConstraints.nightWork !== "unknown");
@@ -7656,7 +8227,9 @@ function renderExplorationPage() {
   const facetAudit = buildExplorationFacetAudit(App.state.dataset);
   const jobs = getFilteredExplorationJobs();
   const domainOptions = facetOptionsWithCounts(facetAudit.domains, ["all", `Tous les domaines (${toArray(App.state.dataset?.jobs).length})`], filters.domain);
-  const diplomaOptions = facetOptionsWithCounts(facetAudit.diplomas, ["all", "Tous niveaux"], filters.diplomaLevel);
+  const diplomaOptions = App.state.displayMode === "essential"
+    ? facetOptionsWithCounts(buildAccessDiplomaFacetRows(App.state.dataset), ["all", "Tous accès"], filters.diplomaLevel)
+    : facetOptionsWithCounts(facetAudit.diplomas, ["all", "Tous niveaux"], filters.diplomaLevel);
   const constraintOptions = facetOptionsWithCounts(facetAudit.constraints, ["all", "Toutes contraintes"], filters.constraint);
   const contextOptions = facetOptionsWithCounts(facetAudit.contexts, ["all", "Tous contextes"], filters.context);
   const marketOptions = facetOptionsWithCounts(facetAudit.market, ["all", "Tous marchés"], filters.market);
@@ -7763,6 +8336,7 @@ function renderExplorationJobCard(job) {
       ${renderMarketBox(market, job, { compact: true })}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-explore-action="details" data-job-id="${h(job.id)}">Fiche</button>
+        <button class="tiny-button" type="button" data-explore-action="variants" data-job-id="${h(job.id)}">Variantes</button>
         <button class="tiny-button ${isFavorite ? "is-active" : ""}" type="button" data-explore-action="favorite" data-job-id="${h(job.id)}">${isFavorite ? "Retirer favori" : "Favori"}</button>
         <button class="tiny-button" type="button" data-explore-action="compare" data-job-id="${h(job.id)}">Comparer</button>
       </div>
@@ -7789,6 +8363,10 @@ function explorationHaystack(job) {
 
 function explorationDiplomaMatches(job, filter) {
   if (filter === "all") return true;
+  if (filter === "access_no_diploma") return Boolean(job.accessSummary?.noDiplomaPossible);
+  if (filter === "access_cap_bac") return ["cap_or_equivalent", "bac", "mixed_or_multiple_routes"].includes(job.accessSummary?.accessLevelCategory);
+  if (filter === "access_higher") return ["bac_plus_2", "bac_plus_3", "bac_plus_5"].includes(job.accessSummary?.accessLevelCategory);
+  if (filter === "access_unknown") return !job.accessSummary || job.accessSummary.accessLevelCategory === "unknown";
   const level = numberOrNull(job.requiredDiplomaLevel ?? job.recommendedDiplomaLevel);
   if (filter === "unknown") return level === null;
   if (level === null) return false;
@@ -7827,14 +8405,26 @@ function explorationContextMatches(job, filter) {
 }
 
 function buildExplorationContextOptions() {
-  const base = [["all", "Tous contextes"], ["office", "Bureau"], ["quiet", "Calme"], ["outdoor", "Extérieur"], ["home", "Domicile"], ["children", "Enfants"], ["animals", "Animaux"], ["hospitality", "Hôtellerie"], ["team", "Équipe"], ["remote", "Télétravail"]];
+  const base = [["all", "Tous contextes"], ["office", "Lieux · Bureau"], ["quiet", "Environnement physique · Calme"], ["outdoor", "Lieux · Extérieur"], ["home", "Lieux · Domicile"], ["children", "Publics · Enfants"], ["animals", "Publics · Animaux"], ["hospitality", "Structures · Hôtellerie"], ["team", "Organisation du travail · Équipe"], ["remote", "Organisation du travail · Télétravail"]];
   const baseContextIds = new Set(["ctx-office", "ctx-quiet", "ctx-outdoor", "ctx-home-care", "ctx-children", "ctx-animal", "ctx-team", "ctx-remote"]);
   const extra = toArray(App.state.dataset?.workContexts)
     .filter(context => context?.id && !baseContextIds.has(context.id))
     .filter(context => toArray(App.state.dataset?.jobs).some(job => toArray(job.workContexts).includes(context.id)))
     .slice(0, 14)
-    .map(context => [`ctx:${context.id}`, context.label || context.id]);
+    .map(context => [`ctx:${context.id}`, `${contextCategoryLabel(context.label || context.id)} · ${context.label || context.id}`]);
   return [...base, ...extra];
+}
+
+function contextCategoryLabel(label = "") {
+  const text = normalizeText(label);
+  if (/contact|public|patient|enfant|eleve|client|usager|animal/.test(text)) return "Publics";
+  if (/exterieur|chantier|domicile|bureau|atelier|commerce|restaurant|site/.test(text)) return "Lieux";
+  if (/nuit|week-end|ferie|horaire|journee|decale|fractionne|astreinte/.test(text)) return "Horaires et rythmes";
+  if (/deplacement|mobilite|conduite|vehicule|route/.test(text)) return "Déplacements";
+  if (/charge|debout|bruit|humide|temperature|hauteur|poussiere|physique/.test(text)) return "Environnement physique";
+  if (/entreprise|association|collectivite|public|prive|secteur|media|etablissement/.test(text)) return "Structures";
+  if (/risque|dangereux|protection|epi|chute|securite|toxique/.test(text)) return "Risques et protections";
+  return "Organisation du travail";
 }
 
 function explorationMarketMatches(job, filter) {
@@ -7944,37 +8534,46 @@ function openExplorationJobDialog(jobId) {
   const startedAt = nowMs();
   const job = findJob(jobId);
   if (!job) return;
-  const result = findResult(jobId);
-  const trainings = findSuggestedTrainings(job, App.state.dataset);
-  const variants = findRelatedVariants(job, App.state.dataset);
+  const result = findResult(jobId) || createExplorationResultShell(job);
   App.dom.jobDialogContent.innerHTML = `
-    <h2>${h(job.title)}</h2>
-    <p><strong>Code :</strong> ${h(getJobCodeLabel(job))} · <strong>Domaine :</strong> ${h(job.domain)} · <strong>Famille :</strong> ${h(job.family)}</p>
-    <p>${h(job.description || "Information officielle non encore disponible dans le corpus.")}</p>
-    <h3>Appellations</h3>
-    <p>${take(job.appellations, 8).map(h).join(", ") || "Non renseignées."}</p>
-    <h3>Compétences et contextes</h3>
-    <ul class="data-list">
-      <li><strong>Compétences principales :</strong> ${take(job.requiredSkills, 8).map(id => h(getSkillLabel(id))).join(", ") || "Non reliées."}</li>
-      <li><strong>Savoir-être / options :</strong> ${take([...toArray(job.softSkills), ...toArray(job.optionalSkills)], 8).map(id => h(getSkillLabel(id))).join(", ") || "Non renseignés."}</li>
-      <li><strong>Contextes :</strong> ${take(job.workContexts, 8).map(id => h(getContextLabel(id))).join(", ") || "Non renseignés."}</li>
-    </ul>
-    <h3>Accès et contraintes</h3>
-    <ul class="data-list">
-      <li>Niveau conseillé : ${h(getDiplomaLabel(job.recommendedDiplomaLevel || job.requiredDiplomaLevel || 0))}</li>
-      <li>Contraintes physiques : ${h(job.physicalConstraints?.level || "unknown")}</li>
-      <li>Horaires : nuit ${h(job.scheduleConstraints?.nightWork || "unknown")}, week-end ${h(job.scheduleConstraints?.weekendWork || "unknown")}</li>
-      <li>Mobilité : ${h(job.mobilityConstraints?.travelFrequency || "unknown")}${job.mobilityConstraints?.driverLicenseRequired ? ", permis demandé" : ""}</li>
-    </ul>
-    <h3>Compatibilité profil</h3>
-    ${result ? `<ul class="data-list"><li>Score : ${Math.round(result.globalScore)}/100 · Confiance : ${Math.round(result.confidenceScore)}%</li><li>${h(result.positiveReasons[0] || "Piste à vérifier.")}</li><li>${h(result.negativeReasons[0] || "Aucune vigilance majeure.")}</li></ul>` : `<p>Pas encore calculé : lancez les résultats pour obtenir une lecture profil.</p>`}
-    ${renderMarketBox(result?.scoreDetails?.market || getJobMarketSnapshot(job, App.state.dataset, { territory: App.state.explorationFilters.territory }), job)}
-    <h3>Formations et variantes</h3>
-    <p>${trainings.map(item => h(item.title)).join(", ") || "Pistes de formation non reliées ou à vérifier."}</p>
-    <p><strong>Métiers proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
-    <p class="field-help">Certaines informations peuvent être estimées ou partiellement reliées aux référentiels officiels. Vérifiez les sources avant décision.</p>`;
+    <h2 data-dialog-job-id="${h(job.id)}">${h(job.title)}</h2>
+    ${renderJobDetailsPanelContent(result)}`;
   recordPerformanceMetric("jobModalOpenMs", startedAt);
   if (typeof App.dom.jobDialog.showModal === "function") App.dom.jobDialog.showModal();
+}
+
+function openExplorationVariantsDialog(jobId) {
+  const job = findJob(jobId);
+  if (!job) return;
+  const result = findResult(jobId) || createExplorationResultShell(job);
+  const variants = getResultVariants(result, job);
+  App.dom.jobDialogContent.innerHTML = `
+    <h2 data-dialog-job-id="${h(job.id)}">Variantes proches — ${h(job.title)}</h2>
+    <ul class="data-list">${variants.map(item => {
+      const targetId = item.jobId || item.id || item.romeCode || "";
+      return `<li><button class="link-button" type="button" data-action="open-job" data-job-id="${h(targetId)}">${h(item.title || item.label || "Métier proche")}</button>${item.romeCode ? ` · ${h(item.romeCode)}` : ""}</li>`;
+    }).join("") || "<li>Aucune variante proche dans ce corpus.</li>"}</ul>`;
+  if (typeof App.dom.jobDialog.showModal === "function") App.dom.jobDialog.showModal();
+}
+
+function createExplorationResultShell(job = {}) {
+  return {
+    jobId: job.id,
+    canonicalJobId: job.canonicalId,
+    romeCode: job.romeCode,
+    title: job.title,
+    job,
+    globalScore: 0,
+    confidenceScore: 0,
+    status: "explore_with_caution",
+    scores: {},
+    positiveReasons: ["Lancez les résultats pour obtenir une lecture liée au profil."],
+    negativeReasons: ["Les informations exactes restent à vérifier selon le poste."],
+    missingData: [],
+    relatedVariants: findRelatedVariants(job, App.state.dataset),
+    scoreDetails: { market: getJobMarketSnapshot(job, App.state.dataset, { territory: App.state.explorationFilters.territory }), skills: {} },
+    evidenceSummary: {}
+  };
 }
 
 function renderSettingsPage() {
@@ -7996,6 +8595,7 @@ function renderSettingsPage() {
       <h2>Préférences du moteur</h2>
       <p>Les pondérations restent locales et servent seulement au classement explicable. L’intention propose une base automatique ; les curseurs permettent ensuite de personnaliser.</p>
       <div class="form-grid">
+        ${selectField("Niveau d’information", "displayMode", App.state.displayMode || "essential", [["essential", "Essentiel"], ["detailed", "Détaillé"], ["diagnostic", "Diagnostic"]]).replace('data-field="displayMode"', 'data-display-mode')}
         ${selectField("Intention de recherche", "engineIntent", App.state.profile.engineIntent || "balanced", Object.entries(ENGINE_INTENTS))}
         ${selectField("Territoire d’analyse", "marketPreference.territory.selected", App.state.profile.marketPreference?.territory?.selected || "DEP-11", TERRITORIES.map(item => [item.id, item.label]))}
         ${selectField("Importance du marché", "marketPreference.priority", App.state.profile.marketPreference?.priority || "medium", [["low", "Peu important"], ["medium", "Équilibré"], ["high", "Priorité forte : je cherche une voie qui recrute"]])}
@@ -8828,6 +9428,10 @@ async function loadGeneratedRomeDataset(options = {}) {
     jobAppellations: "job-appellations.rome.json",
     mappings: "mappings.rome.json",
     qualityReport: "data-quality-report.rome.json",
+    accessSummary: "access-summary.rome500.json",
+    accessSummaryQualityReport: "access-summary-quality-report.json",
+    officialConstraintSummary: "official-constraint-summary.rome500.json",
+    skillConceptImpactReport: "skill-concept-impact-report.json",
     trainings: "formations.onisep.json",
     certifications: "certifications.certifinfo.json",
     mappingsRomeFormations: "mappings-rome-formations.json",
@@ -9007,6 +9611,10 @@ function createEmptyGeneratedDatasetBase() {
     workContexts: [],
     jobAppellations: [],
     mappings: [],
+    accessSummary: [],
+    accessSummaryQualityReport: null,
+    officialConstraintSummary: [],
+    skillConceptImpactReport: null,
     trainings: [],
     certifications: [],
     diplomaLevels: createGenericDiplomaLevels(),
@@ -9033,7 +9641,8 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   const importedAt = new Date().toISOString();
   const generatedSkills = Array.isArray(compactGenerated.skills) ? compactGenerated.skills.map(normalizeSkill) : [];
   const looksLikeLegacyRawSkillDump = generatedSkills.length > 5000 && !generatedSkills.some(skill => skill.classification || skill.matchingUse || skill.matchingScope);
-  const generatedJobs = Array.isArray(compactGenerated.jobs) && compactGenerated.jobs.length ? compactGenerated.jobs.map(normalizeJob) : base.jobs;
+  const generatedJobRows = attachGeneratedJobSummaries(compactGenerated.jobs, compactGenerated);
+  const generatedJobs = Array.isArray(generatedJobRows) && generatedJobRows.length ? generatedJobRows.map(normalizeJob) : base.jobs;
   const jobsWithGeneratedMarket = applyGeneratedMarketStatsToJobs(generatedJobs, compactGenerated);
   const collectionPatch = options.replace
     ? replaceDatasetCollections(base, compactGenerated, { generatedSkills, looksLikeLegacyRawSkillDump, jobsWithGeneratedMarket })
@@ -9083,6 +9692,8 @@ function compactGeneratedDatasetForBrowser(generated = {}) {
     skills: toArray(generated.skills).filter(keepSkill),
     skillsEngine: toArray(generated.skillsEngine).filter(item => referencedSkillIds.has(item.id)),
     knowledge: toArray(generated.knowledge).filter(item => referencedKnowledgeIds.has(item.id)),
+    accessSummary: toArray(generated.accessSummary).filter(item => item?.romeCode && activeRomeCodes.has(item.romeCode)),
+    officialConstraintSummary: toArray(generated.officialConstraintSummary).filter(item => item?.romeCode && activeRomeCodes.has(item.romeCode)),
     certificationLike: referencedCertificationIds.size
       ? toArray(generated.certificationLike).filter(item => referencedCertificationIds.has(item.id))
       : [],
@@ -9125,6 +9736,18 @@ function compactMarketRowForActiveCorpus(row = {}) {
   };
 }
 
+function attachGeneratedJobSummaries(jobs = [], generated = {}) {
+  const accessByCode = new Map(toArray(generated.accessSummary).map(row => [row.romeCode || extractRomeCode(row.jobId), row]));
+  const accessById = new Map(toArray(generated.accessSummary).map(row => [row.jobId, row]));
+  const constraintsByCode = new Map(toArray(generated.officialConstraintSummary).map(row => [row.romeCode || extractRomeCode(row.jobId), row]));
+  const constraintsById = new Map(toArray(generated.officialConstraintSummary).map(row => [row.jobId, row]));
+  return toArray(jobs).map(job => ({
+    ...job,
+    accessSummary: job.accessSummary || accessById.get(job.id) || accessByCode.get(job.romeCode) || null,
+    officialConstraintSummary: job.officialConstraintSummary || constraintsById.get(job.id) || constraintsByCode.get(job.romeCode) || null
+  }));
+}
+
 function replaceDatasetCollections(base, generated, prepared = {}) {
   const generatedSkills = prepared.generatedSkills || [];
   const skills = generatedSkills.length && !prepared.looksLikeLegacyRawSkillDump ? generatedSkills : [];
@@ -9139,6 +9762,10 @@ function replaceDatasetCollections(base, generated, prepared = {}) {
     workContexts: Array.isArray(generated.workContexts) ? generated.workContexts : [],
     jobAppellations: Array.isArray(generated.jobAppellations) ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : [],
     mappings: Array.isArray(generated.mappings) ? generated.mappings.map(normalizeGeneratedMappingIds) : [],
+    accessSummary: Array.isArray(generated.accessSummary) ? generated.accessSummary : [],
+    accessSummaryQualityReport: generated.accessSummaryQualityReport || null,
+    officialConstraintSummary: Array.isArray(generated.officialConstraintSummary) ? generated.officialConstraintSummary : [],
+    skillConceptImpactReport: generated.skillConceptImpactReport || null,
     trainings: Array.isArray(generated.trainings) ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : [],
     certifications: Array.isArray(generated.certifications) ? generated.certifications : [],
     diplomaLevels: Array.isArray(generated.diplomaLevels) && generated.diplomaLevels.length ? generated.diplomaLevels : base.diplomaLevels,
@@ -9164,6 +9791,10 @@ function mergeDatasetCollections(base, generated, prepared = {}) {
     workContexts: Array.isArray(generated.workContexts) ? generated.workContexts : base.workContexts,
     jobAppellations: Array.isArray(generated.jobAppellations) ? generated.jobAppellations.map(normalizeGeneratedAppellationIds) : base.jobAppellations,
     mappings: Array.isArray(generated.mappings) ? generated.mappings.map(normalizeGeneratedMappingIds) : base.mappings,
+    accessSummary: Array.isArray(generated.accessSummary) ? generated.accessSummary : toArray(base.accessSummary),
+    accessSummaryQualityReport: generated.accessSummaryQualityReport || base.accessSummaryQualityReport || null,
+    officialConstraintSummary: Array.isArray(generated.officialConstraintSummary) ? generated.officialConstraintSummary : toArray(base.officialConstraintSummary),
+    skillConceptImpactReport: generated.skillConceptImpactReport || base.skillConceptImpactReport || null,
     trainings: Array.isArray(generated.trainings) && generated.trainings.length ? generated.trainings.map(normalizeTraining).map(normalizeGeneratedTargetJobIds) : base.trainings,
     certifications: Array.isArray(generated.certifications) && generated.certifications.length ? generated.certifications : base.certifications,
     diplomaLevels: Array.isArray(generated.diplomaLevels) && generated.diplomaLevels.length ? generated.diplomaLevels : base.diplomaLevels,
@@ -10093,6 +10724,7 @@ function bindGlobalEvents() {
   App.dom.stepContainer.addEventListener("click", handleActionClick);
   App.dom.resultsContainer.addEventListener("click", handleActionClick);
   App.dom.jobDialogContent?.addEventListener("click", handleActionClick);
+  App.dom.floatingCompare?.addEventListener("click", handleActionClick);
 }
 
 function navigateToMainView(view) {
@@ -10123,10 +10755,7 @@ function handleProfileInput(event) {
     return;
   }
   if (target.dataset.displayMode !== undefined) {
-    App.state.displayMode = ["essential", "detailed", "diagnostic"].includes(target.value) ? target.value : "essential";
-    App.state.resultDiagnosticsEnabled = App.state.displayMode === "diagnostic";
-    saveSettings({ displayMode: App.state.displayMode });
-    renderResults();
+    setDisplayMode(target.value);
     return;
   }
   if (target.dataset.explorationFilter !== undefined) {
@@ -10138,6 +10767,12 @@ function handleProfileInput(event) {
   if (target.dataset.skillBrowser !== undefined) {
     updateSkillBrowser(target);
     renderSkillSectorListInPlace();
+    return;
+  }
+  if (target.dataset.skillConcept !== undefined) {
+    updateSkillConceptEvidence(target);
+    scheduleSaveAndMatch();
+    App.dom.stepContainer.innerHTML = renderStep();
     return;
   }
   if (target.dataset.intentComparison !== undefined) {
@@ -10187,6 +10822,12 @@ function handleActionClick(event) {
     openJobById(target.dataset.jobId || target.closest("[data-job-id]")?.dataset.jobId);
     return;
   }
+  if (action === "open-market") {
+    const jobId = target.dataset.jobId || target.closest("[data-job-id]")?.dataset.jobId;
+    const job = findJobByAnyId(jobId);
+    if (job) openJobDialog(findResult(job.id) || createExplorationResultShell(job), "market");
+    return;
+  }
   if (action === "launch-results") {
     showLoading("Calcul des pistes", "Le moteur ClairMétier compare le profil au corpus local. Merci de patienter.");
     deferWork(() => {
@@ -10232,10 +10873,7 @@ function handleActionClick(event) {
     showToast("Les curseurs sont maintenant en réglage manuel.");
   }
   if (action === "toggle-result-diagnostics") {
-    App.state.resultDiagnosticsEnabled = !App.state.resultDiagnosticsEnabled;
-    App.state.displayMode = App.state.resultDiagnosticsEnabled ? "diagnostic" : "detailed";
-    saveSettings({ displayMode: App.state.displayMode });
-    renderResults();
+    setDisplayMode(App.state.resultDiagnosticsEnabled ? "detailed" : "diagnostic");
     return;
   }
   if (action === "reset-profile") resetProfile();
@@ -10252,6 +10890,17 @@ function handleActionClick(event) {
   if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
   if (action === "export-browser-performance") downloadFile(`rome500-browser-performance-report-${dateStamp()}.json`, JSON.stringify(createBrowserPerformanceReport(), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
+  if (action === "compare-open") {
+    openCompareModal();
+    return;
+  }
+  if (action === "compare-clear") {
+    App.state.compareIds = [];
+    updateFloatingCompareButton();
+    updateCompareSelectionUi();
+    showToast("Comparateur vidé.");
+    return;
+  }
   if (action === "skills-expand-all") {
     App.state.skillBrowser.openAll = true;
     renderSkillSectorListInPlace();
@@ -10287,15 +10936,17 @@ function handleActionClick(event) {
   if (action === "print") window.print();
   if (action === "remove-compare") {
     App.state.compareIds = App.state.compareIds.filter(id => id !== target.dataset.jobId);
-    renderResults();
+    updateFloatingCompareButton();
+    updateCompareSelectionUi(target.dataset.jobId);
     showToast("Métier retiré du comparatif.");
-    document.querySelector("[data-compare-panel]")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    if (App.dom.jobDialog?.open) openCompareModal();
   }
 
   const exploreAction = target.dataset.exploreAction;
   if (exploreAction) {
     const jobId = target.dataset.jobId || target.closest("[data-job-id]")?.dataset.jobId;
     if (exploreAction === "details") openExplorationJobDialog(jobId);
+    if (exploreAction === "variants") openExplorationVariantsDialog(jobId);
     if (exploreAction === "favorite") toggleFavoriteJob(jobId, findResult(jobId));
     if (exploreAction === "compare") addToCompare(jobId);
     return;
@@ -10312,6 +10963,7 @@ function handleActionClick(event) {
   }
   if (resultAction === "variants") openJobDialog(result, "variants");
   if (resultAction === "why") openJobDialog(result, "why");
+  if (resultAction === "market") openJobDialog(result, "market");
   if (resultAction === "trainings") openJobDialog(result, "trainings");
   if (resultAction === "favorite") toggleFavoriteJob(jobId, result);
   if (resultAction === "compare") addToCompare(jobId);
@@ -10400,6 +11052,23 @@ function updateSkillFamilySelection(familyId, shouldSelect) {
     else current.delete(skill.id);
   });
   App.state.profile.skills = Array.from(current);
+}
+
+function updateSkillConceptEvidence(target) {
+  const conceptId = target.dataset.skillConcept;
+  if (!conceptId) return;
+  const state = SKILL_CONCEPT_STATES.some(([id]) => id === target.value) ? target.value : "unknown";
+  App.state.profile.skillConceptEvidence = App.state.profile.skillConceptEvidence || {};
+  if (state === "unknown") {
+    delete App.state.profile.skillConceptEvidence[conceptId];
+    return;
+  }
+  App.state.profile.skillConceptEvidence[conceptId] = {
+    state,
+    confidence: state === "known" ? 0.85 : state === "practiced" ? 0.75 : state === "develop" ? 0.55 : 0.7,
+    source: "user_direct",
+    updatedAt: new Date().toISOString()
+  };
 }
 
 function syncSkillCheckboxes(skillId, checked) {
@@ -10511,6 +11180,7 @@ function renderAll() {
   renderStepNav();
   renderProfileSummary();
   renderStatusBar();
+  updateFloatingCompareButton();
   const isBoussole = App.state.mainView === "boussole";
   App.dom.leftPanel.classList.toggle("is-hidden", !isBoussole);
   App.dom.appShell.classList.toggle("is-wide", !isBoussole);
@@ -10746,7 +11416,7 @@ function openJobDialog(result, mode) {
   const job = result.job || findJob(result.jobId);
   let content = "";
   if (mode === "details") {
-    content = `<h2>${h(result.title || job?.title || "Fiche métier")}</h2>${renderJobDetailsPanelContent(result)}`;
+    content = `<h2 data-dialog-job-id="${h(result.jobId)}">${h(result.title || job?.title || "Fiche métier")}</h2>${renderJobDetailsPanelContent(result)}`;
   }
   if (mode === "variants") {
     const variants = result.relatedVariants || [];
@@ -10756,7 +11426,10 @@ function openJobDialog(result, mode) {
     }).join("") || "<li>Aucune variante proche dans ce corpus.</li>"}</ul>`;
   }
   if (mode === "why") {
-    content = `<h2>Pourquoi cette piste ?</h2><h3>Raisons positives</h3><ul class="data-list">${result.positiveReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Vigilances</h3><ul class="data-list">${result.negativeReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul><h3>Scores</h3><div class="score-grid">${Object.entries(result.scores).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>${renderScoreDetails(result.scoreDetails)}${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
+    content = renderWhyDialogContent(result);
+  }
+  if (mode === "market") {
+    content = renderMarketDetailModal(job, result);
   }
   if (mode === "trainings") {
     const trainings = findSuggestedTrainings(job, App.state.dataset);
@@ -10765,6 +11438,31 @@ function openJobDialog(result, mode) {
   App.dom.jobDialogContent.innerHTML = content;
   recordPerformanceMetric("jobModalOpenMs", startedAt);
   if (typeof App.dom.jobDialog.showModal === "function") App.dom.jobDialog.showModal();
+}
+
+function renderWhyDialogContent(result = {}) {
+  const positives = take(result.positiveReasons, App.state.displayMode === "essential" ? 4 : 8).map(humanEvidenceText);
+  const vigilances = take(result.negativeReasons, App.state.displayMode === "essential" ? 3 : 8).map(humanEvidenceText);
+  if (App.state.displayMode === "essential") {
+    return `
+      <h2>Pourquoi cette piste ?</h2>
+      <h3>Pourquoi ce métier ressort</h3>
+      <ul class="data-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>
+      <h3>Ce qui peut limiter le classement</h3>
+      <ul class="data-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans le corpus actuel.</li>"}</ul>
+      <p class="field-help">Passez en mode Détaillé ou Diagnostic dans Paramètres pour lire les sous-scores complets.</p>`;
+  }
+  const scoreGrid = `<div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>`;
+  return `
+    <h2>Pourquoi cette piste ?</h2>
+    <h3>Raisons positives</h3>
+    <ul class="data-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à explorer avec plus de données.</li>"}</ul>
+    <h3>Vigilances</h3>
+    <ul class="data-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans ce corpus.</li>"}</ul>
+    <h3>Scores</h3>
+    ${scoreGrid}
+    ${renderScoreDetails(result.scoreDetails)}
+    ${App.state.displayMode === "diagnostic" ? renderResultDiagnostic(result) : ""}`;
 }
 
 function isFavoriteJob(jobId) {
@@ -10815,6 +11513,110 @@ function renderCurrentMainPanel() {
   renderAll();
 }
 
+function setDisplayMode(mode) {
+  const next = DISPLAY_MODE_POLICY[mode] ? mode : "essential";
+  App.state.displayMode = next;
+  App.state.resultDiagnosticsEnabled = next === "diagnostic";
+  saveSettings({ displayMode: next });
+  if (App.dom.jobDialog?.open) {
+    const jobId = App.dom.jobDialogContent?.querySelector("[data-dialog-job-id]")?.dataset.dialogJobId;
+    const result = jobId ? findResult(jobId) : null;
+    if (result) App.dom.jobDialogContent.innerHTML = `<h2 data-dialog-job-id="${h(result.jobId)}">${h(result.title)}</h2>${renderJobDetailsPanelContent(result)}`;
+  }
+  renderCurrentMainPanel();
+  updateFloatingCompareButton();
+}
+
+function displayPolicy(mode = App.state.displayMode) {
+  return DISPLAY_MODE_POLICY[mode] || DISPLAY_MODE_POLICY.essential;
+}
+
+function updateCompareSelectionUi(jobId = null) {
+  const ids = jobId ? [jobId] : unique([...App.state.compareIds, ...Array.from(document.querySelectorAll("[data-job-id]")).map(node => node.dataset.jobId)]);
+  ids.filter(Boolean).forEach(id => {
+    const selected = App.state.compareIds.includes(id);
+    document.querySelectorAll(`[data-job-id="${cssEscape(id)}"] [data-result-action="compare"], [data-job-id="${cssEscape(id)}"] [data-explore-action="compare"]`).forEach(button => {
+      button.classList.toggle("is-active", selected);
+      button.setAttribute("aria-pressed", selected ? "true" : "false");
+      button.textContent = selected ? "Comparé" : "Comparer";
+    });
+  });
+}
+
+function updateFloatingCompareButton() {
+  const node = App.dom?.floatingCompare || document.getElementById("floatingCompare");
+  if (!node) return;
+  const count = App.state.compareIds.length;
+  node.classList.toggle("is-visible", count > 0);
+  node.innerHTML = count ? `
+    <button class="primary-button" type="button" data-action="compare-open">Comparer — ${h(count)}</button>
+    <button class="ghost-button" type="button" data-action="compare-clear">Vider</button>` : "";
+}
+
+function openCompareModal() {
+  const startedAt = nowMs();
+  const selected = App.state.compareIds.map(id => {
+    const job = findJobByAnyId(id);
+    return findResult(id) || (job ? createExplorationResultShell(job) : null);
+  }).filter(item => item?.job);
+  if (!selected.length) {
+    showToast("Ajoutez un métier au comparateur.");
+    updateFloatingCompareButton();
+    return;
+  }
+  App.dom.jobDialogContent.innerHTML = renderCompareModal(selected);
+  recordPerformanceMetric("compareModalRenderMs", startedAt);
+  if (typeof App.dom.jobDialog.showModal === "function") App.dom.jobDialog.showModal();
+}
+
+function renderCompareModal(results = []) {
+  const cell = (value, kind = "") => `<td class="${kind}">${value || '<span class="missing">information manquante</span>'}</td>`;
+  const scoreValues = results.map(result => Math.round(result.globalScore || 0));
+  const bestScore = Math.max(...scoreValues);
+  const worstScore = Math.min(...scoreValues);
+  const row = (label, values, options = {}) => `
+    <tr><th>${h(label)}</th>${values.map((value, index) => {
+      const kind = options.score ? (scoreValues[index] === bestScore ? "best" : scoreValues[index] === worstScore ? "weak" : "") : (!value ? "missing" : "");
+      return cell(h(value), kind);
+    }).join("")}</tr>`;
+  return `
+    <h2>Comparer les pistes</h2>
+    <p class="field-help">Lecture côte à côte locale. Les volumes d’offres ne sont pas une tension métier.</p>
+    <div class="compare-modal-grid">
+      <table class="compare-modal-table">
+        <thead><tr><th>Repère</th>${results.map(result => `<th>${renderJobTitleButton(result)}<br><button class="tiny-button" type="button" data-action="remove-compare" data-job-id="${h(result.jobId)}">Retirer</button></th>`).join("")}</tr></thead>
+        <tbody>
+          ${row("Score", results.map(result => `${Math.round(result.globalScore || 0)}/100`), { score: true })}
+          ${row("Proximité", results.map(result => statusLabel(result.status)))}
+          ${row("Voie professionnelle", results.map(result => careerPathwayLabel(inferCareerPathway(result.job))))}
+          ${row("Phrase principale", results.map(result => result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || "à vérifier"))}
+          ${row("Compétences reconnues", results.map(result => getJobSkillConceptLabels(result.job, result).slice(0, 5).join(", ")))}
+          ${row("Compétences non renseignées", results.map(result => toArray(result.scoreDetails?.skills?.unassessedRequiredSkills || result.scoreDetails?.skills?.unassessedSkills).slice(0, 5).map(id => resolveSkillDisplay(id).label).join(", ")))}
+          ${row("Conditions d’accès", results.map(result => getAccessDisplayLabel(result.job)))}
+          ${row("Qualification citée", results.map(result => [...toArray(result.job?.accessSummary?.citedDiplomas), ...toArray(result.job?.accessSummary?.citedCertifications)].slice(0, 4).join(", ")))}
+          ${row("Contraintes confirmées", results.map(result => getConfirmedConstraintLabels(result.job).slice(0, 5).join(", ")))}
+          ${row("Dimensions inconnues", results.map(result => toArray(getOfficialConstraintSummary(result.job).unknownDimensions).join(", ")))}
+          ${row("Contextes", results.map(result => getHumanContextLabels(result.job).slice(0, 5).join(", ")))}
+          ${row("Offres dans la zone", results.map(result => marketOpportunityLabel(getJobMarketSnapshot(result.job, App.state.dataset, App.state.profile?.marketPreference))))}
+          ${row("Tension disponible", results.map(() => "non encore disponible"))}
+          ${row("Vigilances", results.map(result => take(result.negativeReasons, 2).map(humanEvidenceText).join(" · ")))}
+          ${row("Variantes", results.map(result => String(getResultVariants(result, result.job).length)))}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function marketOpportunityLabel(data = {}) {
+  return {
+    very_favorable: "très favorables",
+    favorable: "favorables",
+    moderate: "modérées",
+    limited: "limitées",
+    zero: "aucune offre observée",
+    unknown: "aucune donnée"
+  }[marketOpportunityLevel(data)] || "aucune donnée";
+}
+
 function compareFavoriteJobs() {
   App.state.compareIds = App.state.favoriteJobs.map(item => item.jobId).filter(id => findJob(id)).slice(0, 4);
   App.state.mainView = "results";
@@ -10835,10 +11637,9 @@ function addToCompare(jobId) {
     if (App.state.compareIds.length >= 4) App.state.compareIds.shift();
     App.state.compareIds.push(jobId);
   }
-  if (App.state.mainView === "results") renderResults();
-  else renderAll();
+  updateCompareSelectionUi(jobId);
+  updateFloatingCompareButton();
   showToast(wasSelected ? "Métier retiré du comparatif." : "Métier ajouté au comparatif.");
-  document.querySelector("[data-compare-panel]")?.scrollIntoView({ block: "start", behavior: "smooth" });
 }
 
 function evaluateConstraintAgainstJob(value, job, criteria) {
@@ -11950,6 +12751,9 @@ function invalidateDatasetIndexes() {
   App.state.explorationHaystackCache = new Map();
   App.state.relatedVariantsCache = new Map();
   App.state.jobDerivedCache = new Map();
+  App.state.marketSummaryCache = new Map();
+  App.state.officialConstraintCache = new Map();
+  App.state.skillConceptCache = new Map();
   invalidateResultIndexes();
 }
 
