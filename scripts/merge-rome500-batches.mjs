@@ -6,6 +6,7 @@ import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 const GENERATED_DIR = path.join("creations", "boussolepro", "data", "generated");
 const EXPERIMENTAL_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const BATCHES_DIR = path.join(EXPERIMENTAL_DIR, "batches");
+const MARKET_DIR = path.join(GENERATED_DIR, "market");
 const DATASET_VERSION = "rome500-experimental-v0.7";
 
 async function main() {
@@ -83,7 +84,7 @@ async function main() {
     warning: "Ce corpus ROME 500 ne remplace pas automatiquement le corpus ROME 72 de référence."
   });
 
-  const audit = await buildRome500AuditArtifacts({ generatedDir: EXPERIMENTAL_DIR });
+  const audit = await buildRome500AuditArtifacts({ generatedDir: EXPERIMENTAL_DIR, marketDir: MARKET_DIR });
   console.log(`[Boussole Pro] Fusion ROME500: ${jobs.length} métiers, ${mappings.length} mappings, statut ${qualityReport.experimental500.promotable ? "candidate" : "experimental_only"}.`);
   console.log(`[Boussole Pro] Audit ROME500: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%.`);
 }

@@ -1,0 +1,3316 @@
+{
+  "schemaVersion": "1.0.0",
+  "reportKind": "rome72_vs_rome500_regression",
+  "generatedAt": "2026-07-16T15:59:27.347Z",
+  "rome72": {
+    "datasetVersion": "rome72-reference-v0.6.4",
+    "jobsCount": 72,
+    "marketCoverage": {
+      "jobsWithAnyMarket": 63,
+      "jobsWithOfficialMarket": 63,
+      "jobsWithNationalMarket": 63,
+      "jobsWithRegionalMarket": 63,
+      "jobsWithDepartmentalMarket": 63,
+      "jobsWithZeroNationalOffers": 0,
+      "jobsWithZeroRegionalOffers": 0,
+      "jobsWithZeroDepartmentalOffers": 6,
+      "jobsWithStaleMarketData": 1,
+      "jobsWithBmo": 0,
+      "jobsWithEstimatedMarket": 0,
+      "jobsWithoutMarket": 9,
+      "marketSignalDistribution": {
+        "national": {
+          "zero": 0,
+          "low": 0,
+          "medium": 4,
+          "high": 59,
+          "unknown": 9
+        },
+        "regional": {
+          "zero": 0,
+          "low": 5,
+          "medium": 14,
+          "high": 44,
+          "unknown": 9
+        },
+        "departmental": {
+          "zero": 6,
+          "low": 25,
+          "medium": 32,
+          "high": 0,
+          "unknown": 9
+        }
+      },
+      "territorialSignalDistribution": {
+        "national": {
+          "zero_local": 0,
+          "weak_local": 3,
+          "medium_local": 13,
+          "strong_local": 19,
+          "top_local": 28,
+          "unknown": 9
+        },
+        "regional": {
+          "zero_local": 0,
+          "weak_local": 3,
+          "medium_local": 16,
+          "strong_local": 16,
+          "top_local": 28,
+          "unknown": 9
+        },
+        "departmental": {
+          "zero_local": 6,
+          "weak_local": 0,
+          "medium_local": 17,
+          "strong_local": 18,
+          "top_local": 22,
+          "unknown": 9
+        }
+      }
+    }
+  },
+  "rome500": {
+    "datasetVersion": "rome500-experimental-v0.7",
+    "jobsCount": 500,
+    "marketCoverage": {
+      "jobsWithAnyMarket": 382,
+      "jobsWithOfficialMarket": 382,
+      "jobsWithNationalMarket": 437,
+      "jobsWithRegionalMarket": 429,
+      "jobsWithDepartmentalMarket": 382,
+      "jobsWithZeroNationalOffers": 7,
+      "jobsWithZeroRegionalOffers": 48,
+      "jobsWithZeroDepartmentalOffers": 145,
+      "jobsWithStaleMarketData": 46,
+      "jobsWithBmo": 0,
+      "jobsWithEstimatedMarket": 0,
+      "jobsWithoutMarket": 118,
+      "marketSignalDistribution": {
+        "national": {
+          "zero": 7,
+          "low": 56,
+          "medium": 125,
+          "high": 249,
+          "unknown": 63
+        },
+        "regional": {
+          "zero": 48,
+          "low": 133,
+          "medium": 142,
+          "high": 106,
+          "unknown": 71
+        },
+        "departmental": {
+          "zero": 145,
+          "low": 175,
+          "medium": 62,
+          "high": 0,
+          "unknown": 118
+        }
+      },
+      "territorialSignalDistribution": {
+        "national": {
+          "zero_local": 7,
+          "weak_local": 143,
+          "medium_local": 175,
+          "strong_local": 66,
+          "top_local": 46,
+          "unknown": 63
+        },
+        "regional": {
+          "zero_local": 48,
+          "weak_local": 100,
+          "medium_local": 171,
+          "strong_local": 64,
+          "top_local": 46,
+          "unknown": 71
+        },
+        "departmental": {
+          "zero_local": 145,
+          "weak_local": 0,
+          "medium_local": 139,
+          "strong_local": 57,
+          "top_local": 41,
+          "unknown": 118
+        }
+      }
+    }
+  },
+  "profiles": [
+    {
+      "profileId": "admin-calme",
+      "title": "Administratif calme",
+      "top5Rome72": [
+        "M1607",
+        "M1501",
+        "M1601",
+        "M1203",
+        "M1609"
+      ],
+      "top5Rome500": [
+        "M1607",
+        "M1501",
+        "M1602",
+        "M1621",
+        "M1601"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "M1607",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 67,
+          "rankWithoutSkills": 37,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 31,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Réalise le traitement administratif de dossiers (frappe de courriers, mise en forme de documents, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 23,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1601",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 66,
+          "rankWithoutSkills": 12,
+          "scoreWithoutSkills": 67,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 16,
+          "constraintScore": 17,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 25,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Garantir un suivi administratif"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 20,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1609",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 24,
+          "score": 62,
+          "rankWithoutSkills": 38,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 24,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Réalise le traitement administratif de dossiers (frappe de courriers, mise en forme de documents, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 19,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 66,
+          "rankWithoutSkills": 48,
+          "scoreWithoutSkills": 63,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Assurer le suivi des dossiers de maladie, maternité, accidents du travail, etc"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 36,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1203",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 12,
+          "score": 63,
+          "rankWithoutSkills": 19,
+          "scoreWithoutSkills": 65,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 52,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Assurer le suivi des indicateurs de performance (KPI)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 47,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "M1607",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 67,
+          "rankWithoutSkills": 150,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 31,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Réalise le traitement administratif de dossiers (frappe de courriers, mise en forme de documents, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 23,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1601",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 66,
+          "rankWithoutSkills": 36,
+          "scoreWithoutSkills": 67,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 16,
+          "constraintScore": 17,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 25,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Garantir un suivi administratif"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 20,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1609",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 86,
+          "score": 62,
+          "rankWithoutSkills": 153,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 24,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Réalise le traitement administratif de dossiers (frappe de courriers, mise en forme de documents, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 19,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 66,
+          "rankWithoutSkills": 194,
+          "scoreWithoutSkills": 63,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Assurer le suivi des dossiers de maladie, maternité, accidents du travail, etc"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 36,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1203",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 39,
+          "score": 63,
+          "rankWithoutSkills": 60,
+          "scoreWithoutSkills": 65,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "administratif_support",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 52,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Assurer le suivi des indicateurs de performance (KPI)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 47,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 62,
+        "max": 67,
+        "average": 65
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 64,
+        "max": 67,
+        "average": 66
+      },
+      "improvements": [],
+      "regressions": [
+        {
+          "type": "expected_jobs_less_visible",
+          "severity": "warning",
+          "from": 5,
+          "to": 3
+        }
+      ]
+    },
+    {
+      "profileId": "enfance-relation",
+      "title": "Enfance et relation",
+      "top5Rome72": [
+        "K1303",
+        "G1202",
+        "J1304",
+        "K2106",
+        "K1302"
+      ],
+      "top5Rome500": [
+        "K1303",
+        "G1202",
+        "J1304",
+        "K1307",
+        "K2106"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "G1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 58,
+          "rankWithoutSkills": 18,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "culture_communication"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1303",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 59,
+          "rankWithoutSkills": 1,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 17,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "J1304",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 6,
+          "score": 56,
+          "rankWithoutSkills": 3,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "sante_soin",
+          "secondarySectorIds": [
+            "education_enfance"
+          ],
+          "skillScore": 14,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 22,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2106",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 10,
+          "score": 54,
+          "rankWithoutSkills": 5,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 13,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 65,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Etre à l'écoute, faire preuve d'empathie"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 61,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 25,
+          "score": 51,
+          "rankWithoutSkills": 53,
+          "scoreWithoutSkills": 49,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Faire preuve de pédagogie pour faciliter la compréhension"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "G1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 5,
+          "score": 58,
+          "rankWithoutSkills": 61,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "culture_communication"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1303",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 4,
+          "score": 59,
+          "rankWithoutSkills": 3,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 17,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "J1304",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 13,
+          "score": 56,
+          "rankWithoutSkills": 6,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "sante_soin",
+          "secondarySectorIds": [
+            "education_enfance"
+          ],
+          "skillScore": 14,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 22,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2106",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 30,
+          "score": 54,
+          "rankWithoutSkills": 19,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 13,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 65,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Etre à l'écoute, faire preuve d'empathie"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 61,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 104,
+          "score": 51,
+          "rankWithoutSkills": 220,
+          "scoreWithoutSkills": 49,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Faire preuve de pédagogie pour faciliter la compréhension"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 54,
+        "max": 59,
+        "average": 56
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 54,
+        "max": 59,
+        "average": 57
+      },
+      "improvements": [],
+      "regressions": []
+    },
+    {
+      "profileId": "numerique-distance",
+      "title": "Numérique à distance",
+      "top5Rome72": [
+        "M1805",
+        "M1801",
+        "M1810",
+        "M1808",
+        "E1205"
+      ],
+      "top5Rome500": [
+        "M1801",
+        "M1805",
+        "M1810",
+        "M1808",
+        "M1895"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "M1805",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 62,
+          "rankWithoutSkills": 29,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Analyser les besoins informatiques"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 14,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1810",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 4,
+          "score": 59,
+          "rankWithoutSkills": 43,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 17,
+          "contextScore": 4,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Gérer les droits d'accès des utilisateurs"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 15,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1801",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 62,
+          "rankWithoutSkills": 13,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 18,
+          "constraintScore": 17,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 42,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Sélectionner, assembler et intégrer des composants informatiques (progiciels, bases de données, développements spécifiques, ...)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 33,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1808",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 12,
+          "score": 56,
+          "rankWithoutSkills": 57,
+          "scoreWithoutSkills": 49,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [
+            "recherche_analyse",
+            "administratif_support"
+          ],
+          "skillScore": 19,
+          "constraintScore": 17,
+          "contextScore": 4,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Sélectionner, traiter et réaliser l'analyse spatiale de données géographiques"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 18,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "E1205",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 32,
+          "score": 53,
+          "rankWithoutSkills": 30,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "culture_communication",
+          "secondarySectorIds": [
+            "numerique"
+          ],
+          "skillScore": 11,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 41,
+          "recognizedProfileSkillsCount": 0,
+          "recognizedProfileSkills": [],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 38,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "M1805",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 62,
+          "rankWithoutSkills": 177,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Analyser les besoins informatiques"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 14,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1810",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 4,
+          "score": 59,
+          "rankWithoutSkills": 316,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 17,
+          "contextScore": 4,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Gérer les droits d'accès des utilisateurs"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 15,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1801",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 62,
+          "rankWithoutSkills": 48,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [],
+          "skillScore": 18,
+          "constraintScore": 17,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 42,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Sélectionner, assembler et intégrer des composants informatiques (progiciels, bases de données, développements spécifiques, ...)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 33,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "M1808",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 60,
+          "score": 56,
+          "rankWithoutSkills": 361,
+          "scoreWithoutSkills": 49,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "numerique",
+          "secondarySectorIds": [
+            "recherche_analyse",
+            "administratif_support"
+          ],
+          "skillScore": 19,
+          "constraintScore": 17,
+          "contextScore": 4,
+          "evaluableJobSkillsCount": 26,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Sélectionner, traiter et réaliser l'analyse spatiale de données géographiques"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 18,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "E1205",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 211,
+          "score": 53,
+          "rankWithoutSkills": 208,
+          "scoreWithoutSkills": 56,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "culture_communication",
+          "secondarySectorIds": [
+            "numerique"
+          ],
+          "skillScore": 11,
+          "constraintScore": 15,
+          "contextScore": 6,
+          "evaluableJobSkillsCount": 41,
+          "recognizedProfileSkillsCount": 0,
+          "recognizedProfileSkills": [],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 38,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 53,
+        "max": 62,
+        "average": 58
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 56,
+        "max": 62,
+        "average": 59
+      },
+      "improvements": [],
+      "regressions": [
+        {
+          "type": "expected_jobs_less_visible",
+          "severity": "warning",
+          "from": 5,
+          "to": 4
+        }
+      ]
+    },
+    {
+      "profileId": "terrain-nature-prudent",
+      "title": "Terrain nature prudent",
+      "top5Rome72": [
+        "A1405",
+        "A1414",
+        "A1202",
+        "A1203",
+        "A1204"
+      ],
+      "top5Rome500": [
+        "A1220",
+        "A1432",
+        "A1212",
+        "A1405",
+        "A1202"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "A1203",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 60,
+          "rankWithoutSkills": 15,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 5,
+          "evaluableJobSkillsCount": 35,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Régler un équipement d'irrigation et d'arrosage"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 24,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 60,
+          "rankWithoutSkills": 3,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 16,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 23,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Effectuer l'entretien de végétaux"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 7,
+          "score": 56,
+          "rankWithoutSkills": 4,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 12,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 36,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1401",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 8,
+          "score": 56,
+          "rankWithoutSkills": 6,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 13,
+          "constraintScore": 15,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 23,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 19,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1405",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 4,
+          "score": 59,
+          "rankWithoutSkills": 16,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 18,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 40,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Planter un arbre, une plante, un végétal"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 31,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1414",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 60,
+          "rankWithoutSkills": 2,
+          "scoreWithoutSkills": 60,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 15,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 38,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Préparer les sols, les plantations (épandage, semis, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 53,
+          "score": 47,
+          "rankWithoutSkills": 54,
+          "scoreWithoutSkills": 47,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "animaux",
+          "secondarySectorIds": [
+            "nature_agriculture"
+          ],
+          "skillScore": 12,
+          "constraintScore": 16,
+          "contextScore": 2,
+          "evaluableJobSkillsCount": 34,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1503",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 40,
+          "score": 49,
+          "rankWithoutSkills": 43,
+          "scoreWithoutSkills": 49,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "animaux",
+          "secondarySectorIds": [
+            "nature_agriculture"
+          ],
+          "skillScore": 12,
+          "constraintScore": 16,
+          "contextScore": 2,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 33,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "A1203",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 10,
+          "score": 57,
+          "rankWithoutSkills": 209,
+          "scoreWithoutSkills": 51,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 2,
+          "evaluableJobSkillsCount": 35,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Régler un équipement d'irrigation et d'arrosage"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 24,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 60,
+          "rankWithoutSkills": 12,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 16,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 23,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Effectuer l'entretien de végétaux"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 18,
+          "score": 56,
+          "rankWithoutSkills": 13,
+          "scoreWithoutSkills": 59,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 12,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 36,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1401",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 20,
+          "score": 56,
+          "rankWithoutSkills": 26,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 13,
+          "constraintScore": 15,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 23,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 19,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1405",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 7,
+          "score": 59,
+          "rankWithoutSkills": 74,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 18,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 40,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Planter un arbre, une plante, un végétal"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 31,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1414",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 5,
+          "score": 60,
+          "rankWithoutSkills": 3,
+          "scoreWithoutSkills": 60,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "nature_agriculture",
+          "secondarySectorIds": [
+            "animaux"
+          ],
+          "skillScore": 15,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 38,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Préparer les sols, les plantations (épandage, semis, etc.)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 326,
+          "score": 47,
+          "rankWithoutSkills": 352,
+          "scoreWithoutSkills": 47,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "animaux",
+          "secondarySectorIds": [
+            "nature_agriculture"
+          ],
+          "skillScore": 12,
+          "constraintScore": 16,
+          "contextScore": 2,
+          "evaluableJobSkillsCount": 34,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Respecter les règles de Qualité, Hygiène, Sécurité, Santé et Environnement (QHSSE)"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "A1503",
+          "presentInCorpus": false,
+          "evaluationStatus": "not_in_active_corpus",
+          "rank": null,
+          "score": null,
+          "rankWithoutSkills": null,
+          "scoreWithoutSkills": null,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "",
+          "secondarySectorIds": [],
+          "skillScore": 0,
+          "constraintScore": 0,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 0,
+          "recognizedProfileSkillsCount": 0,
+          "recognizedProfileSkills": [],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 0,
+          "constraints": null,
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 56,
+        "max": 60,
+        "average": 59
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 59,
+        "max": 61,
+        "average": 60
+      },
+      "improvements": [],
+      "regressions": [
+        {
+          "type": "expected_jobs_less_visible",
+          "severity": "warning",
+          "from": 5,
+          "to": 2
+        }
+      ]
+    },
+    {
+      "profileId": "proprete-hotellerie-accessible",
+      "title": "Propreté / hôtellerie accessible",
+      "top5Rome72": [
+        "G1703",
+        "K2204",
+        "G1501",
+        "G1803",
+        "G1602"
+      ],
+      "top5Rome500": [
+        "G1703",
+        "K2204",
+        "G1501",
+        "G1803",
+        "G1201"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "K2204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 9,
+          "score": 62,
+          "rankWithoutSkills": 25,
+          "scoreWithoutSkills": 60,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "proprete_entretien",
+          "secondarySectorIds": [],
+          "skillScore": 17,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 42,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Nettoyer les surfaces et les espaces communs"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 35,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 5,
+          "score": 63,
+          "rankWithoutSkills": 49,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "hotellerie_hebergement",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 16,
+          "contextScore": 5,
+          "evaluableJobSkillsCount": 29,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Approvisionner un chariot de ménage ou chariot de linge"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1703",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 69,
+          "rankWithoutSkills": 2,
+          "scoreWithoutSkills": 65,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "hotellerie_hebergement",
+          "secondarySectorIds": [
+            "commerce_vente"
+          ],
+          "skillScore": 20,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 33,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Fournir des informations touristiques et locales aux clients"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 23,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1803",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 67,
+          "rankWithoutSkills": 5,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "restauration_alimentation",
+          "secondarySectorIds": [
+            "hotellerie_hebergement"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 5,
+          "evaluableJobSkillsCount": 33,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Garantir la satisfaction du client"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 24,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": true,
+              "driverLicenseTypes": [
+                "B"
+              ],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "K2204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 21,
+          "score": 62,
+          "rankWithoutSkills": 140,
+          "scoreWithoutSkills": 60,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "proprete_entretien",
+          "secondarySectorIds": [],
+          "skillScore": 17,
+          "constraintScore": 16,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 42,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Nettoyer les surfaces et les espaces communs"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 35,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1501",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 6,
+          "score": 63,
+          "rankWithoutSkills": 259,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "hotellerie_hebergement",
+          "secondarySectorIds": [],
+          "skillScore": 20,
+          "constraintScore": 16,
+          "contextScore": 5,
+          "evaluableJobSkillsCount": 29,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Approvisionner un chariot de ménage ou chariot de linge"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 17,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1703",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 69,
+          "rankWithoutSkills": 4,
+          "scoreWithoutSkills": 65,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "hotellerie_hebergement",
+          "secondarySectorIds": [
+            "commerce_vente"
+          ],
+          "skillScore": 20,
+          "constraintScore": 16,
+          "contextScore": 8,
+          "evaluableJobSkillsCount": 33,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Fournir des informations touristiques et locales aux clients"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 23,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "G1803",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 67,
+          "rankWithoutSkills": 18,
+          "scoreWithoutSkills": 64,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "restauration_alimentation",
+          "secondarySectorIds": [
+            "hotellerie_hebergement"
+          ],
+          "skillScore": 19,
+          "constraintScore": 16,
+          "contextScore": 5,
+          "evaluableJobSkillsCount": 33,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Garantir la satisfaction du client"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 24,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "medium",
+              "driverLicenseRequired": true,
+              "driverLicenseTypes": [
+                "B"
+              ],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 62,
+        "max": 69,
+        "average": 65
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 62,
+        "max": 69,
+        "average": 65
+      },
+      "improvements": [],
+      "regressions": []
+    },
+    {
+      "profileId": "minimal-exploratoire",
+      "title": "Minimal exploratoire",
+      "top5Rome72": [
+        "D1102",
+        "D1401",
+        "D1507",
+        "F1602",
+        "G1602"
+      ],
+      "top5Rome500": [
+        "A1101",
+        "C1102",
+        "C1504",
+        "D1102",
+        "D1106"
+      ],
+      "expectedJobsRome72": [],
+      "expectedJobsRome500": [],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 59,
+        "max": 59,
+        "average": 59
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 59,
+        "max": 59,
+        "average": 59
+      },
+      "improvements": [],
+      "regressions": []
+    },
+    {
+      "profileId": "social-education-commerce-exclu",
+      "title": "Social / éducation, commerce évité",
+      "top5Rome72": [
+        "K1303",
+        "G1202",
+        "K2106",
+        "K2111",
+        "J1304"
+      ],
+      "top5Rome500": [
+        "K1303",
+        "G1202",
+        "K2106",
+        "K1307",
+        "K1201"
+      ],
+      "expectedJobsRome72": [
+        {
+          "romeCode": "G1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 2,
+          "score": 58,
+          "rankWithoutSkills": 5,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "culture_communication"
+          ],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1303",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 1,
+          "score": 60,
+          "rankWithoutSkills": 1,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 17,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 15,
+          "score": 49,
+          "rankWithoutSkills": 32,
+          "scoreWithoutSkills": 47,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Faire preuve de pédagogie pour faciliter la compréhension"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1801",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 11,
+          "score": 50,
+          "rankWithoutSkills": 8,
+          "scoreWithoutSkills": 51,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 12,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 40,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 36,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2106",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 6,
+          "score": 54,
+          "rankWithoutSkills": 3,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 13,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 65,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Etre à l'écoute, faire preuve d'empathie"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 61,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2111",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 12,
+          "score": 50,
+          "rankWithoutSkills": 7,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 11,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 35,
+          "recognizedProfileSkillsCount": 0,
+          "recognizedProfileSkills": [],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "expectedJobsRome500": [
+        {
+          "romeCode": "G1202",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 4,
+          "score": 58,
+          "rankWithoutSkills": 17,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "culture_communication"
+          ],
+          "skillScore": 19,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 45,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1303",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 3,
+          "score": 60,
+          "rankWithoutSkills": 1,
+          "scoreWithoutSkills": 57,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [
+            "sante_soin"
+          ],
+          "skillScore": 17,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accompagner l'enfant dans l'apprentissage des gestes de la vie quotidienne et des règles de vie en collectivité"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 30,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "possible",
+              "weekendWork": "unknown",
+              "irregularHours": "possible",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1204",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 65,
+          "score": 49,
+          "rankWithoutSkills": 117,
+          "scoreWithoutSkills": 47,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 14,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 37,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Faire preuve de pédagogie pour faciliter la compréhension"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "unknown",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "unknown",
+              "confidence": 0
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "unknown",
+              "confidence": 0
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K1801",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 52,
+          "score": 50,
+          "rankWithoutSkills": 37,
+          "scoreWithoutSkills": 51,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "social_insertion",
+          "secondarySectorIds": [],
+          "skillScore": 12,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 40,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Accueillir, orienter, renseigner un public"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 36,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2106",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 16,
+          "score": 54,
+          "rankWithoutSkills": 12,
+          "scoreWithoutSkills": 55,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 13,
+          "constraintScore": 15,
+          "contextScore": 3,
+          "evaluableJobSkillsCount": 65,
+          "recognizedProfileSkillsCount": 1,
+          "recognizedProfileSkills": [
+            "Etre à l'écoute, faire preuve d'empathie"
+          ],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 61,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        },
+        {
+          "romeCode": "K2111",
+          "presentInCorpus": true,
+          "evaluationStatus": "evaluated",
+          "rank": 53,
+          "score": 50,
+          "rankWithoutSkills": 24,
+          "scoreWithoutSkills": 52,
+          "excluded": false,
+          "exclusionReasons": [],
+          "primarySectorId": "education_enfance",
+          "secondarySectorIds": [],
+          "skillScore": 11,
+          "constraintScore": 15,
+          "contextScore": 0,
+          "evaluableJobSkillsCount": 35,
+          "recognizedProfileSkillsCount": 0,
+          "recognizedProfileSkills": [],
+          "unresolvedProfileConcepts": [],
+          "unresolvedProfileSkills": [],
+          "unevaluatedJobSkillsCount": 32,
+          "constraints": {
+            "physical": "medium",
+            "schedule": {
+              "nightWork": "unknown",
+              "weekendWork": "unknown",
+              "irregularHours": "unknown",
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            },
+            "mobility": {
+              "travelFrequency": "unknown",
+              "driverLicenseRequired": false,
+              "driverLicenseTypes": [],
+              "source": "computed_low_confidence",
+              "confidence": 0.25
+            }
+          },
+          "exclusionMotives": []
+        }
+      ],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 50,
+        "max": 60,
+        "average": 56
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 54,
+        "max": 60,
+        "average": 57
+      },
+      "improvements": [],
+      "regressions": [
+        {
+          "type": "expected_jobs_less_visible",
+          "severity": "warning",
+          "from": 4,
+          "to": 3
+        }
+      ]
+    },
+    {
+      "profileId": "education-numerique-outil",
+      "title": "Éducation avec numérique outil",
+      "top5Rome72": [
+        "G1202",
+        "K1303",
+        "K2106",
+        "K2111",
+        "J1304"
+      ],
+      "top5Rome500": [
+        "G1202",
+        "K1303",
+        "K2106",
+        "K1307",
+        "K2111"
+      ],
+      "expectedJobsRome72": [],
+      "expectedJobsRome500": [],
+      "scoreDistributionRome72": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 50,
+        "max": 59,
+        "average": 55
+      },
+      "scoreDistributionRome500": {
+        "low": 0,
+        "medium": 5,
+        "high": 0,
+        "min": 50,
+        "max": 59,
+        "average": 55
+      },
+      "improvements": [],
+      "regressions": []
+    }
+  ],
+  "summary": {
+    "profilesCompared": 8,
+    "profilesWithMoreDiverseTop5": 0,
+    "blockingRegressions": 0,
+    "warnings": [
+      "Le marché pèse peu dans les profils tests : il départage, mais ne remplace pas la cohérence profil/métier.",
+      "Les métiers attendus absents du corpus sont signalés comme not_in_active_corpus, pas comme échec moteur."
+    ]
+  }
+}

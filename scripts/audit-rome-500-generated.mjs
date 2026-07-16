@@ -24,6 +24,8 @@ const ROME_DOMAIN_BY_LETTER = {
 
 export async function buildRome500AuditArtifacts(options = {}) {
   const generatedDir = options.generatedDir || GENERATED_DIR;
+  const configuredMarketDir = options.marketDir || process.env.ROME_MARKET_DIR || MARKET_DIR;
+  const bundledMarketDir = path.join(generatedDir, "market");
   const startedAt = Date.now();
   const [
     jobs,
@@ -32,11 +34,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
     skills,
     contexts,
     rawSkills,
-    qualityReport,
-    marketNational,
-    marketRegional,
-    marketDepartmental,
-    marketQualityReport
+    qualityReport
   ] = await Promise.all([
     readJson(path.join(generatedDir, "jobs.rome.json"), []),
     readJson(path.join(generatedDir, "mappings.rome.json"), []),
@@ -44,18 +42,37 @@ export async function buildRome500AuditArtifacts(options = {}) {
     readJson(path.join(generatedDir, "skills.rome.json"), []),
     readJson(path.join(generatedDir, "work-contexts.rome.json"), []),
     readJson(path.join(generatedDir, "rome-raw-skills.json"), []),
-    readJson(path.join(generatedDir, "data-quality-report.rome.json"), {}),
-    readJson(path.join(generatedDir, "market", "market-national.rome.json"), []),
-    readJson(path.join(generatedDir, "market", "market-occitanie.rome.json"), []),
-    readJson(path.join(generatedDir, "market", "market-aude.rome.json"), []),
-    readJson(path.join(generatedDir, "market", "market-quality-report.json"), {})
+    readJson(path.join(generatedDir, "data-quality-report.rome.json"), {})
   ]);
+
+  const bundledMarket = await readMarketBundle(bundledMarketDir);
+  const configuredMarket = path.resolve(configuredMarketDir) === path.resolve(bundledMarketDir)
+    ? bundledMarket
+    : await readMarketBundle(configuredMarketDir);
+  const bundledHasRows = hasMarketRows(bundledMarket);
+  const configuredHasRows = hasMarketRows(configuredMarket);
+  const marketBundleStatus = bundledHasRows
+    ? "bundled_in_corpus_folder"
+    : configuredHasRows
+      ? "loaded_from_shared_market_folder"
+      : (bundledMarket.hasReport || configuredMarket.hasReport ? "not_loaded" : "not_generated");
+  const selectedMarket = bundledHasRows ? bundledMarket : configuredMarket;
 
   const linked = buildLinkedCoverage(jobs, mappings);
   const shellJobs = jobs.filter(isShellJob);
   const sectorMappingCoverage = buildSectorCoverage(jobs);
   const rawReferentialIntegrity = buildRawReferentialIntegrity(rawSkills, await checksumFile(path.join(generatedDir, "rome-raw-skills.json")));
-  const marketAvailability = buildMarketAvailability(jobs, marketNational, marketRegional, marketDepartmental, marketQualityReport);
+  const marketAvailability = buildMarketAvailability(
+    jobs,
+    selectedMarket.national,
+    selectedMarket.regional,
+    selectedMarket.departmental,
+    selectedMarket.qualityReport,
+    {
+      marketBundleStatus,
+      marketDir: bundledHasRows ? bundledMarketDir : configuredMarketDir
+    }
+  );
   const matchingReadiness = buildMatchingReadiness({ jobs, linked, shellJobs, sectorMappingCoverage });
   const quality = {
     schemaVersion: "1.0.0",
@@ -86,7 +103,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
   };
 
   const performance = await buildPerformanceReport(generatedDir, startedAt);
-  const markdown = buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport });
+  const markdown = buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport: selectedMarket.qualityReport });
   await writeJson(path.join(generatedDir, "rome-corpus-quality-report.json"), quality);
   await writeJson(path.join(generatedDir, "rome-corpus-performance-report.json"), performance);
   await writeFile(path.join(generatedDir, "rome-corpus-audit.md"), markdown, "utf8");
@@ -94,6 +111,27 @@ export async function buildRome500AuditArtifacts(options = {}) {
   await writeJson(path.join(generatedDir, "rome-500-performance-report.json"), performance);
   await writeFile(path.join(generatedDir, "rome-500-audit.md"), markdown, "utf8");
   return { quality, performance, markdown };
+}
+
+async function readMarketBundle(marketDir) {
+  const [national, regional, departmental, qualityReport] = await Promise.all([
+    readJson(path.join(marketDir, "market-national.rome.json"), []),
+    readJson(path.join(marketDir, "market-occitanie.rome.json"), []),
+    readJson(path.join(marketDir, "market-aude.rome.json"), []),
+    readJson(path.join(marketDir, "market-quality-report.json"), null)
+  ]);
+  return {
+    marketDir,
+    national,
+    regional,
+    departmental,
+    qualityReport: qualityReport || {},
+    hasReport: Boolean(qualityReport)
+  };
+}
+
+function hasMarketRows(bundle = {}) {
+  return toArray(bundle.national).length + toArray(bundle.regional).length + toArray(bundle.departmental).length > 0;
 }
 
 function buildMatchingReadiness({ jobs, linked, shellJobs, sectorMappingCoverage }) {
@@ -182,9 +220,12 @@ function buildRawReferentialIntegrity(rawSkills = [], checksum = "") {
   };
 }
 
-function buildMarketAvailability(jobs = [], national = [], regional = [], departmental = [], report = {}) {
+function buildMarketAvailability(jobs = [], national = [], regional = [], departmental = [], report = {}, options = {}) {
   const byLevel = { national, regional, departmental };
   const requestedCodes = new Set(jobs.map(job => job.romeCode).filter(Boolean));
+  const nationalCodes = new Set(national.map(row => row.romeCode).filter(Boolean));
+  const regionalCodes = new Set(regional.map(row => row.romeCode).filter(Boolean));
+  const departmentalCodes = new Set(departmental.map(row => row.romeCode).filter(Boolean));
   const levelCoverage = Object.fromEntries(Object.entries(byLevel).map(([level, rows]) => {
     const codes = new Set(rows.map(row => row.romeCode).filter(Boolean));
     return [level, {
@@ -195,7 +236,9 @@ function buildMarketAvailability(jobs = [], national = [], regional = [], depart
       staleRows: rows.filter(row => ["stale", "very_stale"].includes(row.marketFreshness)).length
     }];
   }));
-  const nationallyUnavailable = [...requestedCodes].filter(code => !new Set(national.map(row => row.romeCode)).has(code));
+  const nationallyUnavailable = [...requestedCodes].filter(code => !nationalCodes.has(code));
+  const regionallyUnavailable = [...requestedCodes].filter(code => nationalCodes.has(code) && !regionalCodes.has(code));
+  const departmentallyUnavailable = [...requestedCodes].filter(code => (nationalCodes.has(code) || regionalCodes.has(code)) && !departmentalCodes.has(code));
   const codesWithAnyOfficialMarket = new Set([
     ...national,
     ...regional,
@@ -217,6 +260,8 @@ function buildMarketAvailability(jobs = [], national = [], regional = [], depart
   return {
     source: "api_marche_travail",
     method: report.apiMethod || report.marketApi?.method || "POST",
+    marketBundleStatus: options.marketBundleStatus || "not_loaded",
+    marketDir: options.marketDir || "",
     bmoUsedInScore: false,
     fapRomeUsedInScore: false,
     rawMarketFileCoverage,
@@ -226,6 +271,14 @@ function buildMarketAvailability(jobs = [], national = [], regional = [], depart
       activeCorpus: activeCorpusMarketCoverage
     },
     levelCoverage,
+    unavailableByLevel: {
+      nationalUnavailableCount: nationallyUnavailable.length,
+      nationalUnavailableCodes: nationallyUnavailable,
+      regionalAdditionalUnavailableCount: regionallyUnavailable.length,
+      regionalAdditionalUnavailableCodes: regionallyUnavailable,
+      departmentalAdditionalUnavailableCount: departmentallyUnavailable.length,
+      departmentalAdditionalUnavailableCodes: departmentallyUnavailable
+    },
     unsupportedMarketRomeCodes: nationallyUnavailable,
     unsupportedMarketRomeCodesCount: nationallyUnavailable.length,
     optimizationHint: nationallyUnavailable.length
@@ -289,7 +342,7 @@ async function estimateCompactExportSize(generatedDir) {
   ].filter(Boolean));
   const compact = {
     jobs,
-    mappings,
+    mappings: [],
     matchableSkills,
     skills: (await readJson(path.join(generatedDir, "skills.rome.json"), [])).filter(item => skillIds.has(item.id)),
     knowledge: (await readJson(path.join(generatedDir, "knowledge.rome.json"), [])).filter(item => knowledgeIds.has(item.id)),
@@ -305,7 +358,8 @@ async function estimateCompactExportSize(generatedDir) {
     megabytes: Number((bytes / 1024 / 1024).toFixed(2)),
     skillsCount: compact.skills.length,
     knowledgeCount: compact.knowledge.length,
-    note: "Estimation locale de l'export compact minifié, hors rapport diagnostic complet."
+    mappingsExcludedCount: mappings.length,
+    note: "Estimation locale de l'export compact minifié, hors rapport diagnostic complet et sans mappings détaillés."
   };
 }
 
@@ -314,6 +368,21 @@ function compactJobForEstimate(job = {}) {
   if (arraysEqualAsSets(compact.requiredSkills, compact.matchableSkillIds)) delete compact.requiredSkills;
   if (arraysEqualAsSets(compact.softSkills, compact.softSkillIds)) delete compact.softSkills;
   if (arraysEqualAsSets(compact.knowledge, compact.knowledgeIds)) delete compact.knowledge;
+  if (Array.isArray(compact.appellations)) compact.appellations = compact.appellations.slice(0, 5);
+  if (compact.constraints) {
+    delete compact.physicalConstraints;
+    delete compact.scheduleConstraints;
+    delete compact.mobilityConstraints;
+  }
+  if (compact.dataQuality || compact.fieldSources) {
+    compact.dataQualitySummary = {
+      completenessScore: compact.dataQuality?.completenessScore ?? null,
+      confidence: compact.dataQuality?.confidence ?? compact.confidence ?? null,
+      status: compact.dataQuality?.status || compact.officialStatus || ""
+    };
+    delete compact.dataQuality;
+    delete compact.fieldSources;
+  }
   delete compact.romeSkillLabels;
   delete compact.romeWorkContextLabels;
   delete compact.romeKnowledgeLabels;
@@ -322,6 +391,8 @@ function compactJobForEstimate(job = {}) {
   delete compact.romeWorkContextRefs;
   delete compact.romeAppellationRefs;
   delete compact.romeCertificationRefs;
+  delete compact.skillGroups;
+  delete compact.romeRawDiagnostic;
   return compact;
 }
 
@@ -364,12 +435,15 @@ ${(qualityReport.topMissingFields || []).slice(0, 12).map(item => `- ${item.fiel
 
 ## Marché officiel
 
+- Statut bundle marché : ${quality.marketAvailability.marketBundleStatus}
 - Lignes brutes : France ${rawMarket.nationalRows || 0}, région ${rawMarket.regionalRows || 0}, département ${rawMarket.departmentalRows || 0}
 - Couverture corpus actif : ${activeMarket.jobsWithOfficialMarket || 0}/${activeMarket.jobsTotal || quality.jobsTotal} métier(s), sans marché ${activeMarket.jobsWithoutMarket || 0}
 - France : ${market.national.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.national.jobsWithZeroOffers}, absents ${market.national.jobsUnavailable}
 - Occitanie : ${market.regional.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.regional.jobsWithZeroOffers}, absents ${market.regional.jobsUnavailable}
 - Aude : ${market.departmental.jobsWithOfficialMarket}/${quality.jobsTotal}, zéros ${market.departmental.jobsWithZeroOffers}, absents ${market.departmental.jobsUnavailable}
 - Codes sans statistique nationale : ${quality.marketAvailability.unsupportedMarketRomeCodesCount}
+- Codes nationaux absents en Occitanie : ${quality.marketAvailability.unavailableByLevel?.regionalAdditionalUnavailableCount || 0}
+- Codes nationaux ou régionaux absents dans l’Aude : ${quality.marketAvailability.unavailableByLevel?.departmentalAdditionalUnavailableCount || 0}
 
 ## Domaines et secteurs
 
@@ -483,5 +557,8 @@ function arraysEqualAsSets(a = [], b = []) {
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
-  await buildRome500AuditArtifacts();
+  await buildRome500AuditArtifacts({
+    generatedDir: process.env.ROME_AUDIT_DIR || GENERATED_DIR,
+    marketDir: process.env.ROME_MARKET_DIR || MARKET_DIR
+  });
 }

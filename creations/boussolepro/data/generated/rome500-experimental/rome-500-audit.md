@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T19:56:38.776Z.
+Généré le 2026-07-16T16:02:50.584Z.
 
 ## Synthèse
 
@@ -39,12 +39,15 @@ Généré le 2026-07-13T19:56:38.776Z.
 
 ## Marché officiel
 
-- Lignes brutes : France 0, région 0, département 0
-- Couverture corpus actif : 0/500 métier(s), sans marché 500
-- France : 0/500, zéros 0, absents 500
-- Occitanie : 0/500, zéros 0, absents 500
-- Aude : 0/500, zéros 0, absents 500
-- Codes sans statistique nationale : 500
+- Statut bundle marché : loaded_from_shared_market_folder
+- Lignes brutes : France 437, région 429, département 382
+- Couverture corpus actif : 437/500 métier(s), sans marché 63
+- France : 437/500, zéros 7, absents 63
+- Occitanie : 429/500, zéros 48, absents 71
+- Aude : 382/500, zéros 145, absents 118
+- Codes sans statistique nationale : 63
+- Codes nationaux absents en Occitanie : 8
+- Codes nationaux ou régionaux absents dans l’Aude : 55
 
 ## Domaines et secteurs
 
@@ -61,8 +64,8 @@ Généré le 2026-07-13T19:56:38.776Z.
 
 ## Taille et performance
 
-- Taille totale générée : 73.06 Mo
-- Nombre de fichiers : 49
+- Taille totale générée : 73.08 Mo
+- Nombre de fichiers : 55
 - Plus gros fichiers : rome-raw-skills.json (20.97 Mo), jobs.rome.json (18.47 Mo), knowledge.rome.json (5.14 Mo), batches/jobs.batch-03.json (3.84 Mo), batches/jobs.batch-02.json (3.79 Mo)
 
 ## Limite actuelle
@@ -71,4 +74,4 @@ Le corpus ROME 500 est techniquement chargeable, mais il ne doit pas encore êtr
 
 ## Warnings
 
-- 500 code(s) n'ont pas de ligne marché nationale dans le lot actuel.
+- 63 code(s) n'ont pas de ligne marché nationale dans le lot actuel.
