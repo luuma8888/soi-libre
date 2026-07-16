@@ -4304,17 +4304,24 @@ function getResultSkillReviewOptions(dataset = App.state.dataset) {
     ...toArray(App.state.results?.visibleExcludedButRelevant)
   ], "jobId");
   if (!results.length) return [];
-  const skillIds = unique(results.flatMap(result => [
+  const skillRefs = uniqueObjectsBy(results.flatMap(result => [
     ...toArray(result.scoreDetails?.skills?.unassessedSkills),
+    ...toArray(result.scoreDetails?.skills?.unassessedRequiredSkills),
     ...toArray(result.scoreDetails?.skills?.missingSkills),
     ...toArray(result.scoreDetails?.skills?.missingNonPenalizingSkills)
-  ]));
-  if (!skillIds.length) return [];
-  const index = getSkillRowIndex(dataset);
-  return skillIds
-    .map(id => index.get(id))
-    .filter(Boolean)
-    .map(row => ({ ...normalizeSkill(row), profileSuggestion: true }));
+  ]), item => skillReferenceId(item) || normalizeText(skillReferenceLabel(item)));
+  if (!skillRefs.length) return [];
+  return skillRefs
+    .map(ref => resolveSkillDisplay(ref, dataset))
+    .filter(skill => skill.resolved && skill.id)
+    .map(skill => normalizeSkill({
+      id: skill.id,
+      label: skill.label,
+      classification: skill.classification === "unknown" ? "skill_action" : skill.classification,
+      type: skill.type,
+      source: skill.source,
+      profileSuggestion: true
+    }));
 }
 
 function normalizeJob(raw) {
@@ -11501,21 +11508,24 @@ function renderWhyDialogContent(result = {}) {
 }
 
 function renderSkillReviewActions(result = {}) {
-  const skillIds = unique([
+  const skillRefs = uniqueObjectsBy([
     ...toArray(result.scoreDetails?.skills?.unassessedSkills),
+    ...toArray(result.scoreDetails?.skills?.unassessedRequiredSkills),
     ...toArray(result.scoreDetails?.skills?.missingSkills),
     ...toArray(result.scoreDetails?.skills?.missingNonPenalizingSkills)
-  ]).filter(id => resolveSkillDisplay(id).resolved);
-  if (!skillIds.length) return "";
+  ], item => skillReferenceId(item) || normalizeText(skillReferenceLabel(item)));
+  const skills = skillRefs
+    .map(ref => resolveSkillDisplay(ref))
+    .filter(skill => skill.resolved && skill.id);
+  if (!skills.length) return "";
   const selected = new Set(toArray(App.state.profile?.skills));
-  const rows = skillIds.slice(0, 10).map(id => {
-    const skill = resolveSkillDisplay(id);
-    return checkboxTag("skills", id, skill.label, "compétence à vérifier pour ce métier", selected.has(id));
+  const rows = skills.slice(0, 10).map(skill => {
+    return checkboxTag("skills", skill.id, skill.label, "compétence qui peut limiter le classement", selected.has(skill.id));
   }).join("");
   return `
     <div class="summary-box">
-      <h3>Compétences à situer dans votre profil</h3>
-      <p class="field-help">Ces compétences viennent de ce métier. Cochez seulement celles que vous savez réellement faire ou que vous reconnaissez dans votre expérience.</p>
+      <h3>Compétences qui peuvent changer ce résultat</h3>
+      <p class="field-help">Ces compétences viennent de la limite affichée plus haut. Cochez seulement celles que vous savez réellement faire ou que vous reconnaissez dans votre expérience.</p>
       <div class="tag-grid skill-family-grid">${rows}</div>
     </div>`;
 }
@@ -12935,28 +12945,51 @@ function getSkillLabel(skillId, datasets = App.state.dataset) {
 
 function resolveSkillDisplay(skillId, datasets = App.state.dataset, options = {}) {
   const mode = options.mode || App.state.displayMode || "essential";
-  const row = getSkillRowIndex(datasets).get(skillId);
+  const requestedId = skillReferenceId(skillId);
+  const fallbackLabel = skillReferenceLabel(skillId);
+  const row = requestedId ? getSkillRowIndex(datasets).get(requestedId) : null;
   if (row?.label || row?.title) {
     const label = row.label || row.title;
     return {
-      id: row.id || skillId,
-      requestedId: skillId,
-      label: mode === "diagnostic" && row.id && row.id !== skillId ? `${label} (${skillId})` : label,
+      id: row.id || requestedId,
+      requestedId,
+      label: mode === "diagnostic" && row.id && row.id !== requestedId ? `${label} (${requestedId})` : label,
       resolved: true,
       type: row.type || row.rawType || "unknown",
       classification: row.classification || "unknown",
       source: row.source || row.provenance || "generated"
     };
   }
+  if (requestedId && fallbackLabel) {
+    return {
+      id: requestedId,
+      requestedId,
+      label: mode === "diagnostic" ? `${fallbackLabel} (${requestedId})` : fallbackLabel,
+      resolved: true,
+      type: "unknown",
+      classification: "skill_action",
+      source: "result_score_details"
+    };
+  }
   return {
-    id: skillId,
-    requestedId: skillId,
-    label: mode === "diagnostic" ? `Compétence non résolue (${skillId})` : "Compétence officielle non résolue",
+    id: requestedId,
+    requestedId,
+    label: mode === "diagnostic" ? `Compétence non résolue (${requestedId || "sans identifiant"})` : "Compétence officielle non résolue",
     resolved: false,
     type: "unknown",
     classification: "unknown",
     source: "missing_local_reference"
   };
+}
+
+function skillReferenceId(value) {
+  if (value && typeof value === "object") return value.id || value.skillId || value.requestedId || value.rawId || (value.officialId ? `skill-rome-${value.officialId}` : "");
+  return String(value || "");
+}
+
+function skillReferenceLabel(value) {
+  if (value && typeof value === "object") return value.label || value.title || value.name || "";
+  return "";
 }
 
 function getContextLabel(contextId, datasets = App.state.dataset) {
