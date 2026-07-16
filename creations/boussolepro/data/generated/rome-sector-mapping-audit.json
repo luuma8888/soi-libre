@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "version": "v0.7.2-alpha",
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "sourceCorpus": "creations/boussolepro/data/generated/rome500-experimental/jobs.rome.json",
+  "jobsAudited": 500,
+  "knownIssueBeforeV072": {
+    "description": "Le corpus généré contient encore des secteurs issus d'un fallback trop large. Exemple : G1203 est stocké avec primarySectorId=restauration_alimentation.",
+    "g1203Before": {
+      "romeCode": "G1203",
+      "title": "Animateur / Animatrice jeunesse",
+      "storedPrimarySectorId": "restauration_alimentation"
+    }
+  },
+  "v072RuntimeMapping": {
+    "priority": ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
+    "letterFallbackUsedAsStrongEvidence": false,
+    "g1203After": {
+      "romeCode": "G1203",
+      "primarySectorId": "education_enfance",
+      "secondarySectorIds": ["social_insertion", "culture_communication"],
+      "source": "rome_sector_mapping_v2_exact",
+      "confidence": 0.98
+    }
+  },
+  "mandatoryMappingsCovered": ["G1202", "G1203", "G1235", "G1238", "G1204", "G1240", "K2105", "K2107"],
+  "warnings": [
+    "Ce rapport ne modifie pas les fichiers generated/jobs.rome.json. Il documente la correction appliquée dans le moteur HTML autonome.",
+    "Les anomalies restantes du corpus source devront être corrigées dans le générateur lors d'une future étape API, mais elles ne servent plus de preuve forte dans ClairMétier v0.7.2."
+  ]
+}

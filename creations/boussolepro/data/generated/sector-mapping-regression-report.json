@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0.0",
+  "version": "v0.7.2-alpha",
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "runtimeMappingPolicy": "Le moteur utilise rome-sector-mapping-v2 avant tout secteur importé pour les métiers ROME générés.",
+  "checks": {
+    "animation_as_restaurant": {
+      "status": "corrected_at_runtime",
+      "expected": 0,
+      "note": "Les métiers G120x/G123x sont corrigés vers education_enfance ou hôtellerie/loisirs selon mapping v2. Le corpus source peut encore contenir l'ancien secteur."
+    },
+    "teacher_as_generic_social": {
+      "status": "guarded",
+      "expected": 0,
+      "note": "Les préfixes K210 et titres professeur/enseignant/formateur sont mappés éducation_enfance avant fallback."
+    },
+    "digital_as_administrative": {
+      "status": "guarded",
+      "expected": 0,
+      "note": "Le préfixe M180 et les familles informatique/numérique/data sont mappés numerique."
+    },
+    "nature_as_restaurant": {
+      "status": "guarded",
+      "expected": 0,
+      "note": "Les préfixes A120/A12 et les familles espaces verts/nature/environnement sont mappés nature_agriculture."
+    },
+    "sector_letter_fallback_used": {
+      "status": "disabled_as_strong_evidence",
+      "expected": 0,
+      "note": "Le fallback par lettre devient ambiguous_unusable et ne détermine plus le cœur du profil."
+    }
+  },
+  "mappingSourcesExpected": {
+    "exact": "Codes listés explicitement, confiance très forte.",
+    "prefix4": "Préfixe ROME à quatre caractères, confiance forte.",
+    "prefix3": "Préfixe ROME à trois caractères, confiance moyenne.",
+    "family": "Famille officielle lue comme texte, confiance moyenne.",
+    "domain": "Domaine officiel lu comme texte, confiance moyenne.",
+    "title_heuristic": "Titre contrôlé, confiance prudente.",
+    "ambiguous_unusable": "Aucune preuve sectorielle forte, inutilisable pour le cœur de profil."
+  },
+  "manualReviewNeeded": [
+    "Étendre progressivement les mappings exacts/prefix4 pour les 500 ROME après observation terrain.",
+    "Reporter cette correction dans scripts/normalize-rome-api.mjs lors de la reprise API."
+  ]
+}

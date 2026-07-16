@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "version": "v0.7.2-alpha",
+  "description": "Mapping sectoriel local prioritaire pour corriger les secteurs ROME avant scoring ClairMétier. Le fallback par lettre ROME ne doit pas servir de preuve forte.",
+  "priority": [
+    "exact",
+    "prefix4",
+    "prefix3",
+    "family",
+    "domain",
+    "title_heuristic",
+    "ambiguous_unusable"
+  ],
+  "exact": {
+    "G1202": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "exact", "confidence": 0.98 },
+    "G1203": { "primarySectorId": "education_enfance", "secondarySectorIds": ["social_insertion", "culture_communication"], "source": "exact", "confidence": 0.98 },
+    "G1235": { "primarySectorId": "education_enfance", "secondarySectorIds": ["hotellerie_hebergement"], "source": "exact", "confidence": 0.98 },
+    "G1238": { "primarySectorId": "education_enfance", "secondarySectorIds": ["numerique", "culture_communication"], "source": "exact", "confidence": 0.98 },
+    "G1204": { "primarySectorId": "education_enfance", "secondarySectorIds": ["sante_soin"], "source": "exact", "confidence": 0.98 },
+    "G1240": { "primarySectorId": "education_enfance", "secondarySectorIds": ["nature_agriculture"], "source": "exact", "confidence": 0.98 },
+    "K2105": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "exact", "confidence": 0.98 },
+    "K2107": { "primarySectorId": "education_enfance", "secondarySectorIds": [], "source": "exact", "confidence": 0.98 }
+  },
+  "prefix4": {
+    "G120": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication", "social_insertion"], "source": "prefix4", "confidence": 0.9 },
+    "G123": { "primarySectorId": "education_enfance", "secondarySectorIds": ["hotellerie_hebergement"], "source": "prefix4", "confidence": 0.86 },
+    "K210": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "prefix4", "confidence": 0.9 },
+    "K130": { "primarySectorId": "social_insertion", "secondarySectorIds": ["education_enfance", "sante_soin"], "source": "prefix4", "confidence": 0.86 },
+    "M160": { "primarySectorId": "administratif_support", "secondarySectorIds": [], "source": "prefix4", "confidence": 0.88 },
+    "M180": { "primarySectorId": "numerique", "secondarySectorIds": [], "source": "prefix4", "confidence": 0.88 },
+    "A120": { "primarySectorId": "nature_agriculture", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix4", "confidence": 0.88 },
+    "A150": { "primarySectorId": "animaux", "secondarySectorIds": ["nature_agriculture"], "source": "prefix4", "confidence": 0.88 },
+    "K220": { "primarySectorId": "proprete_entretien", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix4", "confidence": 0.88 },
+    "G150": { "primarySectorId": "hotellerie_hebergement", "secondarySectorIds": ["proprete_entretien"], "source": "prefix4", "confidence": 0.86 },
+    "G160": { "primarySectorId": "restauration_alimentation", "secondarySectorIds": [], "source": "prefix4", "confidence": 0.88 },
+    "F160": { "primarySectorId": "batiment_construction", "secondarySectorIds": ["maintenance"], "source": "prefix4", "confidence": 0.88 },
+    "N110": { "primarySectorId": "logistique_transport", "secondarySectorIds": [], "source": "prefix4", "confidence": 0.88 }
+  },
+  "prefix3": {
+    "G12": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication", "social_insertion"], "source": "prefix3", "confidence": 0.76 },
+    "K21": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "prefix3", "confidence": 0.78 },
+    "M18": { "primarySectorId": "numerique", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.74 },
+    "A12": { "primarySectorId": "nature_agriculture", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 },
+    "K22": { "primarySectorId": "proprete_entretien", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix3", "confidence": 0.72 }
+  },
+  "notes": [
+    "Ce fichier est du référentiel local Boussole Pro, pas une donnée officielle France Travail.",
+    "Le même mapping est intégré dans boussole-pro.html pour conserver le fonctionnement offline autonome."
+  ]
+}

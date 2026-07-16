@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0.0",
+  "version": "v0.7.2-alpha",
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "scope": "Performance du moteur local après ajout des scores séparés et de l'expérience métier exacte.",
+  "currentOptimizationsKept": [
+    "Caches existants jobDerivedCache, skillSectorIndex, marketSummaryCache et resultIndex conservés.",
+    "Le scoring v0.7.2 réutilise les sous-scores existants au lieu de recalculer plusieurs passes.",
+    "La recherche de métiers déjà exercés limite l'affichage à 8 résultats."
+  ],
+  "newComputationCost": {
+    "exactJobExperience": "O(nombre d'expériences utilisateur) par métier, généralement très faible.",
+    "sectorMappingV2": "O(1) pour exact/prefix, puis quelques règles texte contrôlées.",
+    "separatedScores": "Calcul arithmétique sur sous-scores déjà produits."
+  },
+  "recommendedNextSteps": [
+    "Préconstruire des vecteurs personalFit par métier quand le corpus dépasse 500 métiers.",
+    "Déporter le calcul complet dans un Web Worker si le temps dépasse 2 secondes sur machine modeste.",
+    "Ne pas recalculer les résultats lors des interactions purement visuelles.",
+    "Mesurer resultCalculationMs depuis le panneau diagnostic navigateur après chargement ROME 500."
+  ],
+  "workerStatus": "préconisé pour une étape ultérieure, non ajouté en v0.7.2 pour éviter un changement architectural large dans le HTML autonome",
+  "risk": "Le corpus 500 reste utilisable, mais un corpus ROME complet nécessitera probablement Web Worker et index précompilés."
+}

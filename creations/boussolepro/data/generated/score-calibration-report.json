@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0.0",
+  "version": "v0.7.2-alpha",
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "purpose": "Calibrage local du moteur ClairMétier pour reconnaître l'expérience métier exacte sans exception codée.",
+  "referenceProfile": "experienced_youth_animator",
+  "referenceJob": {
+    "romeCode": "G1203",
+    "title": "Animateur / Animatrice jeunesse"
+  },
+  "scoreModel": {
+    "personalFitScore": {
+      "max": 100,
+      "weights": {
+        "exactJobExperience": 30,
+        "skillsAndConcepts": 25,
+        "domainAndPathway": 20,
+        "valuesAndInterests": 15,
+        "contexts": 10
+      }
+    },
+    "feasibilityScore": {
+      "max": 100,
+      "weights": {
+        "accessConditions": 50,
+        "confirmedConstraints": 40,
+        "mobilityAvailability": 10
+      }
+    },
+    "selectionScore": "personalFitScore*0.70 + feasibilityScore*0.20 + marketOpportunityNormalized*0.10, ajustable selon l'intention moteur.",
+    "legacyCompositeScore": "Ancien score pondéré skills/training/constraints/values/context/market conservé en diagnostic."
+  },
+  "expectedAssertions": {
+    "g1203Rank": 1,
+    "personalFitScoreAtLeast": 92,
+    "feasibilityScoreAtLeast": 80,
+    "coreProfileMatchScoreAtLeast": 90,
+    "skillsScoreAtLeast": 23,
+    "trainingLegacyScoreAtLeast": 16,
+    "constraintsScoreAtLeast": 23,
+    "valuesScoreAtLeast": 11,
+    "contextScoreAtLeast": 8,
+    "primarySectorId": "education_enfance",
+    "matchedExperienceDomainsIncludes": ["animation"]
+  },
+  "implementedGuards": [
+    "Aucune règle if romeCode === G1203 ne force le score.",
+    "L'expérience exacte est modulée par durée, période, maîtrise, appréciation et envie de poursuivre.",
+    "Les informations inconnues baissent la confiance mais ne pénalisent plus automatiquement la compatibilité.",
+    "Le BAFA est reconnu comme certification avantageuse quand le texte d'accès le signale."
+  ],
+  "manualValidation": [
+    "Charger le corpus ROME 500 expérimental dans Boussole Pro.",
+    "Ouvrir Paramètres > profils tests intégrés et charger experienced_youth_animator.",
+    "Lancer les résultats et vérifier G1203 dans le haut du classement."
+  ]
+}
