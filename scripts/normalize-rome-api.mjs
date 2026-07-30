@@ -1170,12 +1170,17 @@ function mapGeneratedSectorsFromProfile(profileSectorIds = []) {
 function getRomeSectorMapping(romeCode = "", context = {}) {
   const code = String(romeCode || "").toUpperCase();
   const mappedV2 = getRomeSectorMappingV2(code, context);
-  if (mappedV2.primarySectorId) return mappedV2;
+  if (isStrongRomeSectorMappingV2(mappedV2)) return mappedV2;
   const direct = ROME_SECTOR_MAPPING.mappings?.[code];
   if (direct) return { ...direct, secondarySectorIds: toArray(direct.secondarySectorIds).filter(id => id !== direct.primarySectorId).slice(0, 2), source: "local_rome_sector_mapping_v062", key: code };
   const fallback = ROME_SECTOR_MAPPING.prefixFallbacks?.[code.charAt(0)];
   if (fallback) return { ...fallback, secondarySectorIds: toArray(fallback.secondarySectorIds).filter(id => id !== fallback.primarySectorId).slice(0, 1), source: "local_rome_sector_prefix_fallback_v062", key: code.charAt(0) };
+  if (mappedV2.primarySectorId) return mappedV2;
   return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
+}
+
+function isStrongRomeSectorMappingV2(mapping = {}) {
+  return Boolean(mapping.primarySectorId) && /_exact$|_prefix4$|_prefix3$/.test(String(mapping.source || ""));
 }
 
 function getRomeSectorMappingV2(code = "", context = {}) {
@@ -1186,15 +1191,8 @@ function getRomeSectorMappingV2(code = "", context = {}) {
   if (prefix4) return buildRomeSectorMappingV2Result(prefix4, code.slice(0, 4), "prefix4");
   const prefix3 = ROME_SECTOR_MAPPING_V2.prefix3?.[code.slice(0, 3)];
   if (prefix3) return buildRomeSectorMappingV2Result(prefix3, code.slice(0, 3), "prefix3");
-  const text = normalizeText([
-    context.title,
-    context.description,
-    context.domain,
-    context.family,
-    ...toArray(context.activities),
-    ...toArray(context.appellations)
-  ].join(" "));
   const textRule = toArray(ROME_SECTOR_MAPPING_V2.textRules).find(rule => {
+    const text = getRomeSectorTextRuleSource(rule, context);
     if (!rule?.pattern || !text) return false;
     try {
       return new RegExp(rule.pattern, "i").test(text);
@@ -1204,6 +1202,13 @@ function getRomeSectorMappingV2(code = "", context = {}) {
   });
   if (textRule) return buildRomeSectorMappingV2Result(textRule, textRule.pattern, textRule.source || "text_rule");
   return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
+}
+
+function getRomeSectorTextRuleSource(rule = {}, context = {}) {
+  if (rule.source === "family") return normalizeText(context.family || "");
+  if (rule.source === "domain") return normalizeText(context.domain || "");
+  if (rule.source === "title_heuristic") return normalizeText(context.title || "");
+  return normalizeText([context.title, context.family, context.domain].join(" "));
 }
 
 function buildRomeSectorMappingV2Result(entry = {}, key = "", source = "unknown") {

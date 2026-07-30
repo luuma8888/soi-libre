@@ -19,7 +19,9 @@
     "G1204": { "primarySectorId": "education_enfance", "secondarySectorIds": ["sante_soin"], "source": "exact", "confidence": 0.98 },
     "G1240": { "primarySectorId": "education_enfance", "secondarySectorIds": ["nature_agriculture"], "source": "exact", "confidence": 0.98 },
     "K2105": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "exact", "confidence": 0.98 },
-    "K2107": { "primarySectorId": "education_enfance", "secondarySectorIds": [], "source": "exact", "confidence": 0.98 }
+    "K2107": { "primarySectorId": "education_enfance", "secondarySectorIds": [], "source": "exact", "confidence": 0.98 },
+    "B1805": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "source": "exact", "confidence": 0.98 },
+    "B1816": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "source": "exact", "confidence": 0.98 }
   },
   "prefix4": {
     "G120": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication", "social_insertion"], "source": "prefix4", "confidence": 0.9 },
@@ -37,11 +39,18 @@
     "N110": { "primarySectorId": "logistique_transport", "secondarySectorIds": [], "source": "prefix4", "confidence": 0.88 }
   },
   "prefix3": {
-    "G12": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication", "social_insertion"], "source": "prefix3", "confidence": 0.76 },
-    "K21": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "source": "prefix3", "confidence": 0.78 },
-    "M18": { "primarySectorId": "numerique", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.74 },
     "A12": { "primarySectorId": "nature_agriculture", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 },
-    "K22": { "primarySectorId": "proprete_entretien", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix3", "confidence": 0.72 }
+    "A15": { "primarySectorId": "animaux", "secondarySectorIds": ["nature_agriculture"], "source": "prefix3", "confidence": 0.72 },
+    "F16": { "primarySectorId": "batiment_construction", "secondarySectorIds": ["maintenance"], "source": "prefix3", "confidence": 0.72 },
+    "G15": { "primarySectorId": "hotellerie_hebergement", "secondarySectorIds": ["proprete_entretien"], "source": "prefix3", "confidence": 0.72 },
+    "G16": { "primarySectorId": "restauration_alimentation", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 },
+    "J15": { "primarySectorId": "sante_soin", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 },
+    "K12": { "primarySectorId": "social_insertion", "secondarySectorIds": ["education_enfance"], "source": "prefix3", "confidence": 0.72 },
+    "K13": { "primarySectorId": "social_insertion", "secondarySectorIds": ["sante_soin"], "source": "prefix3", "confidence": 0.72 },
+    "K22": { "primarySectorId": "proprete_entretien", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix3", "confidence": 0.72 },
+    "M16": { "primarySectorId": "administratif_support", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.74 },
+    "M18": { "primarySectorId": "numerique", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.74 },
+    "N11": { "primarySectorId": "logistique_transport", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 }
   },
   "textRules": [
     { "source": "family", "pattern": "animation|loisirs|jeunesse|educat|enseignement|formation", "primarySectorId": "education_enfance", "secondarySectorIds": ["social_insertion", "culture_communication"], "confidence": 0.76 },
