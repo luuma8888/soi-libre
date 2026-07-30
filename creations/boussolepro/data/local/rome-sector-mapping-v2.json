@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "version": "v0.7.2-alpha",
+  "version": "v0.7.3-alpha",
   "description": "Mapping sectoriel local prioritaire pour corriger les secteurs ROME avant scoring ClairMétier. Le fallback par lettre ROME ne doit pas servir de preuve forte.",
   "priority": [
     "exact",
@@ -43,6 +43,19 @@
     "A12": { "primarySectorId": "nature_agriculture", "secondarySectorIds": [], "source": "prefix3", "confidence": 0.72 },
     "K22": { "primarySectorId": "proprete_entretien", "secondarySectorIds": ["services_aux_collectivites"], "source": "prefix3", "confidence": 0.72 }
   },
+  "textRules": [
+    { "source": "family", "pattern": "animation|loisirs|jeunesse|educat|enseignement|formation", "primarySectorId": "education_enfance", "secondarySectorIds": ["social_insertion", "culture_communication"], "confidence": 0.76 },
+    { "source": "family", "pattern": "social|insertion|accompagnement|mediation", "primarySectorId": "social_insertion", "secondarySectorIds": ["education_enfance"], "confidence": 0.72 },
+    { "source": "family", "pattern": "informatique|numerique|systeme|logiciel|data", "primarySectorId": "numerique", "secondarySectorIds": [], "confidence": 0.74 },
+    { "source": "family", "pattern": "espaces verts|agriculture|environnement|nature", "primarySectorId": "nature_agriculture", "secondarySectorIds": [], "confidence": 0.74 },
+    { "source": "family", "pattern": "hotel|hebergement|tourisme", "primarySectorId": "hotellerie_hebergement", "secondarySectorIds": [], "confidence": 0.7 },
+    { "source": "family", "pattern": "restauration|cuisine|aliment", "primarySectorId": "restauration_alimentation", "secondarySectorIds": [], "confidence": 0.74 },
+    { "source": "family", "pattern": "nettoyage|proprete|entretien des locaux|hygiene", "primarySectorId": "proprete_entretien", "secondarySectorIds": [], "confidence": 0.76 },
+    { "source": "family", "pattern": "batiment|chantier|construction", "primarySectorId": "batiment_construction", "secondarySectorIds": ["maintenance"], "confidence": 0.72 },
+    { "source": "family", "pattern": "logistique|transport|stock|conduite", "primarySectorId": "logistique_transport", "secondarySectorIds": [], "confidence": 0.72 },
+    { "source": "title_heuristic", "pattern": "animateur|animatrice|jeunesse|atelier artistique|atelier ludique|educateur|educatrice", "primarySectorId": "education_enfance", "secondarySectorIds": ["social_insertion", "culture_communication"], "confidence": 0.68 },
+    { "source": "title_heuristic", "pattern": "professeur|enseignant|formateur|formatrice", "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication"], "confidence": 0.68 }
+  ],
   "notes": [
     "Ce fichier est du référentiel local Boussole Pro, pas une donnée officielle France Travail.",
     "Le même mapping est intégré dans boussole-pro.html pour conserver le fonctionnement offline autonome."

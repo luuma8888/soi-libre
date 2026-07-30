@@ -191243,7 +191243,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "G1203",
     "title": "Animateur / Animatrice jeunesse",
-    "domain": "Restauration, hôtellerie, tourisme et accueil",
+    "domain": "Enfance, éducation et animation",
     "family": "Hôtellerie-restauration, tourisme, loisirs et animation",
     "officialRomeDomain": {
       "code": "G",
@@ -191251,15 +191251,20 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
-      "restauration_hotellerie_tourisme"
+      "enfance_education",
+      "social_accompagnement",
+      "culture_communication_creation"
     ],
-    "primarySectorId": "restauration_alimentation",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.6,
+    "primarySectorId": "education_enfance",
+    "secondarySectorIds": [
+      "social_insertion",
+      "culture_communication"
+    ],
+    "sectorMappingConfidence": 0.98,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "G"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "G1203"
       }
     ],
     "appellations": [

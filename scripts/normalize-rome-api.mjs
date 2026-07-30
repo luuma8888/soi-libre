@@ -6,7 +6,8 @@ const SOURCE_UNKNOWN = "unknown";
 const SOURCE_NOT_AVAILABLE = "not_available_in_connected_sources";
 const SOURCE_OFFICIAL_DETAIL_UNAVAILABLE = "official_detail_unavailable";
 const MATCHABLE_SKILLS_LIMIT = 500;
-const ROME_SECTOR_MAPPING = loadRomeSectorMapping();
+const ROME_SECTOR_MAPPING_V2 = loadRomeSectorMapping("rome-sector-mapping-v2.json", { exact: {}, prefix4: {}, prefix3: {}, textRules: [] });
+const ROME_SECTOR_MAPPING = loadRomeSectorMapping("rome-sector-mapping.json", { mappings: {}, prefixFallbacks: {} });
 const ROME_DOMAIN_BY_LETTER = {
   A: "Agriculture et pêche, espaces naturels et espaces verts, soins aux animaux",
   B: "Arts et façonnage d'ouvrages d'art",
@@ -109,15 +110,15 @@ export function normalizeRomeMetier(raw = {}) {
   const recommendedCertifications = unique(recommendedCertificationRefs.map(ref => toStableCertificationId(ref.label, ref.officialId)));
   const relatedJobs = collectRelatedJobRefs(source.relatedJobs, source.metiersProches, source.prochesMetiers, ...findValuesByKeyHints(source, ["metierproche", "mobilite", "prochemetier"]));
   const officialRomeDomain = buildOfficialRomeDomain(romeCode, firstText(source.domain, source.domaine, source.grandDomaine));
+  const domainOfficial = officialRomeDomain.label;
+  const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
   const boussoleSectorIds = mapBoussoleSectors({ romeCode, title, description, activities, appellations });
-  const explicitSectorMapping = getRomeSectorMapping(romeCode);
+  const explicitSectorMapping = getRomeSectorMapping(romeCode, { title, description, activities, appellations, domain: domainOfficial, family: familyOfficial });
   const heuristicSectorMapping = mapProfileSectorsFromGenerated(boussoleSectorIds);
   const sectorMapping = explicitSectorMapping.primarySectorId ? explicitSectorMapping : heuristicSectorMapping;
   const stableBoussoleSectorIds = explicitSectorMapping.primarySectorId
     ? mapGeneratedSectorsFromProfile([sectorMapping.primarySectorId, ...sectorMapping.secondarySectorIds])
     : boussoleSectorIds;
-  const domainOfficial = officialRomeDomain.label;
-  const familyOfficial = firstText(source.family, source.famille, source.domaineProfessionnel);
   const domain = stableBoussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
   const family = familyOfficial || domainOfficial || inferFamilyFromRomeCode(romeCode);
   const textPool = unique([title, description, domain, family, ...appellations, ...activities, ...contextLabels, ...requiredSkillLabels, ...knowledgeLabels].filter(Boolean));
@@ -1166,13 +1167,53 @@ function mapGeneratedSectorsFromProfile(profileSectorIds = []) {
     .filter(id => BOUSSOLE_SECTOR_LABELS[id]));
 }
 
-function getRomeSectorMapping(romeCode = "") {
+function getRomeSectorMapping(romeCode = "", context = {}) {
   const code = String(romeCode || "").toUpperCase();
+  const mappedV2 = getRomeSectorMappingV2(code, context);
+  if (mappedV2.primarySectorId) return mappedV2;
   const direct = ROME_SECTOR_MAPPING.mappings?.[code];
   if (direct) return { ...direct, secondarySectorIds: toArray(direct.secondarySectorIds).filter(id => id !== direct.primarySectorId).slice(0, 2), source: "local_rome_sector_mapping_v062", key: code };
   const fallback = ROME_SECTOR_MAPPING.prefixFallbacks?.[code.charAt(0)];
   if (fallback) return { ...fallback, secondarySectorIds: toArray(fallback.secondarySectorIds).filter(id => id !== fallback.primarySectorId).slice(0, 1), source: "local_rome_sector_prefix_fallback_v062", key: code.charAt(0) };
   return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
+}
+
+function getRomeSectorMappingV2(code = "", context = {}) {
+  if (!code) return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
+  const exact = ROME_SECTOR_MAPPING_V2.exact?.[code];
+  if (exact) return buildRomeSectorMappingV2Result(exact, code, "exact");
+  const prefix4 = ROME_SECTOR_MAPPING_V2.prefix4?.[code.slice(0, 4)];
+  if (prefix4) return buildRomeSectorMappingV2Result(prefix4, code.slice(0, 4), "prefix4");
+  const prefix3 = ROME_SECTOR_MAPPING_V2.prefix3?.[code.slice(0, 3)];
+  if (prefix3) return buildRomeSectorMappingV2Result(prefix3, code.slice(0, 3), "prefix3");
+  const text = normalizeText([
+    context.title,
+    context.description,
+    context.domain,
+    context.family,
+    ...toArray(context.activities),
+    ...toArray(context.appellations)
+  ].join(" "));
+  const textRule = toArray(ROME_SECTOR_MAPPING_V2.textRules).find(rule => {
+    if (!rule?.pattern || !text) return false;
+    try {
+      return new RegExp(rule.pattern, "i").test(text);
+    } catch {
+      return false;
+    }
+  });
+  if (textRule) return buildRomeSectorMappingV2Result(textRule, textRule.pattern, textRule.source || "text_rule");
+  return { primarySectorId: null, secondarySectorIds: [], confidence: 0, source: SOURCE_UNKNOWN, key: null };
+}
+
+function buildRomeSectorMappingV2Result(entry = {}, key = "", source = "unknown") {
+  return {
+    primarySectorId: entry.primarySectorId || null,
+    secondarySectorIds: toArray(entry.secondarySectorIds).filter(id => id && id !== entry.primarySectorId).slice(0, 2),
+    confidence: Number(entry.confidence || 0),
+    source: `local_rome_sector_mapping_v2_${source}`,
+    key
+  };
 }
 
 function collectSkillGroups(...values) {
@@ -1270,12 +1311,12 @@ function normalizedSkillLabel(value) {
   return normalizeText(value).replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function loadRomeSectorMapping() {
+function loadRomeSectorMapping(fileName = "rome-sector-mapping.json", fallback = { mappings: {}, prefixFallbacks: {} }) {
   try {
-    const url = new URL("../creations/boussolepro/data/local/rome-sector-mapping.json", import.meta.url);
-    return JSON.parse(readFileSync(url, "utf8"));
+    const url = new URL(`../creations/boussolepro/data/local/${fileName}`, import.meta.url);
+    return { ...fallback, ...JSON.parse(readFileSync(url, "utf8")) };
   } catch {
-    return { mappings: {}, prefixFallbacks: {} };
+    return fallback;
   }
 }
 

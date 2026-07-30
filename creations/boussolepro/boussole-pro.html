@@ -1700,7 +1700,7 @@ body[data-theme="dark"] .compare-table td {
 const CONFIG = {
   appName: "Boussole Pro",
   engineName: "ClairMétier",
-  version: "v0.7.2-alpha",
+  version: "v0.7.3-alpha",
   schemaVersion: "1.0.0",
   storageKeys: {
     dataset: "boussole_pro_dataset_v1",
@@ -2213,7 +2213,7 @@ const GENERATED_ROME_SECTOR_TO_PROFILE_SECTOR_V061 = {
 };
 
 const ROME_SECTOR_MAPPING_V2 = {
-  version: "v0.7.2-alpha",
+  version: "v0.7.3-alpha",
   priority: ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
   exact: {
     G1202: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
@@ -12488,7 +12488,7 @@ function renderWhySeparatedScoreDetails(result = {}) {
   const marketLine = `Marché séparé : ${marketOpportunityLabel({ marketOpportunityLevel: result.marketOpportunityLevel || "unknown" })}.`;
   return `
     <div class="summary-box">
-      <strong>Lecture v0.7.2</strong>
+      <strong>Lecture v0.7.3</strong>
       <ul class="compact-list">
         <li>Correspondance personnelle : ${Math.round(result.personalFitScore ?? result.globalScore ?? 0)}%.</li>
         <li>Faisabilité actuelle : ${h(feasibilityLabel(result.feasibilityScore ?? 0))} (${Math.round(result.feasibilityScore ?? 0)}%).</li>
@@ -14358,12 +14358,20 @@ function saveSettings(partial = {}) {
   } catch (error) {
     current = {};
   }
-  localStorage.setItem(CONFIG.storageKeys.settings, JSON.stringify({
+  const settings = {
     ...current,
     corpusMode: App.state.corpusMode || "auto",
     displayMode: App.state.displayMode || "essential",
     ...partial
-  }));
+  };
+  try {
+    localStorage.setItem(CONFIG.storageKeys.settings, JSON.stringify(settings));
+    return true;
+  } catch (error) {
+    console.warn("Préférences locales non sauvegardées.", error);
+    if (App.dom?.toast) showToast("Préférences non sauvegardées sur cet appareil. Vous pouvez continuer à utiliser Boussole Pro.");
+    return false;
+  }
 }
 
 function applyStoredTheme() {

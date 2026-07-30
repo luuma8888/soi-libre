@@ -28,6 +28,9 @@ async function main() {
   await writeJson(path.join(GENERATED_DIR, "rome72-vs-rome500-regression-report.json"), comparison);
   await writeJson(path.join(GENERATED_DIR, "essential-jobs-coverage-report.json"), essentialCoverage);
   await writeJson(path.join(GENERATED_DIR, "exploration-filter-coverage-report.json"), explorationCoverage);
+  if (essentialCoverage.sectorMappingRegression?.status !== "ok") {
+    throw new Error("[Boussole Pro] Régression mapping secteur G1203 détectée : le métier reste classé côté restauration/hôtellerie.");
+  }
 
   console.log(`[Boussole Pro] Validation ROME500: ${rome500.dataset.jobs.length} métiers, marché FR ${essentialCoverage.marketCoverage.jobsWithNationalMarket}, Occitanie ${essentialCoverage.marketCoverage.jobsWithRegionalMarket}, Aude ${essentialCoverage.marketCoverage.jobsWithDepartmentalMarket}.`);
   console.log(`[Boussole Pro] Propreté/hôtellerie Top 5: ${findProfileTop(report500, "proprete-hotellerie-accessible").join(", ") || "non trouvé"}.`);
@@ -208,6 +211,7 @@ function buildEssentialCoverageReport(app, bundle) {
   const sectorCounts = countBy(jobs.flatMap(job => job.boussoleSectorIds?.length ? job.boussoleSectorIds : [job.primarySectorId || "unknown"]));
   const familyCounts = countBy(jobs.map(job => job.family || "Famille non renseignée"));
   const marketCoverage = app.calculateMarketCoverage(bundle.dataset, {});
+  const sectorMappingRegression = buildSectorMappingRegression(app, bundle);
   return {
     schemaVersion: "1.0.0",
     reportKind: "essential_jobs_coverage_rome500",
@@ -227,7 +231,38 @@ function buildEssentialCoverageReport(app, bundle) {
       .map(([family, count]) => ({ family, count }))
       .sort((a, b) => a.count - b.count || a.family.localeCompare(b.family, "fr")),
     marketCoverage,
-    status: jobs.length >= 500 && marketCoverage.jobsWithNationalMarket > 0 ? "ok" : "completed_with_warnings"
+    sectorMappingRegression,
+    status: jobs.length >= 500 && marketCoverage.jobsWithNationalMarket > 0 && sectorMappingRegression.status === "ok" ? "ok" : "completed_with_warnings"
+  };
+}
+
+function buildSectorMappingRegression(app, bundle) {
+  const job = (bundle.dataset.jobs || []).find(row => row.romeCode === "G1203");
+  const runtimeSector = job ? app.getJobSectorProfile(job) : {};
+  const generatedSectorText = normalizeAuditText([
+    job?.domain,
+    job?.primarySectorId,
+    ...toArray(job?.boussoleSectorIds)
+  ].join(" "));
+  const checks = {
+    g1203Present: Boolean(job),
+    g1203GeneratedPrimaryEducation: job?.primarySectorId === "education_enfance",
+    g1203RuntimePrimaryEducation: runtimeSector?.primarySectorId === "education_enfance",
+    g1203GeneratedNotRestauration: !/(restauration|hotellerie|tourisme)/.test(generatedSectorText)
+  };
+  return {
+    status: Object.values(checks).every(Boolean) ? "ok" : "failed",
+    checks,
+    g1203: job ? {
+      title: job.title,
+      domain: job.domain,
+      family: job.family,
+      boussoleSectorIds: job.boussoleSectorIds || [],
+      primarySectorId: job.primarySectorId,
+      secondarySectorIds: job.secondarySectorIds || [],
+      runtimePrimarySectorId: runtimeSector?.primarySectorId || "unknown",
+      runtimeSecondarySectorIds: runtimeSector?.secondarySectorIds || []
+    } : null
   };
 }
 
@@ -306,6 +341,19 @@ function countBy(values = []) {
 
 function unique(values = []) {
   return [...new Set(values.filter(Boolean))];
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (value === undefined || value === null || value === "") return [];
+  return [value];
+}
+
+function normalizeAuditText(value = "") {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 main().catch(error => {
