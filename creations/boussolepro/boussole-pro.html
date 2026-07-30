@@ -7843,9 +7843,23 @@ function updateJobExperienceFromTarget(target) {
       : target.value;
   experiences[index][field] = value;
   if (field === "durationYears") experiences[index].durationBucket = durationBucketFromYears(value);
-  if (field === "recency" && value === "current") experiences[index].isCurrent = true;
-  if (field === "isCurrent" && value) experiences[index].recency = "current";
+  if (field === "recency") experiences[index].isCurrent = value === "current";
+  if (field === "isCurrent") {
+    experiences[index].isCurrent = Boolean(value);
+    if (value) experiences[index].recency = "current";
+    else if (experiences[index].recency === "current") experiences[index].recency = "recent";
+  }
   App.state.profile.jobExperiences = normalizeJobExperiences(experiences);
+}
+
+function syncJobExperienceRowControls(index) {
+  const editor = App.dom.stepContainer?.querySelector("[data-job-experience-editor]");
+  const experience = normalizeJobExperiences(App.state.profile.jobExperiences)[index];
+  if (!editor || !experience) return;
+  const recency = editor.querySelector(`select[data-job-experience-index="${index}"][data-job-experience-field="recency"]`);
+  const isCurrent = editor.querySelector(`input[type="checkbox"][data-job-experience-index="${index}"][data-job-experience-field="isCurrent"]`);
+  if (recency) recency.value = experience.recency;
+  if (isCurrent) isCurrent.checked = Boolean(experience.isCurrent);
 }
 
 function renderContextPreferenceImportance(profile = App.state.profile) {
@@ -11783,8 +11797,10 @@ function handleProfileInput(event) {
     return;
   }
   if (target.dataset.jobExperienceField !== undefined) {
+    const field = target.dataset.jobExperienceField;
+    const index = Number(target.dataset.jobExperienceIndex);
     updateJobExperienceFromTarget(target);
-    renderJobExperienceEditorInPlace(false);
+    if (field === "recency" || field === "isCurrent") syncJobExperienceRowControls(index);
     scheduleSaveAndMatch();
     return;
   }
