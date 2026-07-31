@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.7.3-alpha  
+**Version :** v0.7.4-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
