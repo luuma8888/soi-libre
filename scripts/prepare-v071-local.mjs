@@ -70,30 +70,88 @@ function buildAccessSummary(job = {}) {
   const text = normalizeMultilineText(job.accessConditions?.text || "");
   const normalized = normalizeText(text);
   const hasText = Boolean(text);
-  const noDiplomaPossible = /\baccessible sans qualification\b|\bsans dipl[oô]me\b|\bsans qualification\b/.test(normalized);
-  const possibleOnly = /peut|peuvent|faciliter|atout|souhaite|apprecie|demandees?|necessaire/.test(normalized);
-  const mandatory = /est requis|sont requis|obligatoire|exige|necessite|doit etre|indispensable/.test(normalized);
-  const regulated = /reglement|carte professionnelle|habilitation|autorisation|certificat d'aptitude|caces|permis/.test(normalized);
-  const citedDiplomas = extractMatches(text, /(CAP|Bac\s*\+?\s*\d?|BTS|BUT|DUT|licence|master|doctorat|dipl[oô]me[^.,;\n]*)/gi);
-  const citedCertifications = extractMatches(text, /(CACES|habilitation[^.,;\n]*|permis[^.,;\n]*|carte professionnelle|certificat[^.,;\n]*)/gi);
-  const accessLevelCategory = inferAccessCategory(normalized, { noDiplomaPossible, citedDiplomas, mandatory });
+  const sentences = splitSentences(text);
+  const noDiplomaSentences = sentences.filter(sentence => isNoDiplomaPossibleSentence(sentence));
+  const negatedObligationSentences = sentences.filter(sentence => isNegatedObligationSentence(sentence));
+  const mandatorySentences = sentences.filter(sentence => isMandatoryAccessSentence(sentence));
+  const optionalSentences = sentences.filter(sentence => isOptionalAccessSentence(sentence) || isRecommendedAccessSentence(sentence));
+  const noDiplomaPossible = noDiplomaSentences.length > 0;
+  const contradictoryEvidence = noDiplomaPossible && mandatorySentences.length > 0;
+  const citedDiplomas = extractDiplomaMentions(text);
+  const citedCertifications = extractCertificationMentions(text);
+  const directRequiredCredentials = mandatorySentences.flatMap(extractRequiredCredentialLabels);
+  const globalRequiredCredentials = !directRequiredCredentials.length && hasMandatorySpecificCredentialEvidence(text, mandatorySentences)
+    ? extractSpecificCredentialLabels(text)
+    : [];
+  const mandatoryDiplomas = unique(mandatorySentences.flatMap(extractDiplomaMentions));
+  const recommendedDiplomas = unique(optionalSentences.flatMap(extractDiplomaMentions));
+  const requiredCredentialLabels = unique([...directRequiredCredentials, ...globalRequiredCredentials]);
+  const optionalCredentialLabels = unique(optionalSentences.flatMap(extractOptionalCredentialLabels));
+  const regulated = mandatorySentences.some(sentence => isRegulatedAccessSentence(sentence));
+  const diplomaRange = inferDiplomaRange(text, { noDiplomaPossible, mandatorySentences, optionalSentences });
+  const requirementKind = inferRequirementKind({
+    hasText,
+    noDiplomaPossible,
+    contradictoryEvidence,
+    mandatorySentences,
+    optionalSentences,
+    requiredCredentialLabels,
+    diplomaRange,
+    regulated
+  });
+  const mandatory = requirementKind === "mandatory" || requirementKind === "regulated";
+  const accessLevelCategory = inferAccessCategory(normalized, { noDiplomaPossible, citedDiplomas, diplomaRange, mandatory });
   const warnings = [];
   if (!hasText) warnings.push("access_text_missing");
-  if (mandatory && possibleOnly) warnings.push("mixed_required_and_optional_wording");
+  if (mandatorySentences.length && optionalSentences.length) warnings.push("mixed_required_and_optional_wording");
+  if (contradictoryEvidence) warnings.push("contradictory_access_evidence");
+  if (negatedObligationSentences.length) warnings.push("negated_obligation_detected");
   if (citedDiplomas.length > 3) warnings.push("multiple_diploma_mentions");
   return {
     jobId: job.id,
     romeCode: job.romeCode,
-    displayLabel: accessDisplayLabel(accessLevelCategory, { noDiplomaPossible, mandatory, citedDiplomas, citedCertifications }),
+    displayLabel: accessDisplayLabel(accessLevelCategory, {
+      noDiplomaPossible,
+      mandatory,
+      citedDiplomas,
+      citedCertifications,
+      diplomaRange,
+      requirementKind,
+      requiredCredentialLabels
+    }),
     accessLevelCategory,
+    requirementKind,
+    minimumDiplomaLevel: diplomaRange.minimumDiplomaLevel,
+    maximumDiplomaLevel: diplomaRange.maximumDiplomaLevel,
+    minimumDiplomaLabel: diplomaRange.minimumDiplomaLabel,
+    maximumDiplomaLabel: diplomaRange.maximumDiplomaLabel,
+    specificCredentialRequired: requiredCredentialLabels.length > 0,
+    requiredCredentialLabels,
+    optionalCredentialLabels,
+    optionalDiplomas: recommendedDiplomas,
+    mandatoryDiplomas,
     noDiplomaPossible,
     regulated,
-    mandatoryQualification: Boolean(mandatory && (citedDiplomas.length || citedCertifications.length || regulated)),
+    contradictoryEvidence,
+    mandatoryQualification: Boolean(mandatory && !contradictoryEvidence && (mandatoryDiplomas.length || requiredCredentialLabels.length || regulated)),
     citedDiplomas,
     citedCertifications,
     source: hasText ? "derived_from_official_access_text" : "unknown",
-    confidence: hasText ? confidenceForAccess({ mandatory, possibleOnly, citedDiplomas, citedCertifications }) : 0,
-    matchedExcerpts: hasText ? extractRelevantSentences(text).slice(0, 4) : [],
+    confidence: hasText ? confidenceForAccess({
+      requirementKind,
+      contradictoryEvidence,
+      negatedObligation: negatedObligationSentences.length > 0,
+      citedDiplomas,
+      citedCertifications,
+      requiredCredentialLabels
+    }) : 0,
+    matchedExcerpts: unique([
+      ...mandatorySentences,
+      ...optionalSentences,
+      ...noDiplomaSentences,
+      ...negatedObligationSentences,
+      ...extractRelevantSentences(text)
+    ]).slice(0, 5),
     warnings
   };
 }
@@ -101,11 +159,10 @@ function buildAccessSummary(job = {}) {
 function inferAccessCategory(text, flags) {
   if (!text) return "unknown";
   if (flags.noDiplomaPossible) return "no_diploma_possible";
-  if (/bac\s*\+\s*5|master|doctorat|ingenieur/.test(text)) return "bac_plus_5";
-  if (/bac\s*\+\s*3|licence|bachelor/.test(text)) return "bac_plus_3";
-  if (/bac\s*\+\s*2|bts|dut|but/.test(text)) return "bac_plus_2";
-  if (/\bbac\b|baccalaureat/.test(text)) return "bac";
-  if (/\bcap\b|bep/.test(text)) return "cap_or_equivalent";
+  if (flags.diplomaRange?.minimumDiplomaLevel !== null && flags.diplomaRange?.maximumDiplomaLevel !== null) {
+    if (flags.diplomaRange.minimumDiplomaLevel !== flags.diplomaRange.maximumDiplomaLevel) return "mixed_or_multiple_routes";
+    return diplomaLevelToAccessCategory(flags.diplomaRange.maximumDiplomaLevel);
+  }
   if (flags.citedDiplomas.length > 1) return "mixed_or_multiple_routes";
   return "unknown";
 }
@@ -121,16 +178,231 @@ function accessDisplayLabel(category, flags = {}) {
     bac_plus_5: "Bac +5 cité",
     mixed_or_multiple_routes: "Plusieurs voies d'accès citées"
   };
-  const base = labels[category] || "Accès à vérifier";
-  return flags.mandatoryQualification ? `${base} comme exigence possible` : `${base}, obligation à vérifier`;
+  const rangeLabel = diplomaRangeLabel(flags.diplomaRange);
+  const base = rangeLabel || labels[category] || "Accès à vérifier";
+  if (flags.requiredCredentialLabels?.length) return `${base} avec qualification spécifique requise`;
+  if (flags.requirementKind === "mandatory" || flags.requirementKind === "regulated") return `${base} comme exigence probable`;
+  if (flags.requirementKind === "recommended") return `${base} recommandé`;
+  if (flags.requirementKind === "conflicting") return `${base}, texte contradictoire à vérifier`;
+  return `${base}, obligation à vérifier`;
 }
 
-function confidenceForAccess({ mandatory, possibleOnly, citedDiplomas, citedCertifications }) {
+function inferRequirementKind({
+  hasText,
+  noDiplomaPossible,
+  contradictoryEvidence,
+  mandatorySentences,
+  optionalSentences,
+  requiredCredentialLabels,
+  diplomaRange,
+  regulated
+}) {
+  if (!hasText) return "unknown";
+  if (contradictoryEvidence) return "conflicting";
+  if (regulated || requiredCredentialLabels.length || mandatorySentences.length) return regulated ? "regulated" : "mandatory";
+  if (optionalSentences.length || diplomaRange.minimumDiplomaLevel !== null) return "recommended";
+  if (noDiplomaPossible) return "no_diploma_possible";
+  return "unknown";
+}
+
+function confidenceForAccess({ requirementKind, contradictoryEvidence, negatedObligation, citedDiplomas, citedCertifications, requiredCredentialLabels }) {
   let score = 0.68;
-  if (mandatory) score += 0.1;
-  if (possibleOnly) score -= 0.08;
+  if (requirementKind === "mandatory" || requirementKind === "regulated") score += 0.12;
+  if (requirementKind === "recommended") score += 0.03;
+  if (negatedObligation) score += 0.04;
+  if (contradictoryEvidence) score -= 0.18;
+  if (requiredCredentialLabels.length) score += 0.08;
   if (citedDiplomas.length || citedCertifications.length) score += 0.08;
-  return Math.max(0.45, Math.min(0.86, Number(score.toFixed(2))));
+  return Math.max(0.35, Math.min(0.9, Number(score.toFixed(2))));
+}
+
+function splitSentences(text = "") {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function isNegatedObligationSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /aucun(?:e)?\s+(formation|certification|habilitation|diplome|qualification)[^.]*obligatoire/.test(text) ||
+    /aucun(?:e)?\s+(formation|certification|habilitation|diplome|qualification)[^.]*exige/.test(text) ||
+    /aucun(?:e)?\s+certification[^.]*legalement obligatoire/.test(text) ||
+    /aucun(?:e)?\s+(certification|habilitation)[^.]*reglementairement/.test(text) ||
+    /sans\s+(formation|certification|habilitation)[^.]*obligatoire/.test(text) ||
+    /n[' ]?est\s+(legalement\s+|reglementairement\s+)?pas\s+obligatoire/.test(text) ||
+    /ne\s+sont\s+pas\s+obligatoires?/.test(text) ||
+    /n[' ]?est\s+pas\s+obligatoire/.test(text) ||
+    /pas\s+(legalement|reglementairement)\s+obligatoire/.test(text);
+}
+
+function isNoDiplomaPossibleSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /\baccessible\s+sans\s+(diplome|qualification|formation)\b/.test(text) ||
+    /\baccessible\s+avec\s+ou\s+sans\s+diplome\b/.test(text) ||
+    /\bsans\s+diplome\s+particulier\b/.test(text) ||
+    /aucun\s+diplome\s+n[' ]?est\s+(legalement\s+)?obligatoire/.test(text) ||
+    /aucun\s+diplome\s+n[' ]?est\s+requis/.test(text) ||
+    /sans\s+formation\s+et\s+sans\s+certification\s+obligatoire/.test(text);
+}
+
+function isOptionalAccessSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /peut\s+etre\s+un\s+atout/.test(text) ||
+    /peuvent\s+etre\s+un\s+atout/.test(text) ||
+    /\batout\b/.test(text) ||
+    /facilitent?\s+l[' ]?entree/.test(text) ||
+    /peuvent?\s+etre\s+(proposees?|recommandees?|appreciees?|utiles?)/.test(text) ||
+    /reste(?:nt)?\s+des?\s+atouts?/.test(text);
+}
+
+function isRecommendedAccessSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /recommand/.test(text) ||
+    /generalement\s+accessible/.test(text) ||
+    /souhaite/.test(text) ||
+    /pertinent/.test(text) ||
+    /utile/.test(text);
+}
+
+function isMandatoryAccessSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  if (isNegatedObligationSentence(sentence) || isOptionalAccessSentence(sentence)) return false;
+  if (/niveaux?\s+d[' ]?etudes?\s+requis\s+varient/.test(text)) return false;
+  if (/parfois\s+avoir\s+le\s+permis/.test(text) && !/\b(permis|carte professionnelle|habilitation|agrement|certification|certificat)[^.]*obligatoire/.test(text)) return false;
+  const hasMandatoryWord = /obligatoire|exigee?s?|requise?s?|est requis|sont requis|necessite|doit etre|indispensable|reglementee?|soumis(?:e)? a|imperativement|il faut/.test(text);
+  if (!hasMandatoryWord) return false;
+  return hasCredentialSignal(sentence) || hasDiplomaSignal(sentence) || /\bformation\b/.test(text) || isRegulatedAccessSentence(sentence);
+}
+
+function isRegulatedAccessSentence(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  if (isNegatedObligationSentence(sentence)) return false;
+  return /profession\s+reglementee?|metier\s+reglemente/.test(text) ||
+    /carte\s+professionnelle/.test(text) ||
+    /\bagrement\b/.test(text) ||
+    /\bautorisation\b/.test(text) ||
+    /\bhabilitation\b/.test(text) ||
+    /\bpermis\s+[a-z0-9]\b/.test(text) ||
+    /\bcaces\b/.test(text);
+}
+
+function hasDiplomaSignal(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /\bdiplome\b|\bbac\b|\bbac\s*\+\s*\d\b|\bbts\b|\bdut\b|\bbut\b|\blicence\b|\bmaster\b|\bdoctorat\b|\bcap\b|\bbep\b|\bniveau\s+[3-7]\b/.test(text);
+}
+
+function hasCredentialSignal(sentence = "") {
+  const text = normalizeText(sentence).replace(/\s+/g, " ");
+  return /\bcertification\b|\bcertificat\b|\bcqp\b|\bhabilitation\b|\bpermis\b|\bcarte professionnelle\b|\bagrement\b|\bautorisation\b|\bdiplome d[' ]?etat\b|\bdeass\b|\bcaces\b|\bcapacite professionnelle\b/.test(text);
+}
+
+function extractDiplomaMentions(text = "") {
+  return unique(extractMatches(text, /\bCAP\b|\bBEP\b|Bac\s*\+?\s*\d?|BTS|BUT|DUT|licence|master|doctorat|ing[ée]nieur|Dipl[oô]me d['’ ]?Etat[^.,;\n]*|Dipl[oô]me d['’ ]?État[^.,;\n]*|Dipl[oô]me des M[ée]tiers d['’ ]Art[^.,;\n]*|dipl[oô]me[^.,;\n]*/gi)
+    .filter(label => !/\bcapacit[ée]\b/i.test(label) || /\bcertificat\b/i.test(label)));
+}
+
+function extractCertificationMentions(text = "") {
+  return unique(extractMatches(text, /CACES|CQP[^.,;\n]*|habilitation[^.,;\n]*|permis\s+[A-Z0-9][^.,;\n]*|carte professionnelle[^.,;\n]*|certificat[^.,;\n]*|agr[ée]ment[^.,;\n]*|autorisation[^.,;\n]*|capacit[ée] professionnelle[^.,;\n]*/gi));
+}
+
+function extractRequiredCredentialLabels(sentence = "") {
+  if (!isMandatoryAccessSentence(sentence)) return [];
+  const requiredPart = String(sentence || "").split(/qui peut être complété|peut être complété|complété par/i)[0] || sentence;
+  return unique([
+    ...extractMatches(requiredPart, /Dipl[oô]me d['’ ]?Etat[^.,;\n]*|Dipl[oô]me d['’ ]?État[^.,;\n]*|\bDEASS\b|CQP[^.,;\n]*|Certificat de Qualification Professionnelle[^.,;\n]*/gi),
+    ...extractMatches(requiredPart, /certificat[^.,;\n]*|certification[^.,;\n]*|habilitation[^.,;\n]*|permis\s+[A-Z0-9][^.,;\n]*|carte professionnelle[^.,;\n]*|agr[ée]ment[^.,;\n]*|autorisation[^.,;\n]*|capacit[ée] professionnelle[^.,;\n]*/gi)
+  ]).map(cleanCredentialLabel).filter(Boolean);
+}
+
+function extractOptionalCredentialLabels(sentence = "") {
+  if (isNegatedObligationSentence(sentence)) return [];
+  const optionalPart = String(sentence || "").split(/qui peut être complété|peut être complété|complété par/i).slice(1).join(" ");
+  if (optionalPart) return extractCertificationMentions(optionalPart).map(cleanCredentialLabel).filter(Boolean);
+  if (!isOptionalAccessSentence(sentence) && !isRecommendedAccessSentence(sentence)) return [];
+  return extractCertificationMentions(sentence).map(cleanCredentialLabel).filter(Boolean);
+}
+
+function cleanCredentialLabel(label = "") {
+  return String(label || "")
+    .replace(/\s+/g, " ")
+    .replace(/[.,;:]+$/g, "")
+    .trim();
+}
+
+function inferDiplomaRange(text = "", flags = {}) {
+  const mentions = [];
+  const sentences = splitSentences(text);
+  for (const sentence of sentences.length ? sentences : [text]) {
+    const normalized = normalizeText(sentence).replace(/\s+/g, " ");
+    for (const match of normalized.matchAll(/\bniveau\s+([3-7])\b/g)) {
+      mentions.push(levelMention(Number(match[1]), sentence));
+    }
+    if (/\bbac\s*\+\s*5\b|\bmaster\b|\bdoctorat\b|\bingenieur\b/.test(normalized)) mentions.push(levelMention(7, sentence));
+    if (/\bbac\s*\+\s*3\b|\bbac\s*\+\s*4\b|\blicence\b|\bbachelor\b|\bniveau\s+6\b/.test(normalized)) mentions.push(levelMention(6, sentence));
+    if (/\bbac\s*\+\s*2\b|\bbts\b|\bdut\b|\bbut\b|\bniveau\s+5\b/.test(normalized)) mentions.push(levelMention(5, sentence));
+    if (/\bbac\b(?!\s*\+)|\bbaccalaureat\b|\bniveau\s+4\b/.test(normalized)) mentions.push(levelMention(4, sentence));
+    if (/\bcap\b|\bbep\b|\bniveau\s+3\b/.test(normalized)) mentions.push(levelMention(3, sentence));
+  }
+  if (flags.noDiplomaPossible) mentions.push({ level: 0, label: "Sans diplôme possible" });
+  const levels = unique(mentions.map(item => item.level).filter(level => Number.isFinite(level))).sort((a, b) => a - b);
+  const min = levels.length ? levels[0] : null;
+  const max = levels.length ? levels[levels.length - 1] : null;
+  return {
+    minimumDiplomaLevel: min,
+    maximumDiplomaLevel: max,
+    minimumDiplomaLabel: diplomaLevelLabel(min),
+    maximumDiplomaLabel: diplomaLevelLabel(max),
+    mentions
+  };
+}
+
+function hasMandatorySpecificCredentialEvidence(text = "", mandatorySentences = []) {
+  if (!mandatorySentences.length) return false;
+  const normalized = normalizeText(text).replace(/\s+/g, " ");
+  return /\bdiplome d[' ]?etat\b|\bdeass\b|\bcqp\b|\bcertificat\b|\bcertification\b|\bhabilitation\b|\bpermis\b|\bcarte professionnelle\b|\bagrement\b|\bautorisation\b|\bcapacite professionnelle\b/.test(normalized);
+}
+
+function extractSpecificCredentialLabels(text = "") {
+  return unique([
+    ...extractMatches(text, /Dipl[oô]me d['’ ]?Etat[^.,;\n]*|Dipl[oô]me d['’ ]?État[^.,;\n]*|\bDEASS\b|CQP[^.,;\n]*|Certificat de Qualification Professionnelle[^.,;\n]*/gi),
+    ...extractCertificationMentions(text)
+  ]).map(cleanCredentialLabel).filter(Boolean);
+}
+
+function levelMention(level, sentence) {
+  return { level, label: diplomaLevelLabel(level), excerpt: sentence };
+}
+
+function diplomaLevelToAccessCategory(level) {
+  return {
+    0: "no_diploma_possible",
+    3: "cap_or_equivalent",
+    4: "bac",
+    5: "bac_plus_2",
+    6: "bac_plus_3",
+    7: "bac_plus_5"
+  }[level] || "unknown";
+}
+
+function diplomaLevelLabel(level) {
+  return {
+    0: "sans diplôme",
+    3: "CAP/BEP",
+    4: "Bac",
+    5: "Bac +2",
+    6: "Bac +3",
+    7: "Bac +5"
+  }[level] || null;
+}
+
+function diplomaRangeLabel(range = {}) {
+  const min = range.minimumDiplomaLabel;
+  const max = range.maximumDiplomaLabel;
+  if (!min || !max) return "";
+  if (min === max) return `${max} cité`;
+  return `${min} à ${max} cité`;
 }
 
 function buildAccessQualityReport(accessSummary, jobs) {

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const GENERATED_DIR = path.join("creations", "boussolepro", "data", "generated");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
+const HTML_PATH = path.join("creations", "boussolepro", "boussole-pro.html");
 const ROME_DOMAIN_BY_LETTER = {
   A: "Agriculture et pêche, espaces naturels et espaces verts, soins aux animaux",
   B: "Arts et façonnage d'ouvrages d'art",
@@ -298,10 +299,27 @@ async function buildPerformanceReport(generatedDir, startedAt) {
     };
   }));
   const estimatedCompactExport = await estimateCompactExportSize(generatedDir);
+  const sourceArtifactSha256 = await checksumFile(HTML_PATH);
   return {
     schemaVersion: "1.0.0",
     generatedAt: new Date().toISOString(),
     generatedDir,
+    sourceArtifactSha256,
+    measurementScope: "local_file_audit_and_compact_export_estimate",
+    scenarioId: "ui_scenario_not_executed_by_file_audit",
+    scenarioStepsCompleted: [],
+    browserName: null,
+    browserVersion: null,
+    uiScenarioMetrics: {
+      resultsFirstRenderMs: null,
+      explorationFirstRenderMs: null,
+      filterFacetMs: null,
+      jobCardOpenMs: null,
+      whyModalOpenMs: null,
+      comparisonRenderMs: null,
+      compactExportMs: null,
+      note: "Non mesuré par ce script : utiliser une validation navigateur/Playwright pour ces métriques."
+    },
     filesTotal: fileRows.length,
     totalBytes: fileRows.reduce((sum, file) => sum + file.bytes, 0),
     totalMegabytes: Number((fileRows.reduce((sum, file) => sum + file.bytes, 0) / 1024 / 1024).toFixed(2)),

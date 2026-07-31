@@ -2216,6 +2216,7 @@ const ROME_SECTOR_MAPPING_V2 = {
   version: "v0.7.3-alpha",
   priority: ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
   exact: {
+    G1201: { primarySectorId: "hotellerie_hebergement", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
     G1202: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
     G1203: { primarySectorId: "education_enfance", secondarySectorIds: ["social_insertion", "culture_communication"], source: "exact", confidence: 0.98 },
     G1235: { primarySectorId: "education_enfance", secondarySectorIds: ["hotellerie_hebergement"], source: "exact", confidence: 0.98 },
@@ -2224,7 +2225,17 @@ const ROME_SECTOR_MAPPING_V2 = {
     G1240: { primarySectorId: "education_enfance", secondarySectorIds: ["nature_agriculture"], source: "exact", confidence: 0.98 },
     K2105: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
     K2107: { primarySectorId: "education_enfance", secondarySectorIds: [], source: "exact", confidence: 0.98 },
+    B1101: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1201: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1303: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1401: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1502: { primarySectorId: "culture_communication", secondarySectorIds: ["maintenance"], source: "exact", confidence: 0.98 },
+    B1604: { primarySectorId: "maintenance", secondarySectorIds: ["industrie_production", "culture_communication"], source: "exact", confidence: 0.98 },
+    B1701: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1803: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
     B1805: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    B1806: { primarySectorId: "culture_communication", secondarySectorIds: ["maintenance"], source: "exact", confidence: 0.98 },
+    B1808: { primarySectorId: "industrie_production", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
     B1816: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 }
   },
   prefix4: {
@@ -5871,7 +5882,17 @@ function getJobSectorProfile(job = {}) {
     confidence,
     evidence: unique([...(shouldUseV2 ? toArray(v2Mapping?.evidence) : []), ...toArray(job.sectorEvidence)]),
     source: shouldUseV2 ? v2Mapping.source : explicitPrimary || explicitSecondary.length ? "explicit_or_imported" : generatedSectors.length ? "generated_rome_domain_mapping" : inferred.length ? "heuristic_low_confidence" : v2Mapping?.source || "unknown",
-    sectorMappingStatus: shouldUseV2 ? "usable" : (v2Mapping?.sectorMappingStatus === "ambiguous_unusable" ? "ambiguous_unusable" : (inferred.length ? "heuristic_low_confidence" : hasImportedSector ? "imported_usable" : "unknown"))
+    sectorMappingStatus: shouldUseV2
+      ? "usable"
+      : (hasImportedSector
+        ? "imported_usable"
+        : generatedSectors.length
+          ? "generated_rome_domain_mapping"
+          : inferred.length
+            ? "heuristic_low_confidence"
+            : v2Mapping?.sectorMappingStatus === "ambiguous_unusable"
+              ? "ambiguous_unusable"
+              : "unknown")
   };
   return cache.sectorProfile;
 }
@@ -6489,8 +6510,10 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   ]).map(normalizeCertificationKey));
   const access = job.accessSummary || {};
   const exactExperience = evaluateExactJobExperience(criteria, job);
-  const requiredCerts = toArray(job.requiredCertifications);
-  const recommendedCerts = unique([...toArray(job.recommendedCertifications), ...toArray(access.citedCertifications)]);
+  const accessRequiredCredentials = getAccessRequiredCredentialLabels(access);
+  const accessOptionalCredentials = getAccessOptionalCredentialLabels(access);
+  const requiredCerts = unique([...toArray(job.requiredCertifications), ...accessRequiredCredentials]);
+  const recommendedCerts = unique([...toArray(job.recommendedCertifications), ...toArray(access.citedCertifications), ...accessOptionalCredentials]);
   const advantageCerts = unique([...toArray(access.advantageCertifications), ...extractAdvantageCertificationsFromAccess(job)]);
   const missingRequiredCertifications = requiredCerts.filter(certId => !hasCertificationEquivalent(held, certId));
   const heldAdvantageCertifications = advantageCerts.filter(certId => hasCertificationEquivalent(held, certId));
@@ -6498,11 +6521,15 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   const requiredLevel = numberOrNull(job.requiredDiplomaLevel);
   const recommendedLevel = numberOrNull(job.recommendedDiplomaLevel);
   const accessLevel = accessLevelCategoryToDiplomaLevel(access.accessLevelCategory);
-  const levelFromSummary = access.mandatoryQualification ? accessLevel : null;
-  const targetLevel = requiredLevel ?? levelFromSummary ?? recommendedLevel ?? accessLevel;
-  const mandatory = Boolean(access.mandatoryQualification || requiredLevel || requiredCerts.length || access.regulated);
+  const accessMinimumLevel = numberOrNull(access.minimumDiplomaLevel) ?? accessLevel;
+  const accessMaximumLevel = numberOrNull(access.maximumDiplomaLevel) ?? accessLevel;
+  const accessRequirementKind = normalizeAccessRequirementKind(access.requirementKind);
+  const mandatory = Boolean(isMandatoryAccessRequirement(access) || requiredLevel || requiredCerts.length);
+  const levelFromSummary = mandatory ? accessMinimumLevel : null;
+  const advisoryLevelFromSummary = !mandatory ? accessMinimumLevel : null;
+  const targetLevel = requiredLevel ?? levelFromSummary ?? recommendedLevel ?? advisoryLevelFromSummary ?? accessLevel;
   const evidenceAvailable = Boolean(job.accessConditions?.source && job.accessConditions.source !== "unknown") ||
-    Boolean(access.displayLabel || access.accessLevelCategory || access.confidence) ||
+    Boolean(access.displayLabel || access.accessLevelCategory || access.requirementKind || access.confidence) ||
     requiredLevel !== null ||
     recommendedLevel !== null ||
     requiredCerts.length > 0 ||
@@ -6514,7 +6541,11 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   if (!evidenceAvailable) cautions.push("Conditions d’accès officielles non disponibles : évaluation neutre.");
   if (missingRequiredCertifications.length) {
     score -= criteria.education?.canDoShortTraining ? 22 : 42;
-    cautions.push("Certification obligatoire manquante.");
+    cautions.push(`Qualification spécifique obligatoire manquante : ${missingRequiredCertifications.join(", ")}.`);
+  }
+  if (access.contradictoryEvidence || accessRequirementKind === "conflicting") {
+    score -= 8;
+    cautions.push("Texte d’accès contradictoire : obligation et absence d’obligation à vérifier à la source.");
   }
   if (targetLevel !== null && targetLevel > 0) {
     const gap = targetLevel - currentDiplomaLevel;
@@ -6550,8 +6581,11 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     score += 6;
     reasons.push("Formation connue dans une famille proche.");
   }
+  if (missingRequiredCertifications.length) {
+    score = Math.min(score, criteria.education?.canDoLongTraining ? 38 : 28);
+  }
   const confidence = evidenceAvailable
-    ? clamp(Number(access.confidence || 0.55) + heldAdvantageCertifications.length * 0.08 + (exactExperience.score >= 16 ? 0.08 : 0), 0.35, 0.92)
+    ? clamp(Number(access.confidence || 0.55) + heldAdvantageCertifications.length * 0.08 + (exactExperience.score >= 16 ? 0.08 : 0) - (access.contradictoryEvidence ? 0.16 : 0), 0.25, 0.92)
     : 0.28;
   const normalized = Math.round(clamp(score, 0, 100));
   return {
@@ -6563,7 +6597,13 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     requiredLevel,
     recommendedLevel,
     targetLevel,
+    minimumDiplomaLevel: accessMinimumLevel,
+    maximumDiplomaLevel: accessMaximumLevel,
+    requirementKind: accessRequirementKind,
     mandatory,
+    specificCredentialRequired: Boolean(access.specificCredentialRequired || accessRequiredCredentials.length),
+    requiredCredentialLabels: accessRequiredCredentials,
+    optionalCredentialLabels: accessOptionalCredentials,
     missingRequiredCertifications,
     advantageCertifications: advantageCerts,
     heldAdvantageCertifications,
@@ -6571,6 +6611,33 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     reasons,
     cautions
   };
+}
+
+function normalizeAccessRequirementKind(kind = "") {
+  return String(kind || "").trim().toLowerCase() || "unknown";
+}
+
+function isMandatoryAccessRequirement(access = {}) {
+  const kind = normalizeAccessRequirementKind(access.requirementKind);
+  return ["mandatory", "regulated"].includes(kind) ||
+    Boolean(access.mandatoryQualification || access.specificCredentialRequired || (access.regulated && kind !== "recommended"));
+}
+
+function getAccessRequiredCredentialLabels(access = {}) {
+  return unique([
+    ...toArray(access.requiredCredentialLabels)
+  ].map(normalizeCredentialLabelForMatching).filter(Boolean));
+}
+
+function getAccessOptionalCredentialLabels(access = {}) {
+  return unique([
+    ...toArray(access.optionalCredentialLabels),
+    ...toArray(access.advantageCertifications)
+  ].map(normalizeCredentialLabelForMatching).filter(Boolean));
+}
+
+function normalizeCredentialLabelForMatching(label = "") {
+  return String(label || "").replace(/\s+/g, " ").trim();
 }
 
 function extractAdvantageCertificationsFromAccess(job = {}) {
@@ -6595,13 +6662,21 @@ function accessLevelCategoryToDiplomaLevel(category = "") {
     bac: 4,
     bac_plus_2: 5,
     bac_plus_3: 6,
-    bac_plus_5: 7,
-    mixed_or_multiple_routes: 4
+    bac_plus_5: 7
   }[category] ?? null;
 }
 
 function normalizeCertificationKey(value = "") {
   const normalized = normalizeText(value);
+  if (/deass|assistant de service social/.test(normalized)) return "credential-deass";
+  if (/orthoptiste/.test(normalized)) return "credential-de-orthoptiste";
+  if (/infirmier/.test(normalized)) return "credential-de-infirmier";
+  if (/educateur sportif|code du sport|annexe ii-1/.test(normalized)) return "credential-educateur-sportif";
+  if (/permis d/.test(normalized)) return "license-d";
+  if (/carte professionnelle/.test(normalized)) return "credential-carte-professionnelle";
+  if (/habilitation electrique|basse et haute tension|risques d origine electrique/.test(normalized)) return "credential-habilitation-electrique";
+  if (/capacite professionnelle/.test(normalized)) return "credential-capacite-professionnelle";
+  if (/\bagrement\b/.test(normalized)) return "credential-agrement";
   if (/^cert-bafa$|bafa/.test(normalized)) return "cert-bafa";
   if (/^cert-bafd$|bafd/.test(normalized)) return "cert-bafd";
   if (/permis b|license-b|licence-b/.test(normalized)) return "license-b";
@@ -6615,10 +6690,9 @@ function hasCertificationEquivalent(heldSet, certId = "") {
 
 function calculateTrainingScore(criteria, job) {
   const missingData = [];
-  const heldCerts = toArray(criteria.certifications?.held);
-  const requiredCerts = toArray(job.requiredCertifications);
-  const missingCertifications = requiredCerts.filter(certId => !heldCerts.includes(certId));
   const accessFeasibility = evaluateAccessFeasibility(criteria, job);
+  const requiredCerts = unique([...toArray(job.requiredCertifications), ...toArray(accessFeasibility.requiredCredentialLabels)]);
+  const missingCertifications = toArray(accessFeasibility.missingRequiredCertifications);
   const base = {
     currentDiplomaLevel: Number(criteria.education.highestLevel || 0),
     requiredDiplomaLevel: numberOrNull(job.requiredDiplomaLevel),
@@ -6647,8 +6721,8 @@ function calculateTrainingScore(criteria, job) {
     return finalize({ score: clamp(17 + knownFamilyBonus, 0, 20), missingData, missingCertifications: [], statusHint: "now", feasibility: "certification_held", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
   }
   if (missingCertifications.length > 0) {
-    if (criteria.education.canDoShortTraining) return finalize({ score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "short", feasibility: "certification_short", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
-    if (criteria.education.canDoLongTraining) return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "certification_long", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
+    missingData.push(missing("job.accessSummary.requiredCredentialLabels", "high", `Qualification spécifique à vérifier : ${missingCertifications.join(", ")}.`));
+    if (criteria.education.canDoLongTraining) return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "specific_credential_long_or_regulated", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
     return finalize({ score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
   }
 
@@ -6818,20 +6892,6 @@ function calculateContextScore(criteria, job) {
   if (criteria.needForSecurity === "high") preferences.push("structured");
   const jobContextTags = unique([...collectJobContextTags(job), ...inferJobContextTags(job)]);
   if (!toArray(job.workContexts).length && isGeneratedRomeJob(job)) {
-    const inferredMatches = preferences.filter(pref => contextPreferenceMatches(pref, job, jobContextTags));
-    if (inferredMatches.length) {
-      const weightedMatches = inferredMatches.reduce((sum, pref) => sum + contextPreferenceWeight(criteria.contextPreferences?.[pref]), 0);
-      return {
-        score: Math.round(clamp(saturatingTagScore(weightedMatches, 10, 3), 0, 10)),
-        missingData: [missing("job.workContexts", "medium", "Contextes officiels non reliés : score fondé sur signaux de titre/famille.")],
-        matched: inferredMatches,
-        profilePreferences: preferences,
-        unmatchedPreferences: preferences.filter(pref => !inferredMatches.includes(pref)),
-        jobContextTags,
-        evidenceAvailable: false,
-        confidencePenalty: 0.08
-      };
-    }
     return {
       score: 5,
       missingData: [missing("job.workContexts", "medium", "Contextes de travail officiels non reliés au métier.")],
