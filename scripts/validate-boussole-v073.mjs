@@ -10,7 +10,7 @@ const ROME500_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
 
 const SECTOR_EXPECTATIONS = {
-  G1201: { primary: "hotellerie_hebergement", forbidden: ["education_enfance"] },
+  G1201: { primary: "hotellerie_hebergement", domain: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
   G1203: { primary: "education_enfance", forbidden: ["hotellerie_hebergement"] },
   G1235: { primary: "education_enfance" },
   G1238: { primary: "education_enfance" },
@@ -64,6 +64,7 @@ async function main() {
   };
 
   report.checks.sectors = validateSectors(app);
+  report.checks.jobDisplay = validateJobDisplay(app);
   report.checks.access = validateAccess(app);
   report.checks.training = validateTraining(app);
   report.checks.context = validateContext(app);
@@ -89,10 +90,11 @@ function validateSectors(app) {
     const runtime = job ? app.getJobSectorProfile(job) : null;
     const rowFailures = [];
     if (!job) rowFailures.push("missing_job");
+    if (expected.domain && job?.domain !== expected.domain) rowFailures.push(`expected_domain_${expected.domain}`);
     if (expected.primary && runtime?.primarySectorId !== expected.primary) rowFailures.push(`expected_primary_${expected.primary}`);
     if ((expected.forbidden || []).includes(runtime?.primarySectorId)) rowFailures.push(`forbidden_primary_${runtime?.primarySectorId}`);
     if ((expected.forbidden || []).some(id => runtime?.secondarySectorIds?.includes(id))) rowFailures.push("forbidden_secondary_sector");
-    rows[code] = { title: job?.title || null, generatedPrimary: job?.primarySectorId || null, runtime, status: rowFailures.length ? "failed" : "ok", failures: rowFailures };
+    rows[code] = { title: job?.title || null, domain: job?.domain || null, generatedPrimary: job?.primarySectorId || null, runtime, status: rowFailures.length ? "failed" : "ok", failures: rowFailures };
     failures.push(...rowFailures.map(failure => `sector:${code}:${failure}`));
   }
 
@@ -108,6 +110,26 @@ function validateSectors(app) {
     sampleImportedButAmbiguous: importedButAmbiguous.slice(0, 20).map(({ job, runtime }) => ({ romeCode: job.romeCode, title: job.title, primarySectorId: job.primarySectorId, runtimeStatus: runtime.sectorMappingStatus })),
     failures
   };
+}
+
+function validateJobDisplay(app) {
+  const job = findJobByCode(app.App.state.dataset.jobs, "G1201");
+  const failures = [];
+  const modes = {};
+  if (!job) return { status: "failed", modes, failures: ["display:G1201:missing_job"] };
+  const previousMode = app.App.state.displayMode;
+  const result = app.createExplorationResultShell(job);
+  for (const mode of ["essential", "detailed", "diagnostic"]) {
+    app.App.state.displayMode = mode;
+    const html = app.renderJobDetailsPanelContent(result);
+    const hasDomainLabel = html.includes("Domaine métier");
+    const hasExpectedDomain = html.includes("Restauration, hôtellerie, tourisme et accueil");
+    modes[mode] = { hasDomainLabel, hasExpectedDomain };
+    if (!hasDomainLabel) failures.push(`display:${mode}:missing_domain_label`);
+    if (!hasExpectedDomain) failures.push(`display:${mode}:unexpected_G1201_domain`);
+  }
+  app.App.state.displayMode = previousMode;
+  return { status: failures.length ? "failed" : "ok", modes, failures };
 }
 
 function validateAccess(app) {
@@ -273,7 +295,9 @@ this.__boussole = {
   calculateTrainingScore,
   calculateContextScore,
   calculateAllMatches,
-  getJobSectorProfile
+  getJobSectorProfile,
+  createExplorationResultShell,
+  renderJobDetailsPanelContent
 };`, context, { timeout: 15000 });
   return context.__boussole;
 }

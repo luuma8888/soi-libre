@@ -29,7 +29,7 @@ const PROFILE_TO_GENERATED = {
 };
 
 const GOLDEN_SECTOR_CASES = {
-  G1201: { primarySectorId: "hotellerie_hebergement", forbidden: ["education_enfance"] },
+  G1201: { primarySectorId: "hotellerie_hebergement", domain: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
   G1203: { primarySectorId: "education_enfance", forbidden: ["hotellerie_hebergement"] },
   G1235: { primarySectorId: "education_enfance", forbidden: ["batiment_construction"] },
   G1238: { primarySectorId: "education_enfance", forbidden: ["batiment_construction"] },
@@ -85,6 +85,7 @@ async function main() {
     const job = rome500Jobs.find(item => item.romeCode === code);
     const actual = {
       title: job?.title || null,
+      domain: job?.domain || null,
       primarySectorId: job?.primarySectorId || null,
       secondarySectorIds: job?.secondarySectorIds || [],
       boussoleSectorIds: job?.boussoleSectorIds || [],
@@ -92,6 +93,7 @@ async function main() {
     };
     const failures = [];
     if (!job) failures.push("missing_job");
+    if (expected.domain && actual.domain !== expected.domain) failures.push("unexpected_domain");
     if (expected.primarySectorId && actual.primarySectorId !== expected.primarySectorId) failures.push("unexpected_primary_sector");
     if ((expected.forbidden || []).includes(actual.primarySectorId)) failures.push("forbidden_primary_sector");
     if ((expected.forbidden || []).some(id => actual.secondarySectorIds.includes(id))) failures.push("forbidden_secondary_sector");
@@ -129,6 +131,7 @@ function applySectorEntry(job, code, entry) {
   job.primarySectorId = entry.primarySectorId;
   job.secondarySectorIds = toArray(entry.secondarySectorIds).filter(id => id && id !== entry.primarySectorId).slice(0, 2);
   job.boussoleSectorIds = unique(profileSectorIds.map(id => PROFILE_TO_GENERATED[id]).filter(Boolean));
+  if (entry.domainLabel) job.domain = entry.domainLabel;
   job.sectorMappingConfidence = Number(entry.confidence || 0.98);
   job.sectorEvidence = [{
     source: `local_rome_sector_mapping_v2_${entry.source || "exact"}`,

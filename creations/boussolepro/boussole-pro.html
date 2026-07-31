@@ -2216,7 +2216,7 @@ const ROME_SECTOR_MAPPING_V2 = {
   version: "v0.7.4-alpha",
   priority: ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
   exact: {
-    G1201: { primarySectorId: "hotellerie_hebergement", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
+    G1201: { primarySectorId: "hotellerie_hebergement", secondarySectorIds: ["culture_communication"], domainLabel: "Restauration, hôtellerie, tourisme et accueil", source: "exact", confidence: 0.98 },
     G1202: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
     G1203: { primarySectorId: "education_enfance", secondarySectorIds: ["social_insertion", "culture_communication"], source: "exact", confidence: 0.98 },
     G1235: { primarySectorId: "education_enfance", secondarySectorIds: ["hotellerie_hebergement"], source: "exact", confidence: 0.98 },
@@ -4568,6 +4568,7 @@ function getResultSkillReviewOptions(dataset = App.state.dataset) {
 
 function normalizeJob(raw) {
   const romeCode = raw.romeCode || raw.localVariantOfRomeCode || raw.rawSourceId || "";
+  const mappedDomain = getRomeDomainOverride(romeCode);
   const isGeneratedRome = raw.provenance === "generated_rome" || raw.source === "official_rome_api" || toArray(raw.sourceRefs).includes("france_travail_rome_generated");
   const canonicalId = romeCode ? canonicalJobId(romeCode) : canonicalJobId(raw.id || raw.normalizedId);
   const legacyRomeId = /^job-rome-[A-Z][0-9]{4}/.test(String(raw.id || ""));
@@ -4598,7 +4599,7 @@ function normalizeJob(raw) {
     isLocalVariant: Boolean(raw.isLocalVariant),
     title: frText(raw.title || "Métier sans titre"),
     appellations: toArray(raw.appellations).map(frText),
-    domain: frText(raw.domain || "Domaine non renseigné"),
+    domain: frText(mappedDomain || raw.domain || "Domaine non renseigné"),
     family: frText(raw.family || "Famille non renseignée"),
     description: normalizeMultilineText(raw.description),
     activities: toArray(raw.activities).map(item => normalizeMultilineText(item)).filter(Boolean),
@@ -5833,6 +5834,11 @@ function getRomeSectorTextRuleSource(rule = {}, job = {}) {
   if (rule.source === "domain") return normalizeText(job.domain || "");
   if (rule.source === "title_heuristic") return normalizeText(job.title || "");
   return normalizeText([job.title, job.family, job.domain].join(" "));
+}
+
+function getRomeDomainOverride(romeCode = "") {
+  const code = normalizeRomeCode(romeCode);
+  return code ? ROME_SECTOR_MAPPING_V2.exact?.[code]?.domainLabel || "" : "";
 }
 
 function isStrongRomeSectorMappingV2(mapping = {}) {
@@ -8871,6 +8877,7 @@ function renderJobDetailsPanelContent(result = {}) {
   return `
     <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
     <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
+    <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
     <p><strong>Appellations :</strong> ${take(appellations, App.state.displayMode === "essential" ? 5 : 18).map(h).join(", ") || "Non renseignées."}${appellations.length > 18 ? ` <span class="field-help">(${appellations.length - 18} autres en diagnostic/export)</span>` : ""}</p>
     <p><strong>Accès au métier :</strong> <span class="multiline-text">${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
     <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
@@ -8889,6 +8896,7 @@ function renderEssentialJobDetails(result = {}) {
   return `
     <div data-dialog-job-id="${h(result.jobId)}">
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
+      <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
       <p><strong>Conditions d’accès :</strong> ${h(getAccessDisplayLabel(job))}</p>
       <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 6).map(h).join(", ") || "à préciser avec votre profil."}</p>
       <p><strong>Contextes principaux :</strong> ${getHumanContextLabels(job).slice(0, 5).map(h).join(", ") || "contextes à vérifier."}</p>
@@ -8913,6 +8921,7 @@ function renderDetailedJobDetails(result = {}) {
     <div data-dialog-job-id="${h(result.jobId)}">
       <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
+      <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
       <p><strong>Conditions d’accès :</strong> ${h(access.label)}${access.citedDiplomas.length ? ` · diplômes cités : ${access.citedDiplomas.map(h).join(", ")}` : ""}${access.citedCertifications.length ? ` · certifications : ${access.citedCertifications.map(h).join(", ")}` : ""}</p>
       <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 10).map(h).join(", ") || "à préciser."}</p>
       <p><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 10).map(h).join(", ") || "contextes à vérifier."}</p>
