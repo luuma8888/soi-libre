@@ -240,7 +240,7 @@ function buildSectorMappingRegression(app, bundle) {
   const job = (bundle.dataset.jobs || []).find(row => row.romeCode === "G1203");
   const runtimeSector = job ? app.getJobSectorProfile(job) : {};
   const generatedSectorText = normalizeAuditText([
-    job?.domain,
+    job?.boussoleDomainLabel,
     job?.primarySectorId,
     ...toArray(job?.boussoleSectorIds)
   ].join(" "));

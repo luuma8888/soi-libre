@@ -1,21 +1,40 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "reportKind": "access_summary_quality",
-  "generatedAt": "2026-07-16T19:47:08.805Z",
+  "generatedAt": "2026-08-01T17:10:02.840Z",
+  "accessSummaryGeneratedAt": "2026-08-01T17:10:02.732Z",
+  "rulesVersion": "v0.7.4-alpha",
+  "rulesVerifiedAt": "2026-08-01",
   "summary": {
     "jobsCount": 500,
     "accessTextsCount": 496,
-    "unknownCount": 44,
-    "ambiguousCount": 102,
+    "unknownCount": 47,
+    "ambiguousCount": 84,
+    "regulatedCount": 35,
+    "regulatedUnresolvedCount": 0,
+    "specificCredentialRequiredCount": 79,
+    "accessPathsCount": 6,
+    "genericRequiredLabelsRejectedCount": 0,
+    "truthCasesCount": 17,
+    "truthFailuresCount": 0,
     "categoryCounts": {
-      "unknown": 44,
-      "bac": 50,
-      "no_diploma_possible": 33,
-      "bac_plus_2": 81,
-      "bac_plus_3": 67,
-      "bac_plus_5": 198,
+      "unknown": 47,
+      "mixed_or_multiple_routes": 270,
+      "no_diploma_possible": 32,
+      "bac": 9,
+      "bac_plus_5": 84,
+      "bac_plus_2": 27,
       "cap_or_equivalent": 18,
-      "mixed_or_multiple_routes": 9
+      "bac_plus_3": 13
+    },
+    "requirementKindCounts": {
+      "unknown": 25,
+      "mandatory": 64,
+      "recommended": 369,
+      "no_diploma_possible": 2,
+      "regulated": 31,
+      "conflicting": 8,
+      "conditional": 1
     }
   },
   "ambiguousCases": [
@@ -24,8 +43,19 @@
       "romeCode": "A1101",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "unknown",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [],
       "citedCertifications": [],
@@ -34,146 +64,175 @@
       "matchedExcerpts": [],
       "warnings": [
         "access_text_missing"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-A1202",
-      "romeCode": "A1202",
-      "displayLabel": "Bac cité, obligation à vérifier",
-      "accessLevelCategory": "bac",
+      "jobId": "rome-A1314",
+      "romeCode": "A1314",
+      "displayLabel": "Bac +5 cité comme exigence probable",
+      "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "certifications en gestion durable des pêches peuvent également être pertinentes"
+      ],
+      "optionalDiplomas": [
+        "diplôme universitaire ou d'ingénieur en biologie marine"
+      ],
+      "mandatoryDiplomas": [
+        "ingénieur",
+        "Bac + 5"
+      ],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
-        "diplôme de niveau CAP à Bac dans le domaine agricole ou l'entretien des espaces ruraux est requis"
+        "diplôme universitaire ou d'ingénieur en biologie marine",
+        "Bac + 5",
+        "Bac + 8",
+        "ingénieur"
       ],
       "citedCertifications": [
-        "Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires pour la conduite de certains engins"
+        "certifications en gestion durable des pêches peuvent également être pertinentes"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.88,
       "matchedExcerpts": [
-        "Un diplôme de niveau CAP à Bac dans le domaine agricole ou l'entretien des espaces ruraux est requis",
-        "Des Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires pour la conduite de certains engins"
+        "Pour devenir ingénieur halieute à l'Ifremer, il faut en pratique un niveau Bac + 5 en biologie marine, écologie marine ou sciences halieutiques, souvent complété par une expérience de recherche (stage long, thèse).",
+        "Pour exercer le métier d'halieute, il est recommandé d'avoir un diplôme universitaire ou d'ingénieur en biologie marine, en agronomie avec une spécialité halieutique.",
+        "Les certifications en gestion durable des pêches peuvent également être pertinentes.",
+        "Pour exercer le métier d'halieute, il est recommandé d'avoir un diplôme universitaire ou d'ingénieur en biologie marine, en agronomie avec une spécialité halieutique",
+        "Les certifications en gestion durable des pêches peuvent également être pertinentes"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "mixed_required_and_optional_wording",
+        "multiple_diploma_mentions"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1103",
       "romeCode": "C1103",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "capacité professionnelle des intermédiaires en assurance est obligatoire auprès de l'ORIAS (Organisme du Registre officiel des Intermédiaires en Assurance"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 2",
         "Bac + 3",
         "BTS",
-        "Licence",
-        "cap"
+        "Licence"
       ],
-      "citedCertifications": [],
+      "citedCertifications": [
+        "capacité professionnelle des intermédiaires en assurance est obligatoire auprès de l'ORIAS (Organisme du Registre officiel des Intermédiaires en Assurance"
+      ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Une formation en capacité professionnelle des intermédiaires en assurance est obligatoire auprès de l'ORIAS (Organisme du Registre officiel des Intermédiaires en Assurance, Banque et Finance).",
+        "Une expérience salariée ciblée sur une clientèle et/ou un type de produit d'assurance est toutefois recommandée avant de se lancer comme courtier indépendant.",
         "Ce métier est accessible avec un niveau Bac + 2 à Bac + 3 BTS en assurances, Licence en finances",
         "Une formation en capacité professionnelle des intermédiaires en assurance est obligatoire auprès de l'ORIAS (Organisme du Registre officiel des Intermédiaires en Assurance, Banque et Finance)"
       ],
       "warnings": [
+        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-C1106",
-      "romeCode": "C1106",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac + 3 Licence en droit à Bac + 5 Master en droit des assurances"
       ],
-      "citedCertifications": [
-        "certification professionnelle d'expert en sinistres peut également être requise",
-        "certifications professionnelles (délivrés par le Ministère de la Justice ou par une Fédération d'Experts en Assurances) sont exigés pour les fonctions d'expert en assurances dans des domaines spécifiques"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier  est accessible avec un diplôme de niveau Bac + 3 Licence en droit à Bac + 5 Master en droit des assurances",
-        "Une certification professionnelle d'expert en sinistres peut également être requise",
-        "Des agréments ou des certifications professionnelles (délivrés par le Ministère de la Justice ou par une Fédération d'Experts en Assurances) sont exigés pour les fonctions d'expert en assurances dans des domaines spécifiques"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-C1109",
-      "romeCode": "C1109",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac + 2 à Bac + 5 en assurances",
-        "diplôme d'actuaire est obligatoire pour certaines fonctions spécialisées"
-      ],
-      "citedCertifications": [
-        "certifications spécifiques comme la Certification AMF (Autorité des Marchés Financiers) ou des compétences en gestion des sinistres peuvent être un atout"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau Bac + 2 à Bac + 5 en assurances, droit des assurances, gestion des risques ou économie",
-        "Les certifications spécifiques comme la Certification AMF (Autorité des Marchés Financiers) ou des compétences en gestion des sinistres peuvent être un atout",
-        "Un diplôme d'actuaire est obligatoire pour certaines fonctions spécialisées"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1112",
       "romeCode": "C1112",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
+      "displayLabel": "Bac +2 cité avec qualification spécifique requise",
       "accessLevelCategory": "bac_plus_2",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "agrément délivré par l'Autorité de Contrôle Prudentiel et de Résolution (ACPR)"
+      ],
+      "optionalCredentialLabels": [
+        "certifications professionnelles spécifiques à l'assurance"
+      ],
+      "optionalDiplomas": [
+        "Bac + 2",
+        "BTS",
+        "DUT"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": false,
+      "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 2",
         "BTS",
-        "DUT",
-        "cap"
+        "DUT"
       ],
       "citedCertifications": [
+        "agrément délivré par l'Autorité de Contrôle Prudentiel et de Résolution (ACPR)",
         "certifications professionnelles spécifiques à l'assurance"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Il nécessite l'obtention d'un agrément délivré par l'Autorité de Contrôle Prudentiel et de Résolution (ACPR), qui atteste de la capacité du professionnel à exercer cette activité.",
+        "Ce métier est généralement accessible avec un niveau Bac + 2 BTS, DUT.",
+        "Il existe également des certifications professionnelles spécifiques à l'assurance, Il est donc recommandé de se renseigner auprès des établissements de formation, des compagnies d'assurance et des organismes professionnels du secteur de l'assurance pour obtenir des informations spécifiques sur les parcours de formation pour devenir agent général d'assurance.",
         "Ce métier est généralement accessible avec un niveau Bac + 2 BTS, DUT",
-        "Il nécessite l'obtention d'un agrément délivré par l'Autorité de Contrôle Prudentiel et de Résolution (ACPR), qui atteste de la capacité du professionnel à exercer cette activité",
-        "Il existe également des certifications professionnelles spécifiques à l'assurance, Il est donc recommandé de se renseigner auprès des établissements de formation, des compagnies d'assurance et des organismes professionnels du secteur de l'assurance pour obtenir des informations spécifiques sur les parcours de formation pour devenir agent général d'assurance"
+        "Il nécessite l'obtention d'un agrément délivré par l'Autorité de Contrôle Prudentiel et de Résolution (ACPR), qui atteste de la capacité du professionnel à exercer cette activité"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
-        "multiple_diploma_mentions"
-      ]
+        "mixed_required_and_optional_wording"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1126",
       "romeCode": "C1126",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Diplôme d'État de contrôleur de la sécurité sociale est obligatoire pour exercer ce métier"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "Diplôme d'État de contrôleur de la sécurité sociale est obligatoire pour exercer ce métier"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 3",
@@ -184,23 +243,36 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Un Diplôme d'État de contrôleur de la sécurité sociale est obligatoire pour exercer ce métier.",
         "Ce métier est accessible à partir d'un Bac + 3 à Bac + 5 Licence en Droit, Master en droit social",
         "Un Diplôme d'État de contrôleur de la sécurité sociale est obligatoire pour exercer ce métier"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1204",
       "romeCode": "C1204",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 3",
         "Bac + 5",
@@ -212,23 +284,37 @@
         "certification AMF comme le Diplôme d'État de conseiller financier sont obligatoires pour certaines fonctions spécifiques dans le secteur bancaire"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un niveau Bac + 3 à Bac + 5 Licence au Master banque, finance",
         "Une certification AMF comme le Diplôme d'État de conseiller financier sont obligatoires pour certaines fonctions spécifiques dans le secteur bancaire"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1209",
       "romeCode": "C1209",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité recommandé",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "certification en conformité financière peut être un atout"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 5",
         "Master"
@@ -238,24 +324,38 @@
         "Certification AMF n'est pas obligatoire mais peut être un atout"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Une certification en conformité financière peut être un atout.",
+        "La Certification AMF n'est pas obligatoire mais peut être un atout.",
         "Ce métier est accessible avec un Bac + 5 Master en droit, finance, comptabilité et gestion",
         "Une certification en conformité financière peut être un atout",
         "La Certification AMF n'est pas obligatoire mais peut être un atout"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1302",
       "romeCode": "C1302",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 2",
         "Bac + 5",
@@ -265,22 +365,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un niveau Bac + 2 à Bac + 5 BTS gestion des entreprises, Licence en marchés financiers, Master management des opérations de marchés"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1401",
       "romeCode": "C1401",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "Certification professionnelle en gestion de documents électroniques est un atout"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 2",
@@ -293,23 +406,36 @@
         "Certification professionnelle en gestion de documents électroniques est un atout"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Une Certification professionnelle en gestion de documents électroniques est un atout.",
         "Ce métier est accessible avec un niveau Bac + 2 à Bac + 5 BTS, DUT gestion des entreprises et Master en banque, assurance, finance",
         "Une Certification professionnelle en gestion de documents électroniques est un atout"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-C1501",
       "romeCode": "C1501",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 3",
         "Bac + 5",
@@ -319,22 +445,118 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un  niveau Bac + 3 à Bac + 5 Licence professionnelle en gestion et droit de l'immobilier, Master en droit immobilier",
         "La détention d'un Diplôme d'État de notaire est obligatoire pour certaines fonctions spécifiques au sein de la gestion de copropriété"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-C1504",
+      "romeCode": "C1504",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "carte professionnelle «Transaction sur immeubles et fonds de commerce» délivrée par le Préfet et soumise à renouvellement annuel est exigée pour exercer en nom propre"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
+      "regulated": true,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "diplôme de niveau Bac + 2 BTS/DUT à Bac + 5 Master diplôme d'école de commerce",
+        "Master",
+        "diplôme particulier"
+      ],
+      "citedCertifications": [
+        "carte professionnelle «Transaction sur immeubles et fonds de commerce» délivrée par le Préfet et soumise à renouvellement annuel est exigée pour exercer en nom propre"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.66,
+      "matchedExcerpts": [
+        "La carte professionnelle «Transaction sur immeubles et fonds de commerce» délivrée par le Préfet et soumise à renouvellement annuel est exigée pour exercer en nom propre.",
+        "Il est également accessible avec une expérience professionnelle dans la vente de biens immobiliers (fonds de commerce, terrains agricoles et viticoles, ...) sans diplôme particulier.",
+        "Ce métier est accessible avec un diplôme de niveau Bac + 2 BTS/DUT à  Bac + 5 Master diplôme d'école de commerce, Master professionnel, dans les secteurs de l'immobilier, de l'action commerciale ou du droit",
+        "Il est également accessible avec une expérience professionnelle dans la vente de biens immobiliers (fonds de commerce, terrains agricoles et viticoles,",
+        ") sans diplôme particulier"
+      ],
+      "warnings": [
+        "contradictory_access_evidence"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-D1235",
+      "romeCode": "D1235",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "CAP"
+      ],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
+      "regulated": false,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "diplôme",
+        "CAP"
+      ],
+      "citedCertifications": [],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.58,
+      "matchedExcerpts": [
+        "Des connaissances en secourisme ou une formation de surveillant de baignade peuvent être requises dans le cadre de la sécurité sur les plages.",
+        "Un CAP en hôtellerie-restauration peut être un atout.",
+        "Cet emploi est accessible avec ou sans diplôme.",
+        "Cet emploi est accessible avec ou sans diplôme",
+        "Un CAP en hôtellerie-restauration peut être un atout"
+      ],
+      "warnings": [
+        "mixed_required_and_optional_wording",
+        "contradictory_access_evidence"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-D1241",
       "romeCode": "D1241",
       "displayLabel": "Accès possible sans diplôme selon le texte officiel",
       "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": true,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme spécifique",
@@ -344,23 +566,38 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Cet emploi est accessible sans diplôme spécifique.",
         "Cet emploi est accessible sans diplôme spécifique",
         "Il est possible de devenir conseiller en image à l'issue d'un CAP en esthétique, cosmétique, parfumerie ou d'un Bac + 2 BTS Esthétique-Cosmétique-Parfumerie"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-D1403",
       "romeCode": "D1403",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "certifications professionnelles spécifiques à la vente peuvent également être utiles"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 2",
         "BTS",
@@ -371,24 +608,42 @@
         "certifications professionnelles spécifiques à la vente peuvent également être utiles"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Des certifications professionnelles spécifiques à la vente peuvent également être utiles, bien qu'elles ne soient pas obligatoires.",
         "Cet emploi est accessible à partir d'un Bac + 2 BTS Négociation et Digitalisation de la Relation Client, le DUT Techniques de Commercialisation, ou une Licence Professionnelle en Commerce",
         "Des certifications professionnelles spécifiques à la vente peuvent également être utiles, bien qu'elles ne soient pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-D1424",
       "romeCode": "D1424",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
-      "noDiplomaPossible": false,
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 4,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "Bac",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "certification professionnelle comme le CQP Vendeur-conseil en magasin peut également être utile"
+      ],
+      "optionalDiplomas": [
+        "Bac",
+        "Bac + 2",
+        "BTS"
+      ],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac",
         "Bac + 2",
@@ -399,23 +654,114 @@
         "certification professionnelle comme le CQP Vendeur-conseil en magasin peut également être utile"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Une formation de type Bac Professionnel commerce, ou un Bac + 2 BTS Négociation et Digitalisation de la Relation Client peuvent être pertinentes.",
+        "Une certification professionnelle comme le CQP Vendeur-conseil en magasin peut également être utile.",
+        "Cet emploi est accessible sans formation et sans certification obligatoire.",
         "Cet emploi est accessible sans formation et sans certification obligatoire",
-        "Une formation de type Bac Professionnel commerce, ou un Bac + 2 BTS Négociation et Digitalisation de la Relation Client peuvent être pertinentes",
-        "Une certification professionnelle comme le CQP Vendeur-conseil en magasin peut également être utile"
+        "Une formation de type Bac Professionnel commerce, ou un Bac + 2 BTS Négociation et Digitalisation de la Relation Client peuvent être pertinentes"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-D1429",
+      "romeCode": "D1429",
+      "displayLabel": "Bac +2 à Bac +3 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": false,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "diplôme de niveau Bac + 2 à Bac + 3 BTS ou licence professionnelle gestion logistique"
+      ],
+      "citedCertifications": [
+        "certification n'est obligatoire réglementairement pour exercer ce métier"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.83,
+      "matchedExcerpts": [
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier.",
+        "Cet emploi est accessible avec un diplôme de niveau Bac + 2 à Bac + 3 BTS ou licence professionnelle gestion logistique, transport et commerce international",
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier"
+      ],
+      "warnings": [
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-D1507",
+      "romeCode": "D1507",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certificat d'aptitude à la conduite en sécurité-CACES- peut être requis"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
+      "regulated": true,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "CAP"
+      ],
+      "citedCertifications": [
+        "certificat d'aptitude à la conduite en sécurité-CACES- peut être requis"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.66,
+      "matchedExcerpts": [
+        "Un certificat d'aptitude à la conduite en sécurité-CACES- peut être requis.",
+        "Cet emploi est accessible sans qualification particulière, mais un CAP Employé de commerce multi-spécialités serait un plus.",
+        "Cet emploi est accessible sans qualification particulière, mais un CAP Employé de commerce multi-spécialités serait un plus",
+        "Un certificat d'aptitude à la conduite en sécurité-CACES- peut être requis"
+      ],
+      "warnings": [
+        "contradictory_access_evidence"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-E1106",
       "romeCode": "E1106",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "unknown",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [],
       "citedCertifications": [],
@@ -424,39 +770,32 @@
       "matchedExcerpts": [],
       "warnings": [
         "access_text_missing"
-      ]
-    },
-    {
-      "jobId": "rome-E1107",
-      "romeCode": "E1107",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac+3 à Bac+5 dans le secteur de la communication",
-        "diplôme obtenu et des expériences passées",
-        "but"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un diplôme de niveau Bac+3 à Bac+5 dans le secteur de la communication, du commerce, de l'événementiel",
-        "En fonction du diplôme obtenu et des expériences passées, il peut être nécessaire de débuter par un poste d'assistant chef de projet événementiel"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-E1119",
       "romeCode": "E1119",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "BTS",
+        "DUT",
+        "Licence",
+        "Master"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac+2",
@@ -468,23 +807,36 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Les formations pertinentes incluent un BTS Communication, un DUT Information-Communication option publicité, une Licence en communication, une Licence professionnelle métiers de la publicité, ou un Master en communication.",
         "Cet emploi est accessible avec une formation de niveau Bac+2 à Bac+5 en communication ou publicité",
         "Les formations pertinentes incluent un BTS Communication, un DUT Information-Communication option publicité, une Licence en communication, une Licence professionnelle métiers de la publicité, ou un Master en communication"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-E1210",
       "romeCode": "E1210",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac+2",
         "Bac+3"
@@ -493,23 +845,38 @@
         "certification n'est obligatoire"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Aucune certification n'est obligatoire, mais une formation spécialisée peut être un atout.",
         "Cet emploi est accessible avec une formation de niveau Bac+2 à Bac+3 dans le domaine du design graphique ou de la création web",
         "Aucune certification n'est obligatoire, mais une formation spécialisée peut être un atout"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-F1144",
       "romeCode": "F1144",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "diplôme de niveau Bac + 5 en architecture navale ou diplôme d'ingénieur polyvalent"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme de niveau Bac + 5 en architecture navale ou diplôme d'ingénieur polyvalent",
         "BTS"
@@ -518,28 +885,43 @@
         "certification spécifique n'est légalement obligatoire pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Cet emploi est généralement accessible avec un diplôme de niveau Bac + 5 en architecture navale ou diplôme d'ingénieur polyvalent.",
+        "Aucune certification spécifique n'est légalement obligatoire pour exercer ce métier.",
         "Cet emploi est généralement accessible avec un diplôme de niveau Bac + 5 en architecture navale ou diplôme d'ingénieur polyvalent",
         "Aucune certification spécifique n'est légalement obligatoire pour exercer ce métier",
         "Un BTS spécifique en construction navale peut être un premier pas vers ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-F1401",
       "romeCode": "F1401",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "CAP",
         "Bac",
         "BTS",
+        "BEP",
         "Bac + 2"
       ],
       "citedCertifications": [
@@ -547,146 +929,197 @@
         "certification n'est obligatoire réglementairement pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier.",
         "Cet emploi est accessible avec un CAP Conducteur d'engins de travaux publics, un Bac Pro Travaux publics, un BTS Travaux publics ou un Certificat de qualification professionnelle (CQP) Foreur",
         "Les niveaux d'études requis varient de CAP ou BEP à Bac + 2",
         "Aucune certification n'est obligatoire réglementairement pour exercer ce métier"
       ],
       "warnings": [
+        "negated_obligation_detected",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-F1602",
-      "romeCode": "F1602",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "jobId": "rome-G1201",
+      "romeCode": "G1201",
+      "displayLabel": "Bac à Bac +2 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 4,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "Bac",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "Bac",
+        "Bac+2"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau CAP/BEP à Bac +2 en électricité",
-        "diplôme de niveau Bac professionnel à Bac+2 (BTS/DUT) peut être demandé selon le secteur (domotique"
-      ],
-      "citedCertifications": [
-        "habilitation aux risques électriques (hors tension et sous-tension) est exigée",
-        "Certificat(s) d'Aptitude à la Conduite En Sécurité - CACES - conditionné par une aptitude médicale à renouveler périodiquement peuvent être requis"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau CAP/BEP à Bac +2 en électricité",
-        "Un diplôme de niveau Bac professionnel à Bac+2 (BTS/DUT) peut être demandé selon le secteur (domotique, électrotechnique, automatisme,",
-        "Une formation à l'habilitation aux risques électriques (hors tension et sous-tension) est exigée",
-        "Des Certificat(s) d'Aptitude à la Conduite En Sécurité - CACES - conditionné par une aptitude médicale à renouveler périodiquement peuvent être requis"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-F1619",
-      "romeCode": "F1619",
-      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
-      "accessLevelCategory": "no_diploma_possible",
-      "noDiplomaPossible": true,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "diplôme de niveau CAP en couverture"
+        "Bac",
+        "Bac+2"
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
-        "Cet emploi est accessible avec un diplôme de niveau CAP en couverture",
-        "L'emploi d'aide-couvreur est accessible sans qualification avec une formation interne à l'entreprise"
+        "Aucune formation spécifique n'est exigée pour exercer ce métier, toutefois une qualification de niveau Bac à Bac+2 en tourisme est recommandée.",
+        "Aucune formation spécifique n'est exigée pour exercer ce métier, toutefois une qualification de niveau Bac à Bac+2 en tourisme est recommandée"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1210",
       "romeCode": "G1210",
-      "displayLabel": "Bac cité, obligation à vérifier",
+      "displayLabel": "Bac cité recommandé",
       "accessLevelCategory": "bac",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 4,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "Bac",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "Bac"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme d'éducateur sportif spécialisé en équitation",
-        "Bac",
-        "cap"
+        "Bac"
       ],
       "citedCertifications": [
         "Certificat de Spécialisation en agriculture CS jeunes chevaux ou la capacité agricole ne sont pas obligatoire mais restent des atouts"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Le Brevet Professionnel Responsable d'Entreprise Hippique (BPREH), le Bac Pro Conduite et Gestion de l'Entreprise Hippique (CGEH), le Certificat de Spécialisation en agriculture CS jeunes chevaux ou la capacité agricole ne sont pas obligatoire mais restent des atouts.",
         "Cet emploi est accessible avec un diplôme d'éducateur sportif spécialisé en équitation",
         "Le Brevet Professionnel Responsable d'Entreprise Hippique (BPREH), le Bac Pro Conduite et Gestion de l'Entreprise Hippique (CGEH), le Certificat de Spécialisation en agriculture CS jeunes chevaux ou la capacité agricole ne sont pas obligatoire mais restent des atouts"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1226",
       "romeCode": "G1226",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.7,
+      "confidence": 0.75,
       "matchedExcerpts": [
+        "D'autres formations universitaires en sport peuvent être utiles mais ne sont pas obligatoires.",
         "Cet emploi est accessible avec un Brevet Professionnel spécialité Activités Aquatiques et de la Natation - BPJEPS AAN, qui est obligatoire"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1235",
       "romeCode": "G1235",
-      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
-      "accessLevelCategory": "no_diploma_possible",
+      "displayLabel": "Condition particulière selon les fonctions exercées",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "conditional",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "BAFA selon les fonctions exercées et le public encadré"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme"
+      ],
       "noDiplomaPossible": true,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme",
         "CAP",
-        "Bac+2",
-        "cap"
+        "Bac+2"
       ],
       "citedCertifications": [
         "habilitations complémentaires peuvent être nécessaires selon le type de public encadré (personnes en situation de handicap"
       ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "source": "local_explicit_access_rule",
+      "confidence": 0.58,
       "matchedExcerpts": [
+        "Cet emploi peut être accessible avec ou sans diplôme, mais le BAFA ( Brevet d'Aptitude aux Fonctions d'Animateur) est souvent requis.",
         "Cet emploi peut être accessible avec ou sans diplôme, mais le BAFA ( Brevet d'Aptitude aux Fonctions d'Animateur) est souvent requis",
         "Les formations de niveau CAP à Bac+2 en animation socio-éducative, culturelle ou de loisir sportif sont demandées",
         "D'autres formations ou habilitations complémentaires peuvent être nécessaires selon le type de public encadré (personnes en situation de handicap, par exemple), les équipements utilisés (piscine"
       ],
       "warnings": [
-        "multiple_diploma_mentions"
-      ]
+        "context_specific_requirement"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z",
+      "verifiedAt": "2026-08-01",
+      "accessPaths": []
     },
     {
       "jobId": "rome-G1410",
       "romeCode": "G1410",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
+      "displayLabel": "Bac +2 cité avec qualification spécifique requise",
       "accessLevelCategory": "bac_plus_2",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certification à partir d'un diplôme Bac+2 est appréciée pour accéder à l'emploi"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme Bac+2 est appréciée pour accéder à l'emploi"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplôme Bac+2 est appréciée pour accéder à l'emploi"
@@ -695,85 +1128,116 @@
         "certification à partir d'un diplôme Bac+2 est appréciée pour accéder à l'emploi"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Bien que non obligatoire, une certification à partir d'un diplôme Bac+2 est appréciée pour accéder à l'emploi.",
+        "Une expérience préalable d'au moins dix ans dans les services administratifs de la restauration est recommandée pour exercer cet emploi.",
         "Bien que non obligatoire, une certification à partir d'un diplôme Bac+2 est appréciée pour accéder à l'emploi"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-G1414",
-      "romeCode": "G1414",
-      "displayLabel": "Niveau exact à vérifier",
-      "accessLevelCategory": "unknown",
+      "jobId": "rome-G1413",
+      "romeCode": "G1413",
+      "displayLabel": "CAP/BEP à Bac +3 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [],
-      "citedCertifications": [],
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "CAP",
+        "Bac +3"
+      ],
+      "citedCertifications": [
+        "certification n'est légalement obligatoire pour exercer ce métier"
+      ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.7,
+      "confidence": 0.83,
       "matchedExcerpts": [
-        "Ce métier est accessible avec une qualification en gestion ou en management"
+        "Aucune certification n'est légalement obligatoire pour exercer ce métier.",
+        "Cet emploi est accessible principalement avec un niveau de formation allant de CAP à Bac +3, selon l'établissement et l'expérience acquise",
+        "Aucune certification n'est légalement obligatoire pour exercer ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1501",
       "romeCode": "G1501",
-      "displayLabel": "CAP ou équivalent cité, obligation à vérifier",
+      "displayLabel": "CAP/BEP cité recommandé",
       "accessLevelCategory": "cap_or_equivalent",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "CAP"
+        "CAP",
+        "BEP"
       ],
       "citedCertifications": [
         "certification n'est obligatoire pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Des formations internes à l'entreprise peuvent être proposées pour la maîtrise des spécificités du poste.",
+        "Aucune certification n'est obligatoire pour exercer ce métier.",
         "Cet emploi est accessible à partir d'un CAP ou BEP en hôtellerie",
         "Aucune certification n'est obligatoire pour exercer ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-G1603",
-      "romeCode": "G1603",
-      "displayLabel": "CAP ou équivalent cité, obligation à vérifier",
-      "accessLevelCategory": "cap_or_equivalent",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "CAP"
+        "negated_obligation_detected"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec une formation de niveau CAP ou BEP (niveau 3 CEC) qui permet d'acquérir les compétences nécessaires pour travailler dans la restauration rapide"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1610",
       "romeCode": "G1610",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "CAP",
+        "Bac",
+        "BTS"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme de niveau CAP ou BP en pâtisserie",
@@ -783,44 +1247,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "D'autres formations comme le CAP cuisine, le Bac professionnel ou technologique en restauration voire le BTS hôtellerie-restauration sont également pertinentes.",
         "Cet emploi est accessible avec un diplôme de niveau CAP ou BP en pâtisserie",
         "D'autres formations comme le CAP cuisine, le Bac professionnel ou technologique en restauration voire le BTS hôtellerie-restauration sont également pertinentes"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-G1613",
-      "romeCode": "G1613",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "licence"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec une formation en hygiène alimentaire dans la restauration commerciale, à défaut d'une qualification en restauration",
-        "Dans le cas de vente de boissons alcoolisées (moins de 18 degrés) après 22H, une petite licence de vente à emporter est nécessaire"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-G1806",
       "romeCode": "G1806",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "unknown",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [],
       "citedCertifications": [],
@@ -829,16 +1284,67 @@
       "matchedExcerpts": [],
       "warnings": [
         "access_text_missing"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-G1809",
+      "romeCode": "G1809",
+      "displayLabel": "CAP/BEP à Bac cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": false,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "CAP",
+        "Bac"
+      ],
+      "citedCertifications": [
+        "certification n'est légalement obligatoire pour exercer ce métier"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.83,
+      "matchedExcerpts": [
+        "Aucune certification n'est légalement obligatoire pour exercer ce métier.",
+        "Cet emploi est accessible avec un CAP en service de café, un Brevet Professionnel de barista ou une formation professionnelle en préparation de boissons caféinées",
+        "Les niveaux d'études requis varient du CAP au Bac",
+        "Aucune certification n'est légalement obligatoire pour exercer ce métier"
+      ],
+      "warnings": [
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1206",
       "romeCode": "H1206",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 5",
         "Master",
@@ -848,46 +1354,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un Bac + 5 (Master Professionnel, diplôme d'ingénieur, etc",
         "Il est également accessible à partir d'un diplôme de niveau Bac+2 (BTS, DUT) dans les mêmes secteurs, complété par une expérience professionnelle et une VAE"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-H1210",
-      "romeCode": "H1210",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac+2 dans un secteur technique ou scientifique",
-        "diplôme de niveau Bac scientifique ou technique"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau Bac+2 dans un secteur technique ou scientifique",
-        "Il est également accessible avec un diplôme de niveau Bac scientifique ou technique, complété par une expérience professionnelle dans le même secteur"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1211",
       "romeCode": "H1211",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Master",
         "Diplôme d'Etat de Docteur en Pharmacie",
@@ -897,47 +1392,34 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un Master ou un Diplôme d'Etat de Docteur en Pharmacie, un diplôme d'Ingénieur dans un secteur technique ou scientifique",
         "Il est également accessible aux débutants et aux profils Licence et Master 1 scientifique avec une expérience professionnelle"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-H1241",
-      "romeCode": "H1241",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme d'ingénieur ou Master dans les secteurs techniques (génie industriel"
       ],
-      "citedCertifications": [
-        "certifications spécifiques à l'hydrogène peuvent être demandées en complément"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un diplôme d'ingénieur ou Master dans les secteurs techniques (génie industriel, énergies, mécanique, mécanique des fluides, électronique, chimie, pétrochimie",
-        "Des certifications spécifiques à l'hydrogène peuvent être demandées en complément"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1301",
       "romeCode": "H1301",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "BTS",
@@ -949,70 +1431,36 @@
         "certifications spécifiques comme ISO 9001 ou ISO 14001 peuvent également être nécessaires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un BTS ou un DUT en Hygiène, Sécurité, Environnement (HSE), une Licence Professionnelle en Métiers de la Qualité, ou un Master en Gestion des Risques ou en Droit de l'Environnement",
         "Des certifications spécifiques comme ISO 9001 ou ISO 14001 peuvent également être nécessaires"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-H1502",
-      "romeCode": "H1502",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau BAC + 3 à Bac + 5 Master en management de la qualité ou un Diplôme d'ingénieur en génie industriel et maintenance"
       ],
-      "citedCertifications": [
-        "certification ISO 9001: 2015 - Lead Auditor peut être un atout"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau BAC + 3 à Bac + 5 Master en management de la qualité ou un Diplôme d'ingénieur en génie industriel et maintenance",
-        "Une certification ISO 9001: 2015 - Lead Auditor peut être un atout, bien qu'elle ne soit pas obligatoire"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-H1504",
-      "romeCode": "H1504",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac à Bac+2"
-      ],
-      "citedCertifications": [
-        "habilitation aux risques d'origine électrique est requise"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau Bac à Bac+2",
-        "Une habilitation aux risques d'origine électrique est requise"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1507",
       "romeCode": "H1507",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité recommandé",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "BAC + 5"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "BAC + 5",
@@ -1022,22 +1470,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Une formation complémentaire de niveau BAC + 5 est souhaitée en affaires règlementaires ou droit de la santé.",
         "Ce métier est accessible après un BAC + 5 à BAC + 8 en ingénierie de la santé, sciences de la vie, biologie, chimie, un diplôme d'Etat de médecin, de pharmacien ou un diplôme de vétérinaire",
         "Une formation complémentaire de niveau BAC + 5 est souhaitée en affaires règlementaires ou droit de la santé"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1524",
       "romeCode": "H1524",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 3",
@@ -1049,23 +1510,41 @@
         "certifications Six Sigma"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un niveau Bac + 3 à Bac + 5 Licence professionnelle Gestion de la qualité, hygiène, sécurité, santé, environnement, Master spécialisé Qualité, gestion de projet, ingénierie",
         "Des certifications Six Sigma, ISO 9001 Lead Auditor sont des atouts"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H1530",
       "romeCode": "H1530",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité comme exigence probable",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "Bac + 2",
+        "Bac + 5",
+        "licence",
+        "master",
+        "diplôme d'ingénieur en génie de l'eau peut également être requis pour des postes plus spécialisés"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 2",
         "Bac + 5",
@@ -1075,22 +1554,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.88,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec un Bac + 2 métiers de l'eau à Bac + 5 licence professionnelle en gestion et traitement de l'eau, un master en sciences et technologies de l'eau, un diplôme d'ingénieur en génie de l'eau peut également être requis pour des postes plus spécialisés.",
         "Cet emploi est accessible avec un Bac  +  2 métiers de l'eau à Bac + 5 licence professionnelle en gestion et traitement de l'eau, un master en sciences et technologies de l'eau, un diplôme d'ingénieur en génie de l'eau peut également être requis pour des postes plus spécialisés"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H2304",
       "romeCode": "H2304",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme de niveau CAP Opérateur de fabrication des industries chimiques",
         "Bac",
@@ -1100,22 +1592,35 @@
         "habilitations spécifiques comme les habilitations électriques ne sont pas obligatoires mais peuvent être utiles"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Des habilitations spécifiques comme les habilitations électriques ne sont pas obligatoires mais peuvent être utiles.",
         "Cet emploi est accessible avec un diplôme de niveau CAP Opérateur de fabrication des industries chimiques, un Bac professionnel Procédés de la chimie à Bac + 2 Métiers de la chimie",
         "Des habilitations spécifiques comme les habilitations électriques ne sont pas obligatoires mais peuvent être utiles"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H2411",
       "romeCode": "H2411",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "CAP",
@@ -1125,21 +1630,33 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un niveau CAP ou Bac Pro à Bac + 2 BTS Conception de produits textiles dans les métiers du cuir, de la mode, maroquinerie"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H2803",
       "romeCode": "H2803",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "CAP/BEP à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "CAP",
@@ -1151,23 +1668,37 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible à partir d'un CAP au Bac + 5",
         "Des formations spécifiques comme un CAP en céramique industrielle, un Bac professionnel technicien en céramique, BTS conception de produits industriels, une licence ou un diplôme d'ingénieur en matériaux avec spécialisation en céramique industrielle peuvent être des atouts"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-H2903",
       "romeCode": "H2903",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
-      "mandatoryQualification": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": true,
       "citedDiplomas": [
         "CAP",
         "Bac + 2",
@@ -1178,23 +1709,126 @@
         "Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Un ou plusieurs Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis.",
         "Ce métier est accessible avec un niveau CAP à Bac + 2 Mécanique, Bac Pro Technicien d'usinage, BTS Conception des processus de réalisation",
         "Une ou plusieurs qualifications spécifiques en soudage peuvent être requises",
         "Un ou plusieurs Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-H3308",
+      "romeCode": "H3308",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis pour la conduite d'engins de manutention"
+      ],
+      "optionalCredentialLabels": [
+        "permis de conduire est un atout"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
+      "regulated": true,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "CAP",
+        "BEP"
+      ],
+      "citedCertifications": [
+        "Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis pour la conduite d'engins de manutention",
+        "permis de conduire est un atout"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.66,
+      "matchedExcerpts": [
+        "Des Certificats d'Aptitude à la Conduite En Sécurité (CACES) peuvent être requis pour la conduite d'engins de manutention.",
+        "La détention du permis de conduire est un atout, pour permettre la réalisation des prestations en atelier de l'emballeur ou chez les clients industriels.",
+        "Ce métier est accessible sans qualification.",
+        "Ce métier est accessible sans qualification",
+        "Un CAP/BEP dans les métiers du bois peut faciliter l'accès"
+      ],
+      "warnings": [
+        "mixed_required_and_optional_wording",
+        "contradictory_access_evidence"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-H3403",
+      "romeCode": "H3403",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certificat(s) d'Aptitude à la Conduite En Sécurité (CACES) conditionné(s) par une aptitude médicale à renouveler périodiquement peu(ven)t être requis",
+        "habilitation aux risques d'origine électrique peut être requise"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
+      "regulated": true,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "diplôme de niveau CAP/BEP à Bac en métallurgie",
+        "diplôme particulier"
+      ],
+      "citedCertifications": [
+        "Certificat(s) d'Aptitude à la Conduite En Sécurité (CACES) conditionné(s) par une aptitude médicale à renouveler périodiquement peu(ven)t être requis",
+        "habilitation aux risques d'origine électrique peut être requise"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.66,
+      "matchedExcerpts": [
+        "Un ou plusieurs Certificat(s) d'Aptitude à la Conduite En Sécurité (CACES) conditionné(s) par une aptitude médicale à renouveler périodiquement peu(ven)t être requis.",
+        "Une habilitation aux risques d'origine électrique peut être requise.",
+        "Il est également accessible avec une expérience professionnelle dans les mêmes secteurs sans diplôme particulier.",
+        "Ce métier est accessible avec un diplôme de niveau CAP/BEP à Bac en métallurgie, automatisme, mécanique ou travail des métaux",
+        "Il est également accessible avec une expérience professionnelle dans les mêmes secteurs sans diplôme particulier"
+      ],
+      "warnings": [
+        "contradictory_access_evidence"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1106",
       "romeCode": "I1106",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Master",
@@ -1204,22 +1838,37 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est le plus souvent accessible avec un Master ou un Diplôme d'ingénieur en réseaux et télécommunications",
         "Mais les niveaux d'études d'accès peuvent varier de Bac+2 à Bac+5 selon la spécialisation et la responsabilité dans le poste"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1306",
       "romeCode": "I1306",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "CAP/BEP à Bac +3 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certifications telles que l'Attestation d'aptitude à la manipulation des fluides frigorigènes",
+        "Habilitation gaz PGN et l'Habilitation soudure Gaz sont obligatoires pour exercer ce métier"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "CAP",
@@ -1232,25 +1881,48 @@
         "Habilitation gaz PGN et l'Habilitation soudure Gaz sont obligatoires pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Des certifications telles que l'Attestation d'aptitude à la manipulation des fluides frigorigènes, l'Habilitation gaz PGN et l'Habilitation soudure Gaz sont obligatoires pour exercer ce métier.",
         "Pour devenir frigoriste, plusieurs parcours de formation sont possibles du CAP à Bac dans le domaine du Froid et climatisation, jusqu'à Bac +2 à Bac +3 en fluides, énergies, ou génie climatique",
         "Des certifications telles que l'Attestation d'aptitude à la manipulation des fluides frigorigènes, l'Habilitation gaz PGN et l'Habilitation soudure Gaz sont obligatoires pour exercer ce métier"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1309",
       "romeCode": "I1309",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
+      "displayLabel": "CAP/BEP à Bac +2 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac +2",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "habilitation (Basse et Haute Tension) aux risques d'origine électrique est obligatoire",
+        "habilitation aux risques d'origine nucléaire peut être requise"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "CAP",
+        "BEP",
+        "Bac + 2",
+        "Bac",
+        "BTS"
+      ],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "CAP",
+        "BEP",
         "Bac + 2",
         "Bac",
         "BTS"
@@ -1260,55 +1932,46 @@
         "habilitation aux risques d'origine nucléaire peut être requise"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Ce métier est accessible avec un niveau CAP/BEP à Bac + 2 BP Electricité, Bac Pro Maintenance systèmes de production connectés, BTS Electrotechnique ou Maintenance, Titre Professionnel Electromécanicien de maintenance industrielle Une habilitation (Basse et Haute Tension) aux risques d'origine électrique est obligatoire.",
+        "Une habilitation aux risques d'origine nucléaire peut être requise.",
         "Ce métier est accessible avec un niveau CAP/BEP à Bac + 2 BP Electricité, Bac Pro Maintenance systèmes de production connectés, BTS Electrotechnique ou Maintenance, Titre Professionnel Electromécanicien de maintenance industrielle",
         "Une habilitation (Basse et Haute Tension) aux risques d'origine électrique est obligatoire",
         "Une habilitation aux risques d'origine nucléaire peut être requise"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-I1407",
-      "romeCode": "I1407",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac",
-        "Bac + 2"
       ],
-      "citedCertifications": [
-        "certification professionnelle comme le CQP Technicien réparateur en télécommunications peut également être un atout",
-        "habilitations électriques peuvent être nécessaires pour certains aspects du travail"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un Bac Pro ou un Bac + 2",
-        "Une certification professionnelle comme le CQP Technicien réparateur en télécommunications peut également être un atout",
-        "Des habilitations électriques peuvent être nécessaires pour certains aspects du travail, bien qu'elles ne soient pas obligatoires"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1510",
       "romeCode": "I1510",
-      "displayLabel": "Plusieurs voies d'accès citées, obligation à vérifier",
-      "accessLevelCategory": "mixed_or_multiple_routes",
+      "displayLabel": "Niveau exact à vérifier",
+      "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certificat de qualification professionnelle (CQP) Plongeur professionnel",
+        "certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique",
+        "Certificat d'aptitude à l'hyperbarie (obligatoire)"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplômes tels que la certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique"
+      ],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
-        "diplômes tels que la certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique",
-        "cap"
+        "diplômes tels que la certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique"
       ],
       "citedCertifications": [
         "certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique",
@@ -1317,22 +1980,39 @@
         "habilitations comme la plongée"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec des diplômes tels que la certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique, un Certificat d'aptitude à l'hyperbarie (obligatoire), un Certificat de qualification professionnelle (CQP) Plongeur professionnel.",
+        "Des habilitations comme la plongée, la prévention et secours civiques, le scaphandrier professionnel, l'hyperbarie, et le soudage à l'arc électrique en pleine eau peuvent être utiles mais ne sont pas obligatoires.",
         "Cet emploi est accessible avec des diplômes tels que la certification Cadre technique génie de l'environnement marin ou un DEJEPS option plongée subaquatique, un Certificat d'aptitude à l'hyperbarie (obligatoire), un Certificat de qualification professionnelle (CQP) Plongeur professionnel",
         "Des habilitations comme la plongée, la prévention et secours civiques, le scaphandrier professionnel, l'hyperbarie, et le soudage à l'arc électrique en pleine eau peuvent être utiles mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "mixed_required_and_optional_wording",
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1602",
       "romeCode": "I1602",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac à Bac +5 cité comme exigence probable",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 4,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "Diplôme d'ingénieur en aéronautique ou un Master en ingénierie aéronautique"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplômes proposés incluent un BTS aéronautique",
@@ -1345,72 +2025,81 @@
         "certificats de spécialisation"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.88,
       "matchedExcerpts": [
+        "En complément, des formations telles que le Diplôme d'ingénieur en aéronautique ou un Master en ingénierie aéronautique, bien que non obligatoires, peuvent enrichir le profil des candidats.",
         "Les diplômes proposés incluent un BTS aéronautique, diverses licences de maintenance d'aéronef Partie-66, et des certificats de spécialisation",
         "Ces formations sont accessibles à partir du niveau Bac (niveau CEC 4) et peuvent aller jusqu'au niveau Bac + 5 (niveau CEC 7)",
         "Les licences de maintenance d'aéronef sont obligatoires pour exercer ce métier",
         "En complément, des formations telles que le Diplôme d'ingénieur en aéronautique ou un Master en ingénierie aéronautique, bien que non obligatoires, peuvent enrichir le profil des candidats"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-I1633",
       "romeCode": "I1633",
-      "displayLabel": "Bac cité, obligation à vérifier",
+      "displayLabel": "Bac cité avec qualification spécifique requise",
       "accessLevelCategory": "bac",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 4,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "Bac",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certification de formation à la sécurité (CFS) est obligatoire pour exercer ce métier"
+      ],
+      "optionalCredentialLabels": [
+        "CQP peut également être pertinent"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac"
       ],
       "citedCertifications": [
+        "CQP peut également être pertinent",
         "certification de formation à la sécurité (CFS) est obligatoire pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "La certification de formation à la sécurité (CFS) est obligatoire pour exercer ce métier.",
+        "Le CQP peut également être pertinent.",
         "Cet emploi est accessible avec un Bac pro ou des titres professionnels spécifiques",
         "La certification de formation à la sécurité (CFS) est obligatoire pour exercer ce métier"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-I1636",
-      "romeCode": "I1636",
-      "displayLabel": "Bac cité, obligation à vérifier",
-      "accessLevelCategory": "bac",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "CAP",
-        "Bac"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Le métier exige, au minimum, une formation de niveau CAP en mécanique ou un Bac professionnel, ou un titre professionnel du Ministère du Travail"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-J1133",
       "romeCode": "J1133",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité recommandé",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 8",
         "Doctorat",
@@ -1419,48 +2108,34 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un Bac + 8 Doctorat en médecine suivi par le diplôme d'études spécialisées en stomatologie et chirurgie maxillo-faciale ou un Diplôme d'État de docteur en chirurgie dentaire, tous deux de niveau Bac + 8",
         "Ces diplômes sont obligatoires pour exercer ce métier en France"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
-    },
-    {
-      "jobId": "rome-J1305",
-      "romeCode": "J1305",
-      "displayLabel": "Niveau exact à vérifier",
-      "accessLevelCategory": "unknown",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Diplôme d'Etat d'ambulancier"
       ],
-      "citedCertifications": [
-        "permis B hors période probatoire et une attestation préfectorale d'aptitude à la conduite d'ambulance",
-        "certificat médical de non contre-indications à l'exercice de la profession",
-        "permis C peut également être requis pour la conduite de certains véhicules sanitaires"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec le Diplôme d'Etat d'ambulancier, un permis B hors période probatoire et une attestation préfectorale d'aptitude à la conduite d'ambulance, un certificat médical de non contre-indications à l'exercice de la profession, une attestation médicale d'immunisation et de vaccinations obligatoires",
-        "Le permis C peut également être requis pour la conduite de certains véhicules sanitaires"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-J1402",
       "romeCode": "J1402",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 2",
@@ -1471,22 +2146,38 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un Bac + 2 BTS diététique ou un DUT génie biologique option diététique",
         "Il est également possible de faire une Licence professionnelle en nutrition, alimentation, santé ou un Master en nutrition et sciences des aliments"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-J1405",
       "romeCode": "J1405",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "BTS opticien-lunetier ou qualification reconnue équivalente requis",
+      "accessLevelCategory": "bac_plus_2",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 5,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "BTS opticien-lunetier ou qualification reconnue équivalente"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "Licence"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": false,
+      "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 2",
@@ -1496,25 +2187,46 @@
         "diplômes d'État sont obligatoires pour exercer ce métier"
       ],
       "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "source": "local_explicit_access_rule",
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Une Licence Professionnelle d'optique peut également être pertinente.",
         "Cet emploi est accessible avec un Bac + 2 BTS Opticien-lunetier ou un Diplôme d'État d'opticien-lunetier",
         "Une Licence Professionnelle d'optique peut également être pertinente",
         "Les diplômes d'État sont obligatoires pour exercer ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z",
+      "sourceRefs": [
+        "https://www.onisep.fr/ressources/univers-metier/metiers/opticien-lunetier-opticienne-lunetiere"
+      ],
+      "verifiedAt": "2026-08-01",
+      "accessPaths": []
     },
     {
       "jobId": "rome-J1410",
       "romeCode": "J1410",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité comme exigence probable",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "BTS"
+      ],
+      "mandatoryDiplomas": [
+        "Bac + 3"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 3",
@@ -1522,140 +2234,129 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.88,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec un Bac + 3 Brevet technique des métiers supérieur prothésiste dentaire, obligatoire pour exercer.",
+        "Un BTS en prothèse dentaire peut également être un atout.",
         "Cet emploi est accessible avec un Bac + 3 Brevet technique des métiers supérieur prothésiste dentaire, obligatoire pour exercer",
         "Un BTS en prothèse dentaire peut également être un atout"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-J1506",
-      "romeCode": "J1506",
-      "displayLabel": "Plusieurs voies d'accès citées, obligation à vérifier",
-      "accessLevelCategory": "mixed_or_multiple_routes",
+      "jobId": "rome-K1507",
+      "romeCode": "K1507",
+      "displayLabel": "Bac +5 cité recommandé",
+      "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "Diplôme d'Etat d'Infirmier",
-        "cap"
+        "diplôme de niveau Bac +5 dans le domaine de l'administration publique et du droit fiscal"
       ],
       "citedCertifications": [
-        "Certificat de capacité de prélèvements sanguins et par une Attestation de Formation aux Gestes et Soins d'Urgence (AFGSU) de niveau 2"
+        "certification n'est obligatoire réglementairement pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
-        "Ce métier est accessible avec un Diplôme d'Etat d'Infirmier, obligatoire pour exercer, qui peut être complété par le Certificat de capacité de prélèvements sanguins et par une Attestation de Formation aux Gestes et Soins d'Urgence (AFGSU) de niveau 2, en cours de validité"
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier.",
+        "Cet emploi est accessible avec un diplôme de niveau Bac +5 dans le domaine de l'administration publique et du droit fiscal",
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-J1509",
-      "romeCode": "J1509",
-      "displayLabel": "Niveau exact à vérifier",
-      "accessLevelCategory": "unknown",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Diplôme d'Etat de docteur en médecine"
+      "jobId": "rome-K1747",
+      "romeCode": "K1747",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certifications peuvent être utiles voire nécessaires : Formation initiale de sécurité civile (type BNSSA",
+        "certificat de sauveteur secouriste du travail (SST)",
+        "permis de conduire (permis B minimum",
+        "permis poids lourds)",
+        "certifications spécifiques selon les spécialisations (secours en montagne"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un Diplôme d'Etat de docteur en médecine, obligatoire pour la coordination des soins"
+      "optionalCredentialLabels": [
+        "certifications peuvent être utiles voire nécessaires : Formation initiale de sécurité civile (type BNSSA",
+        "certificat de sauveteur secouriste du travail (SST)",
+        "permis de conduire (permis B minimum",
+        "permis poids lourds)",
+        "certifications spécifiques selon les spécialisations (secours en montagne"
       ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-J1510",
-      "romeCode": "J1510",
-      "displayLabel": "Plusieurs voies d'accès citées, obligation à vérifier",
-      "accessLevelCategory": "mixed_or_multiple_routes",
-      "noDiplomaPossible": false,
+      "optionalDiplomas": [
+        "diplôme"
+      ],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": true,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "Diplôme d'Etat d'Infirmier",
-        "cap"
+        "diplôme"
       ],
       "citedCertifications": [
-        "Certificat de capacité de prélèvements sanguins et l'Attestation de Formation aux Gestes et Soins d'Urgence (AFGSU) niveau 2"
+        "certifications peuvent être utiles voire nécessaires : Formation initiale de sécurité civile (type BNSSA",
+        "certificat de sauveteur secouriste du travail (SST)",
+        "permis de conduire (permis B minimum",
+        "permis poids lourds)",
+        "certifications spécifiques selon les spécialisations (secours en montagne"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.66,
       "matchedExcerpts": [
-        "Ce métier est accessible avec un Diplôme d'Etat d'Infirmier, obligatoire pour exercer",
-        "Celui-ci peut être complété par le Certificat de capacité de prélèvements sanguins et l'Attestation de Formation aux Gestes et Soins d'Urgence (AFGSU) niveau 2"
+        "Par ailleurs, il existe des prérequis : Être âgé d'au moins 18 ans Être en bonne condition physique et mentale Avoir un casier judiciaire vierge Réussir les tests de sélection (physiques, psychotechniques, et entretiens) Suivre une formation initiale en sécurité civile.",
+        "Ce métier est accessible sans diplôme, toutefois des certifications peuvent être utiles voire nécessaires : Formation initiale de sécurité civile (type BNSSA, PSE1, PSE2), certificat de sauveteur secouriste du travail (SST), permis de conduire (permis B minimum, parfois permis poids lourds), certifications spécifiques selon les spécialisations (secours en montagne, secours aquatique, etc.).",
+        "Ce métier est accessible sans diplôme, toutefois des certifications peuvent être utiles voire nécessaires : Formation initiale de sécurité civile (type BNSSA, PSE1, PSE2), certificat de sauveteur secouriste du travail (SST), permis de conduire (permis B minimum, parfois permis poids lourds), certifications spécifiques selon les spécialisations (secours en montagne, secours aquatique, etc"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-J1512",
-      "romeCode": "J1512",
-      "displayLabel": "Niveau exact à vérifier",
-      "accessLevelCategory": "unknown",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Diplôme d'État d'infirmier"
+        "mixed_required_and_optional_wording",
+        "contradictory_access_evidence"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un Diplôme d'État d'infirmier, obligatoire pour exercer"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-K1705",
-      "romeCode": "K1705",
-      "displayLabel": "Bac +2 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_2",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau CAP/BEP à Bac+2 (BTS",
-        "DUT"
-      ],
-      "citedCertifications": [
-        "certificat de premier secours",
-        "habilitations électriques peuvent être requises"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau CAP/BEP à Bac+2 (BTS, DUT,",
-        ") complété par une formation en secourisme (attestation, certificat de premier secours, brevet de pisteur-secouriste,",
-        "Des habilitations électriques peuvent être requises"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-K1807",
       "romeCode": "K1807",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 3",
@@ -1665,21 +2366,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un Bac + 3 Licence Géographie et aménagement à  + 5 Diplôme d'Ingénieur en urbanisme, un Master en urbanisme, aménagement du territoire"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-K2101",
       "romeCode": "K2101",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "certification professionnelle en gestion de la formation peut être un atout"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Master",
@@ -1692,23 +2407,77 @@
         "certification professionnelle en gestion de la formation peut être un atout"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Une certification professionnelle en gestion de la formation peut être un atout.",
         "Cet emploi est accessible avec un Master en sciences de l'éducation, une Licence en sciences de l'éducation, ou un Diplôme d'État en ingénierie de la formation",
         "Une certification professionnelle en gestion de la formation peut être un atout",
         "Les niveaux d'études requis varient de Bac+3 à Bac+5"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-K2111",
+      "romeCode": "K2111",
+      "displayLabel": "Plusieurs voies d'accès citées recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": false,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "Licence",
+        "Master",
+        "Diplôme d'État de Formateur d'Adultes"
+      ],
+      "citedCertifications": [
+        "certification n'est obligatoire réglementairement pour exercer ce métier"
+      ],
+      "source": "local_explicit_access_rule",
+      "confidence": 0.83,
+      "matchedExcerpts": [
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier.",
+        "Cet emploi est accessible avec une Licence ou un Master dans le domaine d'intervention, ou en sciences de l'éducation, ou un Diplôme d'État de Formateur d'Adultes",
+        "Aucune certification n'est obligatoire réglementairement pour exercer ce métier"
+      ],
+      "warnings": [
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z",
+      "verifiedAt": "2026-08-01",
+      "accessPaths": []
     },
     {
       "jobId": "rome-K2134",
       "romeCode": "K2134",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité recommandé",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Master",
@@ -1718,21 +2487,33 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un Master (Bac +5) ou un Doctorat (Bac +8) pour devenir chercheur"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-K2140",
       "romeCode": "K2140",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac+3",
@@ -1744,22 +2525,34 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible à partir de Bac+3 avec une Licence en histoire",
         "Généralement, cette formation est complétée par un Master en histoire (Bac+5) et dans certains cas un Doctorat en histoire (Bac+8)"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-K2419",
       "romeCode": "K2419",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 3",
@@ -1770,21 +2563,35 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible avec un niveau de Bac + 3 à Bac + 8 Licence en biologie, sciences de la vie ou écologie, Master en botanique, écologie végétale, biologie moléculaire, Doctorat en botanique, phylogénie, physiologie végétale"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-K2420",
       "romeCode": "K2420",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité avec qualification spécifique requise",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis B peut être exigé"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac+5",
@@ -1794,62 +2601,77 @@
         "permis B peut être exigé"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Le permis B peut être exigé.",
+        "Une expérience de terrain en milieu forestier et des connaissances approfondies en botanique, écologie et gestion des écosystèmes sont utiles.",
         "Ce métier est accessible avec un Bac+5 à Bac+8",
         "Le permis B peut être exigé"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-K2501",
-      "romeCode": "K2501",
-      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
-      "accessLevelCategory": "no_diploma_possible",
-      "noDiplomaPossible": true,
-      "regulated": false,
-      "mandatoryQualification": false,
-      "citedDiplomas": [],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.7,
-      "matchedExcerpts": [
-        "Ce métier est accessible sans qualification particulière, cependant les entreprises peuvent proposer des formations en interne"
       ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-L1402",
-      "romeCode": "L1402",
+      "jobId": "rome-K2606",
+      "romeCode": "K2606",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certification de conseiller funéraire"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "Diplôme universitaire en gestion d'entreprise ou une Certification de conseiller funéraire"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
-        "Diplôme Universitaire (DU) Sport de haut niveau et arbitrage est aussi appréciée"
+        "Diplôme universitaire en gestion d'entreprise ou une Certification de conseiller funéraire"
       ],
-      "citedCertifications": [],
+      "citedCertifications": [
+        "Certification de conseiller funéraire"
+      ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
-        "La formation au Diplôme Universitaire (DU) Sport de haut niveau et arbitrage est aussi appréciée"
+        "Ce métier est accessible avec un Diplôme universitaire en gestion d'entreprise ou une Certification de conseiller funéraire, spécifiquement requise pour exercer.",
+        "Une formation en droit funéraire peut être un atout.",
+        "Ce métier est accessible avec un Diplôme universitaire en gestion d'entreprise ou une Certification de conseiller funéraire, spécifiquement requise pour exercer"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-L1509",
       "romeCode": "L1509",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "unknown",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [],
       "citedCertifications": [],
@@ -1858,15 +2680,29 @@
       "matchedExcerpts": [],
       "warnings": [
         "access_text_missing"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-M1203",
       "romeCode": "M1203",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [
+        "Certificat de compétence en comptabilité et gestion (CCG) peut également être pertinent"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme de niveau Bac +3 à Bac +5 en comptabilité",
@@ -1879,149 +2715,73 @@
         "Certificat de compétence en comptabilité et gestion (CCG) peut également être pertinent"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
+        "Un Certificat de compétence en comptabilité et gestion (CCG) peut également être pertinent.",
         "Cet emploi est accessible avec un diplôme de niveau Bac +3 à Bac +5 en comptabilité",
         "Les formations disponibles incluent le Diplôme de comptabilité et de gestion (DCG), les Licences, Masters et le Diplôme supérieur de comptabilité et de gestion (DSCG)",
         "Un Certificat de compétence en comptabilité et gestion (CCG) peut également être pertinent"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-M1223",
-      "romeCode": "M1223",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "jobId": "rome-M1830",
+      "romeCode": "M1830",
+      "displayLabel": "Bac +3 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 6,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +3",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "diplôme de niveau Bac+3 à Bac+5",
-        "diplôme d'expertise comptable"
+        "diplôme de niveau Bac + 3 à Bac + 5 en informatique et réseaux"
       ],
       "citedCertifications": [
-        "certifications en gestion des risques et contrôle de gestion sont également pertinentes"
+        "certification ou habilitation spécifique n'est légalement obligatoire pour exercer ce métier"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
-        "Cet emploi est accessible avec un diplôme de niveau Bac+3 à Bac+5",
-        "Un diplôme d'expertise comptable, obligatoire pour certaines fonctions, peut être requis",
-        "Des certifications en gestion des risques et contrôle de gestion sont également pertinentes"
+        "Aucune certification ou habilitation spécifique n'est légalement obligatoire pour exercer ce métier.",
+        "Ce métier est accessible avec un diplôme de niveau Bac + 3 à Bac + 5 en informatique et réseaux",
+        "Aucune certification ou habilitation spécifique n'est légalement obligatoire pour exercer ce métier"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-M1829",
-      "romeCode": "M1829",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac + 5"
+        "negated_obligation_detected"
       ],
-      "citedCertifications": [
-        "certifications comme Cisco CCNA ou Microsoft MCSE"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un niveau Bac + 5 en réseaux informatiques et télécommunications",
-        "Des certifications comme Cisco CCNA ou Microsoft MCSE, bien que non obligatoires, peuvent être des atouts"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-M1860",
-      "romeCode": "M1860",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Master",
-        "Diplôme d'Ingénieur en Systèmes d'information"
-      ],
-      "citedCertifications": [
-        "certifications comme AWS Certified Solutions Architect ou Microsoft Certified: Azure Solutions Architect Expert peuvent être des atouts supplémentaires"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un Master en Informatique ou un Diplôme d'Ingénieur en Systèmes d'information, Cybersécurité ou Cloud computing",
-        "Des certifications comme AWS Certified Solutions Architect ou Microsoft Certified: Azure Solutions Architect Expert peuvent être des atouts supplémentaires, bien qu'elles ne soient pas obligatoires"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-M1864",
-      "romeCode": "M1864",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac + 3",
-        "Bac + 5",
-        "Master"
-      ],
-      "citedCertifications": [
-        "certification comme Scrum Master peut être un atout"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un Bac + 3 à Bac + 5 Master en informatique, management de projet et marketing",
-        "Une certification comme Scrum Master peut être un atout, bien qu'elle ne soit pas obligatoire"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-M1879",
-      "romeCode": "M1879",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac + 5",
-        "Diplôme d'Ingénieur ou un Master en informatique"
-      ],
-      "citedCertifications": [
-        "certifications spécifiques peuvent être exigées"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec un diplôme de niveau Bac + 5, tel qu'un Diplôme d'Ingénieur ou un Master en informatique, ingénierie des systèmes",
-        "Des certifications spécifiques peuvent être exigées"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-M1888",
       "romeCode": "M1888",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
+      "displayLabel": "Bac +5 cité recommandé",
       "accessLevelCategory": "bac_plus_5",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 7,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +5",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 5",
@@ -2031,21 +2791,33 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.68,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Cet emploi est accessible avec un Bac + 5 à Bac + 8 un Master ou un Doctorat en climatologie, météorologie, sciences de l'atmosphère, géophysique"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-M1895",
       "romeCode": "M1895",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": false,
       "citedDiplomas": [
         "Bac + 2",
@@ -2056,22 +2828,42 @@
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.76,
+      "confidence": 0.79,
       "matchedExcerpts": [
         "Ce métier est accessible à partir d'un niveau Bac + 2 à Bac + 5 géomaticien ou des métiers similaires, plusieurs parcours de formation sont possibles",
         "Les diplômes proposés incluent des ingénieries spécialisées en géomatique et topographie, des licences en géographie et aménagement, ainsi que des masters en géomatique"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1101",
       "romeCode": "N1101",
-      "displayLabel": "Bac cité, obligation à vérifier",
-      "accessLevelCategory": "bac",
+      "displayLabel": "CAP/BEP à Bac cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Certificats d'Aptitude à la Conduite En Sécurité (CACES) pour chariots de manutention",
+        "autorisation de conduite\""
+      ],
+      "optionalCredentialLabels": [
+        "Certificat de Formation à la Sécurité (CFS) peut être un atout"
+      ],
+      "optionalDiplomas": [
+        "diplômes de l'Education nationale (CAP",
+        "Bac"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplômes de l'Education nationale (CAP",
@@ -2079,26 +2871,43 @@
       ],
       "citedCertifications": [
         "Certificats d'Aptitude à la Conduite En Sécurité (CACES) pour chariots de manutention",
+        "autorisation de conduite\"",
         "Certificat de Formation à la Sécurité (CFS) peut être un atout"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
-        "Cet emploi est accessible avec l'un des Certificats d'Aptitude à la Conduite En Sécurité (CACES) pour chariots de manutention, obligatoire pour la conduite de chariots industriels",
-        "Par équivalence, les diplômes de l'Education nationale (CAP, Bac pro Métiers de la logistique) ou certains titres professionnels, sont recommandés pour la conduite de chariots de manutention",
-        "Une formation complémentaire telle que le Certificat de Formation à la Sécurité (CFS) peut être un atout"
+        "Cet emploi est accessible avec l'un des Certificats d'Aptitude à la Conduite En Sécurité (CACES) pour chariots de manutention, obligatoire pour la conduite de chariots industriels.",
+        "A défaut, c'est l'employeur qui délivre au Cariste une \"autorisation de conduite\", après une période de formation interne obligatoire.",
+        "Par équivalence, les diplômes de l'Education nationale (CAP, Bac pro Métiers de la logistique) ou certains titres professionnels, sont recommandés pour la conduite de chariots de manutention.",
+        "Une formation complémentaire telle que le Certificat de Formation à la Sécurité (CFS) peut être un atout.",
+        "Cet emploi est accessible avec l'un des Certificats d'Aptitude à la Conduite En Sécurité (CACES) pour chariots de manutention, obligatoire pour la conduite de chariots industriels"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1102",
       "romeCode": "N1102",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [],
       "citedCertifications": [
@@ -2107,24 +2916,39 @@
         "Certificat d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Un déménageur conducteur doit être titulaire du permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue (FCO).",
+        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires mais ne sont pas obligatoires.",
         "Cet emploi est accessible à tous les niveaux de qualification",
         "Un déménageur conducteur doit être titulaire du permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue (FCO)",
-        "Une habilitation électrique  peut également être nécessaire",
-        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES)  peuvent être nécessaires mais ne sont pas obligatoires"
+        "Une habilitation électrique  peut également être nécessaire"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1107",
       "romeCode": "N1107",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [],
       "citedCertifications": [
@@ -2133,98 +2957,128 @@
         "Certificat d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "S'il est amené à conduire un véhicule, il doit être titulaire du permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue (FCO).",
+        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires mais ne sont pas obligatoires.",
         "Cet emploi est accessible à tous les niveaux de qualification",
         "S'il est amené à conduire un véhicule, il doit être titulaire du permis de conduire de la catégorie B et parfois le C et CE complété de la formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue (FCO)",
-        "Une formation à l'habilitation électrique de 2 jours peut être nécessaire",
-        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES) peuvent être nécessaires mais ne sont pas obligatoires"
+        "Une formation à l'habilitation électrique de 2 jours peut être nécessaire"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1112",
       "romeCode": "N1112",
-      "displayLabel": "Bac cité, obligation à vérifier",
-      "accessLevelCategory": "bac",
+      "displayLabel": "CAP/BEP à Bac cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 4,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "Bac",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "autorisation de conduite\""
+      ],
+      "optionalCredentialLabels": [
+        "CACES",
+        "Certificat de Formation à la Sécurité (CFS) peut être un atout"
+      ],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplôme de niveau CAP à Bac"
       ],
       "citedCertifications": [
         "CACES",
+        "autorisation de conduite\"",
         "Certificat de Formation à la Sécurité (CFS) peut être un atout"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "A défaut, c'est l'employeur qui délivre au chef d'équipe logistique une \"autorisation de conduite\", après une période de formation interne obligatoire.",
+        "Le CACES est recommandé pour la conduite de chariots de manutention.",
+        "Une formation complémentaire telle que le Certificat de Formation à la Sécurité (CFS) peut être un atout.",
         "Cet emploi est accessible avec diplôme de niveau CAP à Bac, ou par Validation des Acquis d'Expérience (VAE)",
-        "Le CACES est recommandé pour la conduite de chariots de manutention",
-        "Une formation complémentaire telle que le Certificat de Formation à la Sécurité (CFS) peut être un atout"
+        "Le CACES est recommandé pour la conduite de chariots de manutention"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1115",
       "romeCode": "N1115",
       "displayLabel": "Accès possible sans diplôme selon le texte officiel",
       "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "CQP ou nécessiter une formation complémentaire (ex"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": true,
-      "regulated": true,
-      "mandatoryQualification": true,
+      "regulated": false,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
       "citedDiplomas": [
         "diplôme ou qualification",
         "CAP"
       ],
       "citedCertifications": [
+        "CQP ou nécessiter une formation complémentaire (ex",
         "Certificats d'Aptitude à la Conduite en Sécurité (CACES) peuvent être demandées"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.66,
       "matchedExcerpts": [
+        "Le métier peut être contextualisé aux spécificités d'un secteur d'activité, moyennant l'obtention de l'un des CQP ou nécessiter une formation complémentaire (ex.",
+        "Cet emploi est accessible sans diplôme ou qualification.",
         "Cet emploi est accessible sans diplôme ou qualification",
         "Un CAP ou titre professionnel est un plus pour faciliter l'insertion professionnelle et la maîtrise des spécificités techniques liées à l'activité",
         "Des formations spécifiques telles que des Certificats d'Aptitude à la Conduite en Sécurité (CACES) peuvent être demandées"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-N1205",
-      "romeCode": "N1205",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac + 2",
-        "Bac + 5"
+        "contradictory_access_evidence"
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Les niveaux d'études varient de Bac + 2 à Bac + 5 du domaine transport logistique"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N1209",
       "romeCode": "N1209",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "certifications comme les CACES sont obligatoires"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "Bac + 2",
@@ -2237,76 +3091,123 @@
         "certifications comme les CACES sont obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Des certifications comme les CACES sont obligatoires.",
+        "Une formation ADR (matières dangereuses) est un atout.",
         "Ce métier est accessible avec un niveau Bac + 2 à Bac + 3 BTS gestion des transports et logistique associée, DUT qualité, logistique industrielle et organisation, licence professionnelle en logistique",
         "Des certifications comme les CACES sont obligatoires"
       ],
       "warnings": [
         "mixed_required_and_optional_wording",
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
-      "jobId": "rome-N2101",
-      "romeCode": "N2101",
-      "displayLabel": "Bac cité, obligation à vérifier",
-      "accessLevelCategory": "bac",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
+      "jobId": "rome-N1210",
+      "romeCode": "N1210",
+      "displayLabel": "Accès possible sans diplôme selon le texte officiel",
+      "accessLevelCategory": "no_diploma_possible",
+      "requirementKind": "conflicting",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme de niveau Bac + 2 à Bac + 5 est requis"
+      ],
+      "noDiplomaPossible": true,
+      "regulated": false,
+      "contradictoryEvidence": true,
+      "mandatoryQualification": false,
       "citedDiplomas": [
-        "Bac"
-      ],
-      "citedCertifications": [
-        "certificat d'aptitude physique et mentale",
-        "habilitation d'accès aux zones réglementées",
-        "habilitation est demandée par l'employeur et délivrée par la Préfecture"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Ce métier est accessible avec le Bac à toute personne ayant 18 ans révolus",
-        "-\tÊtre en possession d'un certificat d'aptitude physique et mentale",
-        "-\tÊtre en possession d'une habilitation d'accès aux zones réglementées",
-        "Cette dernière habilitation est demandée par l'employeur et délivrée par la Préfecture, après enquête par les autorités compétentes"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-N2103",
-      "romeCode": "N2103",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplômes proposés incluent le Pilote commercial",
-        "Bac + 5"
+        "diplôme de niveau Bac + 2 à Bac + 5 est requis",
+        "diplôme n'est légalement obligatoire pour exercer ce métier en France"
       ],
       "citedCertifications": [],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.62,
       "matchedExcerpts": [
-        "Les diplômes proposés incluent le Pilote commercial, Pilote de ligne, et Pilote en équipage multiple, nécessitant généralement un niveau Bac + 5",
-        "D'autres qualifications spécifiques comme Pilote privé hélicoptère ou Pilote professionnel hélicoptère sont également envisageables",
-        "En outre, des qualifications supplémentaires telles que l'Adjoint pilote privé hélicoptère, Examinateur de Qualification de Classe, ou des opérations de travail aérien sont requises pour des tâches spécifiques, bien que non obligatoires réglementairement",
-        "Ces formations et qualifications couvrent un large éventail de compétences nécessaires pour la diversité des tâches associées à ces métiers"
+        "Pour exercer le métier de logisticien, un diplôme de niveau Bac + 2 à Bac + 5 est requis.",
+        "Aucun diplôme n'est légalement obligatoire pour exercer ce métier en France.",
+        "Pour exercer le métier de logisticien, un diplôme de niveau Bac + 2 à Bac + 5 est requis",
+        "Aucun diplôme n'est légalement obligatoire pour exercer ce métier en France"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "contradictory_access_evidence",
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    },
+    {
+      "jobId": "rome-N1302",
+      "romeCode": "N1302",
+      "displayLabel": "Bac +2 à Bac +5 cité recommandé",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 7,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +5",
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
+      "noDiplomaPossible": false,
+      "regulated": false,
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [
+        "Bac + 2",
+        "Bac + 8",
+        "diplômes tels que BUT spécialité management de la logistique et des transports",
+        "Ingénieur",
+        "ingénieur"
+      ],
+      "citedCertifications": [
+        "certifications spécifiques comme Coordinateur logistique transport douane France et international peuvent également être requises"
+      ],
+      "source": "derived_from_official_access_text",
+      "confidence": 0.79,
+      "matchedExcerpts": [
+        "Ce métier est accessible avec des formations de niveau Bac + 2 à Bac + 8 incluant des diplômes tels que BUT spécialité management de la logistique et des transports, Ingénieur diplômé de l'école d'ingénieurs Jules Verne, ou encore Manager de la chaîne logistique",
+        "Des certifications spécifiques comme Coordinateur logistique transport douane France et international peuvent également être requises"
+      ],
+      "warnings": [
+        "multiple_diploma_mentions"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N2210",
       "romeCode": "N2210",
-      "displayLabel": "Bac +3 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_3",
+      "displayLabel": "Bac +2 à Bac +3 cité avec qualification spécifique requise",
+      "accessLevelCategory": "mixed_or_multiple_routes",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": 5,
+      "maximumDiplomaLevel": 6,
+      "minimumDiplomaLabel": "Bac +2",
+      "maximumDiplomaLabel": "Bac +3",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Diplôme d'État en gestion des opérations aéroportuaires",
+        "Certificat d'agent d'escale commercial"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "BTS",
+        "Diplôme d'État en gestion des opérations aéroportuaires"
+      ],
       "noDiplomaPossible": false,
       "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "BTS",
@@ -2318,74 +3219,74 @@
         "Certificat d'agent d'escale commercial"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.86,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec un Certificat d'agent d'escale commercial, un BTS Tourisme ou un Diplôme d'État en gestion des opérations aéroportuaires, ce dernier étant obligatoire.",
         "Cet emploi est accessible avec un Certificat d'agent d'escale commercial, un BTS Tourisme ou un Diplôme d'État en gestion des opérations aéroportuaires, ce dernier étant obligatoire",
         "Les niveaux d'études requis varient de Bac + 2 à Bac + 3"
       ],
       "warnings": [
         "multiple_diploma_mentions"
-      ]
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N3101",
       "romeCode": "N3101",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "recommended",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": false,
+      "requiredCredentialLabels": [],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "cap"
-      ],
+      "contradictoryEvidence": false,
+      "mandatoryQualification": false,
+      "citedDiplomas": [],
       "citedCertifications": [
         "Certification de gestion portuaire peuvent être utiles"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.83,
       "matchedExcerpts": [
+        "Des qualifications supplémentaires comme un Brevet de capitaine de port ou une Certification de gestion portuaire peuvent être utiles, mais ne sont pas obligatoires.",
         "Cet emploi est accessible avec un Brevet de capitaine de première classe de la navigation maritime, obligatoire pour exercer",
         "Des qualifications supplémentaires comme un Brevet de capitaine de port ou une Certification de gestion portuaire peuvent être utiles, mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-N3201",
-      "romeCode": "N3201",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "diplôme de niveau Bac + 3 à Bac + 5",
-        "cap",
-        "Diplôme d'ingénieur"
+        "negated_obligation_detected"
       ],
-      "citedCertifications": [
-        "certification en aptitude à l'exploitation des transports est également pertinente"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un diplôme de niveau Bac + 3 à Bac + 5",
-        "Un Brevet de capitaine 200 est obligatoire pour certaines fonctions spécifiques",
-        "Des connaissances complémentaires en génie maritime peuvent être acquises via un Diplôme d'ingénieur",
-        "La certification en aptitude à l'exploitation des transports est également pertinente"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N4101",
       "romeCode": "N4101",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis C ou C1 est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme ou titre professionnel du secteur"
+      ],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplôme ou titre professionnel du secteur"
@@ -2396,72 +3297,87 @@
         "Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cependant le permis C ou C1 est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel du secteur.",
+        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES), le Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires.",
         "Cet emploi est accessible à tous les niveaux de qualification",
         "Cependant le permis C ou C1 est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel du secteur",
         "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES), le Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N4103",
       "romeCode": "N4103",
-      "displayLabel": "CAP ou équivalent cité, obligation à vérifier",
+      "displayLabel": "CAP/BEP cité avec qualification spécifique requise",
       "accessLevelCategory": "cap_or_equivalent",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Permis D"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "CAP",
+        "BEP"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
-        "CAP"
+        "CAP",
+        "BEP"
       ],
       "citedCertifications": [
         "Permis D"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec un Permis D, obligatoire pour conduire un bus.",
+        "La Formation Initiale Minimum Obligatoire (FIMO) puis la Formation Continue Obligatoire (FCO) sont également requises et obligatoires pour exercer ce métier.",
+        "Des formations complémentaires comme le CAP ou le BEP peuvent être utiles mais ne sont pas obligatoires.",
         "Cet emploi est accessible avec un Permis D, obligatoire pour conduire un bus",
         "Des formations complémentaires comme le CAP ou le BEP peuvent être utiles mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-N4106",
-      "romeCode": "N4106",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac + 2",
-        "Bac + 5"
+        "mixed_required_and_optional_wording",
+        "negated_obligation_detected"
       ],
-      "citedCertifications": [
-        "certifications spécifiques au domaine douanier portées par des organismes spécialisés et / ou des CCI"
-      ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Les niveaux d'études varient de Bac + 2 à Bac + 5 dans le domaine transport - logistique",
-        "D'autres certifications spécifiques au domaine douanier portées par des organismes spécialisés et / ou des CCI"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N4115",
       "romeCode": "N4115",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis CE ou C1E est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme ou titre professionnel de conducteur routier"
+      ],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplôme ou titre professionnel de conducteur routier"
@@ -2472,23 +3388,42 @@
         "Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cependant le permis CE ou C1E est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel de conducteur routier.",
+        "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES), le Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires.",
         "Cet emploi est accessible à tous les niveaux de qualification",
         "Cependant le permis CE ou C1E est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel de conducteur routier",
         "Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES), le Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+        "negated_obligation_detected"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N4116",
       "romeCode": "N4116",
       "displayLabel": "Niveau exact à vérifier",
       "accessLevelCategory": "unknown",
+      "requirementKind": "mandatory",
+      "minimumDiplomaLevel": null,
+      "maximumDiplomaLevel": null,
+      "minimumDiplomaLabel": null,
+      "maximumDiplomaLabel": null,
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "permis de conduire des catégories C",
+        "Certificat de formation ADR"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [],
+      "mandatoryDiplomas": [
+        "diplôme ou titre professionnel de conducteur routier et le Certificat de formation ADR"
+      ],
       "noDiplomaPossible": false,
-      "regulated": true,
+      "regulated": false,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
         "diplôme ou titre professionnel de conducteur routier et le Certificat de formation ADR"
@@ -2499,88 +3434,260 @@
         "Certificat d'Aptitude à la Conduite En Sécurité (CACES) ainsi que des spécialisations ADR en fonctions des matières dangereuses transportées peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cependant, le permis de conduire des catégories C, C1 et/ou CE, C1E est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel de conducteur routier et le Certificat de formation ADR.",
+        "Des formations spécifiques comme les Certificat d'Aptitude à la Conduite En Sécurité (CACES) ainsi que des spécialisations ADR en fonctions des matières dangereuses transportées peuvent être nécessaires mais ne sont pas obligatoires.",
         "Cet emploi est accessible à tous les niveaux de qualification",
         "Cependant, le permis de conduire des catégories C, C1 et/ou CE, C1E est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel de conducteur routier et le Certificat de formation ADR",
         "Des formations spécifiques comme les Certificat d'Aptitude à la Conduite En Sécurité (CACES) ainsi que des spécialisations ADR en fonctions des matières dangereuses transportées peuvent être nécessaires mais ne sont pas obligatoires"
       ],
       "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
-    },
-    {
-      "jobId": "rome-N4128",
-      "romeCode": "N4128",
-      "displayLabel": "Niveau exact à vérifier",
-      "accessLevelCategory": "unknown",
-      "noDiplomaPossible": false,
-      "regulated": true,
-      "mandatoryQualification": true,
-      "citedDiplomas": [],
-      "citedCertifications": [
-        "Permis B"
+        "negated_obligation_detected"
       ],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un Permis B"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
-      ]
+      "generatedAt": "2026-08-01T17:10:02.732Z"
     },
     {
       "jobId": "rome-N4133",
       "romeCode": "N4133",
-      "displayLabel": "CAP ou équivalent cité, obligation à vérifier",
+      "displayLabel": "CAP/BEP cité avec qualification spécifique requise",
       "accessLevelCategory": "cap_or_equivalent",
+      "requirementKind": "regulated",
+      "minimumDiplomaLevel": 3,
+      "maximumDiplomaLevel": 3,
+      "minimumDiplomaLabel": "CAP/BEP",
+      "maximumDiplomaLabel": "CAP/BEP",
+      "specificCredentialRequired": true,
+      "requiredCredentialLabels": [
+        "Permis C (obligatoire) et une FIMO (obligatoire)"
+      ],
+      "optionalCredentialLabels": [],
+      "optionalDiplomas": [
+        "CAP"
+      ],
+      "mandatoryDiplomas": [],
       "noDiplomaPossible": false,
       "regulated": true,
+      "contradictoryEvidence": false,
       "mandatoryQualification": true,
       "citedDiplomas": [
-        "CAP"
+        "CAP",
+        "BEP"
       ],
       "citedCertifications": [
         "Permis C (obligatoire) et une FIMO (obligatoire)"
       ],
       "source": "derived_from_official_access_text",
-      "confidence": 0.78,
+      "confidence": 0.9,
       "matchedExcerpts": [
+        "Cet emploi est accessible avec un Permis C (obligatoire) et une FIMO (obligatoire).",
+        "Un CAP Conducteur routier peut être un atout.",
         "Cet emploi est accessible avec un Permis C (obligatoire) et une FIMO (obligatoire)",
         "Un CAP Conducteur routier peut être un atout",
         "Les formations nécessaires sont de niveau CAP ou BEP"
       ],
       "warnings": [
         "mixed_required_and_optional_wording"
+      ],
+      "generatedAt": "2026-08-01T17:10:02.732Z"
+    }
+  ],
+  "regulatedUnresolved": [],
+  "genericRequiredLabels": [],
+  "truthCases": [
+    {
+      "romeCode": "G1201",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "G1202",
+      "status": "ok",
+      "checks": [
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "G1203",
+      "status": "ok",
+      "checks": [
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "G1235",
+      "status": "ok",
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "requirementKind": "conditional",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "K1201",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Diplôme d'État d'assistant de service social (DEASS)"
       ]
     },
     {
-      "jobId": "rome-N4304",
-      "romeCode": "N4304",
-      "displayLabel": "Bac +5 cité, obligation à vérifier",
-      "accessLevelCategory": "bac_plus_5",
-      "noDiplomaPossible": false,
-      "regulated": false,
-      "mandatoryQualification": true,
-      "citedDiplomas": [
-        "Bac +3",
-        "Bac +5"
+      "romeCode": "K1207",
+      "status": "ok",
+      "checks": [
+        true,
+        true
       ],
-      "citedCertifications": [],
-      "source": "derived_from_official_access_text",
-      "confidence": 0.78,
-      "matchedExcerpts": [
-        "Cet emploi est accessible avec un Brevet de sécurité ferroviaire, obligatoire pour la conduite",
-        "Des formations de niveau Bac +3 à Bac +5 peuvent être des atouts"
-      ],
-      "warnings": [
-        "mixed_required_and_optional_wording"
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Diplôme d'État d'éducateur spécialisé (DEES) ou équivalence réglementaire reconnue"
       ]
+    },
+    {
+      "romeCode": "K1307",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "mandatory",
+      "requiredCredentialLabels": [
+        "CAP Accompagnant éducatif petite enfance (CAP AEPE) ou qualification reconnue équivalente"
+      ]
+    },
+    {
+      "romeCode": "K2106",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Réussite à une voie du concours de recrutement de professeur des écoles (CRPE)"
+      ]
+    },
+    {
+      "romeCode": "K2111",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "J1104",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Diplôme d'État de sage-femme ou de docteur en maïeutique"
+      ]
+    },
+    {
+      "romeCode": "J1202",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Diplôme d'État de docteur en pharmacie"
+      ]
+    },
+    {
+      "romeCode": "J1405",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "BTS opticien-lunetier ou qualification reconnue équivalente"
+      ]
+    },
+    {
+      "romeCode": "J1407",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Certificat de capacité d'orthoptiste"
+      ]
+    },
+    {
+      "romeCode": "J1506",
+      "status": "ok",
+      "checks": [
+        true,
+        true,
+        true
+      ],
+      "requirementKind": "regulated",
+      "requiredCredentialLabels": [
+        "Diplôme d'État d'infirmier"
+      ]
+    },
+    {
+      "romeCode": "N1210",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "conflicting",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "M1501",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
+    },
+    {
+      "romeCode": "D1424",
+      "status": "ok",
+      "checks": [
+        true,
+        true
+      ],
+      "requirementKind": "recommended",
+      "requiredCredentialLabels": []
     }
   ],
+  "truthFailures": [],
   "warnings": [
     "Synthèse prudente issue de textes officiels : le texte source reste prioritaire.",
-    "Les formulations avec 'peut' ou 'atout' ne sont pas traitées comme obligations."
+    "Les formulations avec 'peut' ou 'atout' ne sont pas traitées comme obligations.",
+    "Les règles locales explicites sourcées prévalent pour les professions réglementées et les voies parallèles."
   ]
 }

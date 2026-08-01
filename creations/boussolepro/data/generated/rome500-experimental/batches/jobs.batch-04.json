@@ -37181,7 +37181,32 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "accessPaths": [
+      {
+        "id": "k1201-deass",
+        "label": "Diplôme d'État d'assistant de service social (DEASS)",
+        "routeType": "diploma",
+        "validFrom": null,
+        "validThrough": null,
+        "examRequired": false,
+        "minimumDiplomaLevel": 6,
+        "maximumDiplomaLevel": 6,
+        "requiredCredentialLabels": [
+          "Diplôme d'État d'assistant de service social (DEASS)"
+        ],
+        "requiredExperienceYears": null,
+        "requiredExperienceScope": null,
+        "eligibilityRules": [
+          "Qualification obligatoire pour exercer en France"
+        ],
+        "sourceRefs": [
+          "https://www.onisep.fr/metier/decouvrir-le-monde-professionnel/social/les-formations-pour-exercer-dans-le-social"
+        ],
+        "confidence": 0.96,
+        "verifiedAt": "2026-08-01"
+      }
+    ]
   },
   {
     "id": "rome-K1204",
@@ -39762,7 +39787,33 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "accessPaths": [
+      {
+        "id": "k1207-dees-equivalence",
+        "label": "DEES ou équivalence réglementaire reconnue",
+        "routeType": "equivalence",
+        "validFrom": null,
+        "validThrough": null,
+        "examRequired": false,
+        "minimumDiplomaLevel": 6,
+        "maximumDiplomaLevel": 6,
+        "requiredCredentialLabels": [
+          "Diplôme d'État d'éducateur spécialisé (DEES) ou équivalence réglementaire reconnue"
+        ],
+        "requiredExperienceYears": null,
+        "requiredExperienceScope": null,
+        "eligibilityRules": [
+          "La qualification ou l'équivalence doit être reconnue pour la fonction visée"
+        ],
+        "sourceRefs": [
+          "https://www.francetravail.fr/files/live/sites/grand-est/files/20190318_K1207.pdf",
+          "https://www.onisep.fr/ressources/univers-metier/metiers/educateur-specialise-educatrice-specialisee"
+        ],
+        "confidence": 0.94,
+        "verifiedAt": "2026-08-01"
+      }
+    ]
   },
   {
     "id": "rome-K1213",
@@ -47049,7 +47100,32 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "accessPaths": [
+      {
+        "id": "k1307-cap-aepe",
+        "label": "CAP AEPE ou qualification reconnue équivalente",
+        "routeType": "diploma",
+        "validFrom": null,
+        "validThrough": null,
+        "examRequired": false,
+        "minimumDiplomaLevel": 3,
+        "maximumDiplomaLevel": 3,
+        "requiredCredentialLabels": [
+          "CAP Accompagnant éducatif petite enfance (CAP AEPE) ou qualification reconnue équivalente"
+        ],
+        "requiredExperienceYears": null,
+        "requiredExperienceScope": null,
+        "eligibilityRules": [
+          "Minimum d'accès indiqué par la fiche métier"
+        ],
+        "sourceRefs": [
+          "https://candidat.francetravail.fr/metierscope/fiche-metier/K1307/animateur-animatrice-petite-enfance"
+        ],
+        "confidence": 0.92,
+        "verifiedAt": "2026-08-01"
+      }
+    ]
   },
   {
     "id": "rome-K1401",
@@ -70190,7 +70266,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "K2105",
     "title": "Professeur / Professeure de musique",
-    "domain": "Enfance, éducation et animation",
+    "domain": "Services à la personne et à la collectivité",
     "family": "Services à la personne et à la collectivité",
     "officialRomeDomain": {
       "code": "K",
@@ -71566,7 +71642,9 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Services à la personne et à la collectivité",
+    "sourceFamily": "Services à la personne et à la collectivité"
   },
   {
     "id": "rome-K2106",
@@ -72046,9 +72124,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible avec un diplôme de niveau Bac+5 et nécessite la réussite au concours du CRPE. Le concours est suivi d'une année de stage obligatoire pour valider la titularisation dans le métier.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": "Depuis la session 2026, plusieurs voies du CRPE coexistent : concours externe accessible à partir de la licence, concours externe Bac+5 maintenu à titre transitoire en 2026 et 2027, et troisième concours sans diplôme spécifique sous condition d'au moins cinq années d'activités professionnelles éligibles sous contrat de droit privé. La réussite au concours reste obligatoire et les règles doivent être revérifiées pour la session visée.",
+      "source": "local_explicit_access_rule",
+      "confidence": 0.96
     },
     "physicalConstraints": {
       "level": "medium",
@@ -72972,14 +73050,84 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "accessPaths": [
+      {
+        "id": "k2106-crpe-externe-bac3",
+        "label": "Concours externe CRPE Bac+3",
+        "routeType": "external_exam",
+        "validFrom": "2026",
+        "validThrough": null,
+        "examRequired": true,
+        "minimumDiplomaLevel": 6,
+        "maximumDiplomaLevel": 6,
+        "requiredCredentialLabels": [],
+        "requiredExperienceYears": null,
+        "requiredExperienceScope": null,
+        "eligibilityRules": [
+          "Licence ou titre équivalent, ou inscription dans l'année permettant de l'obtenir selon les règles de la session",
+          "Réussite aux épreuves du CRPE"
+        ],
+        "sourceRefs": [
+          "https://www.devenirenseignant.gouv.fr/enseigner-de-la-maternelle-a-l-elementaire-le-crpe-1377"
+        ],
+        "confidence": 0.96,
+        "verifiedAt": "2026-08-01"
+      },
+      {
+        "id": "k2106-crpe-externe-bac5-transition",
+        "label": "Concours externe CRPE Bac+5 transitoire",
+        "routeType": "external_exam",
+        "validFrom": "2026",
+        "validThrough": "2027",
+        "examRequired": true,
+        "minimumDiplomaLevel": 7,
+        "maximumDiplomaLevel": 7,
+        "requiredCredentialLabels": [],
+        "requiredExperienceYears": null,
+        "requiredExperienceScope": null,
+        "eligibilityRules": [
+          "Voie transitoire limitée aux sessions 2026 et 2027",
+          "Réussite aux épreuves du CRPE"
+        ],
+        "sourceRefs": [
+          "https://www.devenirenseignant.gouv.fr/reforme-du-recrutement-et-de-la-formation-initiale-des-professeurs-les-reponses-vos-questions-1523"
+        ],
+        "confidence": 0.96,
+        "verifiedAt": "2026-08-01"
+      },
+      {
+        "id": "k2106-crpe-troisieme-concours",
+        "label": "Troisième concours du CRPE",
+        "routeType": "third_exam",
+        "validFrom": "2026",
+        "validThrough": null,
+        "examRequired": true,
+        "minimumDiplomaLevel": null,
+        "maximumDiplomaLevel": null,
+        "requiredCredentialLabels": [],
+        "requiredExperienceYears": 5,
+        "requiredExperienceScope": "private_contract",
+        "eligibilityRules": [
+          "Au moins cinq années d'activités professionnelles rémunérées sous contrat de droit privé",
+          "Les périodes exercées comme agent public, fonctionnaire, militaire ou magistrat ne sont pas comptées",
+          "Réussite aux épreuves du CRPE"
+        ],
+        "sourceRefs": [
+          "https://www.devenirenseignant.gouv.fr/enseigner-de-la-maternelle-a-l-elementaire-le-crpe-1377",
+          "https://www.legifrance.gouv.fr/codes/section_lc/JORFTEXT000000350637/LEGISCTA000006118490/2026-01-01"
+        ],
+        "confidence": 0.96,
+        "verifiedAt": "2026-08-01"
+      }
+    ]
   },
   {
     "id": "rome-K2107",
     "schemaVersion": "1.0.0",
     "romeCode": "K2107",
     "title": "Professeur / Professeure de collège et de lycée",
-    "domain": "Enfance, éducation et animation",
+    "domain": "Services à la personne et à la collectivité",
     "family": "Services à la personne et à la collectivité",
     "officialRomeDomain": {
       "code": "K",
@@ -74086,7 +74234,9 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Services à la personne et à la collectivité",
+    "sourceFamily": "Services à la personne et à la collectivité"
   },
   {
     "id": "rome-K2111",

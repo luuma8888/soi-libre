@@ -1,10 +1,11 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = process.cwd();
 const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated");
 const ROME500_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const LOCAL_DIR = path.join(ROOT, "creations", "boussolepro", "data", "local");
+const ACCESS_RULES_PATH = path.join(LOCAL_DIR, "access-rules-v074.json");
 
 const CONTEXT_CONSTRAINT_RULES = [
   ["Travail de nuit", "schedule.nightWork", "frequent_or_possible"],
@@ -36,13 +37,19 @@ async function main() {
   await mkdir(ROME500_DIR, { recursive: true });
   await mkdir(LOCAL_DIR, { recursive: true });
 
+  const accessRulesDocument = await readJson(ACCESS_RULES_PATH, { rules: {} });
+  await synchronizeAccessRules(accessRulesDocument);
   const jobs = await readJson(path.join(ROME500_DIR, "jobs.rome.json"), []);
   const contexts = await readJson(path.join(ROME500_DIR, "work-contexts.rome.json"), []);
   const taxonomy = await readJson(path.join(LOCAL_DIR, "skill-taxonomy.user.json"), { concepts: [], facets: [] });
   const conceptMappings = await readJson(path.join(LOCAL_DIR, "skill-concept-mappings.rome.json"), { mappings: [] });
 
-  const accessSummary = jobs.map(buildAccessSummary);
-  const accessQuality = buildAccessQualityReport(accessSummary, jobs);
+  const accessSummaryGeneratedAt = new Date().toISOString();
+  const accessSummary = jobs.map(job => buildAccessSummary(job, accessRulesDocument.rules?.[job.romeCode], {
+    generatedAt: accessSummaryGeneratedAt,
+    verifiedAt: accessRulesDocument.verifiedAt
+  }));
+  const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, accessSummaryGeneratedAt);
   const contextMapping = buildOfficialContextConstraintMapping(contexts);
   const constraintSummary = jobs.map(job => buildOfficialConstraintSummary(job, contextMapping));
   const workContextTaxonomy = buildWorkContextUserTaxonomy(contexts, jobs);
@@ -66,7 +73,7 @@ async function main() {
   console.log(`[Boussole Pro] v0.7.1: ${contextMapping.confirmedRules.length} règles de contextes confirmées, ${constraintSummary.filter(row => row.confirmedSignals.length).length} métiers avec contrainte officielle.`);
 }
 
-function buildAccessSummary(job = {}) {
+function buildAccessSummary(job = {}, explicitRule = null, metadata = {}) {
   const text = normalizeMultilineText(job.accessConditions?.text || "");
   const normalized = normalizeText(text);
   const hasText = Boolean(text);
@@ -107,7 +114,7 @@ function buildAccessSummary(job = {}) {
   if (contradictoryEvidence) warnings.push("contradictory_access_evidence");
   if (negatedObligationSentences.length) warnings.push("negated_obligation_detected");
   if (citedDiplomas.length > 3) warnings.push("multiple_diploma_mentions");
-  return {
+  const derived = {
     jobId: job.id,
     romeCode: job.romeCode,
     displayLabel: accessDisplayLabel(accessLevelCategory, {
@@ -152,8 +159,44 @@ function buildAccessSummary(job = {}) {
       ...negatedObligationSentences,
       ...extractRelevantSentences(text)
     ]).slice(0, 5),
-    warnings
+    warnings,
+    generatedAt: metadata.generatedAt || new Date().toISOString()
   };
+  return applyExplicitAccessRule(derived, explicitRule, metadata);
+}
+
+function applyExplicitAccessRule(summary, rule, metadata = {}) {
+  if (!rule) return summary;
+  const merged = {
+    ...summary,
+    ...rule,
+    jobId: summary.jobId,
+    romeCode: summary.romeCode,
+    source: "local_explicit_access_rule",
+    verifiedAt: metadata.verifiedAt || null,
+    generatedAt: metadata.generatedAt || summary.generatedAt,
+    accessPaths: arr(rule.accessPaths).map(path => ({ ...path, verifiedAt: metadata.verifiedAt || null })),
+    requiredCredentialLabels: unique(rule.requiredCredentialLabels ?? summary.requiredCredentialLabels),
+    optionalCredentialLabels: unique(rule.optionalCredentialLabels ?? summary.optionalCredentialLabels),
+    warnings: unique(rule.warnings ?? summary.warnings)
+  };
+  merged.displayLabel = explicitAccessDisplayLabel(merged);
+  merged.accessLevelCategory = accessCategoryFromLevels(merged.minimumDiplomaLevel, merged.maximumDiplomaLevel, merged.noDiplomaPossible);
+  return merged;
+}
+
+function explicitAccessDisplayLabel(summary = {}) {
+  if (summary.romeCode === "K2106") return "Accès par CRPE : plusieurs voies datées, concours obligatoire";
+  if (summary.requirementKind === "conditional") return "Condition particulière selon les fonctions exercées";
+  const credential = unique(summary.requiredCredentialLabels)[0];
+  if (credential) return `${credential} requis${summary.accessPaths?.length > 1 ? " selon plusieurs voies" : ""}`;
+  return accessDisplayLabel(accessCategoryFromLevels(summary.minimumDiplomaLevel, summary.maximumDiplomaLevel, summary.noDiplomaPossible), summary);
+}
+
+function accessCategoryFromLevels(minimum, maximum, noDiplomaPossible = false) {
+  if (noDiplomaPossible && minimum === null && maximum === null) return "no_diploma_possible";
+  if (minimum !== null && maximum !== null && minimum !== maximum) return "mixed_or_multiple_routes";
+  return diplomaLevelToAccessCategory(maximum ?? minimum) || "unknown";
 }
 
 function inferAccessCategory(text, flags) {
@@ -269,8 +312,12 @@ function isRecommendedAccessSentence(sentence = "") {
 function isMandatoryAccessSentence(sentence = "") {
   const text = normalizeText(sentence).replace(/\s+/g, " ");
   if (isNegatedObligationSentence(sentence) || isOptionalAccessSentence(sentence)) return false;
+  if (/pour certaines? (fonctions?|missions?|publics?|equipements?)|selon (les fonctions?|le public|les publics|les equipements?)/.test(text)) return false;
   if (/niveaux?\s+d[' ]?etudes?\s+requis\s+varient/.test(text)) return false;
   if (/parfois\s+avoir\s+le\s+permis/.test(text) && !/\b(permis|carte professionnelle|habilitation|agrement|certification|certificat)[^.]*obligatoire/.test(text)) return false;
+  const statesMinimumAccess = /\b(accessible|acces|exercice)\b[^.]*\b(au minimum|a minima)\b/.test(text) && (hasCredentialSignal(sentence) || hasDiplomaSignal(sentence));
+  const statesPreciseStateDiplomaAccess = /\baccessible\s+avec\s+(?:un |le )?diplome d[' ]?etat\b/.test(text);
+  if (statesMinimumAccess || statesPreciseStateDiplomaAccess) return true;
   const hasMandatoryWord = /obligatoire|exigee?s?|requise?s?|est requis|sont requis|necessite|doit etre|indispensable|reglementee?|soumis(?:e)? a|imperativement|il faut/.test(text);
   if (!hasMandatoryWord) return false;
   return hasCredentialSignal(sentence) || hasDiplomaSignal(sentence) || /\bformation\b/.test(text) || isRegulatedAccessSentence(sentence);
@@ -405,26 +452,85 @@ function diplomaRangeLabel(range = {}) {
   return `${min} à ${max} cité`;
 }
 
-function buildAccessQualityReport(accessSummary, jobs) {
+function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, accessSummaryGeneratedAt = null) {
   const ambiguous = accessSummary.filter(row => row.warnings.length);
   const categoryCounts = countBy(accessSummary.map(row => row.accessLevelCategory));
+  const requirementKindCounts = countBy(accessSummary.map(row => row.requirementKind));
+  const regulatedUnresolved = accessSummary.filter(row => row.regulated && !row.requiredCredentialLabels.length && !row.accessPaths?.length);
+  const genericRequiredLabels = accessSummary.flatMap(row => row.requiredCredentialLabels.map(label => ({ romeCode: row.romeCode, label })))
+    .filter(item => isGenericRequiredCredentialLabel(item.label));
+  const truthCases = buildAccessTruthCases(accessSummary);
+  const truthFailures = truthCases.filter(item => item.status !== "ok");
   return {
-    schemaVersion: "1.0.0",
+    schemaVersion: "1.1.0",
     reportKind: "access_summary_quality",
     generatedAt: new Date().toISOString(),
+    accessSummaryGeneratedAt,
+    rulesVersion: rulesDocument.version || null,
+    rulesVerifiedAt: rulesDocument.verifiedAt || null,
     summary: {
       jobsCount: jobs.length,
       accessTextsCount: accessSummary.filter(row => row.source !== "unknown").length,
       unknownCount: accessSummary.filter(row => row.accessLevelCategory === "unknown").length,
       ambiguousCount: ambiguous.length,
-      categoryCounts
+      regulatedCount: accessSummary.filter(row => row.regulated).length,
+      regulatedUnresolvedCount: regulatedUnresolved.length,
+      specificCredentialRequiredCount: accessSummary.filter(row => row.specificCredentialRequired).length,
+      accessPathsCount: accessSummary.reduce((sum, row) => sum + arr(row.accessPaths).length, 0),
+      genericRequiredLabelsRejectedCount: genericRequiredLabels.length,
+      truthCasesCount: truthCases.length,
+      truthFailuresCount: truthFailures.length,
+      categoryCounts,
+      requirementKindCounts
     },
     ambiguousCases: ambiguous.slice(0, 120),
+    regulatedUnresolved,
+    genericRequiredLabels,
+    truthCases,
+    truthFailures,
     warnings: [
       "Synthèse prudente issue de textes officiels : le texte source reste prioritaire.",
-      "Les formulations avec 'peut' ou 'atout' ne sont pas traitées comme obligations."
+      "Les formulations avec 'peut' ou 'atout' ne sont pas traitées comme obligations.",
+      "Les règles locales explicites sourcées prévalent pour les professions réglementées et les voies parallèles."
     ]
   };
+}
+
+function buildAccessTruthCases(accessSummary = []) {
+  const byCode = new Map(accessSummary.map(row => [row.romeCode, row]));
+  const expectations = {
+    G1201: row => [row.requirementKind === "recommended", !row.specificCredentialRequired],
+    G1202: row => [Boolean(row)],
+    G1203: row => [Boolean(row)],
+    G1235: row => [row.requirementKind === "conditional", !row.contradictoryEvidence, !row.mandatoryQualification],
+    K1201: row => [row.requirementKind === "regulated", includesCredential(row, /deass|assistant de service social/)],
+    K1207: row => [row.requirementKind === "regulated", includesCredential(row, /dees|educateur specialise/)],
+    K1307: row => [row.requirementKind === "mandatory", includesCredential(row, /cap.*aepe|accompagnant educatif petite enfance/)],
+    K2106: row => [arr(row.accessPaths).length >= 3, !includesCredential(row, /cap.*aepe/)],
+    K2111: row => [row.requirementKind === "recommended", !row.specificCredentialRequired],
+    J1104: row => [row.requirementKind === "regulated", includesCredential(row, /sage-femme|maieutique/)],
+    J1202: row => [row.requirementKind === "regulated", includesCredential(row, /pharmacie/)],
+    J1405: row => [row.requirementKind === "regulated", includesCredential(row, /opticien/)],
+    J1407: row => [row.requirementKind === "regulated", includesCredential(row, /orthoptiste/)],
+    J1506: row => [row.requirementKind === "regulated", includesCredential(row, /infirmier/), row.optionalCredentialLabels.length >= 1],
+    N1210: row => [row.requirementKind === "conflicting", row.contradictoryEvidence],
+    M1501: row => [row.minimumDiplomaLevel === 5, row.maximumDiplomaLevel === 7],
+    D1424: row => [!row.specificCredentialRequired, !row.mandatoryQualification]
+  };
+  return Object.entries(expectations).map(([romeCode, assert]) => {
+    const row = byCode.get(romeCode);
+    const checks = row ? assert(row) : [false];
+    return { romeCode, status: checks.every(Boolean) ? "ok" : "failed", checks, requirementKind: row?.requirementKind || null, requiredCredentialLabels: row?.requiredCredentialLabels || [] };
+  });
+}
+
+function includesCredential(row = {}, pattern) {
+  return pattern.test(normalizeText(arr(row.requiredCredentialLabels).join(" ")));
+}
+
+function isGenericRequiredCredentialLabel(label = "") {
+  const text = normalizeText(label);
+  return /^(certification|diplome|qualification) (est |reste |peut )?(obligatoire|exigee|requise)/.test(text) || text.length < 5;
 }
 
 function buildOfficialContextConstraintMapping(contexts) {
@@ -630,6 +736,45 @@ function countBy(values) {
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
+}
+
+async function synchronizeAccessRules(document = {}) {
+  const rules = document.rules || {};
+  const files = [
+    path.join(GENERATED_DIR, "jobs.rome.json"),
+    path.join(ROME500_DIR, "jobs.rome.json")
+  ];
+  const batchesDir = path.join(ROME500_DIR, "batches");
+  try {
+    for (const entry of await readdir(batchesDir, { withFileTypes: true })) {
+      if (entry.isFile() && /^jobs\.batch-\d+\.json$/.test(entry.name)) files.push(path.join(batchesDir, entry.name));
+    }
+  } catch {
+    // Les batches sont optionnels dans un corpus partiel.
+  }
+  for (const file of files) {
+    const jobs = await readJson(file, null);
+    if (!Array.isArray(jobs)) continue;
+    let changed = false;
+    for (const job of jobs) {
+      const rule = rules[job.romeCode];
+      if (!rule) continue;
+      if (rule.accessTextOverride) {
+        job.accessConditions = typeof job.accessConditions === "object" && job.accessConditions ? job.accessConditions : {};
+        job.accessConditions.text = rule.accessTextOverride;
+        job.accessConditions.source = "local_explicit_access_rule";
+        job.accessConditions.confidence = 0.96;
+      }
+      if (rule.accessPaths) job.accessPaths = rule.accessPaths.map(path => ({ ...path, verifiedAt: document.verifiedAt || null }));
+      if (job.romeCode === "K2106") {
+        job.requiredDiplomaLevel = null;
+        job.recommendedDiplomaLevel = null;
+        job.requiredCertifications = arr(job.requiredCertifications).filter(item => !/cap[-_ ]?aepe|petite enfance/i.test(String(item)));
+      }
+      changed = true;
+    }
+    if (changed) await writeJson(file, jobs);
+  }
 }
 
 async function readJson(file, fallback) {

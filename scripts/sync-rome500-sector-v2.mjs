@@ -29,7 +29,8 @@ const PROFILE_TO_GENERATED = {
 };
 
 const GOLDEN_SECTOR_CASES = {
-  G1201: { primarySectorId: "hotellerie_hebergement", domain: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
+  G1201: { primarySectorId: "hotellerie_hebergement", domainLabel: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
+  G1202: { primarySectorId: "culture_communication", secondarySectorIds: ["education_enfance"], domainLabel: "Culture, création, loisirs et animation", forbidden: ["hotellerie_hebergement"] },
   G1203: { primarySectorId: "education_enfance", forbidden: ["hotellerie_hebergement"] },
   G1235: { primarySectorId: "education_enfance", forbidden: ["batiment_construction"] },
   G1238: { primarySectorId: "education_enfance", forbidden: ["batiment_construction"] },
@@ -86,6 +87,7 @@ async function main() {
     const actual = {
       title: job?.title || null,
       domain: job?.domain || null,
+      boussoleDomainLabel: job?.boussoleDomainLabel || null,
       primarySectorId: job?.primarySectorId || null,
       secondarySectorIds: job?.secondarySectorIds || [],
       boussoleSectorIds: job?.boussoleSectorIds || [],
@@ -94,7 +96,9 @@ async function main() {
     const failures = [];
     if (!job) failures.push("missing_job");
     if (expected.domain && actual.domain !== expected.domain) failures.push("unexpected_domain");
+    if (expected.domainLabel && actual.boussoleDomainLabel !== expected.domainLabel) failures.push("unexpected_boussole_domain_label");
     if (expected.primarySectorId && actual.primarySectorId !== expected.primarySectorId) failures.push("unexpected_primary_sector");
+    if (expected.secondarySectorIds && expected.secondarySectorIds.some(id => !actual.secondarySectorIds.includes(id))) failures.push("missing_secondary_sector");
     if ((expected.forbidden || []).includes(actual.primarySectorId)) failures.push("forbidden_primary_sector");
     if ((expected.forbidden || []).some(id => actual.secondarySectorIds.includes(id))) failures.push("forbidden_secondary_sector");
     report.goldenCases[code] = { expected, actual, status: failures.length ? "failed" : "ok", failures };
@@ -128,10 +132,16 @@ async function findJobFiles() {
 
 function applySectorEntry(job, code, entry) {
   const profileSectorIds = unique([entry.primarySectorId, ...toArray(entry.secondarySectorIds)]);
+  const sourceDomain = job.sourceDomain || job.officialRomeDomain?.label || job.domain || null;
   job.primarySectorId = entry.primarySectorId;
   job.secondarySectorIds = toArray(entry.secondarySectorIds).filter(id => id && id !== entry.primarySectorId).slice(0, 2);
   job.boussoleSectorIds = unique(profileSectorIds.map(id => PROFILE_TO_GENERATED[id]).filter(Boolean));
-  if (entry.domainLabel) job.domain = entry.domainLabel;
+  if (sourceDomain) {
+    job.sourceDomain = sourceDomain;
+    job.domain = sourceDomain;
+  }
+  job.sourceFamily = job.sourceFamily || job.family || null;
+  if (entry.domainLabel) job.boussoleDomainLabel = entry.domainLabel;
   job.sectorMappingConfidence = Number(entry.confidence || 0.98);
   job.sectorEvidence = [{
     source: `local_rome_sector_mapping_v2_${entry.source || "exact"}`,

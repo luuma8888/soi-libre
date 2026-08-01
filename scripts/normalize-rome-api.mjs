@@ -119,7 +119,8 @@ export function normalizeRomeMetier(raw = {}) {
   const stableBoussoleSectorIds = explicitSectorMapping.primarySectorId
     ? mapGeneratedSectorsFromProfile([sectorMapping.primarySectorId, ...sectorMapping.secondarySectorIds])
     : boussoleSectorIds;
-  const domain = stableBoussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || domainOfficial || inferDomainFromRomeCode(romeCode);
+  const domain = domainOfficial || inferDomainFromRomeCode(romeCode);
+  const boussoleDomainLabel = sectorMapping.domainLabel || stableBoussoleSectorIds.map(id => BOUSSOLE_SECTOR_LABELS[id]).filter(Boolean)[0] || null;
   const family = familyOfficial || domainOfficial || inferFamilyFromRomeCode(romeCode);
   const textPool = unique([title, description, domain, family, ...appellations, ...activities, ...contextLabels, ...requiredSkillLabels, ...knowledgeLabels].filter(Boolean));
   const constraints = inferConstraints(textPool);
@@ -172,6 +173,9 @@ export function normalizeRomeMetier(raw = {}) {
     title: title || "Metier ROME sans titre",
     domain,
     family,
+    sourceDomain: domain,
+    sourceFamily: family,
+    boussoleDomainLabel,
     officialRomeDomain,
     boussoleSectorIds: stableBoussoleSectorIds,
     primarySectorId: sectorMapping.primarySectorId,
@@ -1215,6 +1219,7 @@ function buildRomeSectorMappingV2Result(entry = {}, key = "", source = "unknown"
   return {
     primarySectorId: entry.primarySectorId || null,
     secondarySectorIds: toArray(entry.secondarySectorIds).filter(id => id && id !== entry.primarySectorId).slice(0, 2),
+    domainLabel: entry.domainLabel || null,
     confidence: Number(entry.confidence || 0),
     source: `local_rome_sector_mapping_v2_${source}`,
     key

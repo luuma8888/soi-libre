@@ -2217,7 +2217,7 @@ const ROME_SECTOR_MAPPING_V2 = {
   priority: ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
   exact: {
     G1201: { primarySectorId: "hotellerie_hebergement", secondarySectorIds: ["culture_communication"], domainLabel: "Restauration, hôtellerie, tourisme et accueil", source: "exact", confidence: 0.98 },
-    G1202: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
+    G1202: { primarySectorId: "culture_communication", secondarySectorIds: ["education_enfance"], domainLabel: "Culture, création, loisirs et animation", source: "exact", confidence: 0.98 },
     G1203: { primarySectorId: "education_enfance", secondarySectorIds: ["social_insertion", "culture_communication"], source: "exact", confidence: 0.98 },
     G1235: { primarySectorId: "education_enfance", secondarySectorIds: ["hotellerie_hebergement"], source: "exact", confidence: 0.98 },
     G1238: { primarySectorId: "education_enfance", secondarySectorIds: ["numerique", "culture_communication"], source: "exact", confidence: 0.98 },
@@ -3360,7 +3360,7 @@ const SAMPLE_JOBS = [
   { id: "job-rome-D1214", romeCode: "D1214", title: "Conseiller de vente", domain: "Commerce", family: "Commerce et relation client", appellations: ["Conseiller de vente", "Vendeur specialise"], description: "Accueille, conseille et accompagne les clients dans un achat.", requiredSkills: ["skill-sales", "skill-communication"], optionalSkills: ["skill-organisation", "skill-writing"], workContexts: ["ctx-shop", "ctx-public-contact", "ctx-team"], physical: ["medium", ["standing"]], schedule: ["unlikely", "frequent", "possible"], mobility: ["low", false], publicContactLevel: "high", autonomyLevel: "medium", remoteCompatibility: "low", requiredDiplomaLevel: null, recommendedDiplomaLevel: 3, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-M1601", "job-rome-I1604"], transitionTags: ["commerce", "relation_client", "vente"], interestTags: ["aider", "conseiller", "relationnel"], valueTags: ["service", "stability", "team"], market: 0.62 },
   { id: "job-rome-M1601", romeCode: "M1601", title: "Charge d'accueil", domain: "Accueil", family: "Commerce et relation client", appellations: ["Charge d'accueil", "Agent d'accueil"], description: "Accueille, renseigne, oriente et assure parfois des taches administratives simples.", requiredSkills: ["skill-communication", "skill-admin-doc"], optionalSkills: ["skill-organisation", "skill-sales"], workContexts: ["ctx-public-contact", "ctx-office", "ctx-team"], physical: ["low", ["standing_possible"]], schedule: ["unlikely", "possible", "possible"], mobility: ["low", false], publicContactLevel: "high", autonomyLevel: "low", remoteCompatibility: "low", requiredDiplomaLevel: null, recommendedDiplomaLevel: 4, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-M1607", "job-rome-D1214"], transitionTags: ["accueil", "service", "administratif"], interestTags: ["aider", "relationnel", "organiser"], valueTags: ["service", "stability", "clarity"], market: 0.53 },
   { id: "job-rome-K2111", romeCode: "K2111", title: "Formateur pour adultes", domain: "Formation", family: "Enseignement et transmission", appellations: ["Formateur pour adultes", "Animateur de formation"], description: "Concoit et anime des sequences de formation pour un public adulte.", requiredSkills: ["skill-teaching", "skill-communication", "skill-project"], optionalSkills: ["skill-writing", "skill-design", "skill-data"], workContexts: ["ctx-school", "ctx-office", "ctx-public-contact", "ctx-remote"], physical: ["low", ["standing_possible", "screen"]], schedule: ["unlikely", "possible", "possible"], mobility: ["medium", false], publicContactLevel: "high", autonomyLevel: "high", remoteCompatibility: "partial", requiredDiplomaLevel: null, recommendedDiplomaLevel: 5, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-K2106", "job-rome-K1103", "job-rome-G1202"], transitionTags: ["formation", "transmission", "accompagnement"], interestTags: ["transmettre", "accompagner", "structurer"], valueTags: ["meaning", "autonomy", "clarity"], market: 0.5 },
-  { id: "job-rome-K2106", romeCode: "K2106", title: "Professeur des ecoles", domain: "Education", family: "Enseignement et transmission", appellations: ["Professeur des ecoles", "Enseignant primaire"], description: "Enseigne plusieurs disciplines et accompagne les apprentissages d'enfants.", requiredSkills: ["skill-teaching", "skill-early-childhood", "skill-communication"], optionalSkills: ["skill-writing", "skill-project"], workContexts: ["ctx-school", "ctx-children", "ctx-team"], physical: ["medium", ["standing", "noise", "emotional_load"]], schedule: ["unlikely", "unlikely", "possible"], mobility: ["low", false], publicContactLevel: "high", autonomyLevel: "high", remoteCompatibility: "low", requiredDiplomaLevel: 7, recommendedDiplomaLevel: 7, requiredCertifications: ["cert-cap-aepe"], recommendedCertifications: [], relatedJobs: ["job-rome-K2111", "job-rome-K1303"], transitionTags: ["education", "enfants", "transmission"], interestTags: ["transmettre", "enfants", "accompagner"], valueTags: ["meaning", "service", "stability"], market: 0.58 },
+  { id: "job-rome-K2106", romeCode: "K2106", title: "Professeur des ecoles", domain: "Education", family: "Enseignement et transmission", appellations: ["Professeur des ecoles", "Enseignant primaire"], description: "Enseigne plusieurs disciplines et accompagne les apprentissages d'enfants.", requiredSkills: ["skill-teaching", "skill-early-childhood", "skill-communication"], optionalSkills: ["skill-writing", "skill-project"], workContexts: ["ctx-school", "ctx-children", "ctx-team"], physical: ["medium", ["standing", "noise", "emotional_load"]], schedule: ["unlikely", "unlikely", "possible"], mobility: ["low", false], publicContactLevel: "high", autonomyLevel: "high", remoteCompatibility: "low", requiredDiplomaLevel: null, recommendedDiplomaLevel: null, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-K2111", "job-rome-K1303"], transitionTags: ["education", "enfants", "transmission"], interestTags: ["transmettre", "enfants", "accompagner"], valueTags: ["meaning", "service", "stability"], market: 0.58 },
   { id: "job-rome-E1205", romeCode: "E1205", title: "Graphiste", domain: "Creation", family: "Creation et communication", appellations: ["Graphiste", "Designer graphique"], description: "Concoit des supports visuels pour transmettre une identite ou un message.", requiredSkills: ["skill-design", "skill-communication"], optionalSkills: ["skill-writing", "skill-marketing", "skill-code"], workContexts: ["ctx-office", "ctx-remote", "ctx-quiet"], physical: ["low", ["screen", "mostly_sitting"]], schedule: ["unlikely", "possible", "possible"], mobility: ["low", false], publicContactLevel: "medium", autonomyLevel: "high", remoteCompatibility: "high", requiredDiplomaLevel: null, recommendedDiplomaLevel: 5, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-E1104", "job-rome-E1103", "job-rome-M1805"], transitionTags: ["creation", "communication", "numerique"], interestTags: ["creer", "beaute", "communiquer"], valueTags: ["beauty", "autonomy", "precision"], market: 0.46 },
   { id: "job-rome-E1104", romeCode: "E1104", title: "Redacteur web", domain: "Communication", family: "Creation et communication", appellations: ["Redacteur web", "Createur de contenus"], description: "Ecrit des contenus clairs pour le web, la pedagogie ou la communication.", requiredSkills: ["skill-writing", "skill-analysis"], optionalSkills: ["skill-marketing", "skill-data", "skill-design"], workContexts: ["ctx-office", "ctx-remote", "ctx-quiet"], physical: ["low", ["screen", "mostly_sitting"]], schedule: ["unlikely", "possible", "possible"], mobility: ["low", false], publicContactLevel: "low", autonomyLevel: "high", remoteCompatibility: "high", requiredDiplomaLevel: null, recommendedDiplomaLevel: 4, requiredCertifications: [], recommendedCertifications: [], relatedJobs: ["job-rome-E1103", "job-rome-E1205", "job-rome-M1808"], transitionTags: ["ecriture", "communication", "teletravail"], interestTags: ["ecrire", "creer", "transmettre"], valueTags: ["freedom", "clarity", "meaning"], market: 0.45 },
   { id: "job-rome-F1703", romeCode: "F1703", title: "Macon", domain: "Batiment", family: "Batiment", appellations: ["Macon", "Ouvrier macon"], description: "Realise des ouvrages de gros oeuvre ou de renovation sur chantier.", requiredSkills: ["skill-building", "skill-craft"], optionalSkills: ["skill-driving", "skill-quality"], workContexts: ["ctx-construction-site", "ctx-team", "ctx-outdoor"], physical: ["high", ["standing", "load", "noise", "weather"]], schedule: ["unlikely", "possible", "possible"], mobility: ["high", true], publicContactLevel: "low", autonomyLevel: "medium", remoteCompatibility: "none", requiredDiplomaLevel: null, recommendedDiplomaLevel: 3, requiredCertifications: [], recommendedCertifications: ["cert-permis-b"], relatedJobs: ["job-rome-F1602", "job-rome-H2206"], transitionTags: ["batiment", "chantier", "manuel"], interestTags: ["fabriquer", "concret", "dehors"], valueTags: ["concrete", "team", "stability"], market: 0.71 },
@@ -4566,9 +4566,36 @@ function getResultSkillReviewOptions(dataset = App.state.dataset) {
     }));
 }
 
+const ACCESS_RULE_OVERRIDES_V074 = {
+  G1235: { requirementKind: "conditional", noDiplomaPossible: true, contradictoryEvidence: false, mandatoryQualification: false, specificCredentialRequired: false, requiredCredentialLabels: [], optionalCredentialLabels: ["BAFA selon les fonctions exercées et le public encadré"], warnings: ["context_specific_requirement"] },
+  K1201: { requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État d'assistant de service social (DEASS)"], regulated: true, mandatoryQualification: true },
+  K1207: { requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État d'éducateur spécialisé (DEES) ou équivalence réglementaire reconnue"], regulated: true, mandatoryQualification: true },
+  K1307: { requirementKind: "mandatory", minimumDiplomaLevel: 3, maximumDiplomaLevel: 3, specificCredentialRequired: true, requiredCredentialLabels: ["CAP Accompagnant éducatif petite enfance (CAP AEPE) ou qualification reconnue équivalente"], regulated: false, mandatoryQualification: true },
+  K2106: {
+    requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 7, specificCredentialRequired: true,
+    requiredCredentialLabels: ["Réussite à une voie du concours de recrutement de professeur des écoles (CRPE)"], regulated: true, mandatoryQualification: true,
+    displayLabel: "Accès par CRPE : plusieurs voies datées, concours obligatoire",
+    accessPaths: [
+      { id: "k2106-crpe-externe-bac3", label: "Concours externe CRPE Bac+3", routeType: "external_exam", validFrom: "2026", validThrough: null, examRequired: true, minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, requiredCredentialLabels: [], requiredExperienceYears: null, requiredExperienceScope: null, eligibilityRules: ["Licence ou titre équivalent selon les règles de la session", "Réussite aux épreuves du CRPE"], confidence: 0.96 },
+      { id: "k2106-crpe-externe-bac5-transition", label: "Concours externe CRPE Bac+5 transitoire", routeType: "external_exam", validFrom: "2026", validThrough: "2027", examRequired: true, minimumDiplomaLevel: 7, maximumDiplomaLevel: 7, requiredCredentialLabels: [], requiredExperienceYears: null, requiredExperienceScope: null, eligibilityRules: ["Voie transitoire limitée aux sessions 2026 et 2027", "Réussite aux épreuves du CRPE"], confidence: 0.96 },
+      { id: "k2106-crpe-troisieme-concours", label: "Troisième concours du CRPE", routeType: "third_exam", validFrom: "2026", validThrough: null, examRequired: true, minimumDiplomaLevel: null, maximumDiplomaLevel: null, requiredCredentialLabels: [], requiredExperienceYears: 5, requiredExperienceScope: "private_contract", eligibilityRules: ["Cinq années d'activités professionnelles éligibles sous contrat de droit privé", "Réussite aux épreuves du CRPE"], confidence: 0.96 }
+    ]
+  },
+  K2111: { requirementKind: "recommended", specificCredentialRequired: false, requiredCredentialLabels: [], regulated: false, mandatoryQualification: false },
+  J1104: { requirementKind: "regulated", minimumDiplomaLevel: 7, maximumDiplomaLevel: 7, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État de sage-femme ou de docteur en maïeutique"], regulated: true, mandatoryQualification: true },
+  J1202: { requirementKind: "regulated", minimumDiplomaLevel: 7, maximumDiplomaLevel: 7, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État de docteur en pharmacie"], regulated: true, mandatoryQualification: true },
+  J1405: { requirementKind: "regulated", minimumDiplomaLevel: 5, maximumDiplomaLevel: 5, specificCredentialRequired: true, requiredCredentialLabels: ["BTS opticien-lunetier ou qualification reconnue équivalente"], regulated: true, mandatoryQualification: true },
+  J1407: { requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, specificCredentialRequired: true, requiredCredentialLabels: ["Certificat de capacité d'orthoptiste"], regulated: true, mandatoryQualification: true },
+  J1506: { requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État d'infirmier"], optionalCredentialLabels: ["Certificat de capacité de prélèvements sanguins", "Attestation de formation aux gestes et soins d'urgence (AFGSU) niveau 2"], regulated: true, mandatoryQualification: true }
+};
+
 function normalizeJob(raw) {
   const romeCode = raw.romeCode || raw.localVariantOfRomeCode || raw.rawSourceId || "";
-  const mappedDomain = getRomeDomainOverride(romeCode);
+  const sourceDomain = raw.sourceDomain || raw.officialRomeDomain?.label || raw.domain || "Domaine non renseigné";
+  const sourceFamily = raw.sourceFamily || raw.family || "Famille non renseignée";
+  const mappedPrimarySectorId = ROME_SECTOR_MAPPING_V2.exact?.[normalizeRomeCode(romeCode)]?.primarySectorId || raw.primarySectorId || raw.primarySector || "";
+  const boussoleDomainLabel = raw.boussoleDomainLabel || getRomeBoussoleDomainLabel(romeCode) || sectorLabel(mappedPrimarySectorId);
+  const accessRule = ACCESS_RULE_OVERRIDES_V074[normalizeRomeCode(romeCode)] || null;
   const isGeneratedRome = raw.provenance === "generated_rome" || raw.source === "official_rome_api" || toArray(raw.sourceRefs).includes("france_travail_rome_generated");
   const canonicalId = romeCode ? canonicalJobId(romeCode) : canonicalJobId(raw.id || raw.normalizedId);
   const legacyRomeId = /^job-rome-[A-Z][0-9]{4}/.test(String(raw.id || ""));
@@ -4599,12 +4626,16 @@ function normalizeJob(raw) {
     isLocalVariant: Boolean(raw.isLocalVariant),
     title: frText(raw.title || "Métier sans titre"),
     appellations: toArray(raw.appellations).map(frText),
-    domain: frText(mappedDomain || raw.domain || "Domaine non renseigné"),
-    family: frText(raw.family || "Famille non renseignée"),
+    domain: frText(sourceDomain),
+    family: frText(sourceFamily),
+    sourceDomain: frText(sourceDomain),
+    sourceFamily: frText(sourceFamily),
+    boussoleDomainLabel: frText(boussoleDomainLabel || "Secteur Boussole à vérifier"),
     description: normalizeMultilineText(raw.description),
     activities: toArray(raw.activities).map(item => normalizeMultilineText(item)).filter(Boolean),
     accessConditions,
-    accessSummary: raw.accessSummary || null,
+    accessSummary: accessRule ? { ...(raw.accessSummary || {}), ...accessRule } : (raw.accessSummary || null),
+    accessPaths: toArray(accessRule?.accessPaths || raw.accessPaths),
     officialConstraintSummary: raw.officialConstraintSummary || null,
     primarySectorId: raw.primarySectorId || raw.primarySector || null,
     secondarySectorIds: toArray(raw.secondarySectorIds || raw.sectorIds),
@@ -4635,9 +4666,9 @@ function normalizeJob(raw) {
     publicContactLevel: raw.publicContactLevel || "unknown",
     autonomyLevel: raw.autonomyLevel || "unknown",
     remoteCompatibility: raw.remoteCompatibility || "unknown",
-    requiredDiplomaLevel: numberOrNull(raw.requiredDiplomaLevel),
-    recommendedDiplomaLevel: numberOrNull(raw.recommendedDiplomaLevel),
-    requiredCertifications: toArray(raw.requiredCertifications),
+    requiredDiplomaLevel: normalizeRomeCode(romeCode) === "K2106" ? null : numberOrNull(raw.requiredDiplomaLevel),
+    recommendedDiplomaLevel: normalizeRomeCode(romeCode) === "K2106" ? null : numberOrNull(raw.recommendedDiplomaLevel),
+    requiredCertifications: toArray(raw.requiredCertifications).filter(item => normalizeRomeCode(romeCode) !== "K2106" || !/cap[-_ ]?aepe|petite enfance/i.test(String(item))),
     recommendedCertifications: toArray(raw.recommendedCertifications),
     relatedJobs: toArray(raw.relatedJobs),
     transitionTags: toArray(raw.transitionTags),
@@ -5802,6 +5833,7 @@ function applyRomeSectorMappingV2(job = {}) {
   const build = (entry, status = "usable") => entry ? {
     primarySectorId: entry.primarySectorId,
     secondarySectorIds: toArray(entry.secondarySectorIds),
+    domainLabel: entry.domainLabel || "",
     confidence: Number(entry.confidence || 0),
     source: `rome_sector_mapping_v2_${entry.source || "unknown"}`,
     sectorMappingStatus: status,
@@ -5836,9 +5868,19 @@ function getRomeSectorTextRuleSource(rule = {}, job = {}) {
   return normalizeText([job.title, job.family, job.domain].join(" "));
 }
 
-function getRomeDomainOverride(romeCode = "") {
+function getRomeBoussoleDomainLabel(romeCode = "") {
   const code = normalizeRomeCode(romeCode);
   return code ? ROME_SECTOR_MAPPING_V2.exact?.[code]?.domainLabel || "" : "";
+}
+
+function getJobSourceDomainLabel(job = {}) {
+  const domain = job.sourceDomain || job.domain || "Domaine ROME non renseigné";
+  const family = job.sourceFamily || job.family || "Famille ROME non renseignée";
+  return domain === family ? domain : `${domain} / ${family}`;
+}
+
+function getJobBoussoleDomainLabel(job = {}) {
+  return job.boussoleDomainLabel || applyRomeSectorMappingV2(job)?.domainLabel || sectorLabel(getJobSectorProfile(job).primarySectorId) || "Secteur Boussole à vérifier";
 }
 
 function isStrongRomeSectorMappingV2(mapping = {}) {
@@ -6515,6 +6557,7 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     ...toArray(criteria.education?.certificationIds)
   ]).map(normalizeCertificationKey));
   const access = job.accessSummary || {};
+  const accessPathEvaluation = evaluateAccessPaths(criteria, job.accessPaths || access.accessPaths);
   const exactExperience = evaluateExactJobExperience(criteria, job);
   const accessRequiredCredentials = getAccessRequiredCredentialLabels(access);
   const accessOptionalCredentials = getAccessOptionalCredentialLabels(access);
@@ -6541,13 +6584,18 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     requiredCerts.length > 0 ||
     recommendedCerts.length > 0 ||
     advantageCerts.length > 0;
-  let score = evidenceAvailable ? 62 : 55;
+  const pathEvidenceAvailable = accessPathEvaluation.paths.length > 0;
+  let score = evidenceAvailable || pathEvidenceAvailable ? 62 : 55;
   const reasons = [];
   const cautions = [];
   if (!evidenceAvailable) cautions.push("Conditions d’accès officielles non disponibles : évaluation neutre.");
   if (missingRequiredCertifications.length) {
     score -= criteria.education?.canDoShortTraining ? 22 : 42;
     cautions.push(`Qualification spécifique obligatoire manquante : ${missingRequiredCertifications.join(", ")}.`);
+  }
+  if (accessPathEvaluation.best?.status === "eligibility_to_verify") {
+    score = Math.min(score, 52);
+    cautions.push(`Voie potentielle à vérifier : ${accessPathEvaluation.best.label}.`);
   }
   if (access.contradictoryEvidence || accessRequirementKind === "conflicting") {
     score -= 8;
@@ -6590,14 +6638,14 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   if (missingRequiredCertifications.length) {
     score = Math.min(score, criteria.education?.canDoLongTraining ? 38 : 28);
   }
-  const confidence = evidenceAvailable
+  const confidence = evidenceAvailable || pathEvidenceAvailable
     ? clamp(Number(access.confidence || 0.55) + heldAdvantageCertifications.length * 0.08 + (exactExperience.score >= 16 ? 0.08 : 0) - (access.contradictoryEvidence ? 0.16 : 0), 0.25, 0.92)
     : 0.28;
   const normalized = Math.round(clamp(score, 0, 100));
   return {
     score: normalized,
     status: normalized >= 80 ? "favorable" : normalized >= 60 ? "accessible_with_checks" : normalized >= 40 ? "requires_adjustment" : "difficult",
-    evidenceAvailable,
+    evidenceAvailable: evidenceAvailable || pathEvidenceAvailable,
     confidence,
     accessSummary: access,
     requiredLevel,
@@ -6614,9 +6662,43 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     advantageCertifications: advantageCerts,
     heldAdvantageCertifications,
     exactExperience,
+    accessPaths: accessPathEvaluation.paths,
+    bestAccessPath: accessPathEvaluation.best,
     reasons,
     cautions
   };
+}
+
+function evaluateAccessPaths(criteria = {}, rawPaths = []) {
+  const held = new Set(unique([
+    ...toArray(criteria.certifications?.held),
+    ...toArray(criteria.education?.certificationIds)
+  ]).map(normalizeCertificationKey));
+  const level = Number(criteria.education?.highestLevel || 0);
+  const year = new Date().getFullYear();
+  const totalExperienceYears = normalizeJobExperiences(criteria.experience?.jobExperiences || [])
+    .reduce((sum, experience) => sum + Number(experience.durationYears || 0), 0);
+  const paths = toArray(rawPaths).map(path => {
+    const from = Number(path.validFrom || 0);
+    const through = Number(path.validThrough || 9999);
+    if ((from && year < from) || (through && year > through)) return { ...path, status: "expired_or_not_yet_open", reasons: ["Voie hors de sa période de validité."] };
+    const missingCredentials = toArray(path.requiredCredentialLabels).filter(label => !hasCertificationEquivalent(held, label));
+    if (missingCredentials.length) return { ...path, status: criteria.education?.canDoLongTraining ? "eligible_after_long_step" : "not_eligible", missingCredentials, reasons: ["Qualification spécifique manquante."] };
+    if (path.requiredExperienceYears) {
+      if (totalExperienceYears < Number(path.requiredExperienceYears)) return { ...path, status: "not_eligible", reasons: ["Durée d’expérience déclarée insuffisante."] };
+      if (path.requiredExperienceScope) return { ...path, status: "eligibility_to_verify", reasons: ["La durée est plausible, mais la nature contractuelle éligible n’est pas établie."] };
+    }
+    const requiredLevel = numberOrNull(path.minimumDiplomaLevel);
+    if (requiredLevel !== null && requiredLevel > level) {
+      const gap = requiredLevel - level;
+      const status = gap === 1 && criteria.education?.canDoShortTraining ? "eligible_after_short_step" : criteria.education?.canDoLongTraining ? "eligible_after_long_step" : "not_eligible";
+      return { ...path, status, reasons: ["Niveau de diplôme restant à acquérir ou équivalence à vérifier."] };
+    }
+    if (path.examRequired) return { ...path, status: "eligibility_to_verify", reasons: ["Conditions d’inscription plausibles, réussite au concours non établie."] };
+    return { ...path, status: "eligible_now", reasons: ["Conditions structurées satisfaites par les données déclarées."] };
+  });
+  const rank = { eligible_now: 6, eligible_after_short_step: 5, eligibility_to_verify: 4, eligible_after_long_step: 3, not_eligible: 2, expired_or_not_yet_open: 1 };
+  return { paths, best: [...paths].sort((a, b) => (rank[b.status] || 0) - (rank[a.status] || 0))[0] || null };
 }
 
 function normalizeAccessRequirementKind(kind = "") {
@@ -6728,6 +6810,7 @@ function calculateTrainingScore(criteria, job) {
   }
   if (missingCertifications.length > 0) {
     missingData.push(missing("job.accessSummary.requiredCredentialLabels", "high", `Qualification spécifique à vérifier : ${missingCertifications.join(", ")}.`));
+    if (toArray(accessFeasibility.accessPaths).some(path => path.status === "eligibility_to_verify")) return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "access_to_verify", feasibility: "parallel_route_eligibility_to_verify", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
     if (criteria.education.canDoLongTraining) return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "specific_credential_long_or_regulated", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
     return finalize({ score: 1, missingData, missingCertifications, statusHint: "blocked", feasibility: "certification_blocked", evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
   }
@@ -7331,6 +7414,7 @@ function effectiveMarketOfferSignal(market = {}) {
 function determineFeasibilityStatus(globalScore, scores, criteria, job, details = {}) {
   if (details.hardCheck?.confirmed?.length) return "excluded_for_now";
   if (details.training?.statusHint === "blocked") return globalScore >= 45 ? "discouraged" : "excluded_for_now";
+  if (details.training?.statusHint === "access_to_verify") return "explore_with_caution";
   if (scores.constraints <= 6) return "discouraged";
   if (toArray(details.scoreCaps?.caps).some(cap => cap.code === "low_domain_affinity")) return "explore_with_caution";
   if (details.core?.coreProfileLevel === "avoid_main") return "explore_with_caution";
@@ -8669,6 +8753,15 @@ function getAccessDetails(job = {}) {
   };
 }
 
+function renderAccessPaths(job = {}) {
+  const paths = toArray(job.accessPaths || job.accessSummary?.accessPaths);
+  if (!paths.length) return "";
+  return `<div class="reason-box"><strong>Voies d’accès distinctes</strong><ul class="compact-list">${paths.map(path => {
+    const validity = path.validFrom ? ` · sessions ${h(path.validFrom)}${path.validThrough ? ` à ${h(path.validThrough)}` : " et suivantes, à revérifier"}` : "";
+    return `<li><strong>${h(path.label)}</strong>${validity}${path.examRequired ? " · concours requis" : ""}</li>`;
+  }).join("")}</ul><p class="field-help">Les règles d’accès évoluent : vérifier la session et la situation individuelles auprès de la source officielle.</p></div>`;
+}
+
 function getOfficialConstraintSummary(job = {}) {
   const cacheKey = job?.id || job?.romeCode || "";
   if (cacheKey && App.state.officialConstraintCache.has(cacheKey)) return App.state.officialConstraintCache.get(cacheKey);
@@ -8877,9 +8970,11 @@ function renderJobDetailsPanelContent(result = {}) {
   return `
     <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
     <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
-    <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
+    <p><strong>Domaine / famille ROME :</strong> ${h(getJobSourceDomainLabel(job))}</p>
+    <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
     <p><strong>Appellations :</strong> ${take(appellations, App.state.displayMode === "essential" ? 5 : 18).map(h).join(", ") || "Non renseignées."}${appellations.length > 18 ? ` <span class="field-help">(${appellations.length - 18} autres en diagnostic/export)</span>` : ""}</p>
     <p><strong>Accès au métier :</strong> <span class="multiline-text">${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
+    ${renderAccessPaths(job)}
     <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
     <p><strong>Données manquantes :</strong> ${toArray(result.missingData).map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
     ${renderMarketBox(result.scoreDetails?.market, job)}
@@ -8896,7 +8991,7 @@ function renderEssentialJobDetails(result = {}) {
   return `
     <div data-dialog-job-id="${h(result.jobId)}">
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
-      <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
+      <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
       <p><strong>Conditions d’accès :</strong> ${h(getAccessDisplayLabel(job))}</p>
       <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 6).map(h).join(", ") || "à préciser avec votre profil."}</p>
       <p><strong>Contextes principaux :</strong> ${getHumanContextLabels(job).slice(0, 5).map(h).join(", ") || "contextes à vérifier."}</p>
@@ -8921,8 +9016,10 @@ function renderDetailedJobDetails(result = {}) {
     <div data-dialog-job-id="${h(result.jobId)}">
       <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
-      <p><strong>Domaine métier :</strong> ${h(job?.domain || "Domaine à vérifier.")}</p>
+      <p><strong>Domaine / famille ROME :</strong> ${h(getJobSourceDomainLabel(job))}</p>
+      <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
       <p><strong>Conditions d’accès :</strong> ${h(access.label)}${access.citedDiplomas.length ? ` · diplômes cités : ${access.citedDiplomas.map(h).join(", ")}` : ""}${access.citedCertifications.length ? ` · certifications : ${access.citedCertifications.map(h).join(", ")}` : ""}</p>
+      ${renderAccessPaths(job)}
       <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 10).map(h).join(", ") || "à préciser."}</p>
       <p><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 10).map(h).join(", ") || "contextes à vérifier."}</p>
       <p><strong>Contraintes confirmées :</strong> ${getConfirmedConstraintLabels(job).slice(0, 8).map(h).join(", ") || "aucune contrainte officielle confirmée."}</p>
@@ -9168,7 +9265,7 @@ function buildExplorationFacetAudit(dataset = App.state.dataset) {
   const startedAt = nowMs();
   const jobs = toArray(dataset?.jobs);
   const countMatches = matcher => jobs.filter(matcher).length;
-  const domainCounts = countBy(jobs.map(job => job.domain).filter(Boolean));
+  const domainCounts = countBy(jobs.map(getJobBoussoleDomainLabel).filter(Boolean));
   const domains = Object.entries(domainCounts)
     .sort((a, b) => a[0].localeCompare(b[0], "fr"))
     .map(([value, count]) => ({ value, label: value, resultCount: count, unknownDataCount: 0 }));
@@ -9312,7 +9409,7 @@ function getFilteredExplorationJobs() {
   const scored = toArray(App.state.dataset?.jobs).map(job => ({ job, result: findResult(job.id) }));
   return scored
     .filter(({ job }) => !filters.favoritesOnly || favoriteIds.has(job.id) || favoriteIds.has(job.canonicalId))
-    .filter(({ job }) => filters.domain === "all" || job.domain === filters.domain)
+    .filter(({ job }) => filters.domain === "all" || getJobBoussoleDomainLabel(job) === filters.domain)
     .filter(({ job }) => !query || explorationHaystack(job).includes(query))
     .filter(({ job }) => explorationDiplomaMatches(job, filters.diplomaLevel))
     .filter(({ job }) => explorationConstraintMatches(job, filters.constraint))
@@ -9332,7 +9429,7 @@ function renderExplorationJobCard(job) {
       <div class="job-head">
         <div>
           <h3 class="job-title">${h(job.title)}</h3>
-          <p class="job-subtitle">${h(getJobCodeLabel(job))} - ${h(job.domain)} - ${h(job.family)}</p>
+          <p class="job-subtitle">${h(getJobCodeLabel(job))} - ${h(getJobBoussoleDomainLabel(job))} - ${h(job.family)}</p>
           <div class="badge-row">
             <span class="badge outline">${h(job.provenance || "local")}</span>
             <span class="badge opal">${h(marketLabel(effectiveMarketOfferSignal(market)))}</span>
@@ -9364,6 +9461,8 @@ function explorationHaystack(job) {
     job.title,
     job.romeCode,
     job.domain,
+    job.boussoleDomainLabel,
+    getJobBoussoleDomainLabel(job),
     job.family,
     ...getJobAppellations(job).map(item => item.label),
     ...toArray(job.transitionTags),
@@ -9461,7 +9560,7 @@ function explorationMarketMatches(job, filter) {
 
 function compareExplorationJobs(a, b, sort) {
   if (sort === "title") return a.job.title.localeCompare(b.job.title, "fr");
-  if (sort === "domain") return `${a.job.domain} ${a.job.title}`.localeCompare(`${b.job.domain} ${b.job.title}`, "fr");
+  if (sort === "domain") return `${getJobBoussoleDomainLabel(a.job)} ${a.job.title}`.localeCompare(`${getJobBoussoleDomainLabel(b.job)} ${b.job.title}`, "fr");
   if (sort === "quick_access") return Number(a.job.recommendedDiplomaLevel || 99) - Number(b.job.recommendedDiplomaLevel || 99);
   if (sort === "market") return marketLevelWeight(getJobMarketLevel(b.job, App.state.explorationFilters.territory)) - marketLevelWeight(getJobMarketLevel(a.job, App.state.explorationFilters.territory));
   if (sort === "low_constraints") return constraintLightnessScore(b.job) - constraintLightnessScore(a.job);
