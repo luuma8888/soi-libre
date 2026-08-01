@@ -9,8 +9,8 @@ const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
 const HTML_ROUTE = "/creations/boussolepro/boussole-pro.html";
 const OUTPUTS = [
-  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-report.json"),
-  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "rome500-browser-performance-report.json")
+  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-benchmark.json"),
+  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "rome500-browser-performance-benchmark.json")
 ];
 const PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
@@ -76,16 +76,33 @@ try {
   const build = await readBoussoleBuildMetadata();
   const sourceArtifactSha256 = createHash("sha256").update(await readFile(HTML_PATH)).digest("hex");
   const metrics = ["datasetLoadMs", "normalizationMs", "skillIndexBuildMs", "profileScoringMs", "resultsGroupingMs", "resultsUiRenderMs", "resultCardRenderMs", "resultsFirstVisibleMs", "resultsInteractiveMs", "compactExportMs", "totalGeneratedLoadMs", "heapUsedBytes", "cardsRendered"];
+  const coldSummary = summarizeRuns(cold, metrics);
+  const warmSummary = summarizeRuns(warm, metrics);
+  const completionVerdict = [...cold, ...warm].every(run => run.jobsCount === 500 && run.resultsComputed === 500 && run.cardsRendered > 0) ? "complete" : "partial";
+  const nonRegressionBudget = {
+    previousColdMedianMs: 10366,
+    maximumWarmMedianMs: 700,
+    coldStatus: coldSummary.totalGeneratedLoadMs.median <= Math.round(10366 * 1.1) ? "within_budget" : "regressed",
+    warmStatus: warmSummary.totalGeneratedLoadMs.median <= 700 ? "within_budget" : "regressed"
+  };
   const report = {
-    schemaVersion: "1.0.0",
-    reportKind: "rome500_browser_performance_multi_run",
+    schemaVersion: "2.0.0",
+    reportKind: "rome500_browser_performance_benchmark",
+    reportDescription: "Benchmark local reproductible : cinq chargements froids complets et cinq recalculs chauds sur le meme paquet canonique.",
+    completionVerdict,
+    validationVerdict: completionVerdict === "complete" && nonRegressionBudget.coldStatus === "within_budget" && nonRegressionBudget.warmStatus === "within_budget"
+      ? "validated"
+      : completionVerdict === "complete" ? "complete_with_performance_warning" : "invalid_for_render_validation",
     generatedAt: new Date().toISOString(),
     ...build,
     sourceArtifactSha256,
+    runtimeBundleIdentity: cold[0]?.runtimeBundleIdentity || null,
     scenario: {
       browser: browserVersion.product,
       userAgent: browserVersion.userAgent,
       machine: `${process.platform}-${process.arch}`,
+      headless: true,
+      viewport: { width: 1365, height: 900 },
       profile: "profil technique anonymise",
       coldRuns: cold.length,
       warmRuns: warm.length,
@@ -98,12 +115,14 @@ try {
     },
     runs: { cold, warm },
     summary: {
-      cold: summarizeRuns(cold, metrics),
-      warm: summarizeRuns(warm, metrics),
+      cold: coldSummary,
+      warm: warmSummary,
       previousReferenceTotalMs: 11902,
       comparisonMetric: "totalGeneratedLoadMs",
       conclusion: compareToReference(cold, warm, 11902)
     },
+    nonRegressionBudget,
+    localScalingEstimate: buildScalingEstimate(cold, warm),
     visualChecks,
     measurementPolicy: "Toute phase absente est représentée par null et measurementStatus=not_measured ; aucune absence n’est codée par 0.",
     privacy: "Mesure locale. Aucun profil ni texte libre n’est écrit dans ce rapport."
@@ -155,9 +174,27 @@ function buildRunRow({ run, cacheMode, browserReport, heap }) {
     heapUsedBytes: Number.isFinite(heap.usedSize) ? heap.usedSize : null,
     measurementStatus: Object.fromEntries([...Object.keys(values), "heapUsedBytes"].map(key => [key, values[key] === null && key !== "heapUsedBytes" ? "not_measured" : "measured"])),
     jobsCount: browserReport.dataset?.jobsCount || 0,
+    skillsEngineCount: browserReport.dataset?.skillsEngineCount || 0,
     resultsComputed: browserReport.resultMetrics?.resultsComputed || 0,
+    runtimeBundleIdentity: browserReport.runtimeBundleIdentity || null,
     cardsRendered: Number(values.resultCardsRendered) > 0 ? Number(values.resultCardsRendered) : null,
     cardsRenderReason: Number(values.resultCardsRendered) > 0 ? null : "Aucune carte résultat détectée dans la vue Résultats."
+  };
+}
+
+function buildScalingEstimate(cold, warm) {
+  const coldMedian = median(cold.map(run => run.totalGeneratedLoadMs).filter(Number.isFinite).sort((a, b) => a - b));
+  const warmMedian = median(warm.map(run => run.totalGeneratedLoadMs).filter(Number.isFinite).sort((a, b) => a - b));
+  const project = jobs => ({
+    jobs,
+    coldTotalMs: Math.round(coldMedian * jobs / 500),
+    warmRecalculationMs: Math.round(warmMedian * jobs / 500)
+  });
+  return {
+    method: "linear_projection_from_local_packaged_500_job_benchmark",
+    scope: "local_indicative_only",
+    warning: "Projection indicative ; elle ne remplace pas une mesure avec les corpus ROME800 ou ROME1000 reels.",
+    projections: [project(800), project(1000)]
   };
 }
 

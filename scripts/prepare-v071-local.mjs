@@ -40,6 +40,13 @@ async function main() {
 
   const accessRulesDocument = await readJson(ACCESS_RULES_PATH, { rules: {} });
   const buildMetadata = await readBoussoleBuildMetadata();
+  const runtimeReportBuildMetadata = {
+    appVersion: buildMetadata.appVersion,
+    buildId: buildMetadata.buildId,
+    buildDate: buildMetadata.buildDate,
+    datasetVersion: buildMetadata.datasetVersion,
+    identityScope: "runtime_bundle_component"
+  };
   await synchronizeAccessRules(accessRulesDocument);
   const jobs = await readJson(path.join(ROME500_DIR, "jobs.rome.json"), []);
   const contexts = await readJson(path.join(ROME500_DIR, "work-contexts.rome.json"), []);
@@ -52,7 +59,12 @@ async function main() {
     verifiedAt: accessRulesDocument.verifiedAt
   }));
   const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, accessSummaryGeneratedAt);
-  Object.assign(accessQuality, buildMetadata, { datasetVersion: "rome500-candidate-v0.7", corpusMaturity: "validated_for_boussole_pro" });
+  Object.assign(accessQuality, runtimeReportBuildMetadata, {
+    datasetVersion: "rome500-candidate-v0.7",
+    corpusMaturity: "candidate_consolidated",
+    validationScope: "validated_for_boussole_pro_v0_7",
+    derivedAt: accessSummaryGeneratedAt
+  });
   const contextMapping = buildOfficialContextConstraintMapping(contexts);
   const constraintSummary = jobs.map(job => buildOfficialConstraintSummary(job, contextMapping));
   const workContextTaxonomy = buildWorkContextUserTaxonomy(contexts, jobs);
@@ -64,8 +76,8 @@ async function main() {
   await writeJson(path.join(ROME500_DIR, "access-summary.rome500.json"), accessSummary);
   await writeJson(path.join(GENERATED_DIR, "access-summary-quality-report.json"), accessQuality);
   await writeJson(path.join(ROME500_DIR, "access-summary-quality-report.json"), accessQuality);
-  await enrichExistingDataQualityReport(GENERATED_DIR, accessSummary, buildMetadata);
-  await enrichExistingDataQualityReport(ROME500_DIR, accessSummary, buildMetadata);
+  await enrichExistingDataQualityReport(GENERATED_DIR, accessSummary, runtimeReportBuildMetadata);
+  await enrichExistingDataQualityReport(ROME500_DIR, accessSummary, runtimeReportBuildMetadata);
   await writeJson(path.join(LOCAL_DIR, "official-context-constraint-mapping.json"), contextMapping);
   await writeJson(path.join(GENERATED_DIR, "official-constraint-summary.rome500.json"), constraintSummary);
   await writeJson(path.join(ROME500_DIR, "official-constraint-summary.rome500.json"), constraintSummary);
@@ -196,8 +208,15 @@ function explicitAccessDisplayLabel(summary = {}) {
   if (summary.romeCode === "K2106") return "Accès par CRPE : plusieurs voies datées, concours obligatoire";
   if (summary.requirementKind === "conditional") return "Condition particulière selon les fonctions exercées";
   const credential = unique(summary.requiredCredentialLabels)[0];
-  if (credential) return `${credential} requis${summary.accessPaths?.length > 1 ? " selon plusieurs voies" : ""}`;
+  if (credential) return `${formatRequiredCredentialLabel(credential)}${summary.accessPaths?.length > 1 ? " selon plusieurs voies" : ""}`;
   return accessDisplayLabel(accessCategoryFromLevels(summary.minimumDiplomaLevel, summary.maximumDiplomaLevel, summary.noDiplomaPossible), summary);
+}
+
+function formatRequiredCredentialLabel(label = "") {
+  const clean = String(label || "").trim().replace(/[.;:,]+$/, "");
+  if (!clean) return "Qualification spécifique requise";
+  if (/\b(obligatoire|requis(?:e|es|s)?)\b/i.test(clean)) return clean;
+  return `${clean} requis`;
 }
 
 function accessCategoryFromLevels(minimum, maximum, noDiplomaPossible = false) {
@@ -221,18 +240,18 @@ function accessDisplayLabel(category, flags = {}) {
   if (category === "unknown") return "Niveau exact à vérifier";
   if (category === "no_diploma_possible") return "Accès possible sans diplôme selon le texte officiel";
   const labels = {
-    cap_or_equivalent: "CAP ou équivalent cité",
-    bac: "Bac cité",
-    bac_plus_2: "Bac +2 cité",
-    bac_plus_3: "Bac +3 cité",
-    bac_plus_5: "Bac +5 cité",
-    mixed_or_multiple_routes: "Plusieurs voies d'accès citées"
+    cap_or_equivalent: "CAP ou niveau équivalent",
+    bac: "Niveau Bac",
+    bac_plus_2: "Niveau Bac +2",
+    bac_plus_3: "Niveau Bac +3",
+    bac_plus_5: "Niveau Bac +5",
+    mixed_or_multiple_routes: "Plusieurs voies d'accès"
   };
   const rangeLabel = diplomaRangeLabel(flags.diplomaRange);
   const base = rangeLabel || labels[category] || "Accès à vérifier";
   if (flags.requiredCredentialLabels?.length) return `${base} avec qualification spécifique requise`;
   if (flags.requirementKind === "mandatory" || flags.requirementKind === "regulated") return `${base} comme exigence probable`;
-  if (flags.requirementKind === "recommended") return `${base} recommandé`;
+  if (flags.requirementKind === "recommended") return category === "mixed_or_multiple_routes" ? `${base} recommandées ou possibles` : `${base} généralement recommandé`;
   if (flags.requirementKind === "conflicting") return `${base}, texte contradictoire à vérifier`;
   return `${base}, obligation à vérifier`;
 }
@@ -455,8 +474,8 @@ function diplomaRangeLabel(range = {}) {
   const min = range.minimumDiplomaLabel;
   const max = range.maximumDiplomaLabel;
   if (!min || !max) return "";
-  if (min === max) return `${max} cité`;
-  return `${min} à ${max} cité`;
+  if (min === max) return `Niveau ${max}`;
+  return `Niveau ${min} à ${max}`;
 }
 
 function normalizeTrainingDuration(raw = null) {
@@ -838,6 +857,7 @@ async function enrichExistingDataQualityReport(directory, accessSummary = [], bu
     note: "Les compteurs trainings et certifications décrivent les catalogues dédiés. Une valeur nulle ne signifie pas que les conditions d’accès métier sont absentes."
   };
   Object.assign(report, buildMetadata, { datasetVersion: report.datasetVersion || buildMetadata.datasetVersion });
+  delete report.sourceArtifactSha256;
   await writeJson(file, report);
 }
 

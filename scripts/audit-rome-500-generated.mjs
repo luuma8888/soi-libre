@@ -51,7 +51,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
     readJson(path.join(generatedDir, "data-quality-report.rome.json"), {}),
     readJson(path.join(generatedDir, "access-summary.rome500.json"), []),
     readJson(path.join(generatedDir, "access-summary-quality-report.json"), {}),
-    readJson(path.join(GENERATED_DIR, "boussole-v075-functional-validation-report.json"), {})
+    readJson(path.join(GENERATED_DIR, "boussole-v076-runtime-parity-validation-report.json"), {})
   ]);
 
   const bundledMarket = await readMarketBundle(bundledMarketDir);

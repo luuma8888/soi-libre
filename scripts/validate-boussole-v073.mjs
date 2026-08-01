@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import vm from "node:vm";
 import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
+import { canonicalSha256 } from "./boussole-runtime-identity.mjs";
 
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
@@ -59,7 +60,7 @@ async function main() {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v075_functional_consolidation_validation",
+    reportKind: "boussole_v076_runtime_parity_validation",
     generatedAt: new Date().toISOString(),
     appVersion: buildMetadata.appVersion,
     buildId: buildMetadata.buildId,
@@ -81,6 +82,10 @@ async function main() {
   report.checks.constraintsEvidence = validateConstraintEvidence(app);
   report.checks.sectorExclusions = validateSectorExclusions(app);
   report.checks.corpusMaturity = validateCorpusMaturity(app, generated);
+  report.checks.runtimeBundleIdentity = validateRuntimeBundleIdentity(app, generated);
+  report.checks.cacheCompatibility = validateCacheCompatibility(app);
+  report.checks.accessLabels = validateAccessLabels(generated);
+  report.checks.testBenchDeterminism = validateTestBenchDeterminism(app);
   report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generated72);
 
@@ -89,11 +94,82 @@ async function main() {
   }
   report.status = report.failures.length ? "failed" : "ok";
 
-  await writeFile(path.join(GENERATED_DIR, "boussole-v075-functional-validation-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  await writeFile(path.join(GENERATED_DIR, "boussole-v076-runtime-parity-validation-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   if (report.status !== "ok") {
-    throw new Error(`[Boussole Pro] Validation v0.7.5 échouée: ${report.failures.join(", ")}`);
+    throw new Error(`[Boussole Pro] Validation v0.7.6 échouée: ${report.failures.join(", ")}`);
   }
-  console.log(`[Boussole Pro] Validation v0.7.5 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+  console.log(`[Boussole Pro] Validation v0.7.6 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+}
+
+function validateRuntimeBundleIdentity(app, generated = {}) {
+  const failures = [];
+  const identity = app.getRuntimeBundleIdentity(app.App.state.dataset);
+  const compatibility = app.assessRuntimeBundleCompatibility(app.App.state.dataset);
+  if (!compatibility.compatible) failures.push(...compatibility.issues.map(issue => `runtime:${issue}`));
+  if (identity.inputMode !== "packaged_corpus") failures.push("runtime:input_mode_not_packaged");
+  if (identity.counts?.skillsEngine !== 9226) failures.push(`runtime:skills_engine_${identity.counts?.skillsEngine || 0}`);
+  if (identity.counts?.jobs !== 500) failures.push(`runtime:jobs_${identity.counts?.jobs || 0}`);
+  if (identity.status !== "coherent") failures.push(`runtime:status_${identity.status}`);
+  if (generated.runtimeBundleManifest?.fingerprintSha256 !== identity.fingerprintSha256) failures.push("runtime:manifest_fingerprint_mismatch");
+  return { status: failures.length ? "failed" : "ok", identity, compatibility, failures };
+}
+
+function validateCacheCompatibility(app) {
+  const failures = [];
+  const exact = app.assessRuntimeBundleCompatibility(app.App.state.dataset);
+  const expected = exact.expected;
+  const cases = {
+    exact,
+    previousBuild: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, runtimeBundleRevision: "rome500-runtime-v0.7.5-r0" } }),
+    wrongFingerprint: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, fingerprintSha256: "0".repeat(64) } }),
+    missingSkillsEngine: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, counts: { ...expected.counts, skillsEngine: 0 } } }),
+    staleAccessReport: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, ruleVersions: { ...expected.ruleVersions, access: "v0.7.4-alpha" } } }),
+    realImport: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { inputMode: "real_import", counts: { jobs: 500, skillsEngine: 9226 } } })
+  };
+  if (!cases.exact.compatible) failures.push("cache:exact_rejected");
+  for (const name of ["previousBuild", "wrongFingerprint", "missingSkillsEngine", "staleAccessReport"]) {
+    if (cases[name].compatible || cases[name].action !== "reload_packaged_corpus") failures.push(`cache:${name}_not_rejected`);
+  }
+  if (!cases.realImport.compatible || cases.realImport.comparisonStatus !== "not_comparable") failures.push("cache:real_import_not_preserved_separately");
+  return { status: failures.length ? "failed" : "ok", cases, failures };
+}
+
+function validateAccessLabels(generated = {}) {
+  const failures = [];
+  const forbidden = /\b(?:obligatoire\s+requis(?:e|es|s)?|requise\s+requis|requis\s+requis|cité(?:es?)?\s+recommandé(?:es?)?)\b/i;
+  const malformed = [];
+  for (const row of toArray(generated.accessSummary)) {
+    const labels = [row.displayLabel, ...toArray(row.requiredCredentialLabels), ...toArray(row.optionalCredentialLabels)];
+    if (!String(row.displayLabel || "").trim()) malformed.push({ romeCode: row.romeCode, reason: "empty_display_label" });
+    for (const label of labels) if (forbidden.test(String(label || ""))) malformed.push({ romeCode: row.romeCode, label, reason: "automatic_redundancy" });
+  }
+  const byCode = new Map(toArray(generated.accessSummary).map(row => [row.romeCode, row]));
+  for (const code of ["I1309", "N4109"]) {
+    if (!byCode.has(code)) failures.push(`access-label:${code}:missing`);
+    if (forbidden.test(byCode.get(code)?.displayLabel || "")) failures.push(`access-label:${code}:redundant`);
+  }
+  if (malformed.length) failures.push(`access-label:malformed_${malformed.length}`);
+  return { status: failures.length ? "failed" : "ok", scannedCount: toArray(generated.accessSummary).length, rows: Object.fromEntries(["I1309", "N4109"].map(code => [code, byCode.get(code) || null])), malformed, failures };
+}
+
+function validateTestBenchDeterminism(app) {
+  const failures = [];
+  const normalize = report => ({
+    datasetVersion: report.datasetVersion,
+    runtimeFingerprint: report.runtimeBundleIdentity?.fingerprintSha256,
+    rows: toArray(report.rows).map(row => ({ id: row.id, top5: row.top5, expectedJobsEvaluation: row.expectedJobsEvaluation, anomalies: row.anomalies, marketUniform: row.marketUniform })),
+    anomalies: report.anomalies,
+    summary: report.summary
+  });
+  app.App.state.profile = app.normalizeProfile({ profileName: "Etat parasite A", preferredSectors: ["numerique"], excludedSectors: ["sante_soin"], hasRequestedResults: true });
+  const first = normalize(app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052));
+  app.App.state.profile = app.normalizeProfile({ profileName: "Etat parasite B", preferredSectors: ["nature_agriculture"], excludedSectors: ["numerique"], criterionWeights: { skills: 5, training: 5, constraints: 50, values: 20, context: 10, market: 10 }, hasRequestedResults: true });
+  const second = normalize(app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052));
+  const firstSha256 = canonicalSha256(first);
+  const secondSha256 = canonicalSha256(second);
+  if (toArray(first.rows).length !== 12) failures.push(`bench:profiles_${toArray(first.rows).length}`);
+  if (firstSha256 !== secondSha256) failures.push("bench:user_state_leak");
+  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.7.6", firstSha256, secondSha256, failures };
 }
 
 function validateSectors(app) {
@@ -232,7 +308,7 @@ function validateAccessQuality(generated = {}) {
   if (report.summary?.jobsCount !== summaries.length) failures.push("access-quality:jobs_count_mismatch");
   if (report.summary?.truthFailuresCount !== 0 || toArray(report.truthFailures).length) failures.push("access-quality:truth_failures");
   if (report.summary?.genericRequiredLabelsRejectedCount !== 0) failures.push("access-quality:generic_required_labels");
-  if (!report.buildId || !report.sourceArtifactSha256) failures.push("access-quality:missing_build_identity");
+  if (!report.buildId || (!report.sourceArtifactSha256 && report.identityScope !== "runtime_bundle_component")) failures.push("access-quality:missing_build_identity");
   if ((report.summary?.accessDurationKnownCount || 0) < 8) failures.push("access-quality:known_duration_coverage_too_low");
   if ((report.summary?.accessDurationUnknownCount || 0) <= 0) failures.push("access-quality:unknown_durations_not_preserved");
   if (generated.qualityReport?.provenanceDistribution?.mappings?.unknown !== 0) failures.push("quality:mapping_provenance_unknown");
@@ -563,8 +639,11 @@ function validateCedricScenario(app, envelope = null) {
 async function loadGeneratedBundle(directory = ROME500_DIR) {
   return {
     manifest: await readJson(path.join(directory, "import-manifest.rome.json"), {}),
+    runtimeBundleManifest: await readJson(path.join(directory, "runtime-bundle-manifest.json"), null),
     jobs: await readJson(path.join(directory, "jobs.rome.json"), []),
     skills: await readJson(path.join(directory, "skills.rome.json"), []),
+    skillsEngine: await readJson(path.join(directory, "skills-engine.rome.json"), []),
+    skillIntegrityReport: await readJson(path.join(directory, "skill-reference-integrity-report.json"), null),
     knowledge: await readJson(path.join(directory, "knowledge.rome.json"), []),
     certificationLike: await readJson(path.join(directory, "certification-like.rome.json"), []),
     matchableSkills: await readJson(path.join(directory, "skills-matchable.rome.json"), []),
@@ -643,7 +722,10 @@ this.__boussole = {
   DIAGNOSTIC_TEST_PROFILES_V052,
   prepareCompactDatasetExport,
   resultsToMarkdown,
-  getBuildMetadata
+  getBuildMetadata,
+  getRuntimeBundleIdentity,
+  assessRuntimeBundleCompatibility,
+  runtimeComponentCounts
 };`, context, { timeout: 15000 });
   return context.__boussole;
 }

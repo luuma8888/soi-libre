@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.7.5-alpha
+**Version :** v0.7.6-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -25,20 +25,20 @@ Les données ROME générées restent séparées du HTML et peuvent être charg�
 La barre d’état affiche une identité complète et stable :
 
 ```text
-Boussole Pro v0.7.5-alpha · build 20260801-functional-consolidation-02 · données <version du corpus actif>
+Boussole Pro v0.7.6-alpha · build 20260802-runtime-parity-01 · données <version du corpus actif>
 ```
 
 Le même `buildId` est inclus dans les exports et rapports. Après un déploiement manuel, contrôler le HTML public sans transmettre de profil :
 
 ```bash
-/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260801-functional-consolidation-02"
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260802-runtime-parity-01"
 ```
 
 Le script affiche l’URL finale, le marqueur attendu et reçu, la date du contrôle, les en-têtes de cache utiles et un verdict. Aucun service worker n’est utilisé par l’application ; aucun cache applicatif supplémentaire ne masque donc le HTML.
 
 ## Modes de lecture
 
-La v0.7.5 distingue trois niveaux d’usage :
+La v0.7.6 distingue trois niveaux d’usage :
 
 - **Essentiel** : lecture courte des pistes principales, sans surcharge technique.
 - **Détaillé** : scores séparés, raisons, vigilances, accès, marché et contexte.
@@ -74,7 +74,20 @@ L’application peut travailler avec :
 - le corpus ROME72 dans `creations/boussolepro/data/generated/` ;
 - le corpus ROME500 candidat consolidé dans le dossier historique `creations/boussolepro/data/generated/rome500-experimental/`.
 
-Le corpus ROME500 porte la version fonctionnelle `rome500-candidate-v0.7` et la maturité `validated_for_boussole_pro`. Cette maturité signifie que les tests fonctionnels définis pour Boussole Pro réussissent ; elle ne signifie ni corpus officiel complet, ni certification, ni stabilité générale. L’ancien identifiant `rome500-experimental-v0.7` reste accepté comme alias de migration.
+Le corpus ROME500 porte la version fonctionnelle `rome500-candidate-v0.7`. Sa maturité est `candidate_consolidated` et son périmètre validé est `validated_for_boussole_pro_v0_7`. Ces deux informations ne signifient ni corpus officiel complet, ni certification, ni stabilité générale. L’ancien identifiant `rome500-experimental-v0.7` et le nom du dossier historique restent des alias techniques de migration, sans valeur de maturité fonctionnelle.
+
+La révision canonique du paquet moteur est `rome500-runtime-v0.7.6-r1`. Son manifeste recense les fichiers actifs, leurs empreintes SHA-256, les versions de règles et les tailles de tables, notamment les `9 226` lignes de `skillsEngine`. Un paquet incohérent ou un cache de corpus obsolète est rechargé sans effacer le profil, les favoris ni les réglages personnels.
+
+## Livraison multi-fichiers
+
+Le corpus ROME500 actif n'est pas intégré dans le HTML. La livraison complète se trouve dans `tmp/monde-pro/livraison-boussole-pro-v0.7.6-alpha-20260802-01/` et doit être ouverte avec un serveur local depuis ce dossier :
+
+```bash
+cd tmp/monde-pro/livraison-boussole-pro-v0.7.6-alpha-20260802-01
+python3 -m http.server 8000
+```
+
+Puis ouvrir `http://localhost:8000/boussole-pro.html`. L'ouverture directe en `file://` ne garantit pas le chargement des JSON locaux. Le fichier `manifest.sha256.json` décrit chaque fichier livré ; `runtime-bundle-identity.json` identifie précisément les entrées du moteur.
 
 ## Données ROME générées
 
@@ -203,6 +216,8 @@ Avec le PATH Node NVM de Lu’uma :
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-boussole-generated-data.mjs
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-rome500-local.mjs
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/measure-boussole-rome500-browser.mjs
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/build-boussole-v076-delivery.mjs
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-boussole-runtime-parity.mjs
 ```
 
 Pour auditer les tailles et rapports de corpus :
