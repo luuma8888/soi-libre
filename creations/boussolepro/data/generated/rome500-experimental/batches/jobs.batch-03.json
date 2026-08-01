@@ -9809,7 +9809,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "H1211",
     "title": "Attaché / Attachée de recherche clinique (ARC)",
-    "domain": "Industrie, laboratoire et qualité",
+    "domain": "Industrie",
     "family": "Industrie",
     "officialRomeDomain": {
       "code": "H",
@@ -9817,15 +9817,18 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
+      "soin_sante",
       "industrie_qualite"
     ],
-    "primarySectorId": "industrie_production",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.65,
+    "primarySectorId": "sante_soin",
+    "secondarySectorIds": [
+      "industrie_production"
+    ],
+    "sectorMappingConfidence": 0.96,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "H"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "H1211"
       }
     ],
     "appellations": [
@@ -11220,7 +11223,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Industrie",
+    "sourceFamily": "Industrie",
+    "boussoleDomainLabel": "Santé, recherche clinique et industrie"
   },
   {
     "id": "rome-H1214",
@@ -39239,7 +39245,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "H2206",
     "title": "Menuisier / Menuisière",
-    "domain": "Industrie, laboratoire et qualité",
+    "domain": "Industrie",
     "family": "Industrie",
     "officialRomeDomain": {
       "code": "H",
@@ -39252,12 +39258,13 @@
     ],
     "primarySectorId": "industrie_production",
     "secondarySectorIds": [
+      "batiment_construction",
       "maintenance"
     ],
-    "sectorMappingConfidence": 0.9,
+    "sectorMappingConfidence": 0.96,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_mapping_v062",
+        "source": "local_rome_sector_mapping_v2_exact",
         "value": "H2206"
       }
     ],
@@ -40559,7 +40566,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Industrie",
+    "sourceFamily": "Industrie",
+    "boussoleDomainLabel": "Bois, fabrication, bâtiment et maintenance"
   },
   {
     "id": "rome-H2207",

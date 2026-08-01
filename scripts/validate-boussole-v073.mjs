@@ -59,7 +59,7 @@ async function main() {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v074_targeted_corrections_validation",
+    reportKind: "boussole_v075_functional_consolidation_validation",
     generatedAt: new Date().toISOString(),
     appVersion: buildMetadata.appVersion,
     buildId: buildMetadata.buildId,
@@ -78,7 +78,10 @@ async function main() {
   report.checks.accessQuality = validateAccessQuality(generated);
   report.checks.training = validateTraining(app);
   report.checks.context = validateContext(app);
-  report.checks.cedricScenario = validateCedricScenario(app, cedricEnvelope);
+  report.checks.constraintsEvidence = validateConstraintEvidence(app);
+  report.checks.sectorExclusions = validateSectorExclusions(app);
+  report.checks.corpusMaturity = validateCorpusMaturity(app, generated);
+  report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generated72);
 
   for (const group of Object.values(report.checks)) {
@@ -86,11 +89,11 @@ async function main() {
   }
   report.status = report.failures.length ? "failed" : "ok";
 
-  await writeFile(path.join(GENERATED_DIR, "boussole-v074-targeted-validation-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  await writeFile(path.join(GENERATED_DIR, "boussole-v075-functional-validation-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   if (report.status !== "ok") {
-    throw new Error(`[Boussole Pro] Validation v0.7.4 échouée: ${report.failures.join(", ")}`);
+    throw new Error(`[Boussole Pro] Validation v0.7.5 échouée: ${report.failures.join(", ")}`);
   }
-  console.log(`[Boussole Pro] Validation v0.7.4 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+  console.log(`[Boussole Pro] Validation v0.7.5 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
 }
 
 function validateSectors(app) {
@@ -188,6 +191,8 @@ function validateAccess(app) {
   assert(rows.G1235?.requirementKind === "conditional" && !rows.G1235?.contradictoryEvidence, "G1235", "contextual_bafa_misclassified");
   assert(toArray(rows.K2106?.accessPaths).length >= 3, "K2106", "parallel_crpe_paths_missing");
   assert(!/cap.*aepe/i.test(toArray(rows.K2106?.requiredCredentialLabels).join(" ")), "K2106", "cap_aepe_must_not_be_required");
+  assert(!toArray(rows.K2106?.requiredCredentialLabels).some(label => /concours|crpe/i.test(label)), "K2106", "exam_must_not_be_credential");
+  assert(toArray(rows.K2106?.requiredExams).some(label => /CRPE/i.test(label)), "K2106", "required_exam_missing");
 
   for (const code of NEGATION_CASES) {
     const summary = rows[code];
@@ -281,6 +286,10 @@ function validateTraining(app) {
   }
   if (rows.K2106?.statusHint !== "access_to_verify") failures.push(`training:K2106:expected_access_to_verify_got_${rows.K2106?.statusHint}`);
   if (toArray(rows.K2106?.accessFeasibility?.accessPaths).length < 3) failures.push("training:K2106:runtime_paths_missing");
+  if (toArray(rows.K2106?.missingCertifications).some(label => /concours|crpe/i.test(label))) failures.push("training:K2106:exam_in_missing_certifications");
+  if (!toArray(rows.K2106?.missingExams).some(label => /CRPE/i.test(label))) failures.push("training:K2106:missing_exam_not_reported");
+  if (rows.K2106?.accessFeasibility?.bestAccessPath) failures.push("training:K2106:unconfirmed_path_called_best");
+  if (rows.K2106?.accessFeasibility?.leadPathCandidate?.pathId !== "k2106-crpe-troisieme-concours") failures.push(`training:K2106:unexpected_lead_path_${rows.K2106?.accessFeasibility?.leadPathCandidate?.pathId || "missing"}`);
   return { status: failures.length ? "failed" : "ok", rows, failures };
 }
 
@@ -296,6 +305,87 @@ function validateContext(app) {
   if (context?.score !== 5) failures.push(`context:A1101:expected_neutral_5_got_${context?.score}`);
   if (toArray(context?.matched).length) failures.push("context:A1101:inferred_context_bonus_detected");
   return { status: failures.length ? "failed" : "ok", rows: { A1101: context }, failures };
+}
+
+function validateConstraintEvidence(app) {
+  const failures = [];
+  const profile = app.normalizeProfile({
+    constraints: [
+      { value: "nightWork", severity: "excluding" },
+      { value: "weekendWork", severity: "excluding" },
+      { value: "heavyLoad", severity: "excluding" },
+      { value: "standing", severity: "avoid" },
+      { value: "travel", severity: "avoid" },
+      { value: "driverLicenseRequired", severity: "excluding" }
+    ],
+    driverLicenses: [],
+    hasRequestedResults: true
+  });
+  const criteria = app.mapUserProfileToCriteria(profile);
+  const rows = {};
+  for (const code of ["G1202", "K1207", "K2106", "J1506"]) {
+    const job = findJobByCode(app.App.state.dataset.jobs, code);
+    const detail = job ? app.calculateConstraintScore(criteria, job) : null;
+    rows[code] = detail;
+    if (!job) failures.push(`constraints:${code}:missing_job`);
+    if (toArray(detail?.matchedConstraints).some(label => /^(Permis obligatoire|Port de charges|Bruit important)$/i.test(label))) failures.push(`constraints:${code}:ambiguous_positive_label`);
+    if (toArray(detail?.constraintEvaluations).some(item => !item.status || !item.source || !Number.isFinite(Number(item.confidence)))) failures.push(`constraints:${code}:evidence_metadata_missing`);
+  }
+  const unknownJob = {
+    id: "truth-unknown-constraints",
+    romeCode: "Z0000",
+    title: "Métier test inconnu",
+    physicalConstraints: { level: "unknown", tags: [], source: "unknown", confidence: 0 },
+    scheduleConstraints: { nightWork: "unknown", weekendWork: "unknown", source: "unknown", confidence: 0 },
+    mobilityConstraints: { travelFrequency: "unknown", source: "unknown", confidence: 0 },
+    workContexts: [],
+    officialConstraintSummary: { confirmedSignals: [], unknownDimensions: ["schedule", "physical", "mobility", "environment", "publicContact"], source: "unknown", confidence: 0 },
+    accessSummary: {}
+  };
+  const unknown = app.calculateConstraintScore(criteria, unknownJob);
+  rows.unknown = unknown;
+  if (unknown.score === 25 || unknown.score > 13) failures.push(`constraints:unknown:expected_neutral_got_${unknown.score}`);
+  if (unknown.confirmedCompatibleCount || unknown.confirmedIncompatibleCount) failures.push("constraints:unknown:invented_certainty");
+  if (rows.J1506 && !rows.J1506.constraintEvaluations.some(item => item.preferenceId === "heavyLoad" && item.status === "confirmed_incompatible")) failures.push("constraints:J1506:official_heavy_load_not_applied");
+  if (rows.G1202 && !rows.G1202.constraintEvaluations.some(item => item.preferenceId === "weekendWork" && item.status === "possible_risk")) failures.push("constraints:G1202:contextual_weekend_not_prudent");
+  return { status: failures.length ? "failed" : "ok", rows, failures };
+}
+
+function validateSectorExclusions(app) {
+  const failures = [];
+  const expectations = {
+    L1509: ["culture_communication", "industrie_production"],
+    L1308: ["culture_communication", "administratif_support"],
+    D1203: ["sante_soin", "commerce_vente"],
+    H1211: ["sante_soin", "industrie_production"],
+    M1716: ["culture_communication", "numerique"],
+    M1305: ["numerique", "industrie_production"],
+    F1105: ["nature_agriculture", "batiment_construction"],
+    H2206: ["industrie_production", "batiment_construction"]
+  };
+  const rows = {};
+  for (const [code, expected] of Object.entries(expectations)) {
+    const job = findJobByCode(app.App.state.dataset.jobs, code);
+    const mapping = job ? app.getJobSectorProfile(job) : null;
+    const decision = job ? app.evaluateSectorExclusionDecision(expected[1], job, { excludedSectors: [expected[1]], profileSectors: [expected[0]] }) : null;
+    rows[code] = { mapping, decision };
+    if (!job) failures.push(`sector-truth:${code}:missing_job`);
+    if (!expected.every(id => mapping?.allSectorIds?.includes(id))) failures.push(`sector-truth:${code}:expected_multisector_mapping`);
+    if (decision?.hardExclusion) failures.push(`sector-truth:${code}:secondary_sector_hard_excluded`);
+  }
+  const prefixJob = { id: "truth-prefix-sector", romeCode: "K1299", title: "Métier test préfixe", primarySectorId: null, secondarySectorIds: [], sectorMappingConfidence: 0.65, provenance: "generated_rome", sourceRefs: ["france_travail_rome_generated"] };
+  const prefixDecision = app.evaluateSectorExclusionDecision("social_insertion", prefixJob, { excludedSectors: ["social_insertion"], profileSectors: [] });
+  rows.prefixMediumConfidence = prefixDecision;
+  if (prefixDecision.hardExclusion) failures.push("sector-truth:prefix_medium_confidence_hard_excluded");
+  return { status: failures.length ? "failed" : "ok", rows, failures };
+}
+
+function validateCorpusMaturity(app, generated = {}) {
+  const failures = [];
+  const migrated = app.mergeGeneratedDatasetIntoApp({ ...generated, manifest: { ...(generated.manifest || {}), datasetVersion: "rome500-experimental-v0.7" } }, { replace: true });
+  if (migrated.datasetVersion !== "rome500-candidate-v0.7") failures.push("corpus:legacy_alias_not_migrated");
+  if (!toArray(migrated.manifest?.datasetVersionAliases).includes("rome500-experimental-v0.7")) failures.push("corpus:legacy_alias_not_documented");
+  return { status: failures.length ? "failed" : "ok", datasetVersion: migrated.datasetVersion, aliases: migrated.manifest?.datasetVersionAliases || [], failures };
 }
 
 function validateCorpusConsistency(app, generated500 = {}, generated72 = {}) {
@@ -365,6 +455,28 @@ function validateCedricScenario(app, envelope = null) {
     } : null];
   }));
   const top5 = results.top5.map(result => ({ romeCode: result.job?.romeCode || result.romeCode, title: result.title, score: result.globalScore, status: result.status, mainReason: result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || null }));
+  const constraintUnknownAsStrong = results.completeList.filter(result => {
+    const detail = result.scoreDetails?.constraints || {};
+    return detail.activeCount > 0 && detail.unknownCount === detail.activeCount && result.scores?.constraints >= 14;
+  });
+  const ambiguousConstraintPositives = results.completeList.filter(result =>
+    toArray(result.scoreDetails?.constraints?.matchedConstraints).some(label => /^(Permis obligatoire|Port de charges|Bruit important)$/i.test(label))
+  );
+  const falseCompatibleReasons = results.completeList.filter(result => {
+    const detail = result.scoreDetails?.constraints || {};
+    return detail.activeCount > 0 && detail.unknownCount > detail.activeCount / 2 && /contraintes.*compatibles/i.test(JSON.stringify(result.positiveReasons || []));
+  });
+  const mediumPrefixHardExclusions = results.completeList.filter(result => toArray(result.exclusionReasons).some(reason =>
+    reason.sectorDecision?.hardExclusion && /prefix/.test(reason.sectorDecision?.mapping?.source || "") && Number(reason.sectorDecision?.mapping?.confidence || 0) < 0.8
+  ));
+  const possibleNowWithMissingAccess = results.completeList.filter(result => result.status === "possible_now" && (
+    toArray(result.scoreDetails?.training?.missingCertifications).length || toArray(result.scoreDetails?.training?.missingExams).length
+  ));
+  if (constraintUnknownAsStrong.length) failures.push(`cedric:unknown_constraints_rewarded_${constraintUnknownAsStrong.length}`);
+  if (ambiguousConstraintPositives.length) failures.push(`cedric:ambiguous_constraint_positives_${ambiguousConstraintPositives.length}`);
+  if (falseCompatibleReasons.length) failures.push(`cedric:false_constraint_compatibility_reason_${falseCompatibleReasons.length}`);
+  if (mediumPrefixHardExclusions.length) failures.push(`cedric:medium_prefix_hard_exclusions_${mediumPrefixHardExclusions.length}`);
+  if (possibleNowWithMissingAccess.length) failures.push(`cedric:possible_now_with_missing_access_${possibleNowWithMissingAccess.length}`);
   if (top5[0]?.romeCode !== "G1203") failures.push(`cedric:G1203_not_first_${top5[0]?.romeCode || "missing"}`);
   if (top5.some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top5");
   if (results.completeList.slice(0, 15).some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top15");
@@ -373,6 +485,7 @@ function validateCedricScenario(app, envelope = null) {
     if (["possible_now", "possible_with_small_adjustment", "possible_after_short_training"].includes(rows[code]?.status)) failures.push(`cedric:${code}:access_too_easy_${rows[code]?.status}`);
   }
   if (rows.K2106?.trainingStatus !== "access_to_verify" || rows.K2106?.accessPaths.length < 3) failures.push("cedric:K2106_parallel_routes_not_prudent");
+  if (!/faisabilité demande des vérifications/i.test(byCode.get("K2106")?.resultInterpretation?.mainReason || "")) failures.push("cedric:K2106_main_reason_not_prudent");
   if (rows.K2106?.accessPaths.some(path => !path.eligibilityStatus || !path.examStatus || !path.practiceStatus || !path.nextAction)) failures.push("cedric:K2106_path_evaluation_incomplete");
   if (rows.K2106?.accessPaths.some(path => path.practiceStatus === "accessible_now")) failures.push("cedric:K2106_practice_must_not_be_immediate");
   const thirdCrpe = rows.K2106?.accessPaths.find(path => path.pathId === "k2106-crpe-troisieme-concours");
@@ -408,7 +521,9 @@ function validateCedricScenario(app, envelope = null) {
       sourceDomainVisibleWhenExpected: mode === "essential" || gHtml.includes("Domaine / famille ROME"),
       k2106CrpeVisible: kHtml.includes("CRPE"),
       k2106PathsVisibleWhenExpected: mode === "essential" || kHtml.includes("Voies d’accès distinctes"),
-      k2106NoCapAepe: !/CAP AEPE/i.test(kHtml)
+      k2106NoCapAepe: !/CAP AEPE/i.test(kHtml),
+      k2106ExamNotCertification: !/certification à vérifier[^<]*(CRPE|concours)|qualification[^<]*(CRPE|concours)/i.test(kHtml),
+      k2106ContestTruthVisible: mode === "essential" || /concours requis ; réussite non renseignée/i.test(kHtml)
     };
     if (!Object.values(modeChecks[mode]).every(Boolean)) failures.push(`cedric:display_${mode}_failed`);
   }
@@ -426,7 +541,23 @@ function validateCedricScenario(app, envelope = null) {
     markdownBuild: app.resultsToMarkdown(results).includes(`Build : ${app.getBuildMetadata().buildId}`)
   };
   for (const [name, ok] of Object.entries(exports)) if (!ok) failures.push(`cedric:export_${name}_failed`);
-  return { status: failures.length ? "failed" : "ok", profileId: profile.id, experiences: profile.jobExperiences, top5, rows, modeChecks, exports, criteriaDiplomaLevel: criteria.education.highestLevel, failures };
+  return {
+    status: failures.length ? "failed" : "ok",
+    scenarioId: "technical_profile_with_declared_experience",
+    top5,
+    rows,
+    constraintAudit: {
+      unknownAsStrongCount: constraintUnknownAsStrong.length,
+      ambiguousPositiveLabelsCount: ambiguousConstraintPositives.length,
+      falseCompatibleReasonsCount: falseCompatibleReasons.length
+    },
+    sectorAudit: { mediumPrefixHardExclusionsCount: mediumPrefixHardExclusions.length },
+    accessAudit: { possibleNowWithMissingAccessCount: possibleNowWithMissingAccess.length },
+    modeChecks,
+    exports,
+    criteriaDiplomaLevel: criteria.education.highestLevel,
+    failures
+  };
 }
 
 async function loadGeneratedBundle(directory = ROME500_DIR) {
@@ -499,9 +630,11 @@ this.__boussole = {
   normalizeProfile,
   mapUserProfileToCriteria,
   calculateTrainingScore,
+  calculateConstraintScore,
   calculateContextScore,
   calculateAllMatches,
   getJobSectorProfile,
+  evaluateSectorExclusionDecision,
   createExplorationResultShell,
   renderJobDetailsPanelContent,
   prepareCompactResultsForExport,

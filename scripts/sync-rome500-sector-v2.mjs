@@ -45,7 +45,15 @@ const GOLDEN_SECTOR_CASES = {
   B1805: { forbidden: ["batiment_construction"] },
   B1806: { forbidden: ["batiment_construction"] },
   B1808: { forbidden: ["batiment_construction"] },
-  B1816: { forbidden: ["batiment_construction"] }
+  B1816: { forbidden: ["batiment_construction"] },
+  D1203: { primarySectorId: "sante_soin", secondarySectorIds: ["commerce_vente"] },
+  F1105: { primarySectorId: "nature_agriculture", secondarySectorIds: ["batiment_construction"] },
+  H1211: { primarySectorId: "sante_soin", secondarySectorIds: ["industrie_production"] },
+  H2206: { primarySectorId: "industrie_production", secondarySectorIds: ["batiment_construction", "maintenance"] },
+  L1308: { primarySectorId: "culture_communication", secondarySectorIds: ["administratif_support"] },
+  L1509: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"] },
+  M1305: { primarySectorId: "numerique", secondarySectorIds: ["industrie_production"] },
+  M1716: { primarySectorId: "culture_communication", secondarySectorIds: ["numerique", "administratif_support"] }
 };
 
 async function main() {

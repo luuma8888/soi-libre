@@ -1,10 +1,12 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
+const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
 const HTML_ROUTE = "/creations/boussolepro/boussole-pro.html";
 const OUTPUTS = [
   path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-report.json"),
@@ -62,30 +64,37 @@ try {
   const cold = [];
   const warm = [];
   for (let index = 0; index < RUNS_PER_MODE; index += 1) {
-    cold.push(await runScenario(cdp, appUrl, profile, true, index + 1));
+    cold.push(await runColdScenario(cdp, appUrl, profile, index + 1));
     console.log(`[Boussole Pro] Essai froid ${index + 1}/${RUNS_PER_MODE} terminé (${cold.at(-1).totalGeneratedLoadMs} ms, ${cold.at(-1).cardsRendered} cartes).`);
   }
   for (let index = 0; index < RUNS_PER_MODE; index += 1) {
-    warm.push(await runScenario(cdp, appUrl, profile, false, index + 1));
+    warm.push(await runWarmScenario(cdp, index + 1));
     console.log(`[Boussole Pro] Essai chaud ${index + 1}/${RUNS_PER_MODE} terminé (${warm.at(-1).totalGeneratedLoadMs} ms, ${warm.at(-1).cardsRendered} cartes).`);
   }
 
   const visualChecks = await runVisualChecks(cdp);
   const build = await readBoussoleBuildMetadata();
-  const metrics = ["datasetLoadMs", "normalizationMs", "profileScoringMs", "resultsGroupingMs", "resultsUiRenderMs", "resultCardRenderMs", "resultsFirstVisibleMs", "resultsInteractiveMs", "compactExportMs", "totalGeneratedLoadMs", "heapUsedBytes"];
+  const sourceArtifactSha256 = createHash("sha256").update(await readFile(HTML_PATH)).digest("hex");
+  const metrics = ["datasetLoadMs", "normalizationMs", "skillIndexBuildMs", "profileScoringMs", "resultsGroupingMs", "resultsUiRenderMs", "resultCardRenderMs", "resultsFirstVisibleMs", "resultsInteractiveMs", "compactExportMs", "totalGeneratedLoadMs", "heapUsedBytes", "cardsRendered"];
   const report = {
     schemaVersion: "1.0.0",
     reportKind: "rome500_browser_performance_multi_run",
     generatedAt: new Date().toISOString(),
     ...build,
+    sourceArtifactSha256,
     scenario: {
       browser: browserVersion.product,
       userAgent: browserVersion.userAgent,
       machine: `${process.platform}-${process.arch}`,
-      profile: "Cédric (contenu libre non exporté)",
+      profile: "profil technique anonymise",
       coldRuns: cold.length,
       warmRuns: warm.length,
-      servedUrl: appUrl
+      servedUrl: appUrl,
+      cacheProtocol: {
+        cold: "Cache HTTP Chromium vide avant chaque chargement du corpus.",
+        warm: "Corpus et index deja charges en memoire ; recalcul et rendu sans navigation ni rechargement JSON.",
+        localStorage: "Efface avant chaque essai froid ; non utilise pour les resultats du banc (persist=false)."
+      }
     },
     runs: { cold, warm },
     summary: {
@@ -108,9 +117,9 @@ try {
   await new Promise(resolve => server.close(resolve));
 }
 
-async function runScenario(cdp, url, profile, cold, run) {
+async function runColdScenario(cdp, url, profile, run) {
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
-  if (cold) await cdp.send("Network.clearBrowserCache");
+  await cdp.send("Network.clearBrowserCache");
   await navigate(cdp, url);
   await evaluate(cdp, "localStorage.clear()");
   await navigate(cdp, url);
@@ -120,16 +129,35 @@ async function runScenario(cdp, url, profile, cold, run) {
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
   const browserReport = await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.getPerformanceReport()");
   const heap = await cdp.send("Runtime.getHeapUsage");
+  return buildRunRow({
+    run,
+    cacheMode: "cold",
+    browserReport,
+    heap
+  });
+}
+
+async function runWarmScenario(cdp, run) {
+  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.resetPerformanceMetrics()");
+  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.recalculateRome500()", true);
+  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
+  const browserReport = await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.getPerformanceReport()");
+  const heap = await cdp.send("Runtime.getHeapUsage");
+  return buildRunRow({ run, cacheMode: "warm", browserReport, heap });
+}
+
+function buildRunRow({ run, cacheMode, browserReport, heap }) {
   const values = Object.fromEntries(Object.entries(browserReport.performanceMetrics || {}).map(([key, entry]) => [key, entry?.value ?? null]));
   return {
     run,
-    cacheMode: cold ? "cold" : "warm",
+    cacheMode,
     ...values,
     heapUsedBytes: Number.isFinite(heap.usedSize) ? heap.usedSize : null,
     measurementStatus: Object.fromEntries([...Object.keys(values), "heapUsedBytes"].map(key => [key, values[key] === null && key !== "heapUsedBytes" ? "not_measured" : "measured"])),
     jobsCount: browserReport.dataset?.jobsCount || 0,
     resultsComputed: browserReport.resultMetrics?.resultsComputed || 0,
-    cardsRendered: values.resultCardsRendered ?? null
+    cardsRendered: Number(values.resultCardsRendered) > 0 ? Number(values.resultCardsRendered) : null,
+    cardsRenderReason: Number(values.resultCardsRendered) > 0 ? null : "Aucune carte résultat détectée dans la vue Résultats."
   };
 }
 
@@ -151,10 +179,24 @@ async function runVisualChecks(cdp) {
 
 function summarizeRuns(runs, metrics) {
   return Object.fromEntries(metrics.map(metric => {
-    const values = runs.map(run => run[metric]).filter(value => Number.isFinite(value) && value > 0).sort((a, b) => a - b);
-    if (!values.length) return [metric, { median: null, worst: null, measurementStatus: "not_measured" }];
-    return [metric, { median: median(values), worst: values.at(-1), measurementStatus: "measured" }];
+    const rawValues = runs.map(run => run[metric]);
+    const values = rawValues.filter(value => Number.isFinite(value) && value > 0).sort((a, b) => a - b);
+    if (!values.length) return [metric, { minimum: null, median: null, mean: null, maximum: null, p95: null, rawValues, measurementStatus: "not_measured" }];
+    return [metric, {
+      minimum: values[0],
+      median: median(values),
+      mean: Math.round(values.reduce((sum, value) => sum + value, 0) / values.length),
+      maximum: values.at(-1),
+      p95: percentile(values, 0.95),
+      rawValues,
+      measurementStatus: "measured"
+    }];
   }));
+}
+
+function percentile(values, ratio) {
+  if (!values.length) return null;
+  return values[Math.min(values.length - 1, Math.ceil(values.length * ratio) - 1)];
 }
 
 function median(values) {

@@ -13,7 +13,7 @@ async function main() {
   const buildMetadata = await readBoussoleBuildMetadata(HTML_PATH);
   const app = await loadBoussoleEngine();
   const rome72 = await buildDataset(app, GENERATED_DIR, MARKET_DIR, "ROME 72");
-  const rome500 = await buildDataset(app, ROME500_DIR, MARKET_DIR, "ROME 500 expérimental");
+  const rome500 = await buildDataset(app, ROME500_DIR, MARKET_DIR, "ROME 500 candidat consolidé");
 
   const report72 = { ...runRegression(app, rome72, "rome72"), ...buildMetadata, datasetVersion: rome72.dataset.datasetVersion };
   const report500 = { ...runRegression(app, rome500, "rome500"), ...buildMetadata, datasetVersion: rome500.dataset.datasetVersion };

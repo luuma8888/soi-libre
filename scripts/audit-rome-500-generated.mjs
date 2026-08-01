@@ -51,7 +51,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
     readJson(path.join(generatedDir, "data-quality-report.rome.json"), {}),
     readJson(path.join(generatedDir, "access-summary.rome500.json"), []),
     readJson(path.join(generatedDir, "access-summary-quality-report.json"), {}),
-    readJson(path.join(GENERATED_DIR, "boussole-v074-targeted-validation-report.json"), {})
+    readJson(path.join(GENERATED_DIR, "boussole-v075-functional-validation-report.json"), {})
   ]);
 
   const bundledMarket = await readMarketBundle(bundledMarketDir);
@@ -126,6 +126,32 @@ export async function buildRome500AuditArtifacts(options = {}) {
       truthFailures: accessQualityReport.summary?.truthFailuresCount ?? null,
       catalogExplanation: qualityReport.accessCatalogExplanation?.note || "Les catalogues formation/certification et les conditions d’accès sont comptés séparément."
     },
+    functionalEvidence: {
+      constraints: downstreamValidationReport.checks?.constraintsEvidence || null,
+      sectorExclusions: downstreamValidationReport.checks?.sectorExclusions || null,
+      corpusMaturity: downstreamValidationReport.checks?.corpusMaturity || null,
+      cedricAudit: {
+        constraints: downstreamValidationReport.checks?.cedricScenario?.constraintAudit || null,
+        sectors: downstreamValidationReport.checks?.cedricScenario?.sectorAudit || null,
+        access: downstreamValidationReport.checks?.cedricScenario?.accessAudit || null
+      }
+    },
+    sourceArtifacts: [
+      {
+        file: path.relative(process.cwd(), path.join(generatedDir, "data-quality-report.rome.json")),
+        sourceGeneratedAt: qualityReport.generatedAt || null,
+        packagedAt: new Date().toISOString(),
+        packagedInBuild: buildMetadata.buildId,
+        sourceArtifactSha256: await checksumFile(path.join(generatedDir, "data-quality-report.rome.json"))
+      },
+      {
+        file: path.relative(process.cwd(), path.join(generatedDir, "access-summary-quality-report.json")),
+        sourceGeneratedAt: accessQualityReport.generatedAt || null,
+        packagedAt: new Date().toISOString(),
+        packagedInBuild: buildMetadata.buildId,
+        sourceArtifactSha256: await checksumFile(path.join(generatedDir, "access-summary-quality-report.json"))
+      }
+    ],
     warnings: buildWarnings({ jobs, linked, shellJobs, sectorMappingCoverage, marketAvailability })
   };
   Object.assign(quality, buildMetadata, { datasetVersion: qualityReport.datasetVersion || buildMetadata.datasetVersion });

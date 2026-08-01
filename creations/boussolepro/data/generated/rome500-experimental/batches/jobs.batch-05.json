@@ -4,7 +4,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "L1509",
     "title": "Régisseur / Régisseuse de production",
-    "domain": "Industrie, laboratoire et qualité",
+    "domain": "Spectacle",
     "family": "Spectacle",
     "officialRomeDomain": {
       "code": "L",
@@ -12,18 +12,18 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
-      "industrie_qualite",
-      "culture_communication_creation"
+      "culture_communication_creation",
+      "industrie_qualite"
     ],
-    "primarySectorId": "industrie_production",
+    "primarySectorId": "culture_communication",
     "secondarySectorIds": [
-      "culture_communication"
+      "industrie_production"
     ],
-    "sectorMappingConfidence": 0.82,
+    "sectorMappingConfidence": 0.98,
     "sectorEvidence": [
       {
-        "source": "generated_rome_heuristic_sector_mapping",
-        "value": "Spectacle"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "L1509"
       }
     ],
     "appellations": [],
@@ -1054,7 +1054,10 @@
       "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ]
+    ],
+    "sourceDomain": "Spectacle",
+    "sourceFamily": "Spectacle",
+    "boussoleDomainLabel": "Spectacle, culture et régie"
   },
   {
     "id": "rome-L1515",
@@ -10813,7 +10816,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "M1305",
     "title": "Fablab Manager",
-    "domain": "Administration, bureau et gestion",
+    "domain": "Support à l'entreprise",
     "family": "Support à l'entreprise",
     "officialRomeDomain": {
       "code": "M",
@@ -10821,15 +10824,20 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
-      "administratif"
+      "numerique",
+      "industrie_qualite",
+      "enfance_education"
     ],
-    "primarySectorId": "administratif_support",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.55,
+    "primarySectorId": "numerique",
+    "secondarySectorIds": [
+      "industrie_production",
+      "education_enfance"
+    ],
+    "sectorMappingConfidence": 0.96,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "M"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "M1305"
       }
     ],
     "appellations": [
@@ -11853,7 +11861,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Support à l'entreprise",
+    "sourceFamily": "Support à l'entreprise",
+    "boussoleDomainLabel": "Numérique, fabrication et médiation"
   },
   {
     "id": "rome-M1404",
@@ -30938,7 +30949,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "M1716",
     "title": "Directeur / Directrice marketing digital",
-    "domain": "Administration, bureau et gestion",
+    "domain": "Support à l'entreprise",
     "family": "Support à l'entreprise",
     "officialRomeDomain": {
       "code": "M",
@@ -30946,15 +30957,20 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
+      "culture_communication_creation",
+      "numerique",
       "administratif"
     ],
-    "primarySectorId": "administratif_support",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.55,
+    "primarySectorId": "culture_communication",
+    "secondarySectorIds": [
+      "numerique",
+      "administratif_support"
+    ],
+    "sectorMappingConfidence": 0.98,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "M"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "M1716"
       }
     ],
     "appellations": [
@@ -31977,7 +31993,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Support à l'entreprise",
+    "sourceFamily": "Support à l'entreprise",
+    "boussoleDomainLabel": "Communication, marketing et numérique"
   },
   {
     "id": "rome-M1717",

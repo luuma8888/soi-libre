@@ -52,7 +52,7 @@ async function main() {
     verifiedAt: accessRulesDocument.verifiedAt
   }));
   const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, accessSummaryGeneratedAt);
-  Object.assign(accessQuality, buildMetadata, { datasetVersion: "rome500-experimental-v0.7" });
+  Object.assign(accessQuality, buildMetadata, { datasetVersion: "rome500-candidate-v0.7", corpusMaturity: "validated_for_boussole_pro" });
   const contextMapping = buildOfficialContextConstraintMapping(contexts);
   const constraintSummary = jobs.map(job => buildOfficialConstraintSummary(job, contextMapping));
   const workContextTaxonomy = buildWorkContextUserTaxonomy(contexts, jobs);
@@ -710,7 +710,7 @@ Date : ${new Date().toISOString()}
 
 - Lancer \`node scripts/prepare-v071-local.mjs\`.
 - Vérifier JSON des fichiers générés.
-- Ouvrir Boussole Pro et charger ROME 500 expérimental.
+- Ouvrir Boussole Pro et charger ROME 500 candidat consolidé.
 
 ## Limitations restantes
 

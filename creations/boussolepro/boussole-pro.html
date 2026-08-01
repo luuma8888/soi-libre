@@ -1698,11 +1698,19 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.7.4-alpha",
-  buildId: "20260801-access-consolidation-01",
+  appVersion: "v0.7.5-alpha",
+  buildId: "20260801-functional-consolidation-02",
   buildDate: "2026-08-01",
-  defaultDatasetVersion: "rome500-experimental-v0.7"
+  defaultDatasetVersion: "rome500-candidate-v0.7"
 });
+
+const DATASET_VERSION_ALIASES = Object.freeze({
+  "rome500-experimental-v0.7": "rome500-candidate-v0.7"
+});
+
+function canonicalDatasetVersion(version = "") {
+  return DATASET_VERSION_ALIASES[version] || version || BUILD_INFO.defaultDatasetVersion;
+}
 
 const CONFIG = {
   appName: "Boussole Pro",
@@ -1731,7 +1739,7 @@ function getBuildMetadata(dataset = App?.state?.dataset) {
     appVersion: BUILD_INFO.appVersion,
     buildId: BUILD_INFO.buildId,
     buildDate: BUILD_INFO.buildDate,
-    datasetVersion: dataset?.datasetVersion || BUILD_INFO.defaultDatasetVersion
+    datasetVersion: canonicalDatasetVersion(dataset?.datasetVersion)
   };
 }
 
@@ -1746,7 +1754,7 @@ if (typeof window !== "undefined") {
     appVersion: BUILD_INFO.appVersion,
     buildId: BUILD_INFO.buildId,
     buildDate: BUILD_INFO.buildDate,
-    datasetVersion: BUILD_INFO.defaultDatasetVersion
+    datasetVersion: canonicalDatasetVersion(BUILD_INFO.defaultDatasetVersion)
   });
 }
 
@@ -2244,7 +2252,7 @@ const GENERATED_ROME_SECTOR_TO_PROFILE_SECTOR_V061 = {
 };
 
 const ROME_SECTOR_MAPPING_V2 = {
-  version: "v0.7.4-alpha",
+  version: "v0.7.5-alpha",
   priority: ["exact", "prefix4", "prefix3", "family", "domain", "title_heuristic", "ambiguous_unusable"],
   exact: {
     G1201: { primarySectorId: "hotellerie_hebergement", secondarySectorIds: ["culture_communication"], domainLabel: "Restauration, hôtellerie, tourisme et accueil", source: "exact", confidence: 0.98 },
@@ -2267,7 +2275,15 @@ const ROME_SECTOR_MAPPING_V2 = {
     B1805: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
     B1806: { primarySectorId: "culture_communication", secondarySectorIds: ["maintenance"], source: "exact", confidence: 0.98 },
     B1808: { primarySectorId: "industrie_production", secondarySectorIds: ["culture_communication"], source: "exact", confidence: 0.98 },
-    B1816: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 }
+    B1816: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], source: "exact", confidence: 0.98 },
+    D1203: { primarySectorId: "sante_soin", secondarySectorIds: ["commerce_vente", "hotellerie_hebergement"], domainLabel: "Santé, soin et bien-être", source: "exact", confidence: 0.96 },
+    F1105: { primarySectorId: "nature_agriculture", secondarySectorIds: ["batiment_construction", "industrie_production"], domainLabel: "Nature, environnement et géosciences", source: "exact", confidence: 0.96 },
+    H1211: { primarySectorId: "sante_soin", secondarySectorIds: ["industrie_production"], domainLabel: "Santé, recherche clinique et industrie", source: "exact", confidence: 0.96 },
+    H2206: { primarySectorId: "industrie_production", secondarySectorIds: ["batiment_construction", "maintenance"], domainLabel: "Bois, fabrication, bâtiment et maintenance", source: "exact", confidence: 0.96 },
+    L1308: { primarySectorId: "culture_communication", secondarySectorIds: ["administratif_support"], domainLabel: "Culture, audiovisuel et cinéma", source: "exact", confidence: 0.98 },
+    L1509: { primarySectorId: "culture_communication", secondarySectorIds: ["industrie_production"], domainLabel: "Spectacle, culture et régie", source: "exact", confidence: 0.98 },
+    M1305: { primarySectorId: "numerique", secondarySectorIds: ["industrie_production", "education_enfance"], domainLabel: "Numérique, fabrication et médiation", source: "exact", confidence: 0.96 },
+    M1716: { primarySectorId: "culture_communication", secondarySectorIds: ["numerique", "administratif_support"], domainLabel: "Communication, marketing et numérique", source: "exact", confidence: 0.98 }
   },
   prefix4: {
     G120: { primarySectorId: "education_enfance", secondarySectorIds: ["culture_communication", "social_insertion"], source: "prefix4", confidence: 0.9 },
@@ -4622,8 +4638,8 @@ const ACCESS_RULE_OVERRIDES_V074 = {
   K1207: { requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, specificCredentialRequired: true, requiredCredentialLabels: ["Diplôme d'État d'éducateur spécialisé (DEES) ou équivalence réglementaire reconnue"], regulated: true, mandatoryQualification: true },
   K1307: { requirementKind: "mandatory", minimumDiplomaLevel: 3, maximumDiplomaLevel: 3, specificCredentialRequired: true, requiredCredentialLabels: ["CAP Accompagnant éducatif petite enfance (CAP AEPE) ou qualification reconnue équivalente"], regulated: false, mandatoryQualification: true },
   K2106: {
-    requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 7, specificCredentialRequired: true,
-    requiredCredentialLabels: ["Réussite à une voie du concours de recrutement de professeur des écoles (CRPE)"], regulated: true, mandatoryQualification: true,
+    requirementKind: "regulated", minimumDiplomaLevel: 6, maximumDiplomaLevel: 7, specificCredentialRequired: false,
+    requiredCredentialLabels: [], requiredExams: ["Concours de recrutement de professeur des écoles (CRPE)"], examRequired: true, regulated: true, mandatoryQualification: false,
     displayLabel: "Accès par CRPE : plusieurs voies datées, concours obligatoire",
     accessPaths: [
       { id: "k2106-crpe-externe-bac3", label: "Concours externe CRPE Bac+3", routeType: "external_exam", validFrom: "2026", validThrough: null, examRequired: true, minimumDiplomaLevel: 6, maximumDiplomaLevel: 6, requiredCredentialLabels: [], requiredExperienceYears: null, requiredExperienceScope: null, eligibilityRules: ["Licence ou titre équivalent selon les règles de la session", "Réussite aux épreuves du CRPE"], confidence: 0.96 },
@@ -5365,7 +5381,9 @@ function buildResultInterpretation(criteria, job, result = {}, details = {}) {
   if (details.constraint?.warnings?.length) whatToCheckNext.push("Comparer les conditions réelles des postes avant décision.");
   if (details.constraint?.uncertainties?.length) whatToCheckNext.push("Vérifier les contraintes non renseignées sans les considérer comme confirmées.");
   const foundation = depth === "high" ? "rich" : depth === "medium" ? "medium" : "light";
-  const mainReason = core.coreProfileLevel === "heart_current"
+  const mainReason = ["explore_with_caution", "excluded_for_now"].includes(result.status)
+    ? "Cette piste correspond au profil, mais sa faisabilité demande des vérifications avant de la retenir."
+    : core.coreProfileLevel === "heart_current"
     ? "Ce métier ressort comme cœur actuel possible du profil."
     : core.coreProfileLevel === "heart_secondary"
       ? "Ce métier ressort comme branche secondaire cohérente."
@@ -5441,10 +5459,16 @@ function buildScoreDetails(criteria, job, details = {}) {
       matchedConstraints: toArray(constraint.matchedConstraints),
       confirmedConstraints: toArray(constraint.confirmedWarnings || constraint.warnings),
       uncertainties: toArray(constraint.uncertainties),
+      constraintEvaluations: toArray(constraint.constraintEvaluations),
       warnings: toArray(constraint.confirmedWarnings || constraint.warnings),
       riskScore: constraint.riskScore ?? 0,
       compatibilityBonus: constraint.compatibilityBonus ?? 0,
       activeCount: constraint.activeCount ?? 0,
+      unknownCount: constraint.unknownCount ?? 0,
+      confirmedCompatibleCount: constraint.confirmedCompatibleCount ?? 0,
+      confirmedIncompatibleCount: constraint.confirmedIncompatibleCount ?? 0,
+      possibleRiskCount: constraint.possibleRiskCount ?? 0,
+      constraintEvidenceConfidence: constraint.constraintEvidenceConfidence ?? 0,
       exclusions: toArray(hardCheck.confirmed)
     },
     training: {
@@ -5452,6 +5476,11 @@ function buildScoreDetails(criteria, job, details = {}) {
       requiredDiplomaLevel: job.requiredDiplomaLevel,
       recommendedDiplomaLevel: job.recommendedDiplomaLevel,
       missingCertifications: toArray(training.missingCertifications),
+      missingExams: toArray(training.missingExams),
+      requiredExams: toArray(training.requiredExams || training.accessFeasibility?.requiredExams),
+      examStatus: training.examStatus || training.accessFeasibility?.examStatus || "not_required",
+      missingRequirements: toArray(training.missingRequirements || training.accessFeasibility?.missingRequirements),
+      unknownRequirements: toArray(training.unknownRequirements || training.accessFeasibility?.unknownRequirements),
       statusHint: training.statusHint || "unknown",
       feasibility: training.feasibility || "unknown",
       trainingDuration: normalizeTrainingDuration(training.trainingDuration || training.accessFeasibility?.trainingDuration),
@@ -5499,7 +5528,7 @@ function buildEvidenceSummary(criteria, job, result = {}, details = {}) {
   const negativeProfileSignals = [];
   if ((result.scores?.skills || 0) >= 17) positiveProfileSignals.push("compétences déclarées");
   if ((result.scores?.values || 0) >= 10) positiveProfileSignals.push("envies et valeurs");
-  if ((result.scores?.constraints || 0) >= 18) positiveProfileSignals.push("contraintes compatibles");
+  if ((result.scores?.constraints || 0) >= 18 && details.constraint?.confirmedCompatibleCount > 0 && details.constraint?.unknownCount <= details.constraint?.confirmedCompatibleCount) positiveProfileSignals.push("contraintes explicitement compatibles");
   if (details.skill?.unassessedSkills?.length) negativeProfileSignals.push("compétences utiles à vérifier");
   if (details.skill?.weakSkills?.length) negativeProfileSignals.push("compétence explicitement faible");
   if (details.constraint?.warnings?.length) negativeProfileSignals.push("contrainte à vérifier");
@@ -5563,16 +5592,25 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
       compatibilityBonus: details.constraint?.compatibilityBonus ?? 0,
       confirmedConstraints: toArray(details.constraint?.confirmedWarnings || details.constraint?.warnings),
       uncertainties: toArray(details.constraint?.uncertainties),
-      warnings: toArray(details.constraint?.confirmedWarnings || details.constraint?.warnings)
+      warnings: toArray(details.constraint?.confirmedWarnings || details.constraint?.warnings),
+      evaluations: toArray(details.constraint?.constraintEvaluations),
+      evidenceConfidence: details.constraint?.constraintEvidenceConfidence ?? 0
     },
     trainingFeasibility: {
       statusHint: details.training?.statusHint || "unknown",
       feasibility: details.training?.feasibility || "unknown",
       knownTrainingFamily: Boolean(details.training?.knownTrainingFamily),
       missingCertifications: toArray(details.training?.missingCertifications),
+      missingExams: toArray(details.training?.missingExams),
+      requiredExams: toArray(details.training?.requiredExams || details.training?.accessFeasibility?.requiredExams),
+      examStatus: details.training?.examStatus || details.training?.accessFeasibility?.examStatus || "not_required",
       trainingDuration: normalizeTrainingDuration(details.training?.trainingDuration || details.training?.accessFeasibility?.trainingDuration),
       accessPaths: toArray(details.training?.accessFeasibility?.accessPaths),
-      bestAccessPath: details.training?.accessFeasibility?.bestAccessPath || null
+      bestAccessPath: details.training?.accessFeasibility?.bestAccessPath || null,
+      leadPathCandidate: details.training?.accessFeasibility?.leadPathCandidate || null,
+      pathsToVerify: toArray(details.training?.accessFeasibility?.pathsToVerify),
+      missingRequirements: toArray(details.training?.accessFeasibility?.missingRequirements),
+      unknownRequirements: toArray(details.training?.accessFeasibility?.unknownRequirements)
     },
     marketReliability: {
       level: details.market?.level || "unknown",
@@ -5663,6 +5701,7 @@ function isSubScoreNotEvaluated(key, detail = {}, job = {}) {
   if (key === "context") return toArray(job.workContexts).length === 0;
   if (key === "market") return detail.sourceLevel === "none" || detail.source === "unknown";
   if (key === "training") return toArray(detail.missingData).some(item => item.field === "job.requiredDiplomaLevel") && !toArray(job.requiredCertifications).length;
+  if (key === "constraints") return !detail.activeCount || !toArray(detail.constraintEvaluations).some(item => item.status !== "unknown");
   return false;
 }
 
@@ -5689,7 +5728,8 @@ function subScoreExplanation(key, state, detail = {}, job = {}, result = {}) {
     if (key === "market") return "Les données marché sont absentes ou seulement estimatives.";
     if (key === "training") return "Le niveau d’accès au métier est partiellement inconnu.";
   }
-  if (key === "constraints" && toArray(detail.warnings).length) return "Des contraintes déclarées rencontrent un signal à vérifier ou une pénalité.";
+  if (key === "constraints" && state === "not_evaluated") return "Les contraintes utiles sont inconnues dans les données disponibles : le score reste neutre et la confiance diminue.";
+  if (key === "constraints" && toArray(detail.warnings).length) return "Des contraintes déclarées rencontrent un signal confirmé ou un risque possible.";
   if (key === "training" && detail.statusHint === "short") return "Une marche de formation courte pourrait changer la faisabilité.";
   if (key === "training" && detail.statusHint === "long") return "L’accès semble demander une marche de formation plus longue.";
   if (key === "skills" && toArray(detail.weakSkills).length) return "Certaines compétences utiles ont été signalées comme faibles.";
@@ -5718,7 +5758,11 @@ function subScoreLimits(key, detail = {}, job = {}) {
   ];
   if (key === "context") return toArray(detail.unmatchedPreferences).map(preferenceLabel);
   if (key === "constraints") return toArray(detail.warnings);
-  if (key === "training") return toArray(detail.missingCertifications).map(id => `certification à vérifier : ${id}`);
+  if (key === "training") return [
+    ...toArray(detail.missingCertifications).map(id => `Qualification obligatoire non déclarée dans le profil : ${id}`),
+    ...toArray(detail.missingExams).map(id => `Concours requis ; réussite non renseignée : ${id}`),
+    ...toArray(detail.missingData).filter(item => item.field === "job.accessSummary.trainingDuration").map(() => "Durée de formation non renseignée")
+  ];
   if (key === "market") return [detail.note, detail.marketReliability < 0.5 ? "fiabilité statistique limitée" : ""].filter(Boolean);
   return toArray(detail.missingData).map(item => item.message || item.field);
 }
@@ -5728,7 +5772,7 @@ function buildWhyItRanks(result = {}, details = {}) {
   if (details.core?.level === "core") reasons.push(`le secteur ${details.core.primarySectorLabel} est au cœur du profil`);
   if (details.core?.level === "compatible") reasons.push(`le secteur ${details.core.primarySectorLabel} est compatible avec plusieurs signaux`);
   if ((result.scores?.skills || 0) >= 15) reasons.push("les compétences déclarées créent un signal favorable");
-  if ((result.scores?.constraints || 0) >= 18) reasons.push("les contraintes renseignées restent plutôt compatibles");
+  if ((result.scores?.constraints || 0) >= 18 && details.constraint?.confirmedCompatibleCount > 0 && details.constraint?.unknownCount <= details.constraint?.confirmedCompatibleCount) reasons.push("des données explicites confirment plusieurs compatibilités de contraintes");
   if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
   if ((result.scores?.values || 0) >= 10) reasons.push("les envies ou valeurs rejoignent cette direction");
   if ((result.scores?.context || 0) >= 7) reasons.push("le cadre de travail correspond à plusieurs préférences");
@@ -5797,7 +5841,7 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   const isCurated = job.provenance === "curated_clairmetier_ai_logic";
   if (scores.skills >= 18) positive.push("Plusieurs competences declarees correspondent aux competences attendues.");
   if (details.training?.evidenceAvailable && scores.training >= 15) positive.push("Le niveau de formation ou les certifications semblent proches de votre profil actuel.");
-  if (scores.constraints >= 20) positive.push("Les contraintes principales semblent compatibles avec ce metier.");
+  if (scores.constraints >= 20 && details.constraint?.confirmedCompatibleCount > 0 && details.constraint?.unknownCount <= details.constraint?.confirmedCompatibleCount) positive.push("Des données explicites confirment la compatibilité de plusieurs contraintes principales.");
   if (scores.values >= 10) positive.push("Cette piste rejoint plusieurs envies ou valeurs que vous avez indiquees.");
   if (scores.context >= 7) positive.push("Le contexte de travail semble proche de vos preferences.");
   if (job.remoteCompatibility === "high" && criteria.preferredEnvironments.includes("remote")) positive.push("Le teletravail semble plus envisageable que dans d'autres pistes.");
@@ -5824,7 +5868,8 @@ function explainMatch(criteria, job, scores, status, details = {}) {
   if (details.skill?.missingSkills?.length) actions.push((isGeneratedRomeJob(job) ? "Vérifier ces compétences mobilisées : " : "Ajouter ou renforcer les competences suivantes : ") + details.skill.missingSkillLabels.slice(0, 3).join(", ") + ".");
   if (details.skill?.unassessedSkills?.length) actions.push("Vérifier ces compétences sans conclure trop vite : " + details.skill.unassessedSkillLabels.slice(0, 3).join(", ") + ".");
   if (details.skill?.unlinkedOfficialSkills) actions.push("Relancer la synchronisation avec une route ROME qui fournit les liens métier-compétence, ou importer un mapping structuré.");
-  if (details.training?.missingCertifications?.length) actions.push("Explorer la certification associee avant de considerer cette piste comme accessible.");
+  if (details.training?.missingCertifications?.length) actions.push("Vérifier la qualification obligatoire et sa voie d’obtention avant de considérer cette piste comme accessible.");
+  if (details.training?.missingExams?.length) actions.push("Vérifier l’éligibilité à la voie choisie puis la session du concours obligatoire.");
   if (details.constraint?.warnings?.length) actions.push("Verifier les conditions concretes du poste : " + details.constraint.warnings.slice(0, 3).join(", ") + ".");
   if (details.market?.missingData?.length) actions.push("Importer plus tard des indicateurs marche fiables pour mieux evaluer le realisme local.");
   if (details.market?.isEstimated) actions.push("Vérifier le recrutement local sur le territoire choisi avant décision.");
@@ -5842,15 +5887,22 @@ function applyHardExclusions(criteria, job) {
     confirmed.push(exclusion("voluntary_job", "Metier exclu volontairement.", "secteur", "Ce metier fait partie de vos exclusions."));
   }
   const excludedDomains = toArray(exclusions.domains);
-  const matchedExcludedDomain = excludedDomains.find(domain => domainExclusionMatchesJob(domain, job));
-  if (matchedExcludedDomain) {
-    confirmed.push(exclusion("voluntary_domain", "Domaine exclu volontairement.", "secteur", `Le secteur ${optionLabel(EXCLUDED_DOMAIN_OPTIONS, matchedExcludedDomain)} fait partie de vos exclusions.`));
+  const domainDecisions = excludedDomains.map(domain => evaluateDomainExclusionDecision(domain, job, criteria));
+  const confirmedDomain = domainDecisions.find(decision => decision.status === "confirmed_sector_exclusion");
+  if (confirmedDomain) {
+    confirmed.push({ ...exclusion("voluntary_domain", "Domaine exclu volontairement.", "secteur", `Le secteur ${optionLabel(EXCLUDED_DOMAIN_OPTIONS, confirmedDomain.domainId)} fait partie de vos exclusions.`), sectorDecision: confirmedDomain });
   }
-  const jobSector = getJobSectorProfile(job);
-  const excludedByOrientation = toArray(criteria.excludedSectors).find(sectorId => jobSector.primarySectorId === sectorId && jobSector.confidence >= 0.55);
-  if (excludedByOrientation) {
-    confirmed.push(exclusion("domain_orientation_exclude", "Domaine exclu dans le profil.", "secteur", `Le secteur ${sectorLabel(excludedByOrientation)} est marqué à exclure complètement.`));
+  domainDecisions.filter(decision => ["probable_sector_conflict", "multi_sector_to_review", "unknown_sector_mapping"].includes(decision.status)).forEach(decision => {
+    unknown.push(missing(`job.sector.${decision.domainId}`, "medium", decision.message));
+  });
+  const sectorDecisions = toArray(criteria.excludedSectors).map(sectorId => evaluateSectorExclusionDecision(sectorId, job, criteria));
+  const confirmedSector = sectorDecisions.find(decision => decision.status === "confirmed_sector_exclusion");
+  if (confirmedSector) {
+    confirmed.push({ ...exclusion("domain_orientation_exclude", "Domaine exclu dans le profil.", "secteur", `Le secteur ${sectorLabel(confirmedSector.excludedSectorId)} est marqué à exclure complètement.`), sectorDecision: confirmedSector });
   }
+  sectorDecisions.filter(decision => ["probable_sector_conflict", "multi_sector_to_review", "unknown_sector_mapping"].includes(decision.status)).forEach(decision => {
+    unknown.push(missing(`job.sector.${decision.excludedSectorId}`, "medium", decision.message));
+  });
 
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity !== "excluding") return;
@@ -5870,11 +5922,68 @@ function applyHardExclusions(criteria, job) {
 }
 
 function domainExclusionMatchesJob(domainId, job) {
+  return evaluateDomainExclusionDecision(domainId, job, mapUserProfileToCriteria(App.state.profile)).status === "confirmed_sector_exclusion";
+}
+
+function evaluateDomainExclusionDecision(domainId, job, criteria = {}) {
   const normalizedDomainId = normalizeText(domainId);
   const mapped = toArray(DOMAIN_EXCLUSION_MAP[domainId] || DOMAIN_EXCLUSION_MAP[normalizedDomainId]);
-  if (!mapped.length) return false;
-  const jobSector = getJobSectorProfile(job);
-  return mapped.includes(jobSector.primarySectorId) && jobSector.confidence >= 0.55;
+  if (!mapped.length) return { status: "unknown_sector_mapping", domainId, message: `Domaine ${domainId} : correspondance sectorielle non définie.` };
+  const decisions = mapped.map(sectorId => evaluateSectorExclusionDecision(sectorId, job, criteria));
+  const priority = ["confirmed_sector_exclusion", "multi_sector_to_review", "probable_sector_conflict", "unknown_sector_mapping", "no_sector_conflict"];
+  const selected = [...decisions].sort((a, b) => priority.indexOf(a.status) - priority.indexOf(b.status))[0];
+  return { ...selected, domainId };
+}
+
+function evaluateSectorExclusionDecision(excludedSectorId, job, criteria = {}) {
+  const mapping = getJobSectorProfile(job);
+  const primaryMatch = mapping.primarySectorId === excludedSectorId;
+  const secondaryMatch = toArray(mapping.secondarySectorIds).includes(excludedSectorId);
+  if (mapping.primarySectorId === "unknown" || mapping.sectorMappingStatus === "ambiguous_unusable") {
+    return { status: "unknown_sector_mapping", excludedSectorId, mapping, hardExclusion: false, message: "Secteur métier inconnu : aucune exclusion automatique." };
+  }
+  if (!primaryMatch && !secondaryMatch) {
+    return { status: "no_sector_conflict", excludedSectorId, mapping, hardExclusion: false, message: "Aucun conflit sectoriel détecté." };
+  }
+  const acceptedSectorIds = unique([
+    ...toArray(criteria.heartSectors),
+    ...toArray(criteria.supportSectors),
+    ...toArray(criteria.secondarySectors),
+    ...toArray(criteria.pastSectors),
+    ...toArray(criteria.profileSectors)
+  ]).filter(id => id && !toArray(criteria.excludedSectors).includes(id));
+  const credibleAcceptedSecondary = toArray(mapping.secondarySectorIds).find(id => id !== excludedSectorId && acceptedSectorIds.includes(id));
+  const exactMapping = /_exact$/.test(String(mapping.source || ""));
+  const explicitSpecific = mapping.source === "explicit_or_imported" && mapping.confidence >= 0.85 && !isGenericImportedSectorEvidence(job);
+  const specificEvidence = exactMapping || explicitSpecific;
+  if (primaryMatch && credibleAcceptedSecondary) {
+    return {
+      status: "multi_sector_to_review",
+      excludedSectorId,
+      acceptedSectorId: credibleAcceptedSecondary,
+      mapping,
+      hardExclusion: false,
+      message: `Métier multidomaine : ${sectorLabel(excludedSectorId)} est en conflit, mais ${sectorLabel(credibleAcceptedSecondary)} reste compatible. Vérifier la réalité du poste.`
+    };
+  }
+  if (primaryMatch && specificEvidence && mapping.confidence >= 0.85) {
+    return {
+      status: "confirmed_sector_exclusion",
+      excludedSectorId,
+      mapping,
+      hardExclusion: true,
+      proofLevel: exactMapping ? "exact_mapping" : "explicit_mapping",
+      message: `Exclusion confirmée par un mapping sectoriel spécifique (${sectorLabel(excludedSectorId)}).`
+    };
+  }
+  return {
+    status: "probable_sector_conflict",
+    excludedSectorId,
+    mapping,
+    hardExclusion: false,
+    proofLevel: secondaryMatch ? "secondary_sector" : "broad_or_medium_confidence_mapping",
+    message: `Conflit sectoriel probable avec ${sectorLabel(excludedSectorId)}, sans preuve assez spécifique pour exclure automatiquement.`
+  };
 }
 
 function getJobDomainExclusionIds(job) {
@@ -5963,6 +6072,7 @@ function getJobSectorProfile(job = {}) {
   const shouldUseV2 = Boolean(hasV2Sector && (
     !hasImportedSector ||
     (isStrongRomeSectorMappingV2(v2Mapping) && (
+      (/_exact$/.test(String(v2Mapping.source || "")) && v2Mapping.confidence >= importedConfidence) ||
       importedConfidence < 0.7 ||
       v2Mapping.confidence >= importedConfidence + 0.08 ||
       isGenericImportedSectorEvidence(job)
@@ -6653,6 +6763,10 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   const trainingDuration = resolveAccessTrainingDuration(access, accessPathEvaluation.paths);
   const exactExperience = evaluateExactJobExperience(criteria, job);
   const accessRequiredCredentials = getAccessRequiredCredentialLabels(access);
+  const requiredExams = unique([
+    ...toArray(access.requiredExams),
+    ...accessPathEvaluation.paths.filter(path => path.examRequired).map(path => path.examLabel || path.label)
+  ]);
   const accessOptionalCredentials = getAccessOptionalCredentialLabels(access);
   const requiredCerts = unique([...toArray(job.requiredCertifications), ...accessRequiredCredentials]);
   const recommendedCerts = unique([...toArray(job.recommendedCertifications), ...toArray(access.citedCertifications), ...accessOptionalCredentials]);
@@ -6667,7 +6781,8 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   const accessMaximumLevel = numberOrNull(access.maximumDiplomaLevel) ?? accessLevel;
   const accessRequirementKind = normalizeAccessRequirementKind(access.requirementKind);
   const mandatory = Boolean(isMandatoryAccessRequirement(access) || requiredLevel || requiredCerts.length);
-  const levelFromSummary = mandatory ? accessMinimumLevel : null;
+  const pathEvidenceAvailable = accessPathEvaluation.paths.length > 0;
+  const levelFromSummary = mandatory && !pathEvidenceAvailable ? accessMinimumLevel : null;
   const advisoryLevelFromSummary = !mandatory ? accessMinimumLevel : null;
   const targetLevel = requiredLevel ?? levelFromSummary ?? recommendedLevel ?? advisoryLevelFromSummary ?? accessLevel;
   const evidenceAvailable = Boolean(job.accessConditions?.source && job.accessConditions.source !== "unknown") ||
@@ -6677,7 +6792,6 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     requiredCerts.length > 0 ||
     recommendedCerts.length > 0 ||
     advantageCerts.length > 0;
-  const pathEvidenceAvailable = accessPathEvaluation.paths.length > 0;
   let score = evidenceAvailable || pathEvidenceAvailable ? 62 : 55;
   const reasons = [];
   const cautions = [];
@@ -6686,9 +6800,10 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     score -= criteria.education?.canDoShortTraining ? 22 : 42;
     cautions.push(`Qualification spécifique obligatoire manquante : ${missingRequiredCertifications.join(", ")}.`);
   }
-  if (accessPathEvaluation.best?.eligibilityStatus === "to_verify" || accessPathEvaluation.best?.examStatus === "not_passed_or_unknown") {
+  const leadPath = accessPathEvaluation.best || accessPathEvaluation.leadPathCandidate;
+  if (leadPath?.eligibilityStatus === "to_verify" || leadPath?.examStatus === "not_passed_or_unknown") {
     score = Math.min(score, 52);
-    cautions.push(`Voie potentielle à vérifier : ${accessPathEvaluation.best.label}.`);
+    cautions.push(`Voie candidate à vérifier : ${leadPath.label}. ${leadPath.priorityReason || "Conditions restant à confirmer."}`);
   }
   if (access.contradictoryEvidence || accessRequirementKind === "conflicting") {
     score -= 8;
@@ -6753,6 +6868,8 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     mandatory,
     specificCredentialRequired: Boolean(access.specificCredentialRequired || accessRequiredCredentials.length),
     requiredCredentialLabels: accessRequiredCredentials,
+    requiredExams,
+    examStatus: requiredExams.length ? "not_passed_or_unknown" : "not_required",
     optionalCredentialLabels: accessOptionalCredentials,
     missingRequiredCertifications,
     advantageCertifications: advantageCerts,
@@ -6760,6 +6877,11 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     exactExperience,
     accessPaths: accessPathEvaluation.paths,
     bestAccessPath: accessPathEvaluation.best,
+    leadPathCandidate: accessPathEvaluation.leadPathCandidate,
+    pathsToVerify: accessPathEvaluation.pathsToVerify,
+    missingRequirements: unique(accessPathEvaluation.paths.flatMap(path => toArray(path.missingRequirements))),
+    unknownRequirements: unique(accessPathEvaluation.paths.flatMap(path => toArray(path.unknownRequirements))),
+    practiceStatus: accessPathEvaluation.paths.some(path => path.practiceStatus === "accessible_now") ? "accessible_now" : "not_accessible_now",
     trainingDuration,
     reasons,
     cautions
@@ -6784,8 +6906,11 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
       pathId: path.pathId || path.id,
       trainingDuration: duration,
       examStatus: path.examRequired ? "not_passed_or_unknown" : "not_required",
+      requiredExams: path.examRequired ? [path.examLabel || path.label] : [],
       practiceStatus: "not_accessible_now",
       missingRequirements: [],
+      unknownRequirements: path.examRequired ? ["Résultat du concours non renseigné"] : [],
+      remainingEffortScore: path.examRequired ? 1 : 0,
       nextAction: "Vérifier les conditions de la voie auprès de la source officielle"
     };
     if ((from && year < from) || (through && year > through)) return {
@@ -6794,6 +6919,8 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
       eligibilityStatus: "expired",
       reasons: ["Voie hors de sa période de validité."],
       missingRequirements: ["Période de validité de la voie"],
+      unknownRequirements: [],
+      remainingEffortScore: 99,
       nextAction: "Choisir une voie ouverte pour la session visée"
     };
     const missingCredentials = toArray(path.requiredCredentialLabels).filter(label => !hasCertificationEquivalent(held, label));
@@ -6805,6 +6932,8 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
         eligibilityStatus: duration.category === "unknown" ? "to_verify" : "not_eligible_currently",
         missingCredentials,
         missingRequirements: missingCredentials,
+        unknownRequirements: duration.category === "unknown" ? ["Durée du parcours de qualification"] : [],
+        remainingEffortScore: duration.category === "long" ? 8 : duration.category === "short" ? 4 : 6,
         reasons: [duration.category === "unknown" ? "Qualification obligatoire manquante ; durée à vérifier." : "Qualification obligatoire manquante."],
         nextAction: duration.category === "unknown" ? "Vérifier la durée et la voie d’obtention de la qualification" : "Obtenir la qualification obligatoire"
       };
@@ -6816,6 +6945,7 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
         eligibilityStatus: "not_eligible",
         reasons: ["Durée d’expérience déclarée insuffisante."],
         missingRequirements: [`${path.requiredExperienceYears} années d’expérience éligible`],
+        remainingEffortScore: 10,
         nextAction: "Vérifier la durée d’expérience exigée pour la session visée"
       };
       if (path.requiredExperienceScope) return {
@@ -6824,6 +6954,9 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
         eligibilityStatus: "to_verify",
         reasons: ["La durée est plausible, mais la nature contractuelle éligible n’est pas établie."],
         missingRequirements: ["Nature des activités professionnelles et contrats à vérifier"],
+        unknownRequirements: unique([...toArray(base.unknownRequirements), "Nature des activités et contrats de droit privé"]),
+        remainingEffortScore: 2,
+        priorityReason: "Durée d’expérience plausible ; seule la nature contractuelle reste à confirmer avant le concours.",
         nextAction: "Vérifier l’éligibilité des activités et contrats auprès de l’organisateur du concours"
       };
     }
@@ -6836,6 +6969,9 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
         eligibilityStatus: duration.category === "unknown" ? "to_verify" : "not_eligible_currently",
         reasons: ["Niveau de diplôme restant à acquérir ou équivalence à vérifier."],
         missingRequirements: [`Niveau ${requiredLevel} ou équivalence`],
+        unknownRequirements: unique([...toArray(base.unknownRequirements), duration.category === "unknown" ? "Durée du parcours vers le niveau requis" : ""]),
+        remainingEffortScore: 4 + Math.max(0, requiredLevel - level) * 2,
+        priorityReason: `Niveau ${requiredLevel} ou équivalence restant à obtenir ou confirmer.`,
         nextAction: duration.category === "unknown" ? "Vérifier la durée de la formation ou l’équivalence possible" : "Acquérir le niveau ou obtenir une équivalence reconnue"
       };
     }
@@ -6844,7 +6980,10 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
       status: "eligibility_to_verify",
       eligibilityStatus: "eligible",
       reasons: ["Inscription potentiellement possible, mais réussite au concours non établie."],
-      missingRequirements: ["Réussite au concours"],
+      missingRequirements: [],
+      unknownRequirements: ["Résultat du concours non renseigné"],
+      remainingEffortScore: 1,
+      priorityReason: "Conditions d’éligibilité plausibles ; concours obligatoire restant à réussir ou à renseigner.",
       nextAction: "Vérifier l’inscription à la session visée puis réussir le concours"
     };
     return {
@@ -6853,12 +6992,19 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
       eligibilityStatus: "eligible",
       examStatus: "not_required",
       practiceStatus: "accessible_now",
+      remainingEffortScore: 0,
       reasons: ["Conditions structurées satisfaites par les données déclarées."],
       nextAction: "Confirmer les conditions auprès de l’employeur ou de la source officielle"
     };
   });
-  const rank = { eligible_now: 7, eligibility_to_verify: 6, eligible_after_short_step: 5, eligible_after_long_step: 4, not_eligible: 2, expired_or_not_yet_open: 1 };
-  return { paths, best: [...paths].sort((a, b) => (rank[b.status] || 0) - (rank[a.status] || 0))[0] || null };
+  const best = paths.find(path => path.status === "eligible_now" && path.practiceStatus === "accessible_now") || null;
+  const pathsToVerify = paths.filter(path => path.status !== "eligible_now" && path.status !== "expired_or_not_yet_open");
+  const leadPathCandidate = best ? null : [...pathsToVerify].sort((a, b) =>
+    Number(a.remainingEffortScore ?? 99) - Number(b.remainingEffortScore ?? 99) ||
+    Number(b.confidence || 0) - Number(a.confidence || 0) ||
+    String(a.label || "").localeCompare(String(b.label || ""))
+  )[0] || null;
+  return { paths, best, leadPathCandidate, pathsToVerify };
 }
 
 function normalizeAccessRequirementKind(kind = "") {
@@ -6945,7 +7091,11 @@ function calculateTrainingScore(criteria, job) {
     currentDiplomaLevel: Number(criteria.education.highestLevel || 0),
     requiredDiplomaLevel: numberOrNull(job.requiredDiplomaLevel),
     recommendedDiplomaLevel: numberOrNull(job.recommendedDiplomaLevel),
-    accessFeasibility
+    accessFeasibility,
+    requiredExams: toArray(accessFeasibility.requiredExams),
+    examStatus: accessFeasibility.examStatus || "not_required",
+    missingRequirements: toArray(accessFeasibility.missingRequirements),
+    unknownRequirements: toArray(accessFeasibility.unknownRequirements)
   };
   const knownFamilyBonus = jobMatchesKnownTrainingFamily(criteria, job) ? 2 : 0;
   const finalize = result => {
@@ -6976,6 +7126,26 @@ function calculateTrainingScore(criteria, job) {
     if (duration.category === "long") return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "long", feasibility: "specific_credential_long_documented", trainingDuration: duration, evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
     if (duration.category === "short") return finalize({ score: clamp(11 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "short", feasibility: "specific_credential_short_documented", trainingDuration: duration, evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
     return finalize({ score: clamp(7 + knownFamilyBonus, 0, 20), missingData, missingCertifications, statusHint: "access_to_verify", feasibility: "specific_credential_duration_unknown", trainingDuration: duration, evidenceAvailable: true, knownTrainingFamily: knownFamilyBonus > 0, ...base });
+  }
+
+  const unresolvedExamPaths = toArray(accessFeasibility.accessPaths).filter(path => path.examRequired && path.examStatus === "not_passed_or_unknown");
+  if (unresolvedExamPaths.length) {
+    missingData.push(missing("job.accessPaths.requiredExams", "high", "Concours requis ; réussite non renseignée."));
+    if (normalizeTrainingDuration(accessFeasibility.trainingDuration).category === "unknown") {
+      missingData.push(missing("job.accessSummary.trainingDuration", "medium", "Durée de formation non renseignée."));
+    }
+    return finalize({
+      score: clamp(Math.min(10, Math.round(accessFeasibility.score / 5)) + knownFamilyBonus, 0, 20),
+      missingData,
+      missingCertifications: [],
+      missingExams: unique(unresolvedExamPaths.flatMap(path => toArray(path.requiredExams))),
+      statusHint: "access_to_verify",
+      feasibility: "exam_and_path_eligibility_to_verify",
+      trainingDuration: normalizeTrainingDuration(accessFeasibility.trainingDuration),
+      evidenceAvailable: true,
+      knownTrainingFamily: knownFamilyBonus > 0,
+      ...base
+    });
   }
 
   const userLevel = Number(criteria.education.highestLevel || 0);
@@ -7021,27 +7191,36 @@ function jobMatchesKnownTrainingFamily(criteria, job) {
 }
 
 function calculateConstraintScore(criteria, job) {
-  let score = 25;
   let riskScore = 0;
-  let compatibilityBonus = 0;
   let activeCount = 0;
   let unknownCount = 0;
+  let confirmedCompatibleCount = 0;
+  let confirmedIncompatibleCount = 0;
+  let possibleRiskCount = 0;
   const missingData = [];
   const warnings = [];
   const uncertainties = [];
   const matchedConstraints = [];
+  const constraintEvaluations = [];
+  const effectiveCompatibility = [];
   const officialSummary = getOfficialConstraintSummary(job);
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity === "open") return;
     activeCount += 1;
     const compatibility = evaluateConstraintAgainstJob(value, job, criteria);
+    const confidence = clamp(Number(compatibility.confidence || 0), 0, 1);
+    const knownCompatibility = constraintKnownCompatibility(compatibility.status, severity, value, criteria, job);
+    const effective = 50 + confidence * (knownCompatibility - 50);
+    constraintEvaluations.push({ ...compatibility, severity, knownCompatibility, effectiveCompatibility: Math.round(effective) });
+    effectiveCompatibility.push(effective);
     if (compatibility.status === "unknown") {
       unknownCount += 1;
-      missingData.push(missing(`job.${value}`, "medium", `Contrainte a verifier : ${compatibility.label}.`));
+      missingData.push(missing(`job.${value}`, "medium", value === "longTraining" ? "Durée de formation non renseignée." : `${compatibility.label} : information inconnue.`));
       uncertainties.push(compatibility.message || `${compatibility.label} : information non renseignée.`);
       return;
     }
     if (compatibility.status === "possible_risk") {
+      possibleRiskCount += 1;
       missingData.push(missing(`job.${value}`, "low", `Risque possible à vérifier : ${compatibility.label}.`));
       uncertainties.push(compatibility.message || `${compatibility.label} : hypothèse à vérifier.`);
       if (severity === "conditional") riskScore += 1;
@@ -7050,6 +7229,7 @@ function calculateConstraintScore(criteria, job) {
       return;
     }
     if (compatibility.status === "confirmed_incompatible") {
+      confirmedIncompatibleCount += 1;
       // La faisabilité formation porte déjà l’impact d’une formation longue.
       // La répéter ici fausserait le classement par une double pénalisation.
       if (value !== "longTraining") {
@@ -7057,33 +7237,48 @@ function calculateConstraintScore(criteria, job) {
         if (severity === "conditional") riskScore += isTerrainOrManualProfile(criteria, job) ? 2 : 5;
         if (severity === "excluding") riskScore += 25;
       }
-      warnings.push(compatibility.label);
-    } else {
-      compatibilityBonus += 0;
-      matchedConstraints.push(compatibility.label);
+      warnings.push(compatibility.message || compatibility.label);
+    } else if (compatibility.status === "confirmed_compatible") {
+      confirmedCompatibleCount += 1;
+      matchedConstraints.push(compatibility.message || confirmedConstraintCompatibilityLabel(value));
     }
   });
-  score = score - riskScore;
-  const officialConfidence = Number(officialSummary.confidence ?? 0);
+  const compatibilityPercent = effectiveCompatibility.length ? average(effectiveCompatibility) : 50;
+  const score = Math.round(clamp(compatibilityPercent / 4, 0, 25));
   const constraintEvidenceConfidence = activeCount
-    ? clamp((activeCount - unknownCount) / activeCount * 0.7 + officialConfidence * 0.3, 0.2, 0.95)
-    : clamp(officialConfidence || 0.45, 0.25, 0.85);
+    ? average(constraintEvaluations.map(item => item.status === "unknown" ? 0 : item.confidence))
+    : 0;
   return {
-    score: Math.round(clamp(score, 0, 25)),
+    score,
     missingData,
     warnings,
     confirmedWarnings: warnings,
     uncertainties,
     matchedConstraints,
     riskScore,
-    compatibilityBonus,
+    compatibilityBonus: 0,
     activeCount,
     unknownCount,
+    confirmedCompatibleCount,
+    confirmedIncompatibleCount,
+    possibleRiskCount,
+    constraintEvaluations,
     officialConstraintSummary: officialSummary,
-    constraintCompatibilityScore: Math.round(clamp(score, 0, 25)),
+    constraintCompatibilityScore: score,
     constraintEvidenceConfidence,
     confidencePenalty: unknownCount * 0.04
   };
+}
+
+function constraintKnownCompatibility(status, severity, value, criteria, job) {
+  if (status === "confirmed_compatible") return 100;
+  if (status === "unknown") return 50;
+  if (status === "possible_risk") return severity === "excluding" ? 35 : severity === "avoid" ? 45 : 55;
+  if (status !== "confirmed_incompatible") return 50;
+  if (value === "longTraining") return 50;
+  if (severity === "excluding") return 0;
+  if (severity === "avoid") return 30;
+  return isTerrainOrManualProfile(criteria, job) ? 65 : 55;
 }
 
 function isTerrainOrManualProfile(criteria, job = {}) {
@@ -7712,6 +7907,7 @@ function buildCalibrationAudit(results = {}) {
   const scoreSpread = scores.length ? Math.round(Math.max(...scores) - Math.min(...scores)) : 0;
   const top5FilledByFallback = top5.filter(result => ["fallback_useful", "exploratory"].includes(result.top5SelectionReason)).length;
   const profilesWarnings = evaluateCurrentTestProfileExpectations(results);
+  const sectorQuality = buildSectorQualityAudit(complete, highExcluded);
   const warnings = [
     highExcluded.length ? `${highExcluded.length} métier(s) exclus auraient une pertinence élevée si la contrainte changeait.` : "",
     highScoreWithConstraintWarnings.length ? `${highScoreWithConstraintWarnings.length} métier(s) montent haut malgré un score contraintes réduit.` : "",
@@ -7741,8 +7937,59 @@ function buildCalibrationAudit(results = {}) {
     highExcluded,
     highScoreWithConstraintWarnings,
     highScoreLowConfidence,
+    sectorQuality,
     warnings,
     status: warnings.length ? "to_review" : "ok"
+  };
+}
+
+function buildSectorQualityAudit(results = [], highExcluded = []) {
+  const mappings = toArray(results).map(result => ({ result, mapping: getJobSectorProfile(result.job || {}) }));
+  const sourceCounts = countBy(mappings.map(({ mapping }) => {
+    const source = String(mapping.source || "unknown");
+    if (/_exact$/.test(source)) return "exact";
+    if (/_prefix[34]$/.test(source) || source === "generated_rome_domain_mapping") return "prefix";
+    if (/heuristic/.test(source)) return "heuristic";
+    return mapping.confidence < 0.65 ? "weak" : "other";
+  }));
+  const hardSectorExclusions = toArray(results).flatMap(result => toArray(result.exclusionReasons)
+    .filter(reason => reason.category === "secteur" || reason.sectorDecision)
+    .map(reason => ({
+      jobId: result.jobId,
+      romeCode: result.romeCode,
+      title: result.title,
+      decision: reason.sectorDecision?.status || "legacy_or_voluntary_job",
+      proofLevel: reason.sectorDecision?.proofLevel || "explicit_user_job_exclusion",
+      justification: reason.sectorDecision?.message || reason.message
+    })));
+  const multiSectorConflicts = mappings.filter(({ mapping }) => mapping.secondarySectorIds.length > 0);
+  const truthExpectations = {
+    L1509: ["culture_communication", "industrie_production"],
+    L1308: ["culture_communication", "administratif_support"],
+    D1203: ["sante_soin", "commerce_vente"],
+    H1211: ["sante_soin", "industrie_production"],
+    M1716: ["culture_communication", "numerique"],
+    M1305: ["numerique", "industrie_production"],
+    F1105: ["nature_agriculture", "batiment_construction"],
+    H2206: ["industrie_production", "batiment_construction"]
+  };
+  const sectorTruthCases = Object.entries(truthExpectations).map(([romeCode, expected]) => {
+    const row = mappings.find(({ result }) => result.romeCode === romeCode);
+    const actual = row?.mapping?.allSectorIds || [];
+    const failures = row ? expected.filter(id => !actual.includes(id)) : ["missing_job"];
+    const secondaryExclusion = row ? evaluateSectorExclusionDecision(expected[1], row.result.job, { excludedSectors: [expected[1]], profileSectors: [expected[0]] }) : null;
+    if (secondaryExclusion?.hardExclusion) failures.push("secondary_sector_hard_excluded");
+    return { romeCode, expected, actual, exclusionDecision: secondaryExclusion?.status || "not_tested", status: failures.length ? "failed" : "ok", failures };
+  });
+  return {
+    mappingCounts: sourceCounts,
+    hardExclusionsCount: hardSectorExclusions.length,
+    hardExclusionsByProof: countBy(hardSectorExclusions.map(item => item.proofLevel)),
+    hardSectorExclusions,
+    multiSectorConflictsCount: multiSectorConflicts.length,
+    highRelevanceExclusions: toArray(highExcluded).map(item => ({ ...item, justification: item.reasons })),
+    sectorTruthCases,
+    truthFailures: sectorTruthCases.filter(item => item.status === "failed")
   };
 }
 
@@ -8925,13 +9172,18 @@ function getAccessDetails(job = {}) {
 
 function renderAccessPaths(job = {}) {
   const rawPaths = toArray(job.accessPaths || job.accessSummary?.accessPaths);
-  const paths = rawPaths.length ? evaluateAccessPaths(mapUserProfileToCriteria(App.state.profile), rawPaths).paths : [];
+  const evaluation = rawPaths.length ? evaluateAccessPaths(mapUserProfileToCriteria(App.state.profile), rawPaths) : { paths: [], leadPathCandidate: null };
+  const paths = evaluation.paths;
   if (!paths.length) return "";
   return `<div class="reason-box"><strong>Voies d’accès distinctes</strong><ul class="compact-list">${paths.map(path => {
     const validity = path.validFrom ? ` · sessions ${h(path.validFrom)}${path.validThrough ? ` à ${h(path.validThrough)}` : " et suivantes, à revérifier"}` : "";
     const eligibility = { eligible: "éligibilité plausible", not_eligible: "non éligible avec les données déclarées", not_eligible_currently: "condition manquante", to_verify: "éligibilité à vérifier", expired: "voie hors période" }[path.eligibilityStatus] || "éligibilité à vérifier";
     const practice = path.practiceStatus === "accessible_now" ? "exercice possible après confirmation" : "exercice non immédiat";
-    return `<li><strong>${h(path.label)}</strong>${validity}${path.examRequired ? " · concours requis" : ""}<br><span class="field-help">${h(eligibility)} · ${h(path.examStatus === "not_passed_or_unknown" ? "concours non réussi ou non renseigné" : "pas de concours requis")} · ${h(practice)} · ${h(trainingDurationUserLabel(path.trainingDuration))}. ${h(path.nextAction || "")}</span></li>`;
+    const diploma = path.minimumDiplomaLevel == null ? "aucun niveau de diplôme imposé par cette voie" : `niveau de diplôme ${path.minimumDiplomaLevel} requis ou équivalence`;
+    const experience = path.requiredExperienceYears ? `${path.requiredExperienceYears} années d’activités professionnelles éligibles` : "aucune durée d’expérience imposée";
+    const contract = path.requiredExperienceScope === "private_contract" ? "nature des contrats de droit privé à confirmer" : "nature de contrat non spécifique";
+    const candidate = evaluation.leadPathCandidate?.pathId === path.pathId ? " · voie candidate à vérifier" : "";
+    return `<li><strong>${h(path.label)}</strong>${validity}${path.examRequired ? " · concours requis" : ""}${candidate}<br><span class="field-help">${h(diploma)} · ${h(experience)} · ${h(contract)}.<br>${h(eligibility)} · ${h(path.examStatus === "not_passed_or_unknown" ? "concours requis ; réussite non renseignée" : "pas de concours requis")} · ${h(practice)} · ${h(trainingDurationUserLabel(path.trainingDuration))}. ${h(path.priorityReason || path.nextAction || "")}</span></li>`;
   }).join("")}</ul><p class="field-help">Les règles d’accès évoluent : vérifier la session et la situation individuelles auprès de la source officielle.</p></div>`;
 }
 
@@ -10400,7 +10652,7 @@ function renderDataPage() {
         <select data-corpus-mode>
           <option value="auto" ${App.state.corpusMode === "auto" ? "selected" : ""}>Automatique</option>
           <option value="generated_rome" ${App.state.corpusMode === "generated_rome" ? "selected" : ""}>ROME généré</option>
-          <option value="generated_rome_500_experimental" ${App.state.corpusMode === "generated_rome_500_experimental" ? "selected" : ""}>ROME 500 expérimental</option>
+          <option value="generated_rome_500_candidate" ${["generated_rome_500_candidate", "generated_rome_500_experimental"].includes(App.state.corpusMode) ? "selected" : ""}>ROME 500 candidat consolidé</option>
           <option value="curated" ${App.state.corpusMode === "curated" ? "selected" : ""}>Corpus local enrichi estimatif</option>
           <option value="sample" ${App.state.corpusMode === "sample" ? "selected" : ""}>Sample minimal</option>
         </select>
@@ -10526,7 +10778,7 @@ function renderDataPage() {
       <h2>Actions données</h2>
       <div class="button-row">
         <button class="primary-button" type="button" data-action="load-generated-rome">Charger les données générées ROME 72</button>
-        <button class="secondary-button" type="button" data-action="load-generated-rome500">Charger ROME 500 expérimental</button>
+        <button class="secondary-button" type="button" data-action="load-generated-rome500">Charger ROME 500 candidat consolidé</button>
         <button class="primary-button" type="button" data-action="load-curated-corpus">Charger le corpus local enrichi</button>
         <button class="secondary-button" type="button" data-import-type="corpus">Importer un corpus JSON</button>
         <button class="secondary-button" type="button" data-action="export-corpus">Exporter corpus compact</button>
@@ -10666,12 +10918,12 @@ async function setCorpusMode(mode) {
     await loadGeneratedRomeDataset();
     return;
   }
-  if (mode === "generated_rome_500_experimental") {
+  if (["generated_rome_500_candidate", "generated_rome_500_experimental"].includes(mode)) {
     await loadGeneratedRomeDataset({
       basePath: "data/generated/rome500-experimental/",
       marketBasePath: "data/generated/market/",
       label: "creations/boussolepro/data/generated/rome500-experimental",
-      corpusMode: "generated_rome_500_experimental"
+      corpusMode: "generated_rome_500_candidate"
     });
     return;
   }
@@ -10777,6 +11029,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     await waitForUiFrame();
     const normalizationStartedAt = nowMs();
     App.state.dataset = mergeGeneratedDatasetIntoApp(generated, { replace });
+    invalidateDatasetIndexes();
     recordPerformanceMetric("normalizationMs", normalizationStartedAt);
     markDatasetAsOfficialRome(App.state.dataset, generated.manifest);
     App.state.corpusMode = corpusMode;
@@ -10948,12 +11201,12 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
   const merged = {
     ...base,
     datasetName: manifest.datasetName || "Boussole Pro - données ROME générées",
-    datasetVersion: manifest.datasetVersion || `rome-generated-${dateStamp()}`,
+    datasetVersion: canonicalDatasetVersion(manifest.datasetVersion || `rome-generated-${dateStamp()}`),
     sourceDate: manifest.sourceDate || dateStamp(),
     importedAt,
     provenance: "generated_rome",
     confidence: 0.75,
-    manifest: { ...(options.replace ? {} : (base.manifest || {})), ...manifest, provenance: "generated_rome", importedAt },
+    manifest: { ...(options.replace ? {} : (base.manifest || {})), ...manifest, datasetVersion: canonicalDatasetVersion(manifest.datasetVersion), datasetVersionAliases: unique([...toArray(manifest.datasetVersionAliases), ...Object.keys(DATASET_VERSION_ALIASES)]), provenance: "generated_rome", importedAt },
     ...collectionPatch
   };
   merged.qualityReports = buildGeneratedQualityReports(generated, merged);
@@ -12332,7 +12585,7 @@ function handleActionClick(event) {
     basePath: "data/generated/rome500-experimental/",
     marketBasePath: "data/generated/market/",
     label: "creations/boussolepro/data/generated/rome500-experimental",
-    corpusMode: "generated_rome_500_experimental"
+    corpusMode: "generated_rome_500_candidate"
   });
   if (action === "clear-api-test") clearApiTestConfig();
   if (action === "test-ft-token") testFranceTravailToken();
@@ -13116,9 +13369,11 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   const schedule = job.scheduleConstraints || {};
   const mobility = job.mobilityConstraints || {};
   const labels = Object.fromEntries(CONSTRAINT_OPTIONS.map(item => [item.value, item.label]));
-  const base = { label: labels[value] || value, category: "constraint", status: "compatible", message: "" };
+  const base = { label: labels[value] || value, preferenceId: value, category: "constraint", status: "unknown", message: "", source: "unknown", confidence: 0, evidenceLevel: "unknown" };
+  const official = resolveOfficialConstraintEvidence(value, job, base);
+  if (official) return official;
   if (hasExclusionHint(job, value)) {
-    return { ...base, status: "confirmed_incompatible", category: "estimation", message: "Signal estimatif local à vérifier pour ce métier." };
+    return { ...base, status: "possible_risk", category: "estimation", message: "Risque possible selon une règle locale ; à vérifier selon le poste.", source: "local_exclusion_hint", confidence: 0.45, evidenceLevel: "computed_medium_confidence" };
   }
   if (value === "nightWork") return scheduleStatus(schedule.nightWork, schedule, base, "horaire", "Ce metier semble impliquer du travail de nuit.");
   if (value === "weekendWork") return scheduleStatus(schedule.weekendWork, schedule, base, "horaire", "Ce metier semble impliquer du travail le week-end.");
@@ -13128,20 +13383,20 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   if (value === "publicContact") {
     if (isGeneratedRomeJob(job) && !toArray(job.workContexts).length) return { ...base, status: "unknown", category: "relationnel", message: "Contextes officiels non reliés : contact public non conclu." };
     if (job.publicContactLevel === "unknown") return { ...base, status: "unknown", category: "relationnel", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(["medium", "high"].includes(job.publicContactLevel), { source: job.fieldSources?.publicContactLevel || "computed_medium_confidence", confidence: isGeneratedRomeJob(job) ? 0.35 : 0.6 }, base, "relationnel", "Ce metier implique un contact public notable.");
+    return levelStatus(["medium", "high"].includes(job.publicContactLevel), { source: job.fieldSources?.publicContactLevel || "computed_medium_confidence", confidence: isGeneratedRomeJob(job) ? 0.35 : 0.6 }, base, "relationnel", "Ce metier implique un contact public notable.", { explicitNegative: ["none", "low"].includes(job.publicContactLevel) });
   }
   if (value === "travel") {
     if (!mobility.source || mobility.source === "unknown" || mobility.travelFrequency === "unknown") return { ...base, status: "unknown", category: "mobilite", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(["medium", "high"].includes(mobility.travelFrequency), mobility, base, "mobilite", "Ce metier semble demander des deplacements reguliers.");
+    return levelStatus(["medium", "high"].includes(mobility.travelFrequency), mobility, base, "mobilite", "Ce metier semble demander des deplacements reguliers.", { explicitNegative: ["none", "low"].includes(mobility.travelFrequency) });
   }
   if (value === "driverLicenseRequired") {
     if (!mobility.source || mobility.source === "unknown") return { ...base, status: "unknown", category: "permis", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), mobility, base, "permis", "Ce metier semble demander le permis B, absent du profil.");
+    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), mobility, base, "permis", "Ce metier semble demander le permis B, absent du profil.", { explicitNegative: mobility.driverLicenseRequired === false });
   }
   if (value === "longTraining") {
     const duration = resolveAccessTrainingDuration(job.accessSummary || {}, job.accessPaths || job.accessSummary?.accessPaths);
     if (duration.category === "unknown") return { ...base, status: "unknown", category: "formation", message: "Durée de formation non renseignée." };
-    return levelStatus(duration.category === "long", { source: duration.sourceRefs.length ? "official" : "unknown", confidence: duration.confidence }, base, "formation", "Cette piste demande une formation longue documentée.");
+    return levelStatus(duration.category === "long", { source: duration.sourceRefs.length ? "official" : "unknown", confidence: duration.confidence }, base, "formation", "Cette piste demande une formation longue documentée.", { explicitNegative: ["none", "short", "intermediate"].includes(duration.category) });
   }
   if (value === "screenWork") {
     const hasScreenSignal = physicalTags.includes("screen") || job.workContexts.includes("ctx-office") || ["high", "partial"].includes(job.remoteCompatibility);
@@ -13155,6 +13410,66 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   return { ...base, status: "unknown", message: "Donnee non disponible dans le corpus." };
 }
 
+const OFFICIAL_CONSTRAINT_TARGETS = Object.freeze({
+  nightWork: ["schedule.nightWork"],
+  weekendWork: ["schedule.weekendWork"],
+  heavyLoad: ["physical.heavyLoad"],
+  standing: ["physical.prolongedStanding"],
+  noise: ["environment.noise"],
+  publicContact: ["publicContact"],
+  travel: ["mobility.professionalTravel"],
+  driverLicenseRequired: ["mobility.driverLicenseRequired"],
+  screenWork: ["physical.screenWork", "environment.screenWork"]
+});
+
+function resolveOfficialConstraintEvidence(value, job, base) {
+  const targets = OFFICIAL_CONSTRAINT_TARGETS[value] || [];
+  if (!targets.length) return null;
+  const summary = getOfficialConstraintSummary(job);
+  const signal = toArray(summary.confirmedSignals).find(item => targets.includes(item.target));
+  if (!signal) return null;
+  const confidence = clamp(Number(signal.confidence ?? summary.confidence ?? 0.8), 0, 1);
+  const source = summary.source || "official_constraint_summary";
+  const normalizedValue = normalizeText(String(signal.value));
+  const explicitlyNegative = signal.value === false || ["false", "none", "never", "not_required", "absent"].includes(normalizedValue);
+  if (explicitlyNegative && confidence >= 0.7) {
+    return { ...base, status: "confirmed_compatible", category: constraintCategory(value), message: confirmedConstraintCompatibilityLabel(value), source, confidence, evidenceLevel: "official", evidence: signal };
+  }
+  const contextual = ["possible", "frequent_or_possible", "contextual", "sometimes"].includes(normalizedValue) || signal.contextual === true;
+  if (contextual) {
+    return { ...base, status: "possible_risk", category: constraintCategory(value), message: `${signal.label || base.label} : risque possible selon les postes.`, source, confidence, evidenceLevel: "official_context", evidence: signal };
+  }
+  if (confidence >= 0.7) {
+    return { ...base, status: "confirmed_incompatible", category: constraintCategory(value), message: `Contrainte confirmée par un contexte ROME officiel : ${signal.label || base.label}.`, source, confidence, evidenceLevel: "official", evidence: signal };
+  }
+  return { ...base, status: "possible_risk", category: constraintCategory(value), message: `${signal.label || base.label} : risque possible, confiance encore moyenne.`, source, confidence, evidenceLevel: "computed_medium_confidence", evidence: signal };
+}
+
+function constraintCategory(value) {
+  if (["nightWork", "weekendWork"].includes(value)) return "horaire";
+  if (["heavyLoad", "standing"].includes(value)) return "intensite physique";
+  if (["noise", "screenWork"].includes(value)) return "environnement";
+  if (value === "travel") return "mobilite";
+  if (value === "driverLicenseRequired") return "permis";
+  if (value === "publicContact") return "relationnel";
+  return "constraint";
+}
+
+function confirmedConstraintCompatibilityLabel(value) {
+  return {
+    driverLicenseRequired: "Aucune obligation de permis confirmée dans les données disponibles",
+    heavyLoad: "Aucun port de charges important confirmé",
+    noise: "Aucun bruit important confirmé",
+    nightWork: "Aucun travail de nuit confirmé",
+    weekendWork: "Aucun travail le week-end confirmé",
+    standing: "Aucune station debout prolongée confirmée",
+    publicContact: "Aucun contact public important confirmé",
+    travel: "Aucun déplacement professionnel régulier confirmé",
+    screenWork: "Aucun travail prolongé sur écran confirmé",
+    longTraining: "Aucune formation longue documentée"
+  }[value] || "Compatibilité confirmée par une donnée explicite";
+}
+
 function hasExclusionHint(job, value) {
   const cache = getJobDerivedCache(job);
   if (!cache.exclusionHints) cache.exclusionHints = new Set(toArray(job.exclusionHints));
@@ -13165,15 +13480,15 @@ function scheduleStatus(value, source, base, category, message) {
   if (!value || value === "unknown") return { ...base, status: "unknown", category };
   if (["required", "frequent"].includes(value)) return statusFromEvidence(true, source, base, category, message);
   if (value === "possible") return statusFromEvidence(true, { ...source, confidence: Math.min(Number(source?.confidence || 0.45), 0.55) }, base, category, `${message} selon les postes.`);
-  return { ...base, status: "compatible", category };
+  return statusFromEvidence(false, source, base, category, message, { explicitNegative: ["unlikely", "never", "none"].includes(value) });
 }
 
 function tagStatus(condition, base, category, message) {
   return condition ? { ...base, status: "confirmed_incompatible", category, message } : { ...base, status: "compatible", category };
 }
 
-function levelStatus(condition, source, base, category, message) {
-  return statusFromEvidence(condition, source, base, category, message);
+function levelStatus(condition, source, base, category, message, options = {}) {
+  return statusFromEvidence(condition, source, base, category, message, options);
 }
 
 function physicalStatus(condition, source, base, category, message) {
@@ -13182,12 +13497,19 @@ function physicalStatus(condition, source, base, category, message) {
   return statusFromEvidence(condition, source, base, category, message);
 }
 
-function statusFromEvidence(condition, source, base, category, message) {
-  if (!condition) return { ...base, status: "compatible", category };
+function statusFromEvidence(condition, source, base, category, message, options = {}) {
   const evidenceLevel = constraintEvidenceLevel(source);
-  if (evidenceLevel === "official" || evidenceLevel === "high_confidence_mapping") return { ...base, status: "confirmed_incompatible", category, message, evidenceLevel };
-  if (evidenceLevel === "computed_medium_confidence") return { ...base, status: "possible_risk", category, message: `${message} À vérifier : preuve encore partielle.`, evidenceLevel };
-  return { ...base, status: "unknown", category, message: "Information insuffisamment fiable dans le corpus.", evidenceLevel };
+  const confidence = clamp(Number(source?.confidence ?? 0), 0, 1);
+  const sourceName = String(source?.source || source || "unknown");
+  if (!condition) {
+    if (options.explicitNegative && (evidenceLevel === "official" || evidenceLevel === "high_confidence_mapping")) {
+      return { ...base, status: "confirmed_compatible", category, message: confirmedConstraintCompatibilityLabel(base.preferenceId), source: sourceName, confidence, evidenceLevel };
+    }
+    return { ...base, status: "unknown", category, message: `${base.label} : information inconnue.`, source: sourceName, confidence: 0, evidenceLevel: "unknown" };
+  }
+  if (evidenceLevel === "official" || evidenceLevel === "high_confidence_mapping") return { ...base, status: "confirmed_incompatible", category, message, source: sourceName, confidence, evidenceLevel };
+  if (evidenceLevel === "computed_medium_confidence") return { ...base, status: "possible_risk", category, message: `${message} À vérifier : preuve encore partielle.`, source: sourceName, confidence, evidenceLevel };
+  return { ...base, status: "unknown", category, message: "Information insuffisamment fiable dans le corpus.", source: sourceName, confidence: 0, evidenceLevel };
 }
 
 function constraintEvidenceLevel(source = {}) {
@@ -13726,7 +14048,9 @@ function normalizePerformanceMetricsForReport(metrics = {}) {
     const measured = Number.isFinite(raw) && raw > 0;
     return [key, { value: measured ? raw : null, measurementStatus: measured ? "measured" : "not_measured" }];
   }).concat([
-    ["resultCardsRendered", { value: Number.isFinite(Number(metrics.resultCardsRendered)) ? Number(metrics.resultCardsRendered) : null, measurementStatus: Number.isFinite(Number(metrics.resultCardsRendered)) ? "measured" : "not_measured" }],
+    ["resultCardsRendered", Number(metrics.resultCardsRendered) > 0
+      ? { value: Number(metrics.resultCardsRendered), measurementStatus: "measured" }
+      : { value: null, measurementStatus: "not_measured", reason: "Aucune carte résultat détectée dans la vue ouverte." }],
     ["updatedAt", metrics.updatedAt || null]
   ]));
 }
@@ -14834,11 +15158,26 @@ if (typeof window !== "undefined") {
       return loadGeneratedRomeDataset({
         basePath: "data/generated/rome500-experimental/",
         marketBasePath: "data/generated/market/",
-        label: "ROME500 expérimental",
-        corpusMode: "generated_rome_500_experimental",
+        label: "ROME500 candidat consolidé",
+        corpusMode: "generated_rome_500_candidate",
         replace: true,
         persist: false
       });
+    },
+    async recalculateRome500() {
+      const totalStartedAt = nowMs();
+      const scoringStartedAt = nowMs();
+      calculateAndStoreResults({ force: true, persist: false });
+      recordPerformanceMetric("profileScoringMs", scoringStartedAt);
+      const resultsRenderStartedAt = nowMs();
+      renderAll();
+      recordPerformanceMetric("resultsUiRenderMs", resultsRenderStartedAt);
+      App.state.performanceMetrics.resultCardsRendered = document.querySelectorAll(".job-card").length;
+      await waitForUiFrame();
+      App.state.performanceMetrics.resultsFirstVisibleMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
+      App.state.performanceMetrics.resultsInteractiveMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
+      recordPerformanceMetric("totalGeneratedLoadMs", totalStartedAt);
+      return { jobsCount: App.state.dataset.jobs.length, resultsComputed: App.state.results?.completeList?.length || 0 };
     },
     measureCompactExport() {
       const startedAt = nowMs();

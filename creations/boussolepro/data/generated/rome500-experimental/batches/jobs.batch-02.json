@@ -27186,7 +27186,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "F1105",
     "title": "Géologue",
-    "domain": "Artisanat, bâtiment et maintenance",
+    "domain": "Construction, bâtiment et travaux publics",
     "family": "Construction, bâtiment et travaux publics",
     "officialRomeDomain": {
       "code": "F",
@@ -27194,15 +27194,20 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
-      "artisanat_batiment_maintenance"
+      "nature_agriculture_animaux",
+      "artisanat_batiment_maintenance",
+      "industrie_qualite"
     ],
-    "primarySectorId": "batiment_construction",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.65,
+    "primarySectorId": "nature_agriculture",
+    "secondarySectorIds": [
+      "batiment_construction",
+      "industrie_production"
+    ],
+    "sectorMappingConfidence": 0.96,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "F"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "F1105"
       }
     ],
     "appellations": [
@@ -28539,7 +28544,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Construction, bâtiment et travaux publics",
+    "sourceFamily": "Construction, bâtiment et travaux publics",
+    "boussoleDomainLabel": "Nature, environnement et géosciences"
   },
   {
     "id": "rome-F1106",

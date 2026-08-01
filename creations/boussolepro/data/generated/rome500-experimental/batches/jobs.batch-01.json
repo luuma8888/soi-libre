@@ -77799,7 +77799,7 @@
     "schemaVersion": "1.0.0",
     "romeCode": "D1203",
     "title": "Agent / Agente de soins en hydrothérapie",
-    "domain": "Commerce et relation client",
+    "domain": "Commerce, vente et grande distribution",
     "family": "Commerce, vente et grande distribution",
     "officialRomeDomain": {
       "code": "D",
@@ -77807,15 +77807,20 @@
       "source": "computed"
     },
     "boussoleSectorIds": [
-      "commerce_relation_client"
+      "soin_sante",
+      "commerce_relation_client",
+      "restauration_hotellerie_tourisme"
     ],
-    "primarySectorId": "commerce_vente",
-    "secondarySectorIds": [],
-    "sectorMappingConfidence": 0.65,
+    "primarySectorId": "sante_soin",
+    "secondarySectorIds": [
+      "commerce_vente",
+      "hotellerie_hebergement"
+    ],
+    "sectorMappingConfidence": 0.96,
     "sectorEvidence": [
       {
-        "source": "local_rome_sector_prefix_fallback_v062",
-        "value": "D"
+        "source": "local_rome_sector_mapping_v2_exact",
+        "value": "D1203"
       }
     ],
     "appellations": [
@@ -78607,7 +78612,10 @@
       "purpose": null,
       "characteristicsSummary": null,
       "source": "official_rome_api"
-    }
+    },
+    "sourceDomain": "Commerce, vente et grande distribution",
+    "sourceFamily": "Commerce, vente et grande distribution",
+    "boussoleDomainLabel": "Santé, soin et bien-être"
   },
   {
     "id": "rome-D1209",

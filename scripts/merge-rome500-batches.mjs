@@ -7,7 +7,7 @@ const GENERATED_DIR = path.join("creations", "boussolepro", "data", "generated")
 const EXPERIMENTAL_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const BATCHES_DIR = path.join(EXPERIMENTAL_DIR, "batches");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
-const DATASET_VERSION = "rome500-experimental-v0.7";
+const DATASET_VERSION = "rome500-candidate-v0.7";
 
 async function main() {
   await mkdir(EXPERIMENTAL_DIR, { recursive: true });
@@ -23,11 +23,11 @@ async function main() {
 
   const dataset = {
     schemaVersion: "1.0.0",
-    datasetName: "Boussole Pro - corpus ROME 500 expérimental",
+    datasetName: "Boussole Pro — corpus ROME 500 candidat consolidé",
     datasetVersion: DATASET_VERSION,
     sourceDate: new Date().toISOString().slice(0, 10),
     importedAt: new Date().toISOString(),
-    provenance: "generated_rome_experimental",
+    provenance: "generated_rome_candidate",
     jobs,
     mappings,
     jobAppellations,
@@ -42,8 +42,8 @@ async function main() {
     marketIndicators: [],
     sources: [{
       id: "france_travail_rome500_experimental",
-      name: "France Travail ROME 4.0 via GitHub Actions - corpus 500 expérimental",
-      provenance: "generated_rome_experimental",
+      name: "France Travail ROME 4.0 via GitHub Actions - corpus 500 candidat consolidé",
+      provenance: "generated_rome_candidate",
       accessMode: "github-actions-generated"
     }]
   };
@@ -75,7 +75,7 @@ async function main() {
     datasetName: dataset.datasetName,
     datasetVersion: DATASET_VERSION,
     importedAt: dataset.importedAt,
-    provenance: "generated_rome_experimental",
+    provenance: "generated_rome_candidate",
     jobsCount: jobs.length,
     mappingsCount: mappings.length,
     appellationsCount: jobAppellations.length,

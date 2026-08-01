@@ -23,7 +23,7 @@ const DEFAULT_ROME_CODES = [
 const DEFAULT_METIERS_DIAGNOSTIC_CODES = ["A1203", "K1303", "M1607", "M1805"];
 const DEFAULT_RATE_LIMIT_MS = 1100;
 const ROME72_REFERENCE_VERSION = "rome72-reference-v0.6.4";
-const ROME500_EXPERIMENTAL_VERSION = "rome500-experimental-v0.7";
+const ROME500_EXPERIMENTAL_VERSION = "rome500-candidate-v0.7";
 
 function buildOutputDirUrl() {
   const explicitSubdir = sanitizeRelativeDir(process.env.ROME_OUTPUT_SUBDIR || "");
@@ -981,7 +981,7 @@ function buildOutputPlan(codeSelection = {}) {
   if (experimental && batchLabel) {
     return {
       mode: "rome500_batch",
-      datasetName: "Boussole Pro - corpus ROME 500 expérimental",
+      datasetName: "Boussole Pro — corpus ROME 500 candidat consolidé",
       datasetVersion: `${process.env.ROME_DATASET_VERSION || ROME500_EXPERIMENTAL_VERSION}-batch-${batchLabel}`,
       batchLabel,
       basePath: "batches/",
@@ -998,7 +998,7 @@ function buildOutputPlan(codeSelection = {}) {
   }
   return {
     mode: experimental ? "rome500_full_experimental" : "rome72_reference",
-    datasetName: experimental ? "Boussole Pro - corpus ROME 500 expérimental" : "Boussole Pro - corpus ROME 72 de référence",
+    datasetName: experimental ? "Boussole Pro — corpus ROME 500 candidat consolidé" : "Boussole Pro - corpus ROME 72 de référence",
     datasetVersion: process.env.ROME_DATASET_VERSION || (experimental ? ROME500_EXPERIMENTAL_VERSION : ROME72_REFERENCE_VERSION),
     batchLabel,
     basePath: "",

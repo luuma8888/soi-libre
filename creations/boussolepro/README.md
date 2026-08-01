@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.7.4-alpha
+**Version :** v0.7.5-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -25,20 +25,20 @@ Les données ROME générées restent séparées du HTML et peuvent être charg�
 La barre d’état affiche une identité complète et stable :
 
 ```text
-Boussole Pro v0.7.4-alpha · build 20260801-access-consolidation-01 · données <version du corpus actif>
+Boussole Pro v0.7.5-alpha · build 20260801-functional-consolidation-02 · données <version du corpus actif>
 ```
 
 Le même `buildId` est inclus dans les exports et rapports. Après un déploiement manuel, contrôler le HTML public sans transmettre de profil :
 
 ```bash
-/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260801-access-consolidation-01"
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260801-functional-consolidation-02"
 ```
 
 Le script affiche l’URL finale, le marqueur attendu et reçu, la date du contrôle, les en-têtes de cache utiles et un verdict. Aucun service worker n’est utilisé par l’application ; aucun cache applicatif supplémentaire ne masque donc le HTML.
 
 ## Modes de lecture
 
-La v0.7.4 distingue trois niveaux d’usage :
+La v0.7.5 distingue trois niveaux d’usage :
 
 - **Essentiel** : lecture courte des pistes principales, sans surcharge technique.
 - **Détaillé** : scores séparés, raisons, vigilances, accès, marché et contexte.
@@ -72,9 +72,9 @@ L’application peut travailler avec :
 
 - le corpus sample minimal embarqué ;
 - le corpus ROME72 dans `creations/boussolepro/data/generated/` ;
-- le corpus ROME500 expérimental dans `creations/boussolepro/data/generated/rome500-experimental/`.
+- le corpus ROME500 candidat consolidé dans le dossier historique `creations/boussolepro/data/generated/rome500-experimental/`.
 
-Le corpus ROME500 est expérimental : il est utile pour tester le moteur, la couverture et la diversité, mais les données d’accès, de marché, de contexte ou de formations restent à vérifier auprès des sources officielles avant décision.
+Le corpus ROME500 porte la version fonctionnelle `rome500-candidate-v0.7` et la maturité `validated_for_boussole_pro`. Cette maturité signifie que les tests fonctionnels définis pour Boussole Pro réussissent ; elle ne signifie ni corpus officiel complet, ni certification, ni stabilité générale. L’ancien identifiant `rome500-experimental-v0.7` reste accepté comme alias de migration.
 
 ## Données ROME générées
 

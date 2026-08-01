@@ -116,7 +116,7 @@ async function main() {
   const rootRawSkills = await readJson(path.join(GENERATED_DIR, "rome-raw-skills.json"), rawSkills);
   const rootFilteredSkills = await readJson(path.join(GENERATED_DIR, "skills.rome.json"), filteredSkills);
 
-  const { skillsEngine, integrityReport } = buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, "rome500-experimental-v0.7");
+  const { skillsEngine, integrityReport } = buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, "rome500-candidate-v0.7");
   const rootSkillLayer = buildSkillsEngine({
     jobs: rootJobs,
     mappings: rootMappings,
@@ -293,7 +293,7 @@ function buildEssentialGapReport(jobs) {
     schemaVersion: "1.0.0",
     reportKind: "rome500_essential_gap",
     generatedAt: new Date().toISOString(),
-    datasetVersion: "rome500-experimental-v0.7",
+    datasetVersion: "rome500-candidate-v0.7",
     checkedCodesCount: rows.length,
     presentEssentialCodes: rows.filter(row => row.presentInRome500),
     missingEssentialCodes: rows.filter(row => !row.presentInRome500),
@@ -372,7 +372,7 @@ function buildExplorationFacetAudit(jobs) {
     schemaVersion: "1.0.0",
     reportKind: "exploration_facet_audit_rome500",
     generatedAt: new Date().toISOString(),
-    datasetVersion: "rome500-experimental-v0.7",
+    datasetVersion: "rome500-candidate-v0.7",
     jobsCount: jobs.length,
     domains: domainRows,
     diplomas: diplomaOptions,
@@ -390,7 +390,7 @@ function buildResultsPathwayAudit(jobs, jobAppellations) {
     schemaVersion: "1.0.0",
     reportKind: "results_pathway_audit_rome500",
     generatedAt: new Date().toISOString(),
-    datasetVersion: "rome500-experimental-v0.7",
+    datasetVersion: "rome500-candidate-v0.7",
     jobsCount: jobs.length,
     pathways: countBy(rows.map(row => row.careerPathwayId)),
     examples: rows.slice(0, 80),

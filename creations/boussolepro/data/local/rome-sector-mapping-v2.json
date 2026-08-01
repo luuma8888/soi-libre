@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "version": "v0.7.4-alpha",
+  "version": "v0.7.5-alpha",
   "description": "Mapping sectoriel local prioritaire pour corriger les secteurs ROME avant scoring ClairMétier. Le fallback par lettre ROME ne doit pas servir de preuve forte.",
   "priority": [
     "exact",
@@ -32,7 +32,15 @@
     "B1805": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "source": "exact", "confidence": 0.98 },
     "B1806": { "primarySectorId": "culture_communication", "secondarySectorIds": ["maintenance"], "source": "exact", "confidence": 0.98 },
     "B1808": { "primarySectorId": "industrie_production", "secondarySectorIds": ["culture_communication"], "source": "exact", "confidence": 0.98 },
-    "B1816": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "source": "exact", "confidence": 0.98 }
+    "B1816": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "source": "exact", "confidence": 0.98 },
+    "D1203": { "primarySectorId": "sante_soin", "secondarySectorIds": ["commerce_vente", "hotellerie_hebergement"], "domainLabel": "Santé, soin et bien-être", "source": "exact", "confidence": 0.96 },
+    "F1105": { "primarySectorId": "nature_agriculture", "secondarySectorIds": ["batiment_construction", "industrie_production"], "domainLabel": "Nature, environnement et géosciences", "source": "exact", "confidence": 0.96 },
+    "H1211": { "primarySectorId": "sante_soin", "secondarySectorIds": ["industrie_production"], "domainLabel": "Santé, recherche clinique et industrie", "source": "exact", "confidence": 0.96 },
+    "H2206": { "primarySectorId": "industrie_production", "secondarySectorIds": ["batiment_construction", "maintenance"], "domainLabel": "Bois, fabrication, bâtiment et maintenance", "source": "exact", "confidence": 0.96 },
+    "L1308": { "primarySectorId": "culture_communication", "secondarySectorIds": ["administratif_support"], "domainLabel": "Culture, audiovisuel et cinéma", "source": "exact", "confidence": 0.98 },
+    "L1509": { "primarySectorId": "culture_communication", "secondarySectorIds": ["industrie_production"], "domainLabel": "Spectacle, culture et régie", "source": "exact", "confidence": 0.98 },
+    "M1305": { "primarySectorId": "numerique", "secondarySectorIds": ["industrie_production", "education_enfance"], "domainLabel": "Numérique, fabrication et médiation", "source": "exact", "confidence": 0.96 },
+    "M1716": { "primarySectorId": "culture_communication", "secondarySectorIds": ["numerique", "administratif_support"], "domainLabel": "Communication, marketing et numérique", "source": "exact", "confidence": 0.98 }
   },
   "prefix4": {
     "G120": { "primarySectorId": "education_enfance", "secondarySectorIds": ["culture_communication", "social_insertion"], "source": "prefix4", "confidence": 0.9 },
