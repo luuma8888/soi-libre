@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const GENERATED_DIR = path.join("creations", "boussolepro", "data", "generated");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
@@ -28,6 +29,7 @@ export async function buildRome500AuditArtifacts(options = {}) {
   const configuredMarketDir = options.marketDir || process.env.ROME_MARKET_DIR || MARKET_DIR;
   const bundledMarketDir = path.join(generatedDir, "market");
   const startedAt = Date.now();
+  const buildMetadata = await readBoussoleBuildMetadata(HTML_PATH);
   const [
     jobs,
     mappings,
@@ -35,7 +37,10 @@ export async function buildRome500AuditArtifacts(options = {}) {
     skills,
     contexts,
     rawSkills,
-    qualityReport
+    qualityReport,
+    accessSummary,
+    accessQualityReport,
+    downstreamValidationReport
   ] = await Promise.all([
     readJson(path.join(generatedDir, "jobs.rome.json"), []),
     readJson(path.join(generatedDir, "mappings.rome.json"), []),
@@ -43,7 +48,10 @@ export async function buildRome500AuditArtifacts(options = {}) {
     readJson(path.join(generatedDir, "skills.rome.json"), []),
     readJson(path.join(generatedDir, "work-contexts.rome.json"), []),
     readJson(path.join(generatedDir, "rome-raw-skills.json"), []),
-    readJson(path.join(generatedDir, "data-quality-report.rome.json"), {})
+    readJson(path.join(generatedDir, "data-quality-report.rome.json"), {}),
+    readJson(path.join(generatedDir, "access-summary.rome500.json"), []),
+    readJson(path.join(generatedDir, "access-summary-quality-report.json"), {}),
+    readJson(path.join(GENERATED_DIR, "boussole-v074-targeted-validation-report.json"), {})
   ]);
 
   const bundledMarket = await readMarketBundle(bundledMarketDir);
@@ -75,6 +83,9 @@ export async function buildRome500AuditArtifacts(options = {}) {
     }
   );
   const matchingReadiness = buildMatchingReadiness({ jobs, linked, shellJobs, sectorMappingCoverage });
+  const activeRomeCodes = new Set(jobs.map(job => job.romeCode).filter(Boolean));
+  const activeAccessSummary = accessSummary.filter(row => activeRomeCodes.has(row.romeCode));
+  const accessPaths = activeAccessSummary.flatMap(row => toArray(row.accessPaths));
   const quality = {
     schemaVersion: "1.0.0",
     generatedAt: new Date().toISOString(),
@@ -100,10 +111,27 @@ export async function buildRome500AuditArtifacts(options = {}) {
       overallReadiness: "usable_for_validation"
     },
     matchingReadiness,
+    accessCoverage: {
+      jobsWithAccessSummary: activeAccessSummary.length,
+      jobsWithSpecificCredentialRequired: activeAccessSummary.filter(row => row.specificCredentialRequired).length,
+      jobsWithStructuredAccessPaths: activeAccessSummary.filter(row => toArray(row.accessPaths).length).length,
+      accessPaths: accessPaths.length,
+      accessPathsWithKnownDuration: accessPaths.filter(path => path.trainingDuration?.category && path.trainingDuration.category !== "unknown").length,
+      accessPathsWithUnknownDuration: accessPaths.filter(path => !path.trainingDuration?.category || path.trainingDuration.category === "unknown").length,
+      regulatedJobsResolved: activeAccessSummary.filter(row => row.regulated && (toArray(row.requiredCredentialLabels).length || toArray(row.accessPaths).length)).length,
+      regulatedJobsUnresolved: activeAccessSummary.filter(row => row.regulated && !toArray(row.requiredCredentialLabels).length && !toArray(row.accessPaths).length).length,
+      contradictions: activeAccessSummary.filter(row => row.contradictoryEvidence).length,
+      downstreamInconsistenciesDetected: toArray(downstreamValidationReport.failures).length,
+      truthCases: accessQualityReport.summary?.truthCasesCount ?? null,
+      truthFailures: accessQualityReport.summary?.truthFailuresCount ?? null,
+      catalogExplanation: qualityReport.accessCatalogExplanation?.note || "Les catalogues formation/certification et les conditions d’accès sont comptés séparément."
+    },
     warnings: buildWarnings({ jobs, linked, shellJobs, sectorMappingCoverage, marketAvailability })
   };
+  Object.assign(quality, buildMetadata, { datasetVersion: qualityReport.datasetVersion || buildMetadata.datasetVersion });
 
   const performance = await buildPerformanceReport(generatedDir, startedAt);
+  Object.assign(performance, buildMetadata, { datasetVersion: qualityReport.datasetVersion || buildMetadata.datasetVersion });
   const markdown = buildMarkdownReport({ quality, performance, qualityReport, marketQualityReport: selectedMarket.qualityReport });
   await writeJson(path.join(generatedDir, "rome-corpus-quality-report.json"), quality);
   await writeJson(path.join(generatedDir, "rome-corpus-performance-report.json"), performance);
@@ -318,6 +346,15 @@ async function buildPerformanceReport(generatedDir, startedAt) {
       whyModalOpenMs: null,
       comparisonRenderMs: null,
       compactExportMs: null,
+      measurementStatus: {
+        resultsFirstRenderMs: "not_measured",
+        explorationFirstRenderMs: "not_measured",
+        filterFacetMs: "not_measured",
+        jobCardOpenMs: "not_measured",
+        whyModalOpenMs: "not_measured",
+        comparisonRenderMs: "not_measured",
+        compactExportMs: "not_measured"
+      },
       note: "Non mesuré par ce script : utiliser une validation navigateur/Playwright pour ces métriques."
     },
     filesTotal: fileRows.length,

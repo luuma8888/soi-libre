@@ -20,9 +20,25 @@ L’application fonctionne directement depuis le fichier HTML ou via un petit se
 
 Les données ROME générées restent séparées du HTML et peuvent être chargées depuis la page **Données**. Si les fichiers générés sont absents ou bloqués, l’application conserve le corpus actif et affiche une erreur lisible.
 
+## Identité de la livraison
+
+La barre d’état affiche une identité complète et stable :
+
+```text
+Boussole Pro v0.7.4-alpha · build 20260801-access-consolidation-01 · données <version du corpus actif>
+```
+
+Le même `buildId` est inclus dans les exports et rapports. Après un déploiement manuel, contrôler le HTML public sans transmettre de profil :
+
+```bash
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260801-access-consolidation-01"
+```
+
+Le script affiche l’URL finale, le marqueur attendu et reçu, la date du contrôle, les en-têtes de cache utiles et un verdict. Aucun service worker n’est utilisé par l’application ; aucun cache applicatif supplémentaire ne masque donc le HTML.
+
 ## Modes de lecture
 
-La v0.7.3 distingue trois niveaux d’usage :
+La v0.7.4 distingue trois niveaux d’usage :
 
 - **Essentiel** : lecture courte des pistes principales, sans surcharge technique.
 - **Détaillé** : scores séparés, raisons, vigilances, accès, marché et contexte.
@@ -122,7 +138,9 @@ Exemples de cas surveillés :
 - `N1210` : texte contradictoire à vérifier.
 - `J1506`, `J1407`, `G1204`, `I1309`, `N4109`, `C1504` : qualification spécifique ou réglementation à traiter prudemment.
 
-Le moteur ne déduit plus une formation courte à partir d’un simple écart de niveau quand une qualification spécifique obligatoire manque. Dans ce cas, la piste reste possible après vérification ou formation longue, mais pas “accessible maintenant” par raccourci.
+Le moteur sépare désormais la nature obligatoire ou réglementée de l’exigence, la qualification manquante, la durée documentée et l’exercice immédiat. Une qualification obligatoire n’est plus assimilée automatiquement à une formation longue. Quand sa durée n’est pas sourcée, le diagnostic indique « durée à vérifier » et conserve un statut prudent.
+
+Pour les voies de concours, l’éligibilité à l’inscription, la réussite au concours et l’autorisation d’exercer sont évaluées séparément. `K2106` conserve ainsi ses trois voies CRPE sans inventer la nature juridique des expériences déclarées.
 
 ## Marché
 
@@ -184,6 +202,7 @@ Avec le PATH Node NVM de Lu’uma :
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-boussole-v073.mjs
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-boussole-generated-data.mjs
 /home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/validate-rome500-local.mjs
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/measure-boussole-rome500-browser.mjs
 ```
 
 Pour auditer les tailles et rapports de corpus :

@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import vm from "node:vm";
+import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
@@ -48,8 +49,10 @@ const RANGE_CASES = {
 async function main() {
   const html = await readFile(HTML_PATH, "utf8");
   const htmlSha256 = createHash("sha256").update(html).digest("hex");
+  const buildMetadata = await readBoussoleBuildMetadata(HTML_PATH);
   const app = loadBoussoleEngine(html);
   const generated = await loadGeneratedBundle();
+  const generated72 = await loadGeneratedBundle(GENERATED_DIR);
   const cedricEnvelope = await readJson(CEDRIC_PROFILE_PATH, null);
   app.App.state.dataset = app.mergeGeneratedDatasetIntoApp(generated, { replace: true });
   app.markDatasetAsOfficialRome(app.App.state.dataset, generated.manifest);
@@ -58,6 +61,9 @@ async function main() {
     schemaVersion: "1.0.0",
     reportKind: "boussole_v074_targeted_corrections_validation",
     generatedAt: new Date().toISOString(),
+    appVersion: buildMetadata.appVersion,
+    buildId: buildMetadata.buildId,
+    buildDate: buildMetadata.buildDate,
     sourceArtifactSha256: htmlSha256,
     datasetVersion: app.App.state.dataset.datasetVersion,
     jobsCount: app.App.state.dataset.jobs.length,
@@ -73,6 +79,7 @@ async function main() {
   report.checks.training = validateTraining(app);
   report.checks.context = validateContext(app);
   report.checks.cedricScenario = validateCedricScenario(app, cedricEnvelope);
+  report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generated72);
 
   for (const group of Object.values(report.checks)) {
     for (const failure of group.failures || []) report.failures.push(failure);
@@ -220,6 +227,13 @@ function validateAccessQuality(generated = {}) {
   if (report.summary?.jobsCount !== summaries.length) failures.push("access-quality:jobs_count_mismatch");
   if (report.summary?.truthFailuresCount !== 0 || toArray(report.truthFailures).length) failures.push("access-quality:truth_failures");
   if (report.summary?.genericRequiredLabelsRejectedCount !== 0) failures.push("access-quality:generic_required_labels");
+  if (!report.buildId || !report.sourceArtifactSha256) failures.push("access-quality:missing_build_identity");
+  if ((report.summary?.accessDurationKnownCount || 0) < 8) failures.push("access-quality:known_duration_coverage_too_low");
+  if ((report.summary?.accessDurationUnknownCount || 0) <= 0) failures.push("access-quality:unknown_durations_not_preserved");
+  if (generated.qualityReport?.provenanceDistribution?.mappings?.unknown !== 0) failures.push("quality:mapping_provenance_unknown");
+  if (generated.qualityReport?.provenanceDistribution?.mappings?.generated_rome !== toArray(generated.mappings).length) failures.push("quality:mapping_provenance_mismatch");
+  if (generated.qualityReport?.summary?.jobsWithAccessSummary !== summaries.length) failures.push("quality:access_summary_counter_mismatch");
+  if (!generated.qualityReport?.accessCatalogExplanation?.note) failures.push("quality:missing_access_catalog_explanation");
   const actualKinds = summaries.reduce((counts, row) => ({ ...counts, [row.requirementKind || "unknown"]: (counts[row.requirementKind || "unknown"] || 0) + 1 }), {});
   if (JSON.stringify(actualKinds) !== JSON.stringify(report.summary?.requirementKindCounts || {})) failures.push("access-quality:requirement_distribution_mismatch");
   return { status: failures.length ? "failed" : "ok", generatedAt: report.generatedAt || null, newestSummaryDate: newestSummaryDate ? new Date(newestSummaryDate).toISOString() : null, summary: report.summary || null, failures };
@@ -248,13 +262,22 @@ function validateTraining(app) {
     const training = job ? app.calculateTrainingScore(criteria, job) : null;
     rows[code] = training;
     if (!job) failures.push(`training:${code}:missing_job`);
-    if (training?.missingCertifications?.length && training.statusHint === "short") failures.push(`training:${code}:specific_credential_shortcut`);
+    if (training?.missingCertifications?.length && training.statusHint === "short" && training.trainingDuration?.category !== "short") failures.push(`training:${code}:undocumented_specific_credential_shortcut`);
   }
   if (rows.K1201?.statusHint === "now" || rows.K1201?.statusHint === "short") failures.push("training:K1201:deass_should_not_be_now_or_short");
   if (!rows.K1201?.missingCertifications?.length) failures.push("training:K1201:deass_missing_certification_not_reported");
   for (const code of ["K1207", "K1307", "J1104", "J1202", "J1405", "J1407", "J1506"]) {
     if (["now", "short"].includes(rows[code]?.statusHint)) failures.push(`training:${code}:regulated_access_too_easy`);
     if (!rows[code]?.missingCertifications?.length) failures.push(`training:${code}:missing_credential_not_reported`);
+  }
+  for (const code of ["K1201", "K1207", "J1104", "J1202", "J1407", "J1506"]) {
+    if (rows[code]?.statusHint !== "long" || rows[code]?.trainingDuration?.category !== "long") failures.push(`training:${code}:documented_long_access_not_preserved`);
+  }
+  for (const code of ["K1307", "G1204"]) {
+    if (rows[code]?.statusHint !== "access_to_verify" || rows[code]?.trainingDuration?.category !== "unknown") failures.push(`training:${code}:unknown_duration_not_prudent`);
+  }
+  for (const code of ["I1309", "N4109"]) {
+    if (rows[code]?.statusHint !== "short" || rows[code]?.trainingDuration?.category !== "short") failures.push(`training:${code}:documented_short_access_not_preserved`);
   }
   if (rows.K2106?.statusHint !== "access_to_verify") failures.push(`training:K2106:expected_access_to_verify_got_${rows.K2106?.statusHint}`);
   if (toArray(rows.K2106?.accessFeasibility?.accessPaths).length < 3) failures.push("training:K2106:runtime_paths_missing");
@@ -275,6 +298,35 @@ function validateContext(app) {
   return { status: failures.length ? "failed" : "ok", rows: { A1101: context }, failures };
 }
 
+function validateCorpusConsistency(app, generated500 = {}, generated72 = {}) {
+  const failures = [];
+  const targetCodes = ["G1201", "G1202", "G1203", "K1201", "K1207", "K1307", "G1204", "K2106", "J1104", "J1202", "J1405", "J1407", "J1506", "N1210", "M1501", "D1424", "I1309", "N4109"];
+  const jobs72Codes = new Set(toArray(generated72.jobs).map(job => job.romeCode));
+  const summary500 = new Map(toArray(generated500.accessSummary).map(row => [row.romeCode, row]));
+  const summary72 = new Map(toArray(generated72.accessSummary).map(row => [row.romeCode, row]));
+  const commonCodes = targetCodes.filter(code => jobs72Codes.has(code));
+  const rows = {};
+  for (const code of commonCodes) {
+    const left = summary72.get(code);
+    const right = summary500.get(code);
+    const fields = ["requirementKind", "specificCredentialRequired", "mandatoryQualification", "regulated", "contradictoryEvidence"];
+    const mismatches = fields.filter(field => left?.[field] !== right?.[field]);
+    if (left?.trainingDuration?.category !== right?.trainingDuration?.category) mismatches.push("trainingDuration.category");
+    if (toArray(left?.accessPaths).length !== toArray(right?.accessPaths).length) mismatches.push("accessPaths.length");
+    rows[code] = { rome72: left || null, rome500: right || null, mismatches };
+    failures.push(...mismatches.map(field => `corpus-consistency:${code}:${field}`));
+  }
+  const previousDataset = app.App.state.dataset;
+  app.App.state.dataset = app.mergeGeneratedDatasetIntoApp(generated72, { replace: true });
+  app.markDatasetAsOfficialRome(app.App.state.dataset, generated72.manifest);
+  for (const code of commonCodes) {
+    const runtime = findJobByCode(app.App.state.dataset.jobs, code)?.accessSummary;
+    if (!runtime) failures.push(`corpus-consistency:${code}:missing_runtime_rome72`);
+  }
+  app.App.state.dataset = previousDataset;
+  return { status: failures.length ? "failed" : "ok", commonCodes, rows, failures };
+}
+
 function validateCedricScenario(app, envelope = null) {
   const failures = [];
   if (!envelope) return { status: "failed", failures: ["cedric:profile_missing"] };
@@ -284,23 +336,28 @@ function validateCedricScenario(app, envelope = null) {
     hasRequestedResults: true,
     jobExperiences: [
       { romeCode: "G1203", title: "Animateur / Animatrice jeunesse", durationYears: 10, enjoymentLevel: "love", wantsToContinue: "yes", recency: "recent", masteryLevel: "advanced", source: "user_direct" },
-      { romeCode: "M1805", title: "Études et développement informatique", durationYears: 7, enjoymentLevel: "dislike", wantsToContinue: "no", recency: "old", masteryLevel: "advanced", source: "user_direct" }
+      { romeCode: "M1805", title: "Études et développement informatique", durationYears: 7, enjoymentLevel: "dislike", wantsToContinue: "no", recency: "recent", masteryLevel: "autonomous", source: "user_direct" }
     ]
   });
   app.App.state.profile = profile;
   const results = app.calculateAllMatches(profile, app.App.state.dataset);
   app.App.state.results = results;
   const byCode = new Map(results.completeList.map(result => [result.job?.romeCode || result.romeCode, result]));
-  const targetCodes = ["G1201", "G1202", "G1203", "K1201", "K1207", "K1307", "K2106", "M1805", "J1104", "J1202", "J1405", "J1407", "J1506"];
+  const targetCodes = ["G1201", "G1202", "G1203", "G1204", "G1235", "G1238", "K1201", "K1207", "K1224", "K1307", "K2106", "M1805", "J1104", "J1202", "J1405", "J1407", "J1506", "N1210", "M1501", "D1424", "I1309", "N4109"];
   const rows = Object.fromEntries(targetCodes.map(code => {
     const result = byCode.get(code);
     const job = result?.job;
     return [code, result ? {
       title: result.title,
+      rank: results.completeList.indexOf(result) + 1,
       score: result.globalScore,
       status: result.status,
       trainingStatus: result.scoreDetails?.training?.statusHint,
+      trainingDuration: result.scoreDetails?.training?.trainingDuration || null,
       missingCertifications: result.scoreDetails?.training?.missingCertifications || [],
+      confirmedConstraints: result.scoreDetails?.constraints?.confirmedConstraints || [],
+      constraintUncertainties: result.scoreDetails?.constraints?.uncertainties || [],
+      negativeReasons: result.negativeReasons || [],
       primarySectorId: job ? app.getJobSectorProfile(job).primarySectorId : null,
       secondarySectorIds: job ? app.getJobSectorProfile(job).secondarySectorIds : [],
       boussoleDomainLabel: job?.boussoleDomainLabel || null,
@@ -310,11 +367,33 @@ function validateCedricScenario(app, envelope = null) {
   const top5 = results.top5.map(result => ({ romeCode: result.job?.romeCode || result.romeCode, title: result.title, score: result.globalScore, status: result.status, mainReason: result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || null }));
   if (top5[0]?.romeCode !== "G1203") failures.push(`cedric:G1203_not_first_${top5[0]?.romeCode || "missing"}`);
   if (top5.some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top5");
+  if (results.completeList.slice(0, 15).some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top15");
   if (rows.G1202?.primarySectorId !== "culture_communication" || !rows.G1202?.secondarySectorIds.includes("education_enfance")) failures.push("cedric:G1202_bad_sector");
   for (const code of ["K1207", "K1307", "J1104", "J1202", "J1405", "J1407", "J1506"]) {
     if (["possible_now", "possible_with_small_adjustment", "possible_after_short_training"].includes(rows[code]?.status)) failures.push(`cedric:${code}:access_too_easy_${rows[code]?.status}`);
   }
   if (rows.K2106?.trainingStatus !== "access_to_verify" || rows.K2106?.accessPaths.length < 3) failures.push("cedric:K2106_parallel_routes_not_prudent");
+  if (rows.K2106?.accessPaths.some(path => !path.eligibilityStatus || !path.examStatus || !path.practiceStatus || !path.nextAction)) failures.push("cedric:K2106_path_evaluation_incomplete");
+  if (rows.K2106?.accessPaths.some(path => path.practiceStatus === "accessible_now")) failures.push("cedric:K2106_practice_must_not_be_immediate");
+  const thirdCrpe = rows.K2106?.accessPaths.find(path => path.pathId === "k2106-crpe-troisieme-concours");
+  if (thirdCrpe?.eligibilityStatus !== "to_verify" || !thirdCrpe?.missingRequirements?.some(item => /contrat|activit/i.test(item))) failures.push("cedric:K2106_third_exam_scope_must_be_verified");
+  if (rows.G1203?.confirmedConstraints.some(item => /formation longue/i.test(item))) failures.push("cedric:G1203_unknown_training_presented_as_confirmed");
+  if (rows.G1203?.negativeReasons.some(item => /formation longue/i.test(item))) failures.push("cedric:G1203_unknown_training_presented_as_vigilance");
+  for (const code of ["K1201", "K1207", "J1104", "J1202", "J1407", "J1506"]) {
+    if (rows[code]?.trainingStatus !== "long" || rows[code]?.trainingDuration?.category !== "long") failures.push(`cedric:${code}_long_access_not_preserved`);
+  }
+  for (const code of ["K1307", "G1204", "J1405"]) {
+    if (rows[code]?.trainingStatus !== "access_to_verify") failures.push(`cedric:${code}_unknown_or_intermediate_access_not_prudent`);
+  }
+  for (const code of ["I1309", "N4109"]) {
+    if (rows[code]?.trainingStatus !== "short" || rows[code]?.trainingDuration?.category !== "short") failures.push(`cedric:${code}_short_access_not_preserved`);
+  }
+
+  const contradictoryTextFailures = results.completeList.filter(result => {
+    const text = JSON.stringify({ status: result.status, negativeReasons: result.negativeReasons, interpretation: result.resultInterpretation, diagnostic: result.diagnostic || null });
+    return ["possible_after_long_training", "explore_with_caution"].includes(result.status) && /petite marche/i.test(text);
+  });
+  if (contradictoryTextFailures.length) failures.push(`cedric:contradictory_small_step_text_${contradictoryTextFailures.length}`);
 
   const modeChecks = {};
   const criteria = app.mapUserProfileToCriteria(profile);
@@ -342,27 +421,29 @@ function validateCedricScenario(app, envelope = null) {
     bench: Boolean(app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052)?.summary),
     compactCorpus: app.prepareCompactDatasetExport(app.App.state.dataset).jobs.length === 500,
     diagnosticCorpus: app.App.state.dataset.jobs.length === 500,
-    quality: app.App.state.dataset.accessSummaryQualityReport?.summary?.truthFailuresCount === 0
+    quality: app.App.state.dataset.accessSummaryQualityReport?.summary?.truthFailuresCount === 0,
+    buildIdentity: [app.prepareCompactResultsForExport(results), app.buildResultDiagnosticExport(results), app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052), app.prepareCompactDatasetExport(app.App.state.dataset)].every(item => item.build?.buildId === app.getBuildMetadata().buildId),
+    markdownBuild: app.resultsToMarkdown(results).includes(`Build : ${app.getBuildMetadata().buildId}`)
   };
   for (const [name, ok] of Object.entries(exports)) if (!ok) failures.push(`cedric:export_${name}_failed`);
   return { status: failures.length ? "failed" : "ok", profileId: profile.id, experiences: profile.jobExperiences, top5, rows, modeChecks, exports, criteriaDiplomaLevel: criteria.education.highestLevel, failures };
 }
 
-async function loadGeneratedBundle() {
+async function loadGeneratedBundle(directory = ROME500_DIR) {
   return {
-    manifest: await readJson(path.join(ROME500_DIR, "import-manifest.rome.json"), {}),
-    jobs: await readJson(path.join(ROME500_DIR, "jobs.rome.json"), []),
-    skills: await readJson(path.join(ROME500_DIR, "skills.rome.json"), []),
-    knowledge: await readJson(path.join(ROME500_DIR, "knowledge.rome.json"), []),
-    certificationLike: await readJson(path.join(ROME500_DIR, "certification-like.rome.json"), []),
-    matchableSkills: await readJson(path.join(ROME500_DIR, "skills-matchable.rome.json"), []),
-    workContexts: await readJson(path.join(ROME500_DIR, "work-contexts.rome.json"), []),
-    jobAppellations: await readJson(path.join(ROME500_DIR, "job-appellations.rome.json"), []),
-    mappings: await readJson(path.join(ROME500_DIR, "mappings.rome.json"), []),
-    qualityReport: await readJson(path.join(ROME500_DIR, "data-quality-report.rome.json"), {}),
-    accessSummary: await readJson(path.join(ROME500_DIR, "access-summary.rome500.json"), []),
-    accessSummaryQualityReport: await readJson(path.join(ROME500_DIR, "access-summary-quality-report.json"), null),
-    officialConstraintSummary: await readJson(path.join(ROME500_DIR, "official-constraint-summary.rome500.json"), []),
+    manifest: await readJson(path.join(directory, "import-manifest.rome.json"), {}),
+    jobs: await readJson(path.join(directory, "jobs.rome.json"), []),
+    skills: await readJson(path.join(directory, "skills.rome.json"), []),
+    knowledge: await readJson(path.join(directory, "knowledge.rome.json"), []),
+    certificationLike: await readJson(path.join(directory, "certification-like.rome.json"), []),
+    matchableSkills: await readJson(path.join(directory, "skills-matchable.rome.json"), []),
+    workContexts: await readJson(path.join(directory, "work-contexts.rome.json"), []),
+    jobAppellations: await readJson(path.join(directory, "job-appellations.rome.json"), []),
+    mappings: await readJson(path.join(directory, "mappings.rome.json"), []),
+    qualityReport: await readJson(path.join(directory, "data-quality-report.rome.json"), {}),
+    accessSummary: await readJson(path.join(directory, "access-summary.rome500.json"), []),
+    accessSummaryQualityReport: await readJson(path.join(directory, "access-summary-quality-report.json"), null),
+    officialConstraintSummary: await readJson(path.join(directory, "official-constraint-summary.rome500.json"), []),
     marketManifest: await readJson(path.join(MARKET_DIR, "market-import-manifest.json"), null),
     marketQualityReport: await readJson(path.join(MARKET_DIR, "market-quality-report.json"), null),
     marketNational: await readJson(path.join(MARKET_DIR, "market-national.rome.json"), []),
@@ -427,7 +508,9 @@ this.__boussole = {
   buildResultDiagnosticExport,
   runDiagnosticProfiles,
   DIAGNOSTIC_TEST_PROFILES_V052,
-  prepareCompactDatasetExport
+  prepareCompactDatasetExport,
+  resultsToMarkdown,
+  getBuildMetadata
 };`, context, { timeout: 15000 });
   return context.__boussole;
 }

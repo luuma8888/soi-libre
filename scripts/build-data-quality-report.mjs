@@ -59,6 +59,8 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
   if (!skills.length) warnings.push(issue("warning", "empty_generated_skills", "Aucun referentiel de competences genere. Le moteur utilisera les IDs metier mais affichera moins de libelles.", "skills"));
   if (!workContexts.length) warnings.push(issue("warning", "empty_generated_contexts", "Aucun contexte de travail genere. Le score cadre ideal sera moins precis.", "workContexts"));
   const mappings = dataset.mappings || [];
+  const accessSummary = dataset.accessSummary || jobs.map(job => job.accessSummary).filter(Boolean);
+  const accessPaths = accessSummary.flatMap(row => row.accessPaths || []);
   const linkedSkillIds = getLinkedSkillIds(jobs, mappings);
   const linkedContextIds = getLinkedContextIds(jobs, mappings);
   const linkedAppellationIds = getLinkedAppellationIds(jobs, mappings, dataset.jobAppellations || []);
@@ -173,12 +175,27 @@ export function buildDataQualityReport(dataset = {}, syncMeta = {}) {
       trainings: (dataset.trainings || []).length,
       certifications: (dataset.certifications || []).length,
       mappings: mappings.length,
+      jobsWithAccessSummary: accessSummary.length,
+      jobsWithSpecificCredentialRequired: accessSummary.filter(row => row.specificCredentialRequired).length,
+      jobsWithStructuredAccessPaths: accessSummary.filter(row => row.accessPaths?.length).length,
+      accessPaths: accessPaths.length,
+      accessPathsWithKnownDuration: accessPaths.filter(path => path.trainingDuration?.category && path.trainingDuration.category !== "unknown").length,
+      accessPathsWithUnknownDuration: accessPaths.filter(path => !path.trainingDuration?.category || path.trainingDuration.category === "unknown").length,
+      regulatedJobsResolved: accessSummary.filter(row => row.regulated && (row.requiredCredentialLabels?.length || row.accessPaths?.length)).length,
+      regulatedJobsUnresolved: accessSummary.filter(row => row.regulated && !row.requiredCredentialLabels?.length && !row.accessPaths?.length).length,
+      accessContradictions: accessSummary.filter(row => row.contradictoryEvidence).length,
       jobsWithSkillMappings,
       jobsWithContextMappings,
       jobsWithAppellationMappings,
       marketIndicators: (dataset.marketIndicators || []).length
     },
     completeness,
+    accessCatalogExplanation: {
+      trainingsCatalogCount: (dataset.trainings || []).length,
+      certificationsCatalogCount: (dataset.certifications || []).length,
+      jobsWithAccessSummary: accessSummary.length,
+      note: "Les compteurs trainings et certifications décrivent des catalogues dédiés. Une valeur nulle ne signifie pas que les conditions d’accès métier sont absentes ; celles-ci sont comptées séparément dans accessSummary."
+    },
     coverage: {
       jobsWithSkillsCount,
       jobsWithSkillsRatio: ratio(jobsWithSkillsCount, jobs.length),

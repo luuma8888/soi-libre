@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
 const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated");
@@ -38,6 +39,7 @@ async function main() {
   await mkdir(LOCAL_DIR, { recursive: true });
 
   const accessRulesDocument = await readJson(ACCESS_RULES_PATH, { rules: {} });
+  const buildMetadata = await readBoussoleBuildMetadata();
   await synchronizeAccessRules(accessRulesDocument);
   const jobs = await readJson(path.join(ROME500_DIR, "jobs.rome.json"), []);
   const contexts = await readJson(path.join(ROME500_DIR, "work-contexts.rome.json"), []);
@@ -50,6 +52,7 @@ async function main() {
     verifiedAt: accessRulesDocument.verifiedAt
   }));
   const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, accessSummaryGeneratedAt);
+  Object.assign(accessQuality, buildMetadata, { datasetVersion: "rome500-experimental-v0.7" });
   const contextMapping = buildOfficialContextConstraintMapping(contexts);
   const constraintSummary = jobs.map(job => buildOfficialConstraintSummary(job, contextMapping));
   const workContextTaxonomy = buildWorkContextUserTaxonomy(contexts, jobs);
@@ -61,6 +64,8 @@ async function main() {
   await writeJson(path.join(ROME500_DIR, "access-summary.rome500.json"), accessSummary);
   await writeJson(path.join(GENERATED_DIR, "access-summary-quality-report.json"), accessQuality);
   await writeJson(path.join(ROME500_DIR, "access-summary-quality-report.json"), accessQuality);
+  await enrichExistingDataQualityReport(GENERATED_DIR, accessSummary, buildMetadata);
+  await enrichExistingDataQualityReport(ROME500_DIR, accessSummary, buildMetadata);
   await writeJson(path.join(LOCAL_DIR, "official-context-constraint-mapping.json"), contextMapping);
   await writeJson(path.join(GENERATED_DIR, "official-constraint-summary.rome500.json"), constraintSummary);
   await writeJson(path.join(ROME500_DIR, "official-constraint-summary.rome500.json"), constraintSummary);
@@ -141,6 +146,7 @@ function buildAccessSummary(job = {}, explicitRule = null, metadata = {}) {
     regulated,
     contradictoryEvidence,
     mandatoryQualification: Boolean(mandatory && !contradictoryEvidence && (mandatoryDiplomas.length || requiredCredentialLabels.length || regulated)),
+    trainingDuration: normalizeTrainingDuration(null),
     citedDiplomas,
     citedCertifications,
     source: hasText ? "derived_from_official_access_text" : "unknown",
@@ -175,7 +181,8 @@ function applyExplicitAccessRule(summary, rule, metadata = {}) {
     source: "local_explicit_access_rule",
     verifiedAt: metadata.verifiedAt || null,
     generatedAt: metadata.generatedAt || summary.generatedAt,
-    accessPaths: arr(rule.accessPaths).map(path => ({ ...path, verifiedAt: metadata.verifiedAt || null })),
+    accessPaths: arr(rule.accessPaths).map(path => ({ ...path, trainingDuration: normalizeTrainingDuration(path.trainingDuration), verifiedAt: metadata.verifiedAt || null })),
+    trainingDuration: normalizeTrainingDuration(rule.trainingDuration || summary.trainingDuration),
     requiredCredentialLabels: unique(rule.requiredCredentialLabels ?? summary.requiredCredentialLabels),
     optionalCredentialLabels: unique(rule.optionalCredentialLabels ?? summary.optionalCredentialLabels),
     warnings: unique(rule.warnings ?? summary.warnings)
@@ -452,6 +459,24 @@ function diplomaRangeLabel(range = {}) {
   return `${min} à ${max} cité`;
 }
 
+function normalizeTrainingDuration(raw = null) {
+  const category = ["none", "short", "intermediate", "long", "unknown"].includes(raw?.category) ? raw.category : "unknown";
+  return {
+    category,
+    minimumMonths: numberOrNull(raw?.minimumMonths),
+    maximumMonths: numberOrNull(raw?.maximumMonths),
+    confidence: Number(raw?.confidence || 0),
+    sourceRefs: arr(raw?.sourceRefs),
+    verifiedAt: raw?.verifiedAt || null
+  };
+}
+
+function numberOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, accessSummaryGeneratedAt = null) {
   const ambiguous = accessSummary.filter(row => row.warnings.length);
   const categoryCounts = countBy(accessSummary.map(row => row.accessLevelCategory));
@@ -461,6 +486,9 @@ function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, acces
     .filter(item => isGenericRequiredCredentialLabel(item.label));
   const truthCases = buildAccessTruthCases(accessSummary);
   const truthFailures = truthCases.filter(item => item.status !== "ok");
+  const durationCounts = countBy(accessSummary.map(row => normalizeTrainingDuration(row.trainingDuration).category));
+  const accessPaths = accessSummary.flatMap(row => arr(row.accessPaths));
+  const pathDurationCounts = countBy(accessPaths.map(path => normalizeTrainingDuration(path.trainingDuration).category));
   return {
     schemaVersion: "1.1.0",
     reportKind: "access_summary_quality",
@@ -477,6 +505,12 @@ function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, acces
       regulatedUnresolvedCount: regulatedUnresolved.length,
       specificCredentialRequiredCount: accessSummary.filter(row => row.specificCredentialRequired).length,
       accessPathsCount: accessSummary.reduce((sum, row) => sum + arr(row.accessPaths).length, 0),
+      accessDurationKnownCount: accessSummary.filter(row => normalizeTrainingDuration(row.trainingDuration).category !== "unknown").length,
+      accessDurationUnknownCount: accessSummary.filter(row => normalizeTrainingDuration(row.trainingDuration).category === "unknown").length,
+      accessDurationCategoryCounts: durationCounts,
+      accessPathsDurationKnownCount: accessPaths.filter(path => normalizeTrainingDuration(path.trainingDuration).category !== "unknown").length,
+      accessPathsDurationUnknownCount: accessPaths.filter(path => normalizeTrainingDuration(path.trainingDuration).category === "unknown").length,
+      accessPathDurationCategoryCounts: pathDurationCounts,
       genericRequiredLabelsRejectedCount: genericRequiredLabels.length,
       truthCasesCount: truthCases.length,
       truthFailuresCount: truthFailures.length,
@@ -503,16 +537,16 @@ function buildAccessTruthCases(accessSummary = []) {
     G1202: row => [Boolean(row)],
     G1203: row => [Boolean(row)],
     G1235: row => [row.requirementKind === "conditional", !row.contradictoryEvidence, !row.mandatoryQualification],
-    K1201: row => [row.requirementKind === "regulated", includesCredential(row, /deass|assistant de service social/)],
-    K1207: row => [row.requirementKind === "regulated", includesCredential(row, /dees|educateur specialise/)],
-    K1307: row => [row.requirementKind === "mandatory", includesCredential(row, /cap.*aepe|accompagnant educatif petite enfance/)],
+    K1201: row => [row.requirementKind === "regulated", includesCredential(row, /deass|assistant de service social/), row.trainingDuration?.category === "long"],
+    K1207: row => [row.requirementKind === "regulated", includesCredential(row, /dees|educateur specialise/), row.trainingDuration?.category === "long"],
+    K1307: row => [row.requirementKind === "mandatory", includesCredential(row, /cap.*aepe|accompagnant educatif petite enfance/), row.trainingDuration?.category === "unknown"],
     K2106: row => [arr(row.accessPaths).length >= 3, !includesCredential(row, /cap.*aepe/)],
     K2111: row => [row.requirementKind === "recommended", !row.specificCredentialRequired],
     J1104: row => [row.requirementKind === "regulated", includesCredential(row, /sage-femme|maieutique/)],
     J1202: row => [row.requirementKind === "regulated", includesCredential(row, /pharmacie/)],
     J1405: row => [row.requirementKind === "regulated", includesCredential(row, /opticien/)],
-    J1407: row => [row.requirementKind === "regulated", includesCredential(row, /orthoptiste/)],
-    J1506: row => [row.requirementKind === "regulated", includesCredential(row, /infirmier/), row.optionalCredentialLabels.length >= 1],
+    J1407: row => [row.requirementKind === "regulated", includesCredential(row, /orthoptiste/), row.trainingDuration?.category === "long"],
+    J1506: row => [row.requirementKind === "regulated", includesCredential(row, /infirmier/), row.optionalCredentialLabels.length >= 1, row.trainingDuration?.category === "long"],
     N1210: row => [row.requirementKind === "conflicting", row.contradictoryEvidence],
     M1501: row => [row.minimumDiplomaLevel === 5, row.maximumDiplomaLevel === 7],
     D1424: row => [!row.specificCredentialRequired, !row.mandatoryQualification]
@@ -775,6 +809,36 @@ async function synchronizeAccessRules(document = {}) {
     }
     if (changed) await writeJson(file, jobs);
   }
+}
+
+async function enrichExistingDataQualityReport(directory, accessSummary = [], buildMetadata = {}) {
+  const file = path.join(directory, "data-quality-report.rome.json");
+  const report = await readJson(file, null);
+  if (!report || typeof report !== "object") return;
+  const directoryJobs = await readJson(path.join(directory, "jobs.rome.json"), []);
+  const activeCodes = new Set(directoryJobs.map(job => job.romeCode).filter(Boolean));
+  accessSummary = accessSummary.filter(row => activeCodes.has(row.romeCode));
+  const paths = accessSummary.flatMap(row => arr(row.accessPaths));
+  report.summary = {
+    ...(report.summary || {}),
+    jobsWithAccessSummary: accessSummary.length,
+    jobsWithSpecificCredentialRequired: accessSummary.filter(row => row.specificCredentialRequired).length,
+    jobsWithStructuredAccessPaths: accessSummary.filter(row => arr(row.accessPaths).length).length,
+    accessPaths: paths.length,
+    accessPathsWithKnownDuration: paths.filter(item => normalizeTrainingDuration(item.trainingDuration).category !== "unknown").length,
+    accessPathsWithUnknownDuration: paths.filter(item => normalizeTrainingDuration(item.trainingDuration).category === "unknown").length,
+    regulatedJobsResolved: accessSummary.filter(row => row.regulated && (arr(row.requiredCredentialLabels).length || arr(row.accessPaths).length)).length,
+    regulatedJobsUnresolved: accessSummary.filter(row => row.regulated && !arr(row.requiredCredentialLabels).length && !arr(row.accessPaths).length).length,
+    accessContradictions: accessSummary.filter(row => row.contradictoryEvidence).length
+  };
+  report.accessCatalogExplanation = {
+    trainingsCatalogCount: report.summary.trainings || 0,
+    certificationsCatalogCount: report.summary.certifications || 0,
+    jobsWithAccessSummary: accessSummary.length,
+    note: "Les compteurs trainings et certifications décrivent les catalogues dédiés. Une valeur nulle ne signifie pas que les conditions d’accès métier sont absentes."
+  };
+  Object.assign(report, buildMetadata, { datasetVersion: report.datasetVersion || buildMetadata.datasetVersion });
+  await writeJson(file, report);
 }
 
 async function readJson(file, fallback) {
