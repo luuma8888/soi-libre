@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadBoussoleEngine, loadGeneratedBundle } from "./validate-boussole-v073.mjs";
+import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
 const CURRENT_HTML = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
@@ -9,10 +10,12 @@ const OUTPUT_PATH = process.env.MARKET_INFLUENCE_REPORT || path.join(ROOT, "tmp"
 
 if (!BASELINE_HTML) throw new Error("BOUSSOLE_BASELINE_HTML doit pointer vers l'application v0.7.6 de reference.");
 
-const [currentHtml, baselineHtml, generated] = await Promise.all([
+const [currentHtml, baselineHtml, generated, currentBuild, baselineBuild] = await Promise.all([
   readFile(CURRENT_HTML, "utf8"),
   readFile(BASELINE_HTML, "utf8"),
-  loadGeneratedBundle()
+  loadGeneratedBundle(),
+  readBoussoleBuildMetadata(CURRENT_HTML),
+  readBoussoleBuildMetadata(BASELINE_HTML)
 ]);
 const current = prepareEngine(loadBoussoleEngine(currentHtml), generated);
 const baseline = prepareEngine(loadBoussoleEngine(baselineHtml), generated);
@@ -31,8 +34,8 @@ const report = {
   reportKind: "boussole_market_influence_before_after",
   generatedAt: new Date().toISOString(),
   protocol: "same_node_process_same_rome500_and_market_package_12_integrated_profiles",
-  baseline: { appVersion: "v0.7.6-alpha", durationMs: baselineRun.durationMs },
-  current: { appVersion: "v0.7.7-alpha", buildId: "20260802-market-phase1-01", durationMs: currentRun.durationMs },
+  baseline: { appVersion: baselineBuild.appVersion, buildId: baselineBuild.buildId, durationMs: baselineRun.durationMs },
+  current: { appVersion: currentBuild.appVersion, buildId: currentBuild.buildId, durationMs: currentRun.durationMs },
   performance: {
     baseline12ProfilesMs: baselineRun.durationMs,
     current12ProfilesMs: currentRun.durationMs,

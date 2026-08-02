@@ -8,10 +8,12 @@ import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
 const HTML_ROUTE = "/creations/boussolepro/boussole-pro.html";
-const OUTPUTS = [
-  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-benchmark.json"),
-  path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "rome500-browser-performance-benchmark.json")
-];
+const OUTPUTS = process.env.BOUSSOLE_PERF_OUTPUT
+  ? [path.resolve(process.env.BOUSSOLE_PERF_OUTPUT)]
+  : [
+      path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-benchmark.json"),
+      path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "rome500-browser-performance-benchmark.json")
+    ];
 const PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 const RUNS_PER_MODE = Number(process.env.BOUSSOLE_PERF_RUNS || 5);

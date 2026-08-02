@@ -1,18 +1,19 @@
 {
-  "schemaVersion": "2.0.0",
-  "marketContractRevision": "market-contract-v2.0.0-phase1",
-  "status": "not_run_needs_source_or_workflow",
-  "reason": "Les sources officielles BMO et Dares utilisent FAP2021, mais aucune table officielle FAP2021-ROME exploitable n'a ete trouvee dans les sources consultees.",
-  "policy": "Aucune premiere correspondance arbitraire. Les lignes FAP restent auditables et ne modifient pas le classement.",
+  "schemaVersion": "3.0.0",
+  "marketContractRevision": "market-contract-v3.0.0-phase2",
+  "status": "official_crosswalk_active_context_only",
+  "reason": "Table officielle Dares ROME × qualification → FAP-2021 intégrée. BMO et Dares sont descriptives et sans effet de rang.",
+  "policy": "Les familles restent séparées ; aucune première FAP, moyenne ou addition arbitraire.",
   "counts": {
-    "fapNomenclature": 228,
-    "bmoRows": 550,
-    "daresRows": 627,
-    "mappings": 0,
-    "rankingEligible": 0,
-    "ambiguous": 0,
-    "unmapped": 228,
-    "absent": 228
+    "activeRomeCodes": 500,
+    "sourceRows": 1096,
+    "mappedActiveRome": 213,
+    "missingActiveRome": 287,
+    "qualificationDependent": 115,
+    "multipleStatisticalFap": 109,
+    "sharedFamily": 170,
+    "displayEligible": 209,
+    "rankingEligible": 0
   },
-  "requiredNextInput": "Table officielle ou validee FAP2021 vers ROME 4.0, avec cardinalites et references."
+  "requiredNextInput": null
 }

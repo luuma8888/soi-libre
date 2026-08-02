@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.7.7-alpha
+**Version :** v0.8.0-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -25,20 +25,20 @@ Les données ROME générées restent séparées du HTML et peuvent être charg�
 La barre d’état affiche une identité complète et stable :
 
 ```text
-Boussole Pro v0.7.7-alpha · build 20260802-market-phase1-01 · données <version du corpus actif>
+Boussole Pro v0.8.0-alpha · build 20260802-market-phase2-fap-rome-01 · données <version du corpus actif>
 ```
 
 Le même `buildId` est inclus dans les exports et rapports. Après un déploiement manuel, contrôler le HTML public sans transmettre de profil :
 
 ```bash
-/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260802-market-phase1-01"
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260802-market-phase2-fap-rome-01"
 ```
 
 Le script affiche l’URL finale, le marqueur attendu et reçu, la date du contrôle, les en-têtes de cache utiles et un verdict. Aucun service worker n’est utilisé par l’application ; aucun cache applicatif supplémentaire ne masque donc le HTML.
 
 ## Modes de lecture
 
-La v0.7.7 distingue trois niveaux d’usage :
+La v0.8.0 distingue trois niveaux d’usage :
 
 - **Essentiel** : lecture courte des pistes principales, sans surcharge technique.
 - **Détaillé** : scores séparés, raisons, vigilances, accès, marché et contexte.
@@ -80,10 +80,10 @@ La révision canonique du paquet moteur est `rome500-runtime-v0.7.7-r1`. Son man
 
 ## Livraison multi-fichiers
 
-Le corpus ROME500 actif n'est pas intégré dans le HTML. La livraison complète se trouve dans `tmp/monde-pro/livraison-boussole-pro-v0.7.7-alpha-20260802-market-phase1-01/` et doit être ouverte avec un serveur local depuis ce dossier :
+Le corpus ROME500 actif n'est pas intégré dans le HTML. La livraison complète se trouve dans `tmp/monde-pro/livraison-boussole-pro-v0.8.0-alpha-20260802-market-phase2-fap-rome-01/` et doit être ouverte avec un serveur local depuis ce dossier :
 
 ```bash
-cd tmp/monde-pro/livraison-boussole-pro-v0.7.7-alpha-20260802-market-phase1-01
+cd tmp/monde-pro/livraison-boussole-pro-v0.8.0-alpha-20260802-market-phase2-fap-rome-01
 python3 -m http.server 8000
 ```
 
@@ -163,12 +163,14 @@ La couche marché reste séparée :
 creations/boussolepro/data/generated/market/
 ```
 
-Elle contient les volumes observés France, Occitanie et Aude, BMO 2026 normalisé en FAP 2021 et la tension Dares 2024 normalisée en FAP 2021. L’application sépare volume, présence territoriale, projets, difficulté, saisonnalité et tension. Chaque résultat exporte le poids marché demandé, le poids effectif et son effet en points, sans modifier la correspondance personnelle ni la faisabilité.
+Elle contient les volumes observés France, Occitanie et Aude, BMO 2026, la tension Dares 2024 et la table officielle Dares `ROME × qualification → FAP-2021`. Le runtime charge un enrichissement compact pré-calculé pour 500 codes. L’application sépare volume, présence territoriale, projets, difficulté, saisonnalité et tension. Chaque résultat exporte le poids marché demandé, le poids effectif et son effet en points, sans modifier la correspondance personnelle ni la faisabilité.
 
 Limites actuelles :
 
-- BMO et Dares restent descriptifs au niveau FAP tant qu’aucune table FAP 2021 vers ROME 4 officielle ou validée n’est fournie ;
-- tension, difficulté et saisonnalité affichées comme non disponibles sur une fiche ROME en l’absence de rapprochement admissible ;
+- BMO et Dares restent descriptifs au niveau de la famille FAP et ont un poids nul dans le classement ;
+- 213 des 500 codes actifs possèdent une correspondance officielle dans la table disponible ; les codes absents restent explicitement sans repère FAP ;
+- les cas dépendants de la qualification sont présentés par famille séparée, sans addition ni moyenne ;
+- les cellules BMO masquées et les tensions imputées restent signalées comme non disponibles ou prudentes ;
 - offres individuelles non affichées ;
 - fraîcheur et couverture variables selon territoire ;
 - facteurs explicatifs de tension non attribués automatiquement.

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "2.0.0",
-  "marketContractRevision": "market-contract-v2.0.0-phase1",
+  "schemaVersion": "3.0.0",
+  "marketContractRevision": "market-contract-v3.0.0-phase2",
   "interpretationRevision": "market-interpretation-v1",
   "rankingPolicyRevision": "market-ranking-policy-v1",
   "dimensions": [
@@ -19,7 +19,10 @@
     "missingIsNotZero": true,
     "suppressedIsNotZero": true,
     "widerTerritoryFallbackMustBeExplicit": true,
-    "weakOrAmbiguousMappingCannotInfluenceRanking": true
+    "weakOrAmbiguousMappingCannotInfluenceRanking": true,
+    "qualificationMustBePreserved": true,
+    "fapFamilyDataIsContextOnly": true,
+    "bmoDaresRankingEligible": false
   },
   "thresholds": {
     "observedOfferVolume": {

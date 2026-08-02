@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 
 export const RUNTIME_BUNDLE_REVISION = "rome500-runtime-v0.7.7-r1";
 export const APP_BUILD = Object.freeze({
-  appVersion: "v0.7.7-alpha",
-  buildId: "20260802-market-phase1-01",
+  appVersion: "v0.8.0-alpha",
+  buildId: "20260802-market-phase2-fap-rome-01",
   buildDate: "2026-08-02"
 });
 
@@ -44,6 +44,7 @@ export const RUNTIME_COMPONENTS = Object.freeze([
   ["marketNational", "market", "market-national.rome.json", "array", true],
   ["marketOccitanie", "market", "market-occitanie.rome.json", "array", true],
   ["marketAude", "market", "market-aude.rome.json", "array", true],
+  ["marketFapEnrichment", "market", "market-fap-enrichment.rome500.json", "array", true],
   ["bmoFap2021", "market", "bmo-fap2021.json", "array", false],
   ["daresTensionFap2021", "market", "dares-tension-fap2021.json", "array", false],
   ["fap2021Nomenclature", "market", "fap2021-nomenclature.json", "array", false],

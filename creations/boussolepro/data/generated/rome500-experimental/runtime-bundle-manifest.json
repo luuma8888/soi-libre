@@ -1,20 +1,21 @@
 {
   "schemaVersion": "2.1.0",
   "manifestKind": "boussole_runtime_bundle_identity",
-  "derivedAt": "2026-08-02T12:00:00.000Z",
+  "derivedAt": "2026-08-02T12:30:00.000Z",
   "inputMode": "packaged_corpus",
   "runtimeBundleRevision": "rome500-runtime-v0.7.7-r1",
   "fingerprintAlgorithm": "sha256_of_sorted_non_market_runtime_component_hashes_and_counts",
   "fingerprintSha256": "1b20be64632b845f7ef7205baa783a630e20708230f00551cc39769ce827cc2f",
   "marketLayerIdentity": {
-    "schemaVersion": "2.0.0",
+    "schemaVersion": "3.0.0",
     "identityKind": "boussole_market_layer_identity",
-    "marketContractRevision": "market-contract-v2.0.0-phase1",
+    "marketContractRevision": "market-contract-v3.0.0-phase2",
     "packageFingerprintAlgorithm": "sha256_of_sorted_market_component_hashes_and_counts",
-    "packageFingerprintSha256": "cb91d82982701e2898aba1b8d92b4ae1f0ea36dc0156d0f42e69fd8a6c09113d",
+    "packageFingerprintSha256": "bfcd3b78ebbe4f43c593670c96f234ed12bc0408ac5365a1d9df14af99b0e2c0",
     "parserVersions": {
       "xlsx": "xlsx-stream-reader-v1",
-      "phase1": "prepare-boussole-market-phase1-v1"
+      "phase1": "prepare-boussole-market-phase1-v1",
+      "phase2": "prepare-boussole-market-phase2-v1"
     },
     "sourcePublishedAt": {
       "bmo": "2026-04-21",
@@ -27,9 +28,9 @@
       "daresTension": "2024",
       "fapNomenclature": "FAP2021"
     },
-    "normalizedAt": "2026-08-02T10:00:00.000Z",
-    "derivedAt": "2026-08-02T10:00:00.000Z",
-    "packagedAt": "2026-08-02T10:00:00.000Z",
+    "normalizedAt": "2026-08-02T12:00:00.000Z",
+    "derivedAt": "2026-08-02T12:00:00.000Z",
+    "packagedAt": "2026-08-02T12:00:00.000Z",
     "sources": [
       {
         "id": "france_travail_market_api",
@@ -57,6 +58,28 @@
         "sourceVintage": "FAP2021",
         "sourcePublishedAt": "2024-04-30",
         "url": "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true"
+      },
+      {
+        "id": "dares_fap2021_rome_crosswalk",
+        "producer": "Dares",
+        "resourceLabel": "Table de passage FAP 2021 / Rome",
+        "pageUrl": "https://dares.travail-emploi.gouv.fr/donnees/la-nomenclature-des-familles-professionnelles-2021",
+        "directUrl": "https://dares.travail-emploi.gouv.fr/sites/default/files/f83237de4f41868cb73b0e1aafe4800c/Dares_FAP2021_Table_passage_ROME.xlsx",
+        "archivedRetrievalUrl": "https://web.archive.org/web/20240425053231id_/https://dares.travail-emploi.gouv.fr/sites/default/files/f83237de4f41868cb73b0e1aafe4800c/Dares_FAP2021_Table_passage_ROME.xlsx",
+        "fileName": "Dares_FAP2021_Table_passage_ROME.xlsx",
+        "format": "xlsx",
+        "sourceVintage": "FAP2021",
+        "retrievalStatus": "official_copy_archived_from_public_page",
+        "sizeBytes": 69092,
+        "sha256": "2f3808fa1aa05981f79988befa528580e697fca45f19dff1a72d6afbb5866241",
+        "headers": [
+          "fap_2021",
+          "intitule_fap",
+          "rome",
+          "qualification",
+          "intitule_rome"
+        ],
+        "rows": 1096
       }
     ],
     "territories": [
@@ -70,91 +93,118 @@
       "offerDepartmental": 382,
       "bmoFapRows": 550,
       "daresTensionFapRows": 627,
-      "fapRomeMappings": 0,
-      "fapRomeRankingEligible": 0
+      "fapRomeMappings": 1096,
+      "fapRomeRankingEligible": 0,
+      "fapRomeSourceRows": 1096,
+      "derivedRomeRows": 500
     },
     "coverage": {
       "activeRomeJobs": 500,
       "jobsWithObservedOffers": 437,
-      "jobsWithBmo": 0,
-      "jobsWithDaresTension": 0,
+      "jobsWithBmo": 209,
+      "jobsWithDaresTension": 206,
       "bmoFapFamilies": 217,
-      "daresFapFamilies": 209
+      "daresFapFamilies": 209,
+      "jobsWithOfficialFapMapping": 213,
+      "jobsQualificationDependent": 115,
+      "jobsWithoutOfficialFapMapping": 287,
+      "displayEligibleJobs": 209,
+      "rankingEligibleJobsBmoDares": 0,
+      "jobsWithBmoProjects": 209,
+      "jobsWithBmoDifficulty": 88,
+      "jobsWithBmoSeasonality": 50,
+      "jobsWithDaresPublishedClass": 206,
+      "jobsWithDaresImputed": 160,
+      "jobsWithMultipleStatisticalFap": 109,
+      "jobsWithSharedFapFamily": 170
     },
     "mappingCoverage": {
-      "officialCrosswalk": 0,
-      "validatedLocal": 0,
-      "ambiguous": 0,
-      "unmapped": 217,
-      "absent": 217
+      "activeRomeCodes": 500,
+      "sourceRows": 1096,
+      "mappedActiveRome": 213,
+      "missingActiveRome": 287,
+      "qualificationDependent": 115,
+      "multipleStatisticalFap": 109,
+      "sharedFamily": 170,
+      "displayEligible": 209,
+      "rankingEligible": 0
     },
     "components": [
       {
         "fileName": "market-contract.json",
-        "sha256": "e3577489d1677938605044faf662caedbbd9d19c5d762a7ef3cbe65bca9d67cf",
-        "size": 1492,
+        "sha256": "42574d688861d94d6440a48d94cb3f65f90f5ee456876e7f44e0267d4bc459fd",
         "count": 1
       },
       {
         "fileName": "market-national.rome.json",
         "sha256": "9ce5fff43b8b66fe74aac12dc69814e0400c2e4c579a54395452fb9225162f03",
-        "size": 2082130,
         "count": 437
       },
       {
         "fileName": "market-occitanie.rome.json",
         "sha256": "fefd7d28daf1836352f54459dff14c42df733af6961f96d318e7bd02aac2d2dc",
-        "size": 2004522,
         "count": 429
       },
       {
         "fileName": "market-aude.rome.json",
         "sha256": "5a82fa4499d18cdf29a6d9c53da400f2d2ab052866df261f55b283df17b8fee9",
-        "size": 1712317,
         "count": 382
       },
       {
         "fileName": "bmo-fap2021.json",
-        "sha256": "c012e09b964c91ea5bd35a074dbd0dc17bc3f638af2a79c070a998d5f3894aa9",
-        "size": 1463096,
+        "sha256": "0f471879eb0b6de7ccc9ba9176d393ebc377f74f7573440010764ec30602a90b",
         "count": 550
       },
       {
         "fileName": "dares-tension-fap2021.json",
-        "sha256": "794984c5072667840ed93f41e4f18daff5cb4ca83d051c6bbcb66fa0afe9684f",
-        "size": 3603813,
+        "sha256": "ab1c9a2fec63dbbca4c1147bba4bb51dde429430422658e625e76576011e0c3a",
         "count": 627
       },
       {
         "fileName": "fap2021-nomenclature.json",
         "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
-        "size": 64203,
         "count": 228
       },
       {
         "fileName": "fap-rome-mappings.json",
-        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
-        "size": 3,
-        "count": 0
+        "sha256": "3a145f00906f62fad52c980241b65b5717de9c8fa98572bede2db5c598303577",
+        "count": 1096
       },
       {
         "fileName": "fap-rome-mapping-status.json",
-        "sha256": "6f4b182f1cecedd596f9acafa3bacabcfebf6d7648506a4675918e1b50a440e4",
-        "size": 740,
+        "sha256": "a66932b753ba5a709e041d85410a141cb6605a89223ba2f6b937f346d25c2f24",
         "count": 1
       },
       {
         "fileName": "territories.json",
         "sha256": "07215d3f089177d325d3f0a7fb9e7e8a61124a25c3d57f662b983f133ffdf98d",
-        "size": 755,
         "count": 3
+      },
+      {
+        "fileName": "market-fap-enrichment.rome500.json",
+        "sha256": "76be0d55f07c0b66cbecbe8c63e88a6a1bebe28cf3c7e0c98a863b0ff487faf9",
+        "count": 500
       }
     ],
-    "status": "offer_layer_ready_fap_sources_unmapped"
+    "status": "market_phase2_fap_bmo_dares_active_context_only",
+    "packagedSourceRows": {
+      "bmoFapRows": 550,
+      "daresTensionFapRows": 627,
+      "fapRomeSourceRows": 1096
+    },
+    "derivedRomeRows": {
+      "total": 500,
+      "withOfficialMapping": 213,
+      "withBmo": 209,
+      "withDares": 206
+    },
+    "runtimeLoadedRows": {
+      "compactFapEnrichmentRows": 500
+    }
   },
   "appBuild": {
-    "appVersion": "v0.7.7-alpha",
-    "buildId": "20260802-market-phase1-01",
+    "appVersion": "v0.8.0-alpha",
+    "buildId": "20260802-market-phase2-fap-rome-01",
     "buildDate": "2026-08-02"
   },
   "datasetIdentity": {
@@ -171,7 +221,7 @@
   "ruleVersions": {
     "access": "v0.7.6-alpha",
     "sectors": "v0.7.5-alpha",
-    "scoring": "v0.7.7-alpha"
+    "scoring": "v0.8.0-alpha"
   },
   "counts": {
     "manifest": 1,
@@ -200,10 +250,11 @@
     "marketNational": 437,
     "marketOccitanie": 429,
     "marketAude": 382,
+    "marketFapEnrichment": 500,
     "bmoFap2021": 550,
     "daresTensionFap2021": 627,
     "fap2021Nomenclature": 228,
-    "fapRomeMappings": 0,
+    "fapRomeMappings": 1096,
     "fapRomeMappingStatus": 1,
     "accessRules": 1,
     "sectorRules": 1
@@ -430,9 +481,9 @@
       "relativePath": "data/generated/market/market-import-manifest.json",
       "required": true,
       "count": 1,
-      "size": 5830,
-      "sha256": "02c943e7dc87e6c6a7e4e780d2eb8392ab5907c07f11550c9cc24556a0e98d49",
-      "sourceGeneratedAt": "2026-08-02T10:00:00.000Z"
+      "size": 8152,
+      "sha256": "2dc125cffe3a4629d25fd94112e0a962eccaf8e47da589de704fbc5d553d5e63",
+      "sourceGeneratedAt": "2026-08-02T08:33:58.565Z"
     },
     {
       "role": "marketQualityReport",
@@ -441,9 +492,9 @@
       "relativePath": "data/generated/market/market-quality-report.json",
       "required": true,
       "count": 1,
-      "size": 6904,
-      "sha256": "f2dd7a0fb610594a88d695a35077c7d6fa7865b748a536bd9d77de83d60c705f",
-      "sourceGeneratedAt": "2026-08-02T10:00:00.000Z"
+      "size": 9481,
+      "sha256": "246febdedc55855e77269ce4a190364d7d3138bb4ab5ff27afcebc1cd712c41c",
+      "sourceGeneratedAt": "2026-08-02T12:00:00.000Z"
     },
     {
       "role": "marketContract",
@@ -452,8 +503,8 @@
       "relativePath": "data/generated/market/market-contract.json",
       "required": true,
       "count": 1,
-      "size": 1492,
-      "sha256": "e3577489d1677938605044faf662caedbbd9d19c5d762a7ef3cbe65bca9d67cf",
+      "size": 1612,
+      "sha256": "42574d688861d94d6440a48d94cb3f65f90f5ee456876e7f44e0267d4bc459fd",
       "sourceGeneratedAt": null
     },
     {
@@ -463,8 +514,8 @@
       "relativePath": "data/generated/market/market-package-identity.json",
       "required": true,
       "count": 1,
-      "size": 4372,
-      "sha256": "e5eb16e4d8c9c966afe16404a26a752c58db28c66b4d16f2ce4447f9d4f1464a",
+      "size": 6418,
+      "sha256": "f2fae331b4aa79f160eb318c966135b2ea2ec0d41064016f770e53568381ee0a",
       "sourceGeneratedAt": {
         "offers": "2026T1",
         "bmo": "2026",
@@ -506,6 +557,17 @@
       "sourceGeneratedAt": null
     },
     {
+      "role": "marketFapEnrichment",
+      "area": "market",
+      "fileName": "market-fap-enrichment.rome500.json",
+      "relativePath": "data/generated/market/market-fap-enrichment.rome500.json",
+      "required": true,
+      "count": 500,
+      "size": 1469707,
+      "sha256": "76be0d55f07c0b66cbecbe8c63e88a6a1bebe28cf3c7e0c98a863b0ff487faf9",
+      "sourceGeneratedAt": null
+    },
+    {
       "role": "bmoFap2021",
       "area": "market",
       "fileName": "bmo-fap2021.json",
@@ -513,7 +575,7 @@
       "required": false,
       "count": 550,
       "size": 1463096,
-      "sha256": "c012e09b964c91ea5bd35a074dbd0dc17bc3f638af2a79c070a998d5f3894aa9",
+      "sha256": "0f471879eb0b6de7ccc9ba9176d393ebc377f74f7573440010764ec30602a90b",
       "sourceGeneratedAt": null
     },
     {
@@ -524,7 +586,7 @@
       "required": false,
       "count": 627,
       "size": 3603813,
-      "sha256": "794984c5072667840ed93f41e4f18daff5cb4ca83d051c6bbcb66fa0afe9684f",
+      "sha256": "ab1c9a2fec63dbbca4c1147bba4bb51dde429430422658e625e76576011e0c3a",
       "sourceGeneratedAt": null
     },
     {
@@ -544,9 +606,9 @@
       "fileName": "fap-rome-mappings.json",
       "relativePath": "data/generated/market/fap-rome-mappings.json",
       "required": false,
-      "count": 0,
-      "size": 3,
-      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 1096,
+      "size": 1063440,
+      "sha256": "3a145f00906f62fad52c980241b65b5717de9c8fa98572bede2db5c598303577",
       "sourceGeneratedAt": null
     },
     {
@@ -556,8 +618,8 @@
       "relativePath": "data/generated/market/fap-rome-mapping-status.json",
       "required": true,
       "count": 1,
-      "size": 740,
-      "sha256": "6f4b182f1cecedd596f9acafa3bacabcfebf6d7648506a4675918e1b50a440e4",
+      "size": 695,
+      "sha256": "a66932b753ba5a709e041d85410a141cb6605a89223ba2f6b937f346d25c2f24",
       "sourceGeneratedAt": null
     },
     {

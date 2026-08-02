@@ -12,7 +12,7 @@ const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "gener
 const ROME500_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
 const CEDRIC_PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
-const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v077-market-phase1-validation-report.json");
+const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v080-market-phase2-validation-report.json");
 
 const SECTOR_EXPECTATIONS = {
   G1201: { primary: "hotellerie_hebergement", boussoleDomainLabel: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
@@ -62,7 +62,7 @@ async function main() {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v077_market_phase1_validation",
+    reportKind: "boussole_v080_market_phase2_validation",
     generatedAt: new Date().toISOString(),
     appVersion: buildMetadata.appVersion,
     buildId: buildMetadata.buildId,
@@ -99,9 +99,9 @@ async function main() {
 
   await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   if (report.status !== "ok") {
-    throw new Error(`[Boussole Pro] Validation v0.7.7 échouée: ${report.failures.join(", ")}`);
+    throw new Error(`[Boussole Pro] Validation v0.8.0 échouée: ${report.failures.join(", ")}`);
   }
-  console.log(`[Boussole Pro] Validation v0.7.7 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+  console.log(`[Boussole Pro] Validation v0.8.0 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
 }
 
 function validateMarketPhase1(app) {
@@ -203,7 +203,7 @@ function validateTestBenchDeterminism(app) {
   const secondSha256 = canonicalSha256(second);
   if (toArray(first.rows).length !== 12) failures.push(`bench:profiles_${toArray(first.rows).length}`);
   if (firstSha256 !== secondSha256) failures.push("bench:user_state_leak");
-  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.7.7", firstSha256, secondSha256, failures };
+  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.8.0", firstSha256, secondSha256, failures };
 }
 
 function validateSectors(app) {
@@ -692,7 +692,8 @@ export async function loadGeneratedBundle(directory = ROME500_DIR) {
     marketQualityReport: await readJson(path.join(MARKET_DIR, "market-quality-report.json"), null),
     marketNational: await readJson(path.join(MARKET_DIR, "market-national.rome.json"), []),
     marketOccitanie: await readJson(path.join(MARKET_DIR, "market-occitanie.rome.json"), []),
-    marketAude: await readJson(path.join(MARKET_DIR, "market-aude.rome.json"), [])
+    marketAude: await readJson(path.join(MARKET_DIR, "market-aude.rome.json"), []),
+    marketFapEnrichment: await readJson(path.join(MARKET_DIR, "market-fap-enrichment.rome500.json"), [])
   };
 }
 

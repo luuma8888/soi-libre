@@ -1698,17 +1698,17 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.7.7-alpha",
-  buildId: "20260802-market-phase1-01",
+  appVersion: "v0.8.0-alpha",
+  buildId: "20260802-market-phase2-fap-rome-01",
   buildDate: "2026-08-02",
   defaultDatasetVersion: "rome500-candidate-v0.7",
   runtimeBundleRevision: "rome500-runtime-v0.7.7-r1",
   runtimeBundleFingerprintSha256: "1b20be64632b845f7ef7205baa783a630e20708230f00551cc39769ce827cc2f",
-  marketContractRevision: "market-contract-v2.0.0-phase1",
-  marketPackageFingerprintSha256: "cb91d82982701e2898aba1b8d92b4ae1f0ea36dc0156d0f42e69fd8a6c09113d",
+  marketContractRevision: "market-contract-v3.0.0-phase2",
+  marketPackageFingerprintSha256: "bfcd3b78ebbe4f43c593670c96f234ed12bc0408ac5365a1d9df14af99b0e2c0",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_7",
-  testProfilesRevision: "integrated-12-v0.7.7"
+  testProfilesRevision: "integrated-12-v0.8.0"
 });
 
 const DATASET_VERSION_ALIASES = Object.freeze({
@@ -7722,7 +7722,8 @@ function normalizeMarketStats(raw = null, job = {}) {
       national: normalizeMarketTerritoryStats(raw.national),
       regional: normalizeMarketTerritoryStats(raw.regional),
       departmental: normalizeMarketTerritoryStats(raw.departmental),
-      bmo: normalizeBmoStats(raw.bmo)
+      bmo: normalizeBmoStats(raw.bmo),
+      fapEnrichment: raw.fapEnrichment && typeof raw.fapEnrichment === "object" ? raw.fapEnrichment : null
     };
   }
   return buildEstimatedMarketStats(job);
@@ -7778,6 +7779,8 @@ function normalizeBmoStats(raw = {}) {
     difficultRecruitmentRate: numberOrNull(raw?.difficultRecruitmentRate),
     seasonalRate: numberOrNull(raw?.seasonalRate),
     territoryLevel: raw?.territoryLevel || "unknown",
+    territoryLabel: raw?.territoryLabel || null,
+    mappingMethod: raw?.mappingMethod || "unmapped",
     mappingConfidence: clamp(Number(raw?.mappingConfidence || 0), 0, 1),
     confidence: clamp(Number(raw?.confidence || 0), 0, 1)
   };
@@ -7873,6 +7876,10 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
   const reliability = marketReliabilityForLevel(sourceLevel, selectedStats.confidence, isEstimated);
   const marketDiscriminant = sourceLevel !== "none" && !isEstimated && reliability >= 0.5;
   const evidenceLevel = sourceLevel === "none" ? "none" : isEstimated ? "weak" : reliability >= 0.7 ? "strong" : "medium";
+  const fapContext = selectFapMarketContext(stats.fapEnrichment, territory.id);
+  const uniqueFamily = fapContext.families.length === 1 ? fapContext.families[0] : null;
+  const bmo = uniqueFamily ? normalizeFapBmoFamily(uniqueFamily) : (stats.bmo || normalizeBmoStats());
+  const dares = uniqueFamily?.dares || null;
   return {
     romeCode: job.romeCode || stats.romeCode,
     sourceLevel,
@@ -7897,18 +7904,63 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
     territoryPercentile: selectedStats.territoryPercentile ?? null,
     offers12mRankInTerritory: selectedStats.offers12mRankInTerritory ?? null,
     marketFreshness: selectedStats.marketFreshness || "unknown",
-    tensionLevel: selectedStats.tensionLevel || "unknown",
+    tensionLevel: dares?.tension?.level || selectedStats.tensionLevel || "unknown",
+    tensionIndex: numberOrNull(dares?.tension?.value),
+    tensionSourceName: dares ? "dares_france_travail_tension" : null,
+    tensionVintage: dares?.year || null,
+    tensionTerritoryLabel: dares?.territoryLabel || null,
+    tensionConfidence: Number(dares?.tension?.confidence || 0),
+    tensionMethod: dares ? (dares.imputed ? "official_fap2021_imputed_context" : "official_published_fap2021_context") : "not_available",
+    tensionMappingMethod: uniqueFamily ? "official_crosswalk" : "unmapped",
+    tensionMappingConfidence: uniqueFamily ? 1 : 0,
+    tensionRankingEligible: false,
     recruitmentSignal: selectedStats.recruitmentSignal || "unknown",
     recruitmentDifficulty: selectedStats.recruitmentDifficulty || "unknown",
     salarySignal: selectedStats.salarySignal || "unknown",
-    seasonalRate: stats.bmo?.seasonalRate ?? null,
-    bmo: stats.bmo || normalizeBmoStats(),
+    seasonalRate: bmo.seasonalRate ?? null,
+    bmo,
+    fapContext,
     marketReliability: reliability,
     marketDiscriminant,
     marketEvidenceLevel: evidenceLevel,
     isEstimated,
     note: marketSnapshotNote(sourceLevel, territory, reliability, isEstimated, selection)
   };
+}
+
+function selectFapMarketContext(enrichment = null, territoryId = "DEP-11") {
+  const families = toArray(enrichment?.territories?.[territoryId]);
+  return {
+    families,
+    cardinalityStatus: enrichment?.cardinalityStatus || "official_mapping_missing_for_active_rome",
+    qualificationDependency: Boolean(enrichment?.qualificationDependency),
+    sharedFamily: Boolean(enrichment?.sharedFamily),
+    warning: enrichment?.warning || null,
+    rankingEligible: false
+  };
+}
+
+function normalizeFapBmoFamily(family = {}) {
+  const bmo = family.bmo || {};
+  const projects = bmo.recruitmentProjects || {};
+  const difficulty = bmo.recruitmentDifficulty || {};
+  const seasonality = bmo.seasonality || {};
+  return normalizeBmoStats({
+    year: bmo.year,
+    status: projects.status || difficulty.status || seasonality.status || "unknown",
+    sourceLevel: "official_fap_family",
+    usedInMarketScore: false,
+    fapCode: family.fapCode,
+    fapLabel: toArray(family.fapLabels)[0] || null,
+    recruitmentProjects: projects.value,
+    difficultRecruitmentRate: difficulty.value,
+    seasonalRate: seasonality.value,
+    territoryLevel: bmo.territoryLabel || "unknown",
+    territoryLabel: bmo.territoryLabel || null,
+    mappingMethod: "official_crosswalk",
+    mappingConfidence: 1,
+    confidence: Math.max(Number(projects.confidence || 0), Number(difficulty.confidence || 0), Number(seasonality.confidence || 0))
+  });
 }
 
 function getJobMarketStats(job = {}, datasets = App.state.dataset) {
@@ -9545,9 +9597,13 @@ function renderMarketOneLineSummary(job = {}, result = {}) {
   const synthesis = getJobMarketSynthesis(job, App.state.dataset, App.state.profile?.marketPreference);
   const dimensions = synthesis.dimensions;
   const territoryLabel = synthesis.dataTerritoryLabel || synthesis.territory?.label || "Territoire sélectionné";
+  const fapContext = synthesis.snapshot?.fapContext || { families: [] };
+  const familyNote = fapContext.families.length > 1
+    ? ` · ${fapContext.families.length} familles FAP selon la qualification, repères séparés dans le détail`
+    : fapContext.families.length === 1 ? ` · famille FAP ${fapContext.families[0].fapCode}` : "";
   const html = `
     <div class="market-one-line">
-      <span><strong>${h(territoryLabel)}</strong> · ${h(marketDimensionCompactLabel("volume", dimensions.offerVolume))} · ${h(marketDimensionCompactLabel("présence", dimensions.territorialPresence))} · ${h(marketDimensionCompactLabel("tension", dimensions.tension))} · ${h(marketDimensionCompactLabel("difficulté BMO", dimensions.recruitmentDifficulty))} · ${h(marketDimensionCompactLabel("saisonnalité", dimensions.seasonality))}. ${h(synthesis.interpretation.text)}</span>
+      <span><strong>${h(territoryLabel)}</strong> · ${h(marketDimensionCompactLabel("volume", dimensions.offerVolume))} · ${h(marketDimensionCompactLabel("présence", dimensions.territorialPresence))} · ${h(marketDimensionCompactLabel("tension", dimensions.tension))} · ${h(marketDimensionCompactLabel("difficulté BMO", dimensions.recruitmentDifficulty))} · ${h(marketDimensionCompactLabel("saisonnalité", dimensions.seasonality))}${h(familyNote)}. ${h(synthesis.interpretation.text)}</span>
       <button class="tiny-button" type="button" data-action="open-market" data-job-id="${h(job.id || result.jobId || "")}">Voir le marché</button>
     </div>`;
   if (cacheKey) App.state.marketSummaryCache.set(cacheKey, html);
@@ -9586,6 +9642,7 @@ function renderMarketDetailModal(job = {}, result = {}) {
     <h2 data-dialog-job-id="${h(job.id)}">Marché observé — ${h(job.title)}</h2>
     <p>${h(synthesis.interpretation.text)}</p>
     ${synthesis.territoryFallback ? `<p class="warning-inline">Le territoire demandé ne dispose pas de cette donnée ; le niveau ${h(synthesis.dataTerritoryLabel || "disponible")} est affiché.</p>` : ""}
+    ${renderFapFamilyMarketDetail(synthesis.snapshot?.fapContext)}
     <div class="compare-modal-grid">
       <table class="compare-modal-table">
         <thead><tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th><th>Territoire</th><th>Millésime</th><th>Source</th><th>Qualité / usage</th></tr></thead>
@@ -9602,6 +9659,32 @@ function renderMarketDetailModal(job = {}, result = {}) {
       </table>
     </div>
     <p class="field-help">Couverture : ${h(`${synthesis.sourceCoverage.present}/${synthesis.sourceCoverage.total} dimensions`)} · liaison FAP–ROME : ${h(marketMappingQualityLabel(synthesis.mappingQuality))}. Une donnée absente reste explicitement non disponible et n’est pas remplacée par le volume d’offres.</p>`;
+}
+
+function renderFapFamilyMarketDetail(context = {}) {
+  const families = toArray(context?.families);
+  if (!families.length) return '<p class="field-help">Correspondance FAP non disponible pour ce code ROME ; BMO et tension Dares ne sont pas affichées.</p>';
+  const intro = families.length > 1
+    ? "Ce code ROME relève de plusieurs familles statistiques selon le niveau de qualification. Les repères sont présentés séparément et ne sont ni additionnés ni moyennés."
+    : context.sharedFamily
+      ? "Données de la famille FAP officielle liée à ce code ROME. Cette famille est partagée avec d’autres codes ROME et ne décrit pas exclusivement cette appellation."
+      : "Données BMO/Dares de la famille FAP officielle liée à ce code ROME.";
+  return `<div class="reason-box"><strong>Repères par famille professionnelle</strong><p>${h(intro)}</p>
+    <div class="compare-modal-grid"><table class="compare-modal-table"><thead><tr><th>Famille FAP</th><th>Qualification(s)</th><th>Projets BMO</th><th>Difficulté</th><th>Saisonnalité</th><th>Tension Dares</th></tr></thead><tbody>
+      ${families.map(family => `<tr>
+        <td><strong>${h(family.fapCode || "non renseignée")}</strong><br>${h(toArray(family.fapLabels)[0] || "Libellé non renseigné")}</td>
+        <td>${h(toArray(family.qualificationCodes).join(", ") || "toutes / non précisée")}</td>
+        <td>${marketCompactSourceValue(family.bmo?.recruitmentProjects)}</td>
+        <td>${marketCompactSourceValue(family.bmo?.recruitmentDifficulty, true)}</td>
+        <td>${marketCompactSourceValue(family.bmo?.seasonality, true)}</td>
+        <td>${marketCompactSourceValue(family.dares?.tension)}</td>
+      </tr>`).join("")}
+    </tbody></table></div><p class="field-help">Ces repères sont descriptifs et ont un poids nul dans le classement.</p></div>`;
+}
+
+function marketCompactSourceValue(dimension = null, percent = false) {
+  if (!dimension || !["available", "zero"].includes(dimension.status) || !Number.isFinite(Number(dimension.value))) return '<span class="missing">non disponible</span>';
+  return h(`${formatNumberFr(Number(dimension.value))}${percent ? " %" : ""}`);
 }
 
 function marketDimensionCompactLabel(label, dimension = {}) {
@@ -11258,13 +11341,15 @@ function renderDataPage() {
         ${metric("Zéro offre Aude", marketCoverage.jobsWithZeroDepartmentalOffers || 0)}
         ${metric("Données anciennes", marketCoverage.jobsWithStaleMarketData || 0)}
         ${metric("BMO rapproché", marketCoverage.jobsWithBmo || 0)}
+        ${metric("Tension Dares rapprochée", marketCoverage.jobsWithDaresTension || 0)}
+        ${metric("Correspondance FAP officielle", marketCoverage.jobsWithOfficialFapMapping || 0)}
         ${metric("Sans donnée", marketCoverage.jobsWithoutMarket || 0)}
       </div>
       <div class="launch-box ${hasOfficialMarketStats ? "" : "warning"}">
         <strong>${hasOfficialMarketStats ? "Statistiques officielles marché chargées" : "Statistiques officielles marché non connectées ou non exploitables"}</strong>
         <p>${h(marketContext.reason)} ${hasOfficialMarketStats ? `Boussole Pro utilise les fichiers JSON statiques générés dans data/generated/market, sans secret côté navigateur. Statut génération : ${h(marketReport.status || "non renseigné")}.` : "Les signaux intégrés restent alors des repères locaux estimatifs. Les données API Marché du travail doivent être générées en JSON statiques sans secret côté navigateur."}</p>
-        <p class="field-help">Source marché : ${h(marketSourceNameLabel(marketReport.sourceName || "api_marche_travail"))} · méthode ${h(marketReport.apiMethod || marketReport.marketApi?.method || "POST")} · donnée affichée : volumes d’offres observés. BMO utilisé dans le score : non. FAP/ROME utilisé dans le score : non. Offres actives affichées : non.</p>
-        <p class="field-help">Attention : ces données ne constituent pas encore une tension métier complète. Elles ne contiennent pas les ratios demandeurs/offres, les embauches consolidées ou la saisonnalité BMO validée.</p>
+        <p class="field-help">Source marché : ${h(marketSourceNameLabel(marketReport.sourceName || "api_marche_travail"))} · méthode ${h(marketReport.apiMethod || marketReport.marketApi?.method || "POST")} · données affichées : volumes d’offres observés et repères de familles FAP BMO/Dares lorsqu’une correspondance officielle existe. BMO et Dares utilisés dans le score : non. Offres actives affichées : non.</p>
+        <p class="field-help">Attention : BMO et Dares décrivent des familles professionnelles. Les cas dépendants de la qualification sont présentés séparément, sans moyenne ni addition, et les cellules masquées restent non disponibles.</p>
       </div>
     </section>
     <section class="results-section print-section">
@@ -11460,6 +11545,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     marketPackageIdentity: "market-package-identity.json",
     marketContract: "market-contract.json",
     fapRomeMappingStatus: "fap-rome-mapping-status.json",
+    marketFapEnrichment: "market-fap-enrichment.rome500.json",
     marketNational: "market-national.rome.json",
     marketOccitanie: "market-occitanie.rome.json",
     marketAude: "market-aude.rome.json"
@@ -11491,6 +11577,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     marketPackageIdentity: `market/${marketFiles.marketPackageIdentity}`,
     marketContract: `market/${marketFiles.marketContract}`,
     fapRomeMappingStatus: `market/${marketFiles.fapRomeMappingStatus}`,
+    marketFapEnrichment: `market/${marketFiles.marketFapEnrichment}`,
     marketNational: `market/${marketFiles.marketNational}`,
     marketOccitanie: `market/${marketFiles.marketOccitanie}`,
     marketAude: `market/${marketFiles.marketAude}`
@@ -11558,7 +11645,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     const marketCoverageLoaded = calculateMarketCoverage(App.state.dataset, mapUserProfileToCriteria(App.state.profile));
     const marketStatus = generated.marketQualityReport?.status || "non renseigné";
     App.state.generatedDataStatus = "disponible via données générées";
-    App.state.generatedDataMessage = `Les fichiers ${corpusLabel} ont été chargés sans secret dans le navigateur. Corpus chargé depuis : ${basePath}. Marché chargé depuis : ${generated.marketBasePath || `${basePath}market/`}. Marché : ${marketRowsLoaded.total} ligne(s) statistiques chargée(s), France ${marketCoverageLoaded.jobsWithNationalMarket || 0}, Occitanie ${marketCoverageLoaded.jobsWithRegionalMarket || 0}, Aude ${marketCoverageLoaded.jobsWithDepartmentalMarket || 0}. Statut ${marketStatus}. Donnée affichée : volume d’offres observé, pas tension complète.`;
+    App.state.generatedDataMessage = `Les fichiers ${corpusLabel} ont été chargés sans secret dans le navigateur. Corpus chargé depuis : ${basePath}. Marché chargé depuis : ${generated.marketBasePath || `${basePath}market/`}. Marché : ${marketRowsLoaded.total} ligne(s) d’offres, France ${marketCoverageLoaded.jobsWithNationalMarket || 0}, Occitanie ${marketCoverageLoaded.jobsWithRegionalMarket || 0}, Aude ${marketCoverageLoaded.jobsWithDepartmentalMarket || 0}. Repères de familles : BMO ${marketCoverageLoaded.jobsWithBmo || 0}, Dares ${marketCoverageLoaded.jobsWithDaresTension || 0}. Statut ${marketStatus}. BMO et Dares restent descriptifs et sans effet sur le rang.`;
     recordPerformanceMetric("totalGeneratedLoadMs", totalStartedAt);
     hideLoading({ delay: 120 });
     const resultsRenderStartedAt = nowMs();
@@ -11798,7 +11885,8 @@ function compactGeneratedDatasetForBrowser(generated = {}) {
       : [],
     marketNational: filterMarketRowsForActiveCodes(generated.marketNational, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     marketOccitanie: filterMarketRowsForActiveCodes(generated.marketOccitanie, activeRomeCodes).map(compactMarketRowForActiveCorpus),
-    marketAude: filterMarketRowsForActiveCodes(generated.marketAude, activeRomeCodes).map(compactMarketRowForActiveCorpus)
+    marketAude: filterMarketRowsForActiveCodes(generated.marketAude, activeRomeCodes).map(compactMarketRowForActiveCorpus),
+    marketFapEnrichment: toArray(generated.marketFapEnrichment).filter(item => activeRomeCodes.has(item.romeCode))
   };
 }
 
@@ -11951,6 +12039,7 @@ function buildActiveMergedQualityReport(merged = {}, generated = {}) {
 
 function applyGeneratedMarketStatsToJobs(jobs = [], generated = {}) {
   const byRome = new Map();
+  const fapByRome = new Map(toArray(generated.marketFapEnrichment).map(item => [item.romeCode, item]));
   const addRows = (rows, level) => {
     toArray(rows).forEach(row => {
       const code = extractRomeCode(row.romeCode || row.code || row.id);
@@ -11971,10 +12060,13 @@ function applyGeneratedMarketStatsToJobs(jobs = [], generated = {}) {
   addRows(generated.marketNational, "national");
   addRows(generated.marketOccitanie, "regional");
   addRows(generated.marketAude, "departmental");
-  if (!byRome.size) return jobs;
+  if (!byRome.size && !fapByRome.size) return jobs;
   return jobs.map(job => {
     const stats = byRome.get(job.romeCode);
-    return stats ? normalizeJob({ ...job, marketStats: normalizeMarketStats(stats, job) }) : job;
+    const fapEnrichment = fapByRome.get(job.romeCode) || null;
+    if (!stats && !fapEnrichment) return job;
+    const combined = { ...(stats || buildUnavailableMarketStats(job)), fapEnrichment };
+    return normalizeJob({ ...job, marketStats: normalizeMarketStats(combined, job) });
   });
 }
 
@@ -14357,7 +14449,9 @@ function calculateMarketCoverage(datasets = App.state.dataset, criteria = {}) {
     jobsWithZeroRegionalOffers: statsByJob.filter(stats => hasOfficialLevel(stats, "regional") && stats.regional.offers12m === 0).length,
     jobsWithZeroDepartmentalOffers: statsByJob.filter(stats => hasOfficialLevel(stats, "departmental") && stats.departmental.offers12m === 0).length,
     jobsWithStaleMarketData: statsByJob.filter(stats => ["national", "regional", "departmental"].some(level => hasOfficialLevel(stats, level) && ["stale", "very_stale"].includes(stats[level].marketFreshness))).length,
-    jobsWithBmo: scores.filter(item => item.bmo?.confidence > 0).length,
+    jobsWithBmo: statsByJob.filter(stats => Object.values(stats?.fapEnrichment?.territories || {}).some(families => toArray(families).some(family => family.bmo))).length,
+    jobsWithDaresTension: statsByJob.filter(stats => Object.values(stats?.fapEnrichment?.territories || {}).some(families => toArray(families).some(family => family.dares))).length,
+    jobsWithOfficialFapMapping: statsByJob.filter(stats => toArray(stats?.fapEnrichment?.fapMappings).length > 0).length,
     jobsWithEstimatedMarket: scores.filter(item => item.sourceLevel === "estimated").length,
     jobsWithoutMarket: scores.filter(item => item.sourceLevel === "none").length,
     marketSignalDistribution: {

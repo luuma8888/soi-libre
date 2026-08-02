@@ -96,6 +96,10 @@ jobs:
           BMO_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/bmo-2026.xlsx', runner.temp) || '' }}
           DARES_TENSION_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/dares-tension-2024.xlsx', runner.temp) || '' }}
           FAP_CSV_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/fap2021.csv', runner.temp) || '' }}
+      - name: Derive official FAP to ROME market context
+        run: node scripts/prepare-boussole-market-phase2.mjs
+        env:
+          FAP_ROME_SOURCE_PATH: creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx
       - name: Commit generated market data
         run: |
           git config user.name "github-actions"
