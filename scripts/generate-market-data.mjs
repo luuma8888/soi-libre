@@ -2,10 +2,9 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const OUTPUT_DIR = path.join("creations", "boussolepro", "data", "generated", "market");
-const GENERATED_JOBS_PATH = path.join("creations", "boussolepro", "data", "generated", "jobs.rome.json");
+const DEFAULT_MARKET_ROME_CODES_FILE = path.join("creations", "boussolepro", "data", "local", "rome-codes-500.json");
 const DEFAULT_TOKEN_URL = "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire";
 const DEFAULT_TERRITORIES = "FR,REG-76,DEP-11";
-const DEFAULT_MARKET_ROME_CODES = ["M1607", "M1805", "K1303", "A1203", "J1501", "G1202", "D1214", "N1103", "A1501", "F1602"];
 const now = new Date().toISOString();
 
 const env = process.env;
@@ -24,21 +23,59 @@ const marketDebugRequests = [];
 let marketTokenObtained = false;
 
 async function resolveMarketRomeCodes() {
-  const explicitCodes = parseList(env.MARKET_ROME_CODES || env.ROME_CODES || "");
-  if (explicitCodes.length) return normalizeRomeCodes(explicitCodes);
-  try {
-    const jobs = JSON.parse(await readFile(GENERATED_JOBS_PATH, "utf8"));
-    const rows = Array.isArray(jobs) ? jobs : jobs.jobs || jobs.data || [];
-    const codes = normalizeRomeCodes(rows.map(job => job.romeCode || job.codeRome || job.code));
-    return codes.length ? codes : DEFAULT_MARKET_ROME_CODES;
-  } catch {
-    return DEFAULT_MARKET_ROME_CODES;
+  const explicitCodes = normalizeRomeCodes(parseList(env.MARKET_ROME_CODES || ""));
+  if (explicitCodes.length) return { codes: explicitCodes, source: "MARKET_ROME_CODES", filePath: null };
+
+  const filePath = env.MARKET_ROME_CODES_FILE || DEFAULT_MARKET_ROME_CODES_FILE;
+  const fileSelection = await readMarketRomeCodesFile(filePath);
+  if (fileSelection.codes.length) {
+    return { codes: fileSelection.codes, source: "MARKET_ROME_CODES_FILE", filePath };
   }
+  throw new Error(`Aucun code ROME valide dans MARKET_ROME_CODES_FILE : ${filePath}`);
+}
+
+async function readMarketRomeCodesFile(filePath = "") {
+  if (!filePath) return { codes: [], declaredSize: null };
+  const root = path.resolve(process.cwd());
+  const resolvedPath = path.resolve(root, filePath);
+  if (resolvedPath !== root && !resolvedPath.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`MARKET_ROME_CODES_FILE doit rester dans le dépôt : ${filePath}`);
+  }
+
+  let content;
+  try {
+    content = await readFile(resolvedPath, "utf8");
+  } catch (error) {
+    throw new Error(`Impossible de lire MARKET_ROME_CODES_FILE (${filePath}) : ${shortMessage(error.message)}`);
+  }
+
+  if (!/\.json$/i.test(filePath)) return { codes: normalizeRomeCodes(parseList(content)), declaredSize: null };
+  const json = JSON.parse(content);
+  const rows = Array.isArray(json) ? json : Array.isArray(json.codes) ? json.codes : [];
+  const codes = normalizeRomeCodes(rows.map(item => typeof item === "string" ? item : item?.romeCode || item?.code));
+  const declaredSize = numberOrNull(json?.selectionSize);
+  if (declaredSize !== null && declaredSize !== codes.length) {
+    throw new Error(`Liste ROME incohérente : ${filePath} déclare ${declaredSize} codes mais ${codes.length} codes valides ont été lus.`);
+  }
+  return { codes, declaredSize };
 }
 
 async function main() {
+  const codeSelection = await resolveMarketRomeCodes();
+  const marketRomeCodes = codeSelection.codes;
+  if (parseBoolean(env.MARKET_RESOLVE_ONLY)) {
+    console.log(JSON.stringify({
+      status: "market_rome_scope_valid",
+      source: codeSelection.source,
+      filePath: codeSelection.filePath,
+      requestedRomeCodesCount: marketRomeCodes.length,
+      firstCode: marketRomeCodes[0] || null,
+      lastCode: marketRomeCodes.at(-1) || null
+    }, null, 2));
+    return;
+  }
+
   await mkdir(OUTPUT_DIR, { recursive: true });
-  const marketRomeCodes = await resolveMarketRomeCodes();
 
   const diagnostics = [];
   const rowsByLevel = {

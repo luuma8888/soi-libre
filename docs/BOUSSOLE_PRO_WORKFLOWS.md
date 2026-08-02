@@ -189,7 +189,8 @@ creations/boussolepro/data/generated/market/
 |---|---|---|---|
 | `dry_run` | `true`, `false`. Le script accepte aussi `1`, `yes`, `oui` comme vrai. | `false` pour générer réellement, `true` pour diagnostic sans appel API. | Si `true`, aucune API Marché/BMO/FAP n'est appelée. |
 | `territory` | Liste séparée par virgules ou retours ligne. Valeurs testées : `FR`, `REG-76`, `DEP-11`. Alias acceptés : `FRANCE`, `NAT`, `NAT-FR`, `OCCITANIE`, `REG76`, `76`, `AUDE`, `DEP11`, `11`. | `FR,REG-76,DEP-11` | Territoires à interroger. `FR` devient `NAT/FR`, `REG-76` devient `REG/76`, `DEP-11` devient `DEP/11`. |
-| `rome_codes` | Liste de codes ROME. Exemple `G1202,K1207,M1607`. Vide accepté. | Vide pour utiliser `MARKET_ROME_CODES`, puis `ROME_CODES`, puis les métiers générés. | Limite les codes marché à interroger. |
+| `rome_codes` | Liste de codes ROME. Exemple `G1202,K1207,M1607`. Vide accepté. | Vide pour utiliser le fichier ROME500. | Force une liste ciblée, prioritaire sur `rome_codes_file`. |
+| `rome_codes_file` | Chemin vers un fichier JSON/TXT de codes. | `creations/boussolepro/data/local/rome-codes-500.json` | Liste utilisée lorsque `rome_codes` et `MARKET_ROME_CODES` sont vides. Le workflow échoue si le fichier est absent ou incohérent. |
 | `period_type` | Chaîne transmise à l'API. Valeur testée : `TRIMESTRE`. | `TRIMESTRE` | Remplit `codeTypePeriode` dans le POST JSON. Les autres valeurs dépendent de l'API France Travail. |
 | `source` | Liste de sources. Valeurs gérées : `api_marche_travail`, `bmo`. | `api_marche_travail,bmo` | Choisit les sources à traiter. FAP/ROME est traité si `FAP_ROME_MAPPING_URL` est renseignée. |
 
@@ -204,8 +205,9 @@ creations/boussolepro/data/generated/market/
 | `FT_MARKET_TOKEN_URL` | URL OAuth. Valeur testée : `https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=%2Fpartenaire` | URL token spécifique marché. Si vide, le script peut utiliser `FT_TOKEN_URL` ou la valeur par défaut. |
 | `FT_MARKET_API_URL` | Valeur testée : `https://api.francetravail.io/partenaire/stats-offres-demandes-emploi/v1/indicateur/stat-offres` | Endpoint API Marché utilisé en POST JSON par code ROME. |
 | `MARKET_EXTRA_QUERY` | Query string sans `?`, exemple `cle=valeur&autre=valeur`. | Paramètres additionnels ajoutés aux appels GET globaux. Généralement vide. |
-| `MARKET_ROME_CODES` | Liste de codes ROME. | Codes à interroger si le champ manuel est vide. |
-| `ROME_CODES` | Liste de codes ROME. | Fallback si `MARKET_ROME_CODES` est vide. |
+| `MARKET_ROME_CODES` | Liste de codes ROME. | Réglage avancé du script local. Dans GitHub Actions, utiliser le champ manuel `rome_codes`. |
+| `MARKET_ROME_CODES_FILE` | Chemin relatif vers un fichier JSON/TXT de codes ROME. | Fallback versionné, par défaut `creations/boussolepro/data/local/rome-codes-500.json`. |
+| `ROME_CODES` | Liste historique utilisée par le workflow ROME. | Elle n'est plus reprise par le workflow marché afin de ne pas réduire accidentellement ROME500 à ROME72. |
 | `MARKET_ACTIVITY_TYPE` | Chaîne. Défaut `ROME`. | Remplit `codeTypeActivite`. Garder `ROME` pour les codes ROME. |
 | `MARKET_PERIOD_TYPE` | Chaîne. Défaut `TRIMESTRE`. | Remplit `codeTypePeriode`. |
 | `MARKET_NOMENCLATURE_TYPE` | Chaîne. Défaut `ORIGINEOFF`. | Remplit `codeTypeNomenclature`. |
@@ -250,9 +252,12 @@ Le script envoie un payload par territoire et code ROME :
 dry_run: false
 territory: FR,REG-76,DEP-11
 rome_codes: vide
+rome_codes_file: creations/boussolepro/data/local/rome-codes-500.json
 period_type: TRIMESTRE
 source: api_marche_travail,bmo
 ```
+
+L'étape `Validate market ROME scope` doit annoncer `requestedRomeCodesCount: 500` avant tout appel à l'API. Une valeur différente doit conduire à interrompre le lancement et à contrôler les deux champs ROME.
 
 Variables recommandées :
 

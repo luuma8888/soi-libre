@@ -12,9 +12,13 @@ on:
         required: false
         default: ""
       rome_codes:
-        description: "Codes ROME cibles, ex. G1202,K1207,M1607. Vide = MARKET_ROME_CODES puis ROME_CODES."
+        description: "Codes ROME cibles, ex. G1202,K1207,M1607. Une liste explicite est prioritaire sur le fichier."
         required: false
         default: ""
+      rome_codes_file:
+        description: "Fichier JSON/TXT de codes. Vide = MARKET_ROME_CODES_FILE puis liste ROME500 versionnée."
+        required: false
+        default: "creations/boussolepro/data/local/rome-codes-500.json"
       period_type:
         description: "Type de période, ex. TRIMESTRE. Vide = variable MARKET_PERIOD_TYPE."
         required: false
@@ -47,6 +51,12 @@ jobs:
           esac
         env:
           RAW_DRY_RUN: ${{ inputs.dry_run || vars.MARKET_DRY_RUN || 'true' }}
+      - name: Validate market ROME scope
+        run: node scripts/generate-market-data.mjs
+        env:
+          MARKET_RESOLVE_ONLY: "true"
+          MARKET_ROME_CODES: ${{ inputs.rome_codes || '' }}
+          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-500.json' }}
       - name: Generate static market data
         run: node scripts/generate-market-data.mjs
         env:
@@ -59,7 +69,8 @@ jobs:
           FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
           FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
           MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
-          MARKET_ROME_CODES: ${{ inputs.rome_codes || vars.MARKET_ROME_CODES || vars.ROME_CODES || '' }}
+          MARKET_ROME_CODES: ${{ inputs.rome_codes || '' }}
+          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-500.json' }}
           MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
           MARKET_PERIOD_TYPE: ${{ inputs.period_type || vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
           MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
