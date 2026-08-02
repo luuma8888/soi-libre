@@ -3,10 +3,10 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RUNTIME_BUNDLE_REVISION = "rome500-runtime-v0.7.6-r1";
+export const RUNTIME_BUNDLE_REVISION = "rome500-runtime-v0.7.7-r1";
 export const APP_BUILD = Object.freeze({
-  appVersion: "v0.7.6-alpha",
-  buildId: "20260802-runtime-parity-01",
+  appVersion: "v0.7.7-alpha",
+  buildId: "20260802-market-phase1-01",
   buildDate: "2026-08-02"
 });
 
@@ -39,11 +39,16 @@ export const RUNTIME_COMPONENTS = Object.freeze([
   ["mappingsRomeCertifications", "rome", "mappings-rome-certifications.json", "array", false],
   ["marketManifest", "market", "market-import-manifest.json", "object", true],
   ["marketQualityReport", "market", "market-quality-report.json", "object", true],
+  ["marketContract", "market", "market-contract.json", "object", true],
+  ["marketPackageIdentity", "market", "market-package-identity.json", "object", true],
   ["marketNational", "market", "market-national.rome.json", "array", true],
   ["marketOccitanie", "market", "market-occitanie.rome.json", "array", true],
   ["marketAude", "market", "market-aude.rome.json", "array", true],
   ["bmoFap2021", "market", "bmo-fap2021.json", "array", false],
+  ["daresTensionFap2021", "market", "dares-tension-fap2021.json", "array", false],
+  ["fap2021Nomenclature", "market", "fap2021-nomenclature.json", "array", false],
   ["fapRomeMappings", "market", "fap-rome-mappings.json", "array", false],
+  ["fapRomeMappingStatus", "market", "fap-rome-mapping-status.json", "object", true],
   ["accessRules", "local", "access-rules-v074.json", "object", true],
   ["sectorRules", "local", "rome-sector-mapping-v2.json", "object", true]
 ]);
@@ -80,19 +85,22 @@ export async function buildRuntimeBundleManifest(options = {}) {
   const accessRules = JSON.parse(await readFile(path.join(LOCAL_DIR, "access-rules-v074.json"), "utf8"));
   const sectorRules = JSON.parse(await readFile(path.join(LOCAL_DIR, "rome-sector-mapping-v2.json"), "utf8"));
   const accessQuality = JSON.parse(await readFile(path.join(ROME_DIR, "access-summary-quality-report.json"), "utf8"));
+  const marketLayerIdentity = JSON.parse(await readFile(path.join(MARKET_DIR, "market-package-identity.json"), "utf8"));
   const identityMaterial = components
+    .filter(component => component.area !== "market")
     .map(component => `${component.area}/${component.fileName}:${component.sha256}:${component.count}`)
     .sort()
     .join("\n");
   const fingerprintSha256 = sha256(identityMaterial);
   const manifest = {
-    schemaVersion: "2.0.0",
+    schemaVersion: "2.1.0",
     manifestKind: "boussole_runtime_bundle_identity",
     derivedAt,
     inputMode: "packaged_corpus",
     runtimeBundleRevision: RUNTIME_BUNDLE_REVISION,
-    fingerprintAlgorithm: "sha256_of_sorted_component_hashes_and_counts",
+    fingerprintAlgorithm: "sha256_of_sorted_non_market_runtime_component_hashes_and_counts",
     fingerprintSha256,
+    marketLayerIdentity,
     appBuild: APP_BUILD,
     datasetIdentity: {
       publicLabel: "Corpus ROME 500 candidat consolide",
@@ -120,7 +128,7 @@ export async function buildRuntimeBundleManifest(options = {}) {
       "500 packaged jobs",
       "active scoring referentials",
       "access and sector rules",
-      "packaged market rows",
+      "independent packaged market identity and rows",
       "local deterministic test bench"
     ],
     notVerifiedScope: ["real_import_user_environment", "interactive_user_performance"]
@@ -129,8 +137,8 @@ export async function buildRuntimeBundleManifest(options = {}) {
   return manifest;
 }
 
-export async function writeRuntimeBundleManifest(outputPath = path.join(ROME_DIR, "runtime-bundle-manifest.json")) {
-  const manifest = await buildRuntimeBundleManifest();
+export async function writeRuntimeBundleManifest(outputPath = path.join(ROME_DIR, "runtime-bundle-manifest.json"), options = {}) {
+  const manifest = await buildRuntimeBundleManifest(options);
   await writeFile(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   return manifest;
 }
@@ -176,6 +184,6 @@ function sha256(value) {
 
 const currentFile = fileURLToPath(import.meta.url);
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFile) {
-  const manifest = await writeRuntimeBundleManifest();
+  const manifest = await writeRuntimeBundleManifest(undefined, { derivedAt: process.env.RUNTIME_DERIVED_AT });
   console.log(`[Boussole Pro] Paquet runtime ${manifest.runtimeBundleRevision}: ${manifest.fingerprintSha256}, statut ${manifest.status}.`);
 }

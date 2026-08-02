@@ -51,10 +51,14 @@ async function main() {
 
   try {
     if (dryRun) {
+      const preserved = await readExistingOfferRows();
+      rowsByLevel.national.push(...preserved.national);
+      rowsByLevel.regional.push(...preserved.regional);
+      rowsByLevel.departmental.push(...preserved.departmental);
       diagnostics.push({
         source: "api_marche_travail",
-        status: "dry_run",
-        reason: "DRY_RUN=true : aucune API marché n’est appelée."
+        status: "dry_run_existing_rows_preserved",
+        reason: "DRY_RUN=true : aucune API marché n’est appelée et les lignes statiques existantes sont préservées."
       });
     } else if (requestedSources.includes("api_marche_travail")) {
       const apiResult = await fetchMarketApiData(marketRomeCodes);
@@ -457,13 +461,11 @@ function normalizeMarketRow(row, territory, fallbackRomeCode = "") {
   ]) ?? extracted.offers12m;
   const demanders = firstNumber(row, ["demanders", "demandeurs", "nbDemandeurs", "nombreDemandeurs"]) ?? extracted.demanders;
   const hires12m = firstNumber(row, ["hires12m", "embauches12m", "embauches", "nbEmbauches"]) ?? extracted.hires12m;
-  const signal = signalFromVolume(offers12m);
   const newDemanders12m = firstNumber(row, ["newDemanders12m", "nouveauxDemandeurs12m", "nouveauxDemandeurs"]) ?? extracted.newDemanders12m;
-  const tensionLevel = firstSignal(row, ["tensionLevel", "niveauTension", "tension"]) || signal;
-  const recruitmentSignal = firstSignal(row, ["recruitmentSignal", "niveauRecrutement"]) || signal;
-  const recruitmentDifficulty = firstSignal(row, ["recruitmentDifficulty", "difficulteRecrutement"]) || "unknown";
-  const hasMarketMeasure = [offers12m, demanders, newDemanders12m, hires12m].some(Number.isFinite) ||
-    [tensionLevel, recruitmentSignal, recruitmentDifficulty].some(value => value && value !== "unknown");
+  const tensionLevel = "unknown";
+  const recruitmentSignal = "unknown";
+  const recruitmentDifficulty = "unknown";
+  const hasMarketMeasure = [offers12m, demanders, newDemanders12m, hires12m].some(Number.isFinite);
   if (!hasMarketMeasure) return null;
   return {
     romeCode,
@@ -514,7 +516,6 @@ function normalizeMarketPeriodResponse(row, territory, fallbackRomeCode = "") {
   if (!hasMarketMeasure) return null;
   const romeCode = latestRow.codeActivite || peRow.codeActivite || allRow.codeActivite || fallbackRomeCode;
   if (!romeCode) return null;
-  const signal = signalFromVolume(offers12m);
   return {
     romeCode,
     title: latestRow.libActivite || peRow.libActivite || allRow.libActivite || null,
@@ -533,8 +534,8 @@ function normalizeMarketPeriodResponse(row, territory, fallbackRomeCode = "") {
     demanders: null,
     newDemanders12m: null,
     hires12m: null,
-    tensionLevel: signal,
-    recruitmentSignal: signal,
+    tensionLevel: "unknown",
+    recruitmentSignal: "unknown",
     recruitmentDifficulty: "unknown",
     salarySignal: "unknown",
     marketDataKind: "offers_volume",
@@ -798,8 +799,8 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
   if (marketDebugSampleEnabled) outputFiles.push("debug-market-sample.json");
   const manifest = {
     schemaVersion: "1.0.0",
-    datasetName: "Boussole Pro - couche marché v0.6",
-    datasetVersion: `market-v0.6-${now.slice(0, 10)}`,
+    datasetName: "Boussole Pro - couche marché phase 1",
+    datasetVersion: `market-v2-phase1-staging-${now.slice(0, 10)}`,
     generatedAt: now,
     status,
     outputPath: "creations/boussolepro/data/generated/market/",
@@ -818,7 +819,9 @@ async function writeOutputs({ rowsByLevel, bmoRows, fapRomeMappings, diagnostics
       fapRomeUsedInMarketScore: false,
       activeOffersDisplayed: false,
       marketDataKind: "offers_volume",
-      marketInterpretationLabel: "Volume d’offres observé"
+      marketInterpretationLabel: "Volume d’offres observé",
+      offerVolumeIsNotTension: true,
+      weakOrAmbiguousMappingCannotInfluenceRanking: true
     }
   };
   await writeJson("territories.json", territoryRows());
@@ -1004,6 +1007,24 @@ function buildWarnings(status, diagnostics) {
 function shouldFailBecauseMarketApiHasNoRows(totalMarketRows) {
   const failOnEmpty = parseBoolean(env.MARKET_FAIL_ON_EMPTY || "false");
   return failOnEmpty && !dryRun && requestedSources.includes("api_marche_travail") && totalMarketRows === 0;
+}
+
+async function readExistingOfferRows() {
+  const files = {
+    national: "market-national.rome.json",
+    regional: "market-occitanie.rome.json",
+    departmental: "market-aude.rome.json"
+  };
+  const output = { national: [], regional: [], departmental: [] };
+  for (const [level, fileName] of Object.entries(files)) {
+    try {
+      const rows = JSON.parse(await readFile(path.join(OUTPUT_DIR, fileName), "utf8"));
+      output[level] = Array.isArray(rows) ? rows : [];
+    } catch {
+      output[level] = [];
+    }
+  }
+  return output;
 }
 
 function territoryRows() {

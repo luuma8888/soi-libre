@@ -1,6 +1,6 @@
 # Boussole Pro
 
-**Version :** v0.7.6-alpha
+**Version :** v0.7.7-alpha
 **Sous-titre :** Boussole métier vivante, réaliste et offline  
 **Moteur local :** ClairMétier
 
@@ -25,20 +25,20 @@ Les données ROME générées restent séparées du HTML et peuvent être charg�
 La barre d’état affiche une identité complète et stable :
 
 ```text
-Boussole Pro v0.7.6-alpha · build 20260802-runtime-parity-01 · données <version du corpus actif>
+Boussole Pro v0.7.7-alpha · build 20260802-market-phase1-01 · données <version du corpus actif>
 ```
 
 Le même `buildId` est inclus dans les exports et rapports. Après un déploiement manuel, contrôler le HTML public sans transmettre de profil :
 
 ```bash
-/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260802-runtime-parity-01"
+/home/luuma/.config/nvm/versions/node/v24.18.0/bin/node scripts/verify-boussole-deployment.mjs "URL_PUBLIQUE" "20260802-market-phase1-01"
 ```
 
 Le script affiche l’URL finale, le marqueur attendu et reçu, la date du contrôle, les en-têtes de cache utiles et un verdict. Aucun service worker n’est utilisé par l’application ; aucun cache applicatif supplémentaire ne masque donc le HTML.
 
 ## Modes de lecture
 
-La v0.7.6 distingue trois niveaux d’usage :
+La v0.7.7 distingue trois niveaux d’usage :
 
 - **Essentiel** : lecture courte des pistes principales, sans surcharge technique.
 - **Détaillé** : scores séparés, raisons, vigilances, accès, marché et contexte.
@@ -76,14 +76,14 @@ L’application peut travailler avec :
 
 Le corpus ROME500 porte la version fonctionnelle `rome500-candidate-v0.7`. Sa maturité est `candidate_consolidated` et son périmètre validé est `validated_for_boussole_pro_v0_7`. Ces deux informations ne signifient ni corpus officiel complet, ni certification, ni stabilité générale. L’ancien identifiant `rome500-experimental-v0.7` et le nom du dossier historique restent des alias techniques de migration, sans valeur de maturité fonctionnelle.
 
-La révision canonique du paquet moteur est `rome500-runtime-v0.7.6-r1`. Son manifeste recense les fichiers actifs, leurs empreintes SHA-256, les versions de règles et les tailles de tables, notamment les `9 226` lignes de `skillsEngine`. Un paquet incohérent ou un cache de corpus obsolète est rechargé sans effacer le profil, les favoris ni les réglages personnels.
+La révision canonique du paquet moteur est `rome500-runtime-v0.7.7-r1`. Son manifeste recense les fichiers actifs, leurs empreintes SHA-256, les versions de règles et les tailles de tables, notamment les `9 226` lignes de `skillsEngine`. L’identité de la couche marché et son cache sont séparés du corpus ROME : un nouveau millésime marché ne recharge pas les compétences. Un paquet incohérent ou un cache obsolète est rechargé sans effacer le profil, les favoris ni les réglages personnels.
 
 ## Livraison multi-fichiers
 
-Le corpus ROME500 actif n'est pas intégré dans le HTML. La livraison complète se trouve dans `tmp/monde-pro/livraison-boussole-pro-v0.7.6-alpha-20260802-01/` et doit être ouverte avec un serveur local depuis ce dossier :
+Le corpus ROME500 actif n'est pas intégré dans le HTML. La livraison complète se trouve dans `tmp/monde-pro/livraison-boussole-pro-v0.7.7-alpha-20260802-market-phase1-01/` et doit être ouverte avec un serveur local depuis ce dossier :
 
 ```bash
-cd tmp/monde-pro/livraison-boussole-pro-v0.7.6-alpha-20260802-01
+cd tmp/monde-pro/livraison-boussole-pro-v0.7.7-alpha-20260802-market-phase1-01
 python3 -m http.server 8000
 ```
 
@@ -163,14 +163,15 @@ La couche marché reste séparée :
 creations/boussolepro/data/generated/market/
 ```
 
-Elle contient les volumes observés France, Occitanie et Aude quand les fichiers sont disponibles. L’application affiche ces signaux comme contexte de décision, sans les confondre avec la correspondance personnelle ni la faisabilité.
+Elle contient les volumes observés France, Occitanie et Aude, BMO 2026 normalisé en FAP 2021 et la tension Dares 2024 normalisée en FAP 2021. L’application sépare volume, présence territoriale, projets, difficulté, saisonnalité et tension. Chaque résultat exporte le poids marché demandé, le poids effectif et son effet en points, sans modifier la correspondance personnelle ni la faisabilité.
 
 Limites actuelles :
 
-- tension métier non calculée ;
+- BMO et Dares restent descriptifs au niveau FAP tant qu’aucune table FAP 2021 vers ROME 4 officielle ou validée n’est fournie ;
+- tension, difficulté et saisonnalité affichées comme non disponibles sur une fiche ROME en l’absence de rapprochement admissible ;
 - offres individuelles non affichées ;
 - fraîcheur et couverture variables selon territoire ;
-- BMO / FAP encore à consolider.
+- facteurs explicatifs de tension non attribués automatiquement.
 
 ## Import / export
 

@@ -175,7 +175,7 @@ Le corpus 500 reste expérimental tant que les seuils qualité et les tests de r
 
 Fichier : `.github/workflows/generate-market-data.yml`
 
-Script : `scripts/generate-market-data.mjs`
+Scripts : `scripts/generate-market-data.mjs`, puis `scripts/prepare-boussole-market-phase1.mjs`
 
 Sortie :
 
@@ -213,8 +213,12 @@ creations/boussolepro/data/generated/market/
 | `MARKET_FAIL_ON_EMPTY` | `true` ou `false`. Défaut `false`. | Si `true`, le workflow échoue quand aucun résultat API Marché n'est exploitable. Pour diagnostic progressif, garder `false`. |
 | `MARKET_DEBUG_SAMPLE` | `true` ou `false`. Défaut `false`. | Écrit des échantillons debug de réponse marché si le script le décide. |
 | `MARKET_REQUEST_DELAY_MS` | Nombre de millisecondes. Défaut `250`. | Pause entre appels marché par code ROME. |
-| `BMO_DATA_URL` | URL de fichier BMO. `.xlsx` accepté mais non parsé en v0.6. | Source BMO détectée. Tant que XLSX n'est pas parsé, BMO reste non connecté au score. |
-| `FAP_ROME_MAPPING_URL` | URL CSV ou export DARES/FAP. | Prépare le rapprochement FAP/ROME. Ne pas inventer de correspondances si non détectées. |
+| `BMO_DATA_URL` | URL du classeur officiel BMO. Valeur par défaut : ressource BMO 2026 de France Travail sur data.gouv.fr. | Le workflow réel télécharge et parse le XLSX ; les projets, difficultés et saisonnalités restent au niveau FAP 2021 tant que le rapprochement ROME est absent. |
+| `DARES_TENSION_DATA_URL` | URL du classeur officiel Dares / France Travail. Valeur par défaut : données de tension 2024. | Le workflow conserve le millésime statistique 2024, distinct de la date de publication. |
+| `FAP_NOMENCLATURE_URL` | Export CSV officiel de la nomenclature FAP 2021. | Normalise les codes et libellés FAP utilisés par BMO et Dares. |
+| `FAP_ROME_MAPPING_URL` | URL éventuelle d’une table FAP 2021 vers ROME 4 officielle ou validée. | Aucune première correspondance arbitraire n’est retenue. Sans table contrôlée, le statut reste `not_run_needs_source_or_workflow` et le classement n’est pas modifié. |
+
+En mode réel, le workflow produit un contrat marché versionné, une identité de paquet indépendante, un rapport qualité, les données BMO 2026 et Dares 2024 normalisées, ainsi qu’un état explicite du rapprochement FAP–ROME. En mode `dry_run`, il préserve les sources déjà normalisées et vérifie la structure sans appel réseau.
 
 ### Variables Marché avancées lues par le script
 

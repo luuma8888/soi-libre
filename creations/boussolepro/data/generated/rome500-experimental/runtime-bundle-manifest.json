@@ -1,14 +1,160 @@
 {
-  "schemaVersion": "2.0.0",
+  "schemaVersion": "2.1.0",
   "manifestKind": "boussole_runtime_bundle_identity",
-  "derivedAt": "2026-08-01T22:36:35.882Z",
+  "derivedAt": "2026-08-02T12:00:00.000Z",
   "inputMode": "packaged_corpus",
-  "runtimeBundleRevision": "rome500-runtime-v0.7.6-r1",
-  "fingerprintAlgorithm": "sha256_of_sorted_component_hashes_and_counts",
-  "fingerprintSha256": "4c45d107f6dd2d6f6b63f98d56c4c937f3b23de97854d212300ab71f5ffec7a4",
+  "runtimeBundleRevision": "rome500-runtime-v0.7.7-r1",
+  "fingerprintAlgorithm": "sha256_of_sorted_non_market_runtime_component_hashes_and_counts",
+  "fingerprintSha256": "1b20be64632b845f7ef7205baa783a630e20708230f00551cc39769ce827cc2f",
+  "marketLayerIdentity": {
+    "schemaVersion": "2.0.0",
+    "identityKind": "boussole_market_layer_identity",
+    "marketContractRevision": "market-contract-v2.0.0-phase1",
+    "packageFingerprintAlgorithm": "sha256_of_sorted_market_component_hashes_and_counts",
+    "packageFingerprintSha256": "cb91d82982701e2898aba1b8d92b4ae1f0ea36dc0156d0f42e69fd8a6c09113d",
+    "parserVersions": {
+      "xlsx": "xlsx-stream-reader-v1",
+      "phase1": "prepare-boussole-market-phase1-v1"
+    },
+    "sourcePublishedAt": {
+      "bmo": "2026-04-21",
+      "daresTension": "2026-02-04",
+      "fapNomenclature": "2024-04-30"
+    },
+    "sourceVintage": {
+      "offers": "2026T1",
+      "bmo": "2026",
+      "daresTension": "2024",
+      "fapNomenclature": "FAP2021"
+    },
+    "normalizedAt": "2026-08-02T10:00:00.000Z",
+    "derivedAt": "2026-08-02T10:00:00.000Z",
+    "packagedAt": "2026-08-02T10:00:00.000Z",
+    "sources": [
+      {
+        "id": "france_travail_market_api",
+        "producer": "France Travail",
+        "sourceVintage": "2026T1",
+        "url": "https://www.data.gouv.fr/dataservices/api-marche-du-travail"
+      },
+      {
+        "id": "france_travail_bmo_2026",
+        "producer": "France Travail",
+        "sourceVintage": "2026",
+        "sourcePublishedAt": "2026-04-21",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d"
+      },
+      {
+        "id": "dares_france_travail_tension_2024",
+        "producer": "Dares et France Travail",
+        "sourceVintage": "2024",
+        "sourcePublishedAt": "2026-02-04",
+        "url": "https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108"
+      },
+      {
+        "id": "dares_fap2021_nomenclature",
+        "producer": "Dares",
+        "sourceVintage": "FAP2021",
+        "sourcePublishedAt": "2024-04-30",
+        "url": "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true"
+      }
+    ],
+    "territories": [
+      "FR",
+      "REG-76",
+      "DEP-11"
+    ],
+    "counts": {
+      "offerNational": 437,
+      "offerRegional": 429,
+      "offerDepartmental": 382,
+      "bmoFapRows": 550,
+      "daresTensionFapRows": 627,
+      "fapRomeMappings": 0,
+      "fapRomeRankingEligible": 0
+    },
+    "coverage": {
+      "activeRomeJobs": 500,
+      "jobsWithObservedOffers": 437,
+      "jobsWithBmo": 0,
+      "jobsWithDaresTension": 0,
+      "bmoFapFamilies": 217,
+      "daresFapFamilies": 209
+    },
+    "mappingCoverage": {
+      "officialCrosswalk": 0,
+      "validatedLocal": 0,
+      "ambiguous": 0,
+      "unmapped": 217,
+      "absent": 217
+    },
+    "components": [
+      {
+        "fileName": "market-contract.json",
+        "sha256": "e3577489d1677938605044faf662caedbbd9d19c5d762a7ef3cbe65bca9d67cf",
+        "size": 1492,
+        "count": 1
+      },
+      {
+        "fileName": "market-national.rome.json",
+        "sha256": "9ce5fff43b8b66fe74aac12dc69814e0400c2e4c579a54395452fb9225162f03",
+        "size": 2082130,
+        "count": 437
+      },
+      {
+        "fileName": "market-occitanie.rome.json",
+        "sha256": "fefd7d28daf1836352f54459dff14c42df733af6961f96d318e7bd02aac2d2dc",
+        "size": 2004522,
+        "count": 429
+      },
+      {
+        "fileName": "market-aude.rome.json",
+        "sha256": "5a82fa4499d18cdf29a6d9c53da400f2d2ab052866df261f55b283df17b8fee9",
+        "size": 1712317,
+        "count": 382
+      },
+      {
+        "fileName": "bmo-fap2021.json",
+        "sha256": "c012e09b964c91ea5bd35a074dbd0dc17bc3f638af2a79c070a998d5f3894aa9",
+        "size": 1463096,
+        "count": 550
+      },
+      {
+        "fileName": "dares-tension-fap2021.json",
+        "sha256": "794984c5072667840ed93f41e4f18daff5cb4ca83d051c6bbcb66fa0afe9684f",
+        "size": 3603813,
+        "count": 627
+      },
+      {
+        "fileName": "fap2021-nomenclature.json",
+        "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
+        "size": 64203,
+        "count": 228
+      },
+      {
+        "fileName": "fap-rome-mappings.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "size": 3,
+        "count": 0
+      },
+      {
+        "fileName": "fap-rome-mapping-status.json",
+        "sha256": "6f4b182f1cecedd596f9acafa3bacabcfebf6d7648506a4675918e1b50a440e4",
+        "size": 740,
+        "count": 1
+      },
+      {
+        "fileName": "territories.json",
+        "sha256": "07215d3f089177d325d3f0a7fb9e7e8a61124a25c3d57f662b983f133ffdf98d",
+        "size": 755,
+        "count": 3
+      }
+    ],
+    "status": "offer_layer_ready_fap_sources_unmapped"
+  },
   "appBuild": {
-    "appVersion": "v0.7.6-alpha",
-    "buildId": "20260802-runtime-parity-01",
+    "appVersion": "v0.7.7-alpha",
+    "buildId": "20260802-market-phase1-01",
     "buildDate": "2026-08-02"
   },
   "datasetIdentity": {
@@ -25,7 +171,7 @@
   "ruleVersions": {
     "access": "v0.7.6-alpha",
     "sectors": "v0.7.5-alpha",
-    "scoring": "v0.7.6-alpha"
+    "scoring": "v0.7.7-alpha"
   },
   "counts": {
     "manifest": 1,
@@ -49,11 +195,16 @@
     "mappingsRomeCertifications": 0,
     "marketManifest": 1,
     "marketQualityReport": 1,
+    "marketContract": 1,
+    "marketPackageIdentity": 1,
     "marketNational": 437,
     "marketOccitanie": 429,
     "marketAude": 382,
-    "bmoFap2021": 0,
+    "bmoFap2021": 550,
+    "daresTensionFap2021": 627,
+    "fap2021Nomenclature": 228,
     "fapRomeMappings": 0,
+    "fapRomeMappingStatus": 1,
     "accessRules": 1,
     "sectorRules": 1
   },
@@ -279,9 +430,9 @@
       "relativePath": "data/generated/market/market-import-manifest.json",
       "required": true,
       "count": 1,
-      "size": 1111,
-      "sha256": "be925d712d4dd199da2e9eb78871edb1b8ce954a637c170507051191c4a72f7b",
-      "sourceGeneratedAt": "2026-07-12T18:04:17.452Z"
+      "size": 5830,
+      "sha256": "02c943e7dc87e6c6a7e4e780d2eb8392ab5907c07f11550c9cc24556a0e98d49",
+      "sourceGeneratedAt": "2026-08-02T10:00:00.000Z"
     },
     {
       "role": "marketQualityReport",
@@ -290,9 +441,36 @@
       "relativePath": "data/generated/market/market-quality-report.json",
       "required": true,
       "count": 1,
-      "size": 35417,
-      "sha256": "c47f6ae130a5ade4186e9a872f55d3663827a7d2e3f9534d870fc55a62df9b6d",
-      "sourceGeneratedAt": "2026-07-12T18:04:17.452Z"
+      "size": 6904,
+      "sha256": "f2dd7a0fb610594a88d695a35077c7d6fa7865b748a536bd9d77de83d60c705f",
+      "sourceGeneratedAt": "2026-08-02T10:00:00.000Z"
+    },
+    {
+      "role": "marketContract",
+      "area": "market",
+      "fileName": "market-contract.json",
+      "relativePath": "data/generated/market/market-contract.json",
+      "required": true,
+      "count": 1,
+      "size": 1492,
+      "sha256": "e3577489d1677938605044faf662caedbbd9d19c5d762a7ef3cbe65bca9d67cf",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketPackageIdentity",
+      "area": "market",
+      "fileName": "market-package-identity.json",
+      "relativePath": "data/generated/market/market-package-identity.json",
+      "required": true,
+      "count": 1,
+      "size": 4372,
+      "sha256": "e5eb16e4d8c9c966afe16404a26a752c58db28c66b4d16f2ce4447f9d4f1464a",
+      "sourceGeneratedAt": {
+        "offers": "2026T1",
+        "bmo": "2026",
+        "daresTension": "2024",
+        "fapNomenclature": "FAP2021"
+      }
     },
     {
       "role": "marketNational",
@@ -301,8 +479,8 @@
       "relativePath": "data/generated/market/market-national.rome.json",
       "required": true,
       "count": 437,
-      "size": 1849216,
-      "sha256": "cd67657274188a979fc8f31f86a91ed4bd258f3a687488ec1a5138c45d68f3ea",
+      "size": 2082130,
+      "sha256": "9ce5fff43b8b66fe74aac12dc69814e0400c2e4c579a54395452fb9225162f03",
       "sourceGeneratedAt": null
     },
     {
@@ -312,8 +490,8 @@
       "relativePath": "data/generated/market/market-occitanie.rome.json",
       "required": true,
       "count": 429,
-      "size": 1776122,
-      "sha256": "e46fba2dfcf82665d741cb80d57b456dcf45d97a3064dd401a78afa5ef70bdb1",
+      "size": 2004522,
+      "sha256": "fefd7d28daf1836352f54459dff14c42df733af6961f96d318e7bd02aac2d2dc",
       "sourceGeneratedAt": null
     },
     {
@@ -323,8 +501,8 @@
       "relativePath": "data/generated/market/market-aude.rome.json",
       "required": true,
       "count": 382,
-      "size": 1509387,
-      "sha256": "3d339469b09b1ae1264adc55a3b30dba6725928aad57b45043e2df96b6e5cc88",
+      "size": 1712317,
+      "sha256": "5a82fa4499d18cdf29a6d9c53da400f2d2ab052866df261f55b283df17b8fee9",
       "sourceGeneratedAt": null
     },
     {
@@ -333,9 +511,31 @@
       "fileName": "bmo-fap2021.json",
       "relativePath": "data/generated/market/bmo-fap2021.json",
       "required": false,
-      "count": 0,
-      "size": 3,
-      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 550,
+      "size": 1463096,
+      "sha256": "c012e09b964c91ea5bd35a074dbd0dc17bc3f638af2a79c070a998d5f3894aa9",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "daresTensionFap2021",
+      "area": "market",
+      "fileName": "dares-tension-fap2021.json",
+      "relativePath": "data/generated/market/dares-tension-fap2021.json",
+      "required": false,
+      "count": 627,
+      "size": 3603813,
+      "sha256": "794984c5072667840ed93f41e4f18daff5cb4ca83d051c6bbcb66fa0afe9684f",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "fap2021Nomenclature",
+      "area": "market",
+      "fileName": "fap2021-nomenclature.json",
+      "relativePath": "data/generated/market/fap2021-nomenclature.json",
+      "required": false,
+      "count": 228,
+      "size": 64203,
+      "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
       "sourceGeneratedAt": null
     },
     {
@@ -347,6 +547,17 @@
       "count": 0,
       "size": 3,
       "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "fapRomeMappingStatus",
+      "area": "market",
+      "fileName": "fap-rome-mapping-status.json",
+      "relativePath": "data/generated/market/fap-rome-mapping-status.json",
+      "required": true,
+      "count": 1,
+      "size": 740,
+      "sha256": "6f4b182f1cecedd596f9acafa3bacabcfebf6d7648506a4675918e1b50a440e4",
       "sourceGeneratedAt": null
     },
     {
@@ -383,7 +594,7 @@
     "500 packaged jobs",
     "active scoring referentials",
     "access and sector rules",
-    "packaged market rows",
+    "independent packaged market identity and rows",
     "local deterministic test bench"
   ],
   "notVerifiedScope": [

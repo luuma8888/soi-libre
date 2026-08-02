@@ -37,6 +37,16 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
+      - name: Resolve execution mode
+        id: mode
+        shell: bash
+        run: |
+          case "${RAW_DRY_RUN,,}" in
+            true|1|yes|oui) echo "real=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "real=true" >> "$GITHUB_OUTPUT" ;;
+          esac
+        env:
+          RAW_DRY_RUN: ${{ inputs.dry_run || vars.MARKET_DRY_RUN || 'true' }}
       - name: Generate static market data
         run: node scripts/generate-market-data.mjs
         env:
@@ -59,8 +69,23 @@ jobs:
           MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
           BMO_DATA_URL: ${{ vars.BMO_DATA_URL }}
           FAP_ROME_MAPPING_URL: ${{ vars.FAP_ROME_MAPPING_URL }}
+      - name: Download official BMO and Dares sources
+        if: ${{ steps.mode.outputs.real == 'true' }}
+        run: |
+          curl --fail --location --retry 3 "$BMO_DATA_URL" --output "$RUNNER_TEMP/bmo-2026.xlsx"
+          curl --fail --location --retry 3 "$DARES_TENSION_DATA_URL" --output "$RUNNER_TEMP/dares-tension-2024.xlsx"
+          curl --fail --location --retry 3 "$FAP_NOMENCLATURE_URL" --output "$RUNNER_TEMP/fap2021.csv"
+        env:
+          BMO_DATA_URL: ${{ vars.BMO_DATA_URL || 'https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d' }}
+          DARES_TENSION_DATA_URL: ${{ vars.DARES_TENSION_DATA_URL || 'https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108' }}
+          FAP_NOMENCLATURE_URL: ${{ vars.FAP_NOMENCLATURE_URL || 'https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true' }}
+      - name: Normalize market phase 1 contract
+        run: node scripts/prepare-boussole-market-phase1.mjs
+        env:
+          BMO_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/bmo-2026.xlsx', runner.temp) || '' }}
+          DARES_TENSION_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/dares-tension-2024.xlsx', runner.temp) || '' }}
+          FAP_CSV_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/fap2021.csv', runner.temp) || '' }}
       - name: Commit generated market data
-        if: always()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"

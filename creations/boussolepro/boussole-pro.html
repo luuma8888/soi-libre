@@ -1698,15 +1698,17 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.7.6-alpha",
-  buildId: "20260802-runtime-parity-01",
+  appVersion: "v0.7.7-alpha",
+  buildId: "20260802-market-phase1-01",
   buildDate: "2026-08-02",
   defaultDatasetVersion: "rome500-candidate-v0.7",
-  runtimeBundleRevision: "rome500-runtime-v0.7.6-r1",
-  runtimeBundleFingerprintSha256: "4c45d107f6dd2d6f6b63f98d56c4c937f3b23de97854d212300ab71f5ffec7a4",
+  runtimeBundleRevision: "rome500-runtime-v0.7.7-r1",
+  runtimeBundleFingerprintSha256: "1b20be64632b845f7ef7205baa783a630e20708230f00551cc39769ce827cc2f",
+  marketContractRevision: "market-contract-v2.0.0-phase1",
+  marketPackageFingerprintSha256: "cb91d82982701e2898aba1b8d92b4ae1f0ea36dc0156d0f42e69fd8a6c09113d",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_7",
-  testProfilesRevision: "integrated-12-v0.7.6"
+  testProfilesRevision: "integrated-12-v0.7.7"
 });
 
 const DATASET_VERSION_ALIASES = Object.freeze({
@@ -1727,7 +1729,8 @@ const CONFIG = {
     profile: "boussole_pro_profile_v1",
     settings: "boussole_pro_settings_v1",
     results: "boussole_pro_results_v1",
-    favorites: "boussole_pro_favorites_v1"
+    favorites: "boussole_pro_favorites_v1",
+    market: "boussole_pro_market_v2"
   },
   baseWeights: {
     skills: 25,
@@ -1758,6 +1761,7 @@ function getBuildMetadata(dataset = App?.state?.dataset) {
       validationScope: BUILD_INFO.validationScope
     },
     runtimeBundleIdentity: runtime,
+    marketLayerIdentity: getMarketLayerIdentity(dataset),
     executionIdentity: {
       inputMode: runtime.inputMode,
       comparisonScope: runtime.comparisonScope
@@ -1789,7 +1793,42 @@ function getRuntimeBundleIdentity(dataset = App?.state?.dataset) {
     counts: identity.counts || runtimeComponentCounts(dataset),
     ruleVersions: identity.ruleVersions || {},
     comparisonScope: identity.comparisonScope || (identity.inputMode === "packaged_corpus" ? "local_packaged_runtime" : "not_comparable_environment"),
+    status: identity.status || "unknown",
+    marketLayerIdentity: identity.marketLayerIdentity || dataset?.marketManifest?.marketLayerIdentity || null
+  };
+}
+
+function getMarketLayerIdentity(dataset = App?.state?.dataset) {
+  const identity = dataset?.marketLayerIdentity || dataset?.runtimeBundleIdentity?.marketLayerIdentity || dataset?.marketManifest?.marketLayerIdentity || {};
+  return {
+    identityKind: identity.identityKind || "boussole_market_layer_identity",
+    marketContractRevision: identity.marketContractRevision || BUILD_INFO.marketContractRevision,
+    packageFingerprintSha256: identity.packageFingerprintSha256 || null,
+    sourceVintage: identity.sourceVintage || {},
+    territories: toArray(identity.territories),
+    counts: identity.counts || {},
+    coverage: identity.coverage || {},
+    mappingCoverage: identity.mappingCoverage || {},
+    parserVersions: identity.parserVersions || {},
     status: identity.status || "unknown"
+  };
+}
+
+function assessMarketLayerCompatibility(dataset = App?.state?.dataset) {
+  const actual = getMarketLayerIdentity(dataset);
+  const expected = {
+    marketContractRevision: BUILD_INFO.marketContractRevision,
+    packageFingerprintSha256: BUILD_INFO.marketPackageFingerprintSha256
+  };
+  const issues = [];
+  if (actual.marketContractRevision !== expected.marketContractRevision) issues.push("market_contract_revision_mismatch");
+  if (actual.packageFingerprintSha256 !== expected.packageFingerprintSha256) issues.push("market_package_fingerprint_mismatch");
+  return {
+    compatible: issues.length === 0,
+    action: issues.length ? "reload_market_layer_only" : "reuse_market_layer",
+    issues,
+    actual,
+    expected
   };
 }
 
@@ -3087,6 +3126,7 @@ const App = {
     relatedVariantsCache: new Map(),
     jobDerivedCache: new Map(),
     marketSummaryCache: new Map(),
+    marketSynthesisCache: new Map(),
     officialConstraintCache: new Map(),
     skillConceptCache: new Map(),
     intentComparisonCache: null,
@@ -3120,6 +3160,7 @@ const App = {
     generatedDataMessage: "Aucune synchronisation ROME générée n’a encore été chargée.",
     performanceMetrics: {},
     runtimeMigration: null,
+    marketMigration: null,
     pendingPackagedDatasetRef: null,
     corpusMode: "auto",
     apiTest: {
@@ -3998,7 +4039,8 @@ function finalizeDatasetForV051(dataset, options = {}) {
     provenance: indicator.provenance || finalized.provenance || "sample",
     isEstimated: indicator.source !== "bmo" && indicator.source !== "dataemploi",
     national: indicator.national || {
-      tensionLevel: marketLevelFromScore(indicator.tensionScore),
+      tensionLevel: "unknown",
+      absoluteOfferSignal: marketLevelFromScore(indicator.tensionScore),
       recruitmentTrend: indicator.trend || "unknown",
       source: indicator.source || "curated_estimated",
       confidence: indicator.confidence ?? 0.4
@@ -4208,6 +4250,20 @@ function loadStoredData() {
   }
 
   try {
+    const cachedMarket = JSON.parse(localStorage.getItem(CONFIG.storageKeys.market) || "null");
+    const cachedFingerprint = cachedMarket?.marketLayerIdentity?.packageFingerprintSha256 || null;
+    App.state.marketMigration = {
+      status: cachedFingerprint === BUILD_INFO.marketPackageFingerprintSha256 ? "market_cache_current" : cachedFingerprint ? "market_cache_refresh_required" : "market_cache_missing",
+      action: cachedFingerprint === BUILD_INFO.marketPackageFingerprintSha256 ? "reuse_market_layer" : "reload_market_layer_only",
+      cachedFingerprint,
+      expectedFingerprint: BUILD_INFO.marketPackageFingerprintSha256,
+      detectedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    App.state.marketMigration = { status: "market_cache_invalid", action: "reload_market_layer_only", detectedAt: new Date().toISOString() };
+  }
+
+  try {
     const favoritesEnvelope = localStorage.getItem(CONFIG.storageKeys.favorites);
     if (favoritesEnvelope) {
       const parsed = JSON.parse(favoritesEnvelope);
@@ -4260,13 +4316,22 @@ function saveDataset(dataset = App.state.dataset) {
           inputMode: "packaged_corpus",
           datasetVersion: canonicalDatasetVersion(dataset.datasetVersion),
           corpusMode: App.state.corpusMode || "generated_rome_500_candidate",
-          runtimeBundleIdentity: getRuntimeBundleIdentity(dataset)
+          runtimeBundleIdentity: getRuntimeBundleIdentity(dataset),
+          marketLayerIdentity: getMarketLayerIdentity(dataset)
         }
       } : {
         data: dataset
       })
     };
     localStorage.setItem(CONFIG.storageKeys.dataset, JSON.stringify(envelope));
+    const marketLayerIdentity = getMarketLayerIdentity(dataset);
+    localStorage.setItem(CONFIG.storageKeys.market, JSON.stringify({
+      app: CONFIG.appName,
+      version: CONFIG.version,
+      updatedAt,
+      marketLayerIdentity
+    }));
+    App.state.marketMigration = { status: "market_cache_current", action: "reuse_market_layer", cachedFingerprint: marketLayerIdentity.packageFingerprintSha256, detectedAt: updatedAt };
     App.state.lastSavedAt = envelope.updatedAt;
     return true;
   } catch (error) {
@@ -5274,6 +5339,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint: { score: 0, warnings: [], missingData: [] } });
     const marketOpportunityLevelValue = marketOpportunityLevel(market);
     const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
+    const marketInfluence = calculateSelectionScoreV077(criteria, { personalFitScore, feasibilityScore, marketOpportunityNormalized }, market);
     const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, hardCheck, exactExperience });
     const result = {
       schemaVersion: CONFIG.schemaVersion,
@@ -5291,6 +5357,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       feasibilityScore,
       marketOpportunityLevel: marketOpportunityLevelValue,
       marketOpportunityNormalized,
+      marketInfluence: { ...marketInfluence, selectionScore: 0, effectPoints: 0, excludedFromSelection: true },
       legacyCompositeScore: relevanceScore,
       selectionScore: 0,
       confidenceScore: confidence,
@@ -5313,7 +5380,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, value, context, market, affinity, core, exactExperience, hardCheck });
     result.resultFoundation = result.resultInterpretation.resultFoundation;
     if (includeDiagnostic) {
-      result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, core, exactExperience, weightAdjustment, scoreCaps: { caps: [] }, hardCheck });
+      result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, core, exactExperience, weightAdjustment, marketInfluence: result.marketInfluence, scoreCaps: { caps: [] }, hardCheck });
     }
     return result;
   }
@@ -5346,7 +5413,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint });
   const marketOpportunityLevelValue = marketOpportunityLevel(market);
   const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
-  const selectionScore = calculateSelectionScoreV072(criteria, { personalFitScore, feasibilityScore, marketOpportunityNormalized });
+  const marketInfluence = calculateSelectionScoreV077(criteria, { personalFitScore, feasibilityScore, marketOpportunityNormalized }, market);
+  const selectionScore = marketInfluence.selectionScore;
   const globalScore = selectionScore;
   const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint, value, context, market, hardCheck, exactExperience });
   const result = {
@@ -5365,6 +5433,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     feasibilityScore,
     marketOpportunityLevel: marketOpportunityLevelValue,
     marketOpportunityNormalized,
+    marketInfluence,
     legacyCompositeScore,
     selectionScore,
     confidenceScore: confidence,
@@ -5386,7 +5455,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, exactExperience, scoreCaps, hardCheck });
   result.resultFoundation = result.resultInterpretation.resultFoundation;
   if (includeDiagnostic) {
-    result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, exactExperience, weightAdjustment, scoreCaps, hardCheck });
+    result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, exactExperience, weightAdjustment, marketInfluence, scoreCaps, hardCheck });
   }
   return result;
 }
@@ -5443,20 +5512,45 @@ function marketOpportunityNormalizedScore(market = {}) {
   return map[level] ?? 50;
 }
 
-function calculateSelectionScoreV072(criteria = {}, scores = {}) {
+function calculateSelectionScoreV077(criteria = {}, scores = {}, market = {}) {
   const intent = criteria.engineIntent || "balanced";
-  const weights = intent === "localTension" || intent === "quickEmployment"
-    ? { personal: 0.6, feasibility: 0.25, market: 0.15 }
-    : intent === "comfortAndConstraints" || intent === "shortTraining"
-      ? { personal: 0.62, feasibility: 0.3, market: 0.08 }
-      : { personal: 0.7, feasibility: 0.2, market: 0.1 };
-  return Math.round(clamp(
-    scores.personalFitScore * weights.personal +
-    scores.feasibilityScore * weights.feasibility +
-    scores.marketOpportunityNormalized * weights.market,
+  const requestedWeight = normalizeWeights(criteria.criterionWeights || CONFIG.baseWeights).market || 0;
+  const explicitMarketGoal = ["localTension", "quickEmployment"].includes(intent) ||
+    ["quick_employment", "local_tension", "secure_recruitment"].includes(criteria.marketPreference?.goal);
+  const reliability = Number(market.marketReliability ?? market.confidence ?? 0);
+  const rankingEligible = Boolean(market.marketDiscriminant) && market.rankingUse === "normal" && reliability >= 0.5;
+  const effectiveWeight = rankingEligible ? Math.min(requestedWeight, explicitMarketGoal ? 15 : 8) : 0;
+  const personalShare = intent === "comfortAndConstraints" || intent === "shortTraining"
+    ? 0.67
+    : intent === "localTension" || intent === "quickEmployment"
+      ? 0.71
+      : 0.78;
+  const scoreWithoutMarket = clamp(
+    Number(scores.personalFitScore || 0) * personalShare +
+    Number(scores.feasibilityScore || 0) * (1 - personalShare),
     0,
     100
-  ));
+  );
+  const selectionScore = clamp(
+    scoreWithoutMarket * (1 - effectiveWeight / 100) +
+    Number(scores.marketOpportunityNormalized ?? 50) * (effectiveWeight / 100),
+    0,
+    100
+  );
+  return {
+    policyRevision: "market-ranking-policy-v1",
+    requestedWeight,
+    effectiveWeight,
+    limited: effectiveWeight < requestedWeight,
+    rankingEligible,
+    reliability: Number(reliability.toFixed(2)),
+    scoreWithoutMarket: Math.round(scoreWithoutMarket),
+    selectionScore: Math.round(selectionScore),
+    effectPoints: Math.round(selectionScore) - Math.round(scoreWithoutMarket),
+    reason: rankingEligible
+      ? (effectiveWeight ? "reliable_observed_market_signal_with_capped_weight" : "zero_weight_requested")
+      : "market_unknown_or_not_ranking_eligible"
+  };
 }
 
 function feasibilityLabel(score = 0) {
@@ -5655,7 +5749,12 @@ function buildScoreDetails(criteria, job, details = {}) {
       recruitmentDifficulty: market.recruitmentDifficulty || "unknown",
       salarySignal: market.salarySignal || "unknown",
       seasonalRate: market.seasonalRate ?? null,
-      bmo: market.bmo || normalizeBmoStats()
+      bmo: market.bmo || normalizeBmoStats(),
+      marketSynthesis: market.marketSynthesis || getJobMarketSynthesis(job),
+      marketLayerIdentity: market.marketLayerIdentity || getMarketLayerIdentity(),
+      marketContractRevision: market.marketContractRevision || BUILD_INFO.marketContractRevision,
+      mappingQuality: market.marketMappingQuality || market.marketSynthesis?.mappingQuality || "unmapped",
+      unknownDimensions: toArray(market.marketUnknownDimensions || market.marketSynthesis?.unknownDimensions)
     }
   };
 }
@@ -5705,6 +5804,7 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     personalFitScore: result.personalFitScore ?? null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
+    marketInfluence: result.marketInfluence || null,
     selectionScore: result.selectionScore ?? result.globalScore,
     legacyCompositeScore: result.legacyCompositeScore ?? result.rawGlobalScore ?? result.globalScore,
     confidenceScore: result.confidenceScore,
@@ -5716,6 +5816,12 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     weightOrigin: criteria.weightOrigin || "default",
     appliedWeights: clone(details.weightAdjustment?.weights || criteria.criterionWeights || CONFIG.baseWeights),
     requestedWeights: clone(criteria.requestedCriterionWeights || criteria.criterionWeights || CONFIG.baseWeights),
+    marketInfluence: clone(details.marketInfluence || result.marketInfluence || {
+      requestedWeight: normalizeWeights(criteria.criterionWeights || CONFIG.baseWeights).market || 0,
+      effectiveWeight: 0,
+      effectPoints: 0,
+      reason: "market_unknown_or_not_ranking_eligible"
+    }),
     weights: clone(details.weightAdjustment?.weights || criteria.criterionWeights || CONFIG.baseWeights),
     profileCompleteness: criteria.completeness || 0,
     domainAffinity: details.affinity || null,
@@ -5913,7 +6019,7 @@ function buildWhyItRanks(result = {}, details = {}) {
   if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
   if ((result.scores?.values || 0) >= 10) reasons.push("les envies ou valeurs rejoignent cette direction");
   if ((result.scores?.context || 0) >= 7) reasons.push("le cadre de travail correspond à plusieurs préférences");
-  if (details.market?.marketDiscriminant && ["top_local", "strong_local", "high"].includes(effectiveMarketOfferSignal(details.market))) reasons.push("le signal marché territorial est favorable");
+  if (details.market?.marketDiscriminant && ["top_local", "strong_local", "high"].includes(effectiveMarketOfferSignal(details.market))) reasons.push("le volume observé ou la présence territoriale est élevé");
   if (!reasons.length && result.status !== "excluded_for_now") reasons.push("aucune incompatibilité forte n’a été confirmée");
   if (details.skill?.unlinkedOfficialSkills) reasons.push("le score compétences reste volontairement neutre car les liens métier-compétence manquent");
   return unique(reasons).slice(0, 6);
@@ -7531,6 +7637,7 @@ function inferJobContextTags(job = {}) {
 
 function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) {
   const snapshot = getJobMarketSnapshot(job, datasets, criteria.marketPreference || App.state.profile?.marketPreference);
+  const synthesis = getJobMarketSynthesis(job, datasets, criteria.marketPreference || App.state.profile?.marketPreference);
   const missingData = snapshot.sourceLevel === "none"
     ? [missing("job.marketStats", "low", "Statistiques marché non disponibles pour ce métier.")]
     : [];
@@ -7547,7 +7654,7 @@ function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) 
     score = 1 + signalValue * 4;
   }
   if (["quick_employment", "local_tension", "secure_recruitment"].includes(criteria.marketPreference?.goal) && reliability >= 0.7 && ["current", "recent", "unknown"].includes(snapshot.marketFreshness)) score += 0.25;
-  const rankingUse = snapshot.marketDiscriminant ? "normal" : snapshot.sourceLevel === "none" ? "neutral" : "limited";
+  const rankingUse = synthesis.rankingEligible && snapshot.marketDiscriminant ? "normal" : snapshot.sourceLevel === "none" ? "neutral" : "limited";
   const opportunityLevel = marketOpportunityLevel(snapshot);
   return {
     score: Math.round(clamp(score, 0, 5)),
@@ -7566,6 +7673,11 @@ function calculateMarketScore(job, datasets = App.state.dataset, criteria = {}) 
     marketScore: Math.round(clamp(score, 0, 5)),
     marketReliability: reliability,
     marketDiscriminant: snapshot.marketDiscriminant,
+    marketSynthesis: synthesis,
+    marketLayerIdentity: synthesis.marketLayerIdentity,
+    marketContractRevision: synthesis.marketContractRevision,
+    marketMappingQuality: synthesis.mappingQuality,
+    marketUnknownDimensions: synthesis.unknownDimensions,
     marketEvidenceLevel: snapshot.marketEvidenceLevel,
     territory: snapshot.territory,
     territoryLabel: snapshot.territoryLabel,
@@ -7618,6 +7730,7 @@ function normalizeMarketStats(raw = null, job = {}) {
 
 function normalizeMarketTerritoryStats(raw = {}) {
   const offers12m = numberOrNull(raw?.offers12m);
+  const offerOnly = (raw?.marketDataKind || "offers_volume") === "offers_volume" || raw?.sourceName === "api_marche_travail";
   const absoluteSignal = normalizeAbsoluteOfferSignal(raw?.absoluteOfferSignal) || absoluteOfferSignalFromVolume(offers12m);
   const territorialSignal = normalizeTerritorialOfferSignal(raw?.territorialOfferSignal);
   return {
@@ -7638,9 +7751,9 @@ function normalizeMarketTerritoryStats(raw = {}) {
     offersAll12m: numberOrNull(raw?.offersAll12m),
     offers12m,
     hires12m: numberOrNull(raw?.hires12m),
-    tensionLevel: normalizeMarketSignal(raw?.tensionLevel),
-    recruitmentDifficulty: normalizeMarketSignal(raw?.recruitmentDifficulty),
-    recruitmentSignal: normalizeMarketSignal(raw?.recruitmentSignal || raw?.recruitmentLevel),
+    tensionLevel: offerOnly ? "unknown" : normalizeMarketSignal(raw?.tensionLevel),
+    recruitmentDifficulty: offerOnly ? "unknown" : normalizeMarketSignal(raw?.recruitmentDifficulty),
+    recruitmentSignal: offerOnly ? "unknown" : normalizeMarketSignal(raw?.recruitmentSignal || raw?.recruitmentLevel),
     salarySignal: normalizeMarketSignal(raw?.salarySignal),
     absoluteOfferSignal: absoluteSignal,
     territorialOfferSignal: territorialSignal || (absoluteSignal === "zero" ? "zero_local" : "unknown"),
@@ -7678,9 +7791,10 @@ function buildEstimatedMarketStats(job = {}) {
     newDemanders12m: null,
     offers12m: null,
     hires12m: null,
-    tensionLevel: marketLevelFromScore(value),
-    recruitmentDifficulty: marketLevelFromScore(value + 0.04),
-    recruitmentSignal: marketLevelFromScore(value),
+    tensionLevel: "unknown",
+    recruitmentDifficulty: "unknown",
+    recruitmentSignal: "unknown",
+    absoluteOfferSignal: marketLevelFromScore(value),
     salarySignal: "unknown",
     confidence
   });
@@ -7751,7 +7865,8 @@ function estimateTerritoryMarketModifiers(job = {}) {
 function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference = App.state.profile?.marketPreference) {
   const territory = normalizeMarketTerritory(preference?.territory || preference);
   const stats = getJobMarketStats(job, datasets);
-  const selectedStats = getMarketStatsForTerritory(stats, territory);
+  const selection = selectMarketStatsForTerritory(stats, territory);
+  const selectedStats = selection.stats;
   const sourceLevel = normalizeMarketSourceLevel(selectedStats.sourceLevel || stats.sourceLevel);
   const isEstimated = sourceLevel === "estimated" || normalizeText(stats.sourceName).includes("estimated");
   const sourceName = selectedStats.sourceName || stats.sourceName || (sourceLevel === "none" ? "unknown" : "manual");
@@ -7767,6 +7882,9 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
     marketInterpretationLabel: stats.marketInterpretationLabel || selectedStats.marketInterpretationLabel || (isEstimated ? "Repère marché estimatif local" : "Volume d’offres observé"),
     territory,
     territoryLabel: territory.label,
+    dataTerritoryLabel: selection.dataTerritoryLabel,
+    territoryFallback: selection.fallback,
+    territoryFallbackFrom: selection.fallbackFrom,
     marketTitle: selectedStats.title || null,
     latestPeriodCode: selectedStats.latestPeriodCode || null,
     latestPeriodLabel: selectedStats.latestPeriodLabel || null,
@@ -7780,7 +7898,7 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
     offers12mRankInTerritory: selectedStats.offers12mRankInTerritory ?? null,
     marketFreshness: selectedStats.marketFreshness || "unknown",
     tensionLevel: selectedStats.tensionLevel || "unknown",
-    recruitmentSignal: selectedStats.recruitmentSignal || selectedStats.tensionLevel || "unknown",
+    recruitmentSignal: selectedStats.recruitmentSignal || "unknown",
     recruitmentDifficulty: selectedStats.recruitmentDifficulty || "unknown",
     salarySignal: selectedStats.salarySignal || "unknown",
     seasonalRate: stats.bmo?.seasonalRate ?? null,
@@ -7789,7 +7907,7 @@ function getJobMarketSnapshot(job = {}, datasets = App.state.dataset, preference
     marketDiscriminant,
     marketEvidenceLevel: evidenceLevel,
     isEstimated,
-    note: marketSnapshotNote(sourceLevel, territory, reliability, isEstimated)
+    note: marketSnapshotNote(sourceLevel, territory, reliability, isEstimated, selection)
   };
 }
 
@@ -7806,9 +7924,9 @@ function getJobMarketStats(job = {}, datasets = App.state.dataset) {
       sourceLevel: indicator.sourceLevel || indicator.territoryLevel || (indicator.source ? "estimated" : "none"),
       sourceName: indicator.source || "market_indicator",
       sourceUpdatedAt: indicator.updatedAt || indicator.sourceUpdatedAt || null,
-      national: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
-      regional: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
-      departmental: { tensionLevel: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", recruitmentDifficulty: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 }
+      national: { tensionLevel: "unknown", recruitmentSignal: "unknown", recruitmentDifficulty: "unknown", absoluteOfferSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
+      regional: { tensionLevel: "unknown", recruitmentSignal: "unknown", recruitmentDifficulty: "unknown", absoluteOfferSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 },
+      departmental: { tensionLevel: "unknown", recruitmentSignal: "unknown", recruitmentDifficulty: "unknown", absoluteOfferSignal: Number.isFinite(score) ? marketLevelFromScore(score) : "unknown", confidence: indicator.confidence ?? 0.25 }
     }, job);
   }
   if (isGeneratedRomeJob(job) || datasets?.provenance === "generated_rome") return buildUnavailableMarketStats(job);
@@ -7816,9 +7934,23 @@ function getJobMarketStats(job = {}, datasets = App.state.dataset) {
 }
 
 function getMarketStatsForTerritory(stats = {}, territory = normalizeMarketTerritory()) {
-  if (territory.type === "department") return stats.departmental || stats.regional || stats.national || normalizeMarketTerritoryStats();
-  if (territory.type === "region") return stats.regional || stats.national || normalizeMarketTerritoryStats();
-  return stats.national || normalizeMarketTerritoryStats();
+  return selectMarketStatsForTerritory(stats, territory).stats;
+}
+
+function selectMarketStatsForTerritory(stats = {}, territory = normalizeMarketTerritory()) {
+  const candidates = territory.type === "department"
+    ? [["departmental", stats.departmental, "Aude"], ["regional", stats.regional, "Occitanie"], ["national", stats.national, "France entière"]]
+    : territory.type === "region"
+      ? [["regional", stats.regional, "Occitanie"], ["national", stats.national, "France entière"]]
+      : [["national", stats.national, "France entière"]];
+  const usable = candidates.find(([, item]) => item && (item.sourceLevel !== "none" || Number.isFinite(item.offers12m)));
+  const [level, selected, label] = usable || [territory.sourceLevel, normalizeMarketTerritoryStats(), territory.label];
+  return {
+    stats: selected,
+    dataTerritoryLabel: selected.territoryLabel || label,
+    fallback: level !== territory.sourceLevel,
+    fallbackFrom: level !== territory.sourceLevel ? level : null
+  };
 }
 
 function normalizeMarketTerritory(raw = {}) {
@@ -7873,9 +8005,10 @@ function marketReliabilityForLevel(sourceLevel, confidence = 0, isEstimated = fa
   return clamp(Number(confidence || 0), 0, 1);
 }
 
-function marketSnapshotNote(sourceLevel, territory, reliability, isEstimated) {
+function marketSnapshotNote(sourceLevel, territory, reliability, isEstimated, selection = {}) {
   if (sourceLevel === "none") return "Aucune statistique marché connectée pour ce métier.";
   if (isEstimated) return `Signal estimatif pour ${territory.label}. À confirmer avec des statistiques ou acteurs locaux.`;
+  if (selection.fallback) return `Donnée non disponible pour ${territory.label} ; repère affiché pour ${selection.dataTerritoryLabel}.`;
   if (reliability < 0.5) return "Donnée marché présente mais fiabilité limitée.";
   return `Signal marché exploitable sur le niveau ${MARKET_SOURCE_LEVEL_LABELS[sourceLevel] || sourceLevel}.`;
 }
@@ -7908,9 +8041,196 @@ function marketOfferSignalValue(level = "unknown") {
 function effectiveMarketOfferSignal(market = {}) {
   if (market.territorialOfferSignal && market.territorialOfferSignal !== "unknown") return market.territorialOfferSignal;
   if (market.absoluteOfferSignal && market.absoluteOfferSignal !== "unknown") return market.absoluteOfferSignal;
-  if (market.tensionLevel && market.tensionLevel !== "unknown") return market.tensionLevel;
-  if (market.level && market.level !== "unknown") return market.level;
   return "unknown";
+}
+
+function getJobMarketSynthesis(job = {}, datasets = App.state.dataset, preference = App.state.profile?.marketPreference) {
+  const territory = normalizeMarketTerritory(preference?.territory || preference);
+  const marketIdentity = getMarketLayerIdentity(datasets);
+  const cacheKey = `${job.id || job.romeCode || ""}|${territory.id}|${marketIdentity.packageFingerprintSha256 || "no-market-id"}`;
+  if (App.state.marketSynthesisCache.has(cacheKey)) return App.state.marketSynthesisCache.get(cacheKey);
+  const snapshot = getJobMarketSnapshot(job, datasets, preference);
+  const stats = getJobMarketStats(job, datasets);
+  const national = stats.national || normalizeMarketTerritoryStats();
+  const bmo = snapshot.bmo || normalizeBmoStats();
+  const offerStatus = Number.isFinite(snapshot.offers12m) ? (snapshot.offers12m === 0 ? "zero" : "available") : "unknown";
+  const dimensions = {
+    offerVolume: buildMarketDimensionView({
+      status: offerStatus,
+      value: snapshot.offers12m,
+      unit: "offres sur 12 mois",
+      level: snapshot.absoluteOfferSignal,
+      sourceName: snapshot.sourceName,
+      sourceVintage: snapshot.latestPeriodCode,
+      sourceUpdatedAt: snapshot.sourceUpdatedAt,
+      territoryLabel: snapshot.dataTerritoryLabel || snapshot.territoryLabel,
+      confidence: snapshot.marketReliability,
+      method: "official_observed_offer_volume",
+      rankingEligible: snapshot.marketDiscriminant
+    }),
+    recruitmentProjects: buildMarketDimensionView({
+      status: Number.isFinite(bmo.recruitmentProjects) ? (bmo.recruitmentProjects === 0 ? "zero" : "available") : "unknown",
+      value: bmo.recruitmentProjects,
+      unit: "projets BMO",
+      level: "unclassified",
+      sourceName: Number.isFinite(bmo.recruitmentProjects) ? "france_travail_bmo" : null,
+      sourceVintage: bmo.year || null,
+      territoryLabel: bmo.territoryLabel || snapshot.territoryLabel,
+      confidence: bmo.confidence,
+      method: bmo.mappingMethod || "unmapped",
+      mappingMethod: bmo.mappingMethod || "unmapped",
+      mappingConfidence: bmo.mappingConfidence,
+      rankingEligible: Boolean(bmo.usedInMarketScore)
+    }),
+    recruitmentDifficulty: buildMarketDimensionView({
+      status: Number.isFinite(bmo.difficultRecruitmentRate) ? "available" : "unknown",
+      value: bmo.difficultRecruitmentRate,
+      unit: "% des projets",
+      level: marketRateLevel(bmo.difficultRecruitmentRate),
+      sourceName: Number.isFinite(bmo.difficultRecruitmentRate) ? "france_travail_bmo" : null,
+      sourceVintage: bmo.year || null,
+      territoryLabel: bmo.territoryLabel || snapshot.territoryLabel,
+      confidence: bmo.confidence,
+      method: bmo.mappingMethod || "unmapped",
+      mappingMethod: bmo.mappingMethod || "unmapped",
+      mappingConfidence: bmo.mappingConfidence,
+      rankingEligible: false
+    }),
+    seasonality: buildMarketDimensionView({
+      status: Number.isFinite(bmo.seasonalRate) ? "available" : "unknown",
+      value: bmo.seasonalRate,
+      unit: "% des projets",
+      level: marketRateLevel(bmo.seasonalRate),
+      sourceName: Number.isFinite(bmo.seasonalRate) ? "france_travail_bmo" : null,
+      sourceVintage: bmo.year || null,
+      territoryLabel: bmo.territoryLabel || snapshot.territoryLabel,
+      confidence: bmo.confidence,
+      method: bmo.mappingMethod || "unmapped",
+      mappingMethod: bmo.mappingMethod || "unmapped",
+      mappingConfidence: bmo.mappingConfidence,
+      rankingEligible: false
+    }),
+    tension: buildMarketDimensionView({
+      status: snapshot.tensionLevel && snapshot.tensionLevel !== "unknown" ? "available" : "unknown",
+      value: snapshot.tensionIndex ?? null,
+      unit: "indice Dares",
+      level: snapshot.tensionLevel,
+      sourceName: snapshot.tensionSourceName || null,
+      sourceVintage: snapshot.tensionVintage || null,
+      territoryLabel: snapshot.tensionTerritoryLabel || snapshot.dataTerritoryLabel || snapshot.territoryLabel,
+      confidence: snapshot.tensionConfidence || 0,
+      method: snapshot.tensionMethod || "not_available",
+      mappingMethod: snapshot.tensionMappingMethod || "unmapped",
+      mappingConfidence: snapshot.tensionMappingConfidence || 0,
+      rankingEligible: Boolean(snapshot.tensionRankingEligible)
+    }),
+    territorialPresence: buildMarketDimensionView({
+      status: snapshot.territorialOfferSignal === "unknown" ? "unknown" : snapshot.territorialOfferSignal === "zero_local" ? "zero" : "available",
+      value: snapshot.territoryPercentile,
+      unit: "percentile territorial",
+      level: snapshot.territorialOfferSignal,
+      sourceName: snapshot.sourceName ? "boussole_pro_derived" : null,
+      sourceVintage: snapshot.latestPeriodCode,
+      sourceUpdatedAt: snapshot.sourceUpdatedAt,
+      territoryLabel: snapshot.dataTerritoryLabel || snapshot.territoryLabel,
+      confidence: snapshot.marketReliability,
+      method: "rank_within_same_territory_and_period_v1",
+      rankingEligible: snapshot.marketDiscriminant
+    }),
+    trend: buildMarketDimensionView()
+  };
+  const nationalOfferVolume = buildMarketDimensionView({
+    status: Number.isFinite(national.offers12m) ? (national.offers12m === 0 ? "zero" : "available") : "unknown",
+    value: national.offers12m,
+    unit: "offres sur 12 mois",
+    level: national.absoluteOfferSignal,
+    sourceName: national.sourceName,
+    sourceVintage: national.latestPeriodCode,
+    territoryLabel: "France entière",
+    confidence: national.confidence,
+    rankingEligible: false
+  });
+  const interpretation = interpretMarketSynthesis({ ...dimensions, nationalOfferVolume, territoryLabel: snapshot.territoryLabel });
+  const unknownDimensions = Object.entries(dimensions).filter(([, item]) => !marketDimensionKnown(item)).map(([key]) => key);
+  const synthesis = {
+    marketContractRevision: BUILD_INFO.marketContractRevision,
+    marketLayerIdentity: marketIdentity,
+    territory,
+    dataTerritoryLabel: snapshot.dataTerritoryLabel,
+    territoryFallback: snapshot.territoryFallback,
+    dimensions,
+    sourceCoverage: { present: Object.keys(dimensions).length - unknownDimensions.length, total: Object.keys(dimensions).length },
+    mappingQuality: marketSynthesisMappingQuality(dimensions),
+    freshness: snapshot.marketFreshness,
+    interpretation,
+    unknownDimensions,
+    rankingEligible: [dimensions.offerVolume, dimensions.territorialPresence, dimensions.tension, dimensions.recruitmentProjects].some(item => item.mapping.rankingEligible),
+    snapshot
+  };
+  App.state.marketSynthesisCache.set(cacheKey, synthesis);
+  return synthesis;
+}
+
+function buildMarketDimensionView(raw = {}) {
+  return {
+    status: raw.status || "unknown",
+    value: raw.value ?? null,
+    unit: raw.unit || null,
+    level: raw.level || "unknown",
+    sourceName: raw.sourceName || null,
+    sourceVintage: raw.sourceVintage || null,
+    sourceUpdatedAt: raw.sourceUpdatedAt || null,
+    territoryLabel: raw.territoryLabel || null,
+    confidence: clamp(Number(raw.confidence || 0), 0, 1),
+    method: raw.method || "not_available",
+    mapping: {
+      method: raw.mappingMethod || (raw.rankingEligible ? "not_required" : "unmapped"),
+      confidence: clamp(Number(raw.mappingConfidence ?? (raw.rankingEligible ? 1 : 0)), 0, 1),
+      rankingEligible: Boolean(raw.rankingEligible)
+    }
+  };
+}
+
+function interpretMarketSynthesis(input = {}) {
+  const high = item => ["high", "very_high", "top_local", "strong_local"].includes(item?.level);
+  const low = item => item?.status === "zero" || ["zero", "low", "very_low", "zero_local", "weak_local"].includes(item?.level);
+  if (high(input.tension) && low(input.offerVolume)) return marketInterpretation("high_tension_low_volume", "Les recrutements sont difficiles à satisfaire, mais ils restent peu nombreux dans le territoire sélectionné.");
+  if (high(input.offerVolume) && high(input.seasonality)) return marketInterpretation("high_volume_high_seasonality", "Les recrutements sont nombreux, mais une grande part est saisonnière.");
+  if (high(input.recruitmentDifficulty)) return marketInterpretation("high_difficulty_unknown_causes", "Les employeurs déclarent des difficultés de recrutement. Les données disponibles ne permettent pas d’en attribuer automatiquement la cause aux conditions de travail.");
+  if (high(input.nationalOfferVolume) && low(input.offerVolume)) return marketInterpretation("active_national_low_local", `Le métier est bien présent en France, mais peu représenté dans ${input.territoryLabel || "le territoire sélectionné"} ; la mobilité élargirait les possibilités.`);
+  if (high(input.offerVolume) && ["moderate", "medium", "unknown"].includes(input.tension?.level || "unknown")) return marketInterpretation("high_local_volume_no_high_tension", "Le volume local est important, sans preuve d’une tension forte.");
+  const known = [input.offerVolume, input.recruitmentProjects, input.recruitmentDifficulty, input.seasonality, input.tension, input.territorialPresence].filter(marketDimensionKnown);
+  if (known.length) {
+    const present = [];
+    if (marketDimensionKnown(input.offerVolume)) present.push("le volume d’offres");
+    if (marketDimensionKnown(input.recruitmentProjects)) present.push("les projets BMO");
+    if (marketDimensionKnown(input.recruitmentDifficulty)) present.push("la difficulté BMO");
+    if (marketDimensionKnown(input.seasonality)) present.push("la saisonnalité");
+    if (marketDimensionKnown(input.tension)) present.push("la tension Dares");
+    return marketInterpretation("partial_data", `Données partielles : ${present.join(", ")} ${present.length > 1 ? "sont connus" : "est connu"} ; les autres dimensions ne sont pas disponibles.`);
+  }
+  return marketInterpretation("no_robust_data", "Données marché insuffisantes pour ce métier et ce territoire.");
+}
+
+function marketInterpretation(caseId, text) {
+  return { revision: "market-interpretation-v1", caseId, text };
+}
+
+function marketDimensionKnown(item = {}) {
+  return ["available", "zero"].includes(item.status) && (item.value !== null || item.level !== "unknown");
+}
+
+function marketRateLevel(value) {
+  if (!Number.isFinite(value)) return "unknown";
+  if (value >= 60) return "high";
+  if (value >= 30) return "moderate";
+  return "low";
+}
+
+function marketSynthesisMappingQuality(dimensions = {}) {
+  const mapped = Object.values(dimensions).map(item => item.mapping).filter(item => item && item.method !== "not_required");
+  if (!mapped.length) return { method: "not_required", confidence: 1, rankingEligible: true };
+  return mapped.reduce((lowest, item) => item.confidence < lowest.confidence ? item : lowest, mapped[0]);
 }
 
 function determineFeasibilityStatus(globalScore, scores, criteria, job, details = {}) {
@@ -9172,7 +9492,7 @@ function renderMarketBox(market = {}, job = {}, options = {}) {
   const kindLabel = data.marketInterpretationLabel || (data.isEstimated ? "Repère marché estimatif local" : "Volume d’offres observé");
   const localSignal = data.territorialOfferSignal && data.territorialOfferSignal !== "unknown"
     ? territorialMarketSignalLabel(data.territorialOfferSignal)
-    : marketSignalLabel(data.absoluteOfferSignal || data.tensionLevel || data.level);
+    : marketSignalLabel(data.absoluteOfferSignal || "unknown");
   const freshnessLabel = marketFreshnessLabel(data.marketFreshness);
   const note = data.note || (data.isEstimated ? "Signal à confirmer localement." : "Statistique agrégée, sans offre individuelle.");
   const volumeRows = options.compact ? "" : renderMarketVolumeRows(job);
@@ -9210,7 +9530,7 @@ function renderMarketVolumeRows(job = {}) {
           : "donnée non disponible";
         const signal = item.territorialOfferSignal && item.territorialOfferSignal !== "unknown"
           ? territorialMarketSignalLabel(item.territorialOfferSignal)
-          : marketSignalLabel(item.absoluteOfferSignal || item.tensionLevel || "unknown");
+          : marketSignalLabel(item.absoluteOfferSignal || "unknown");
         const freshness = ["stale", "very_stale"].includes(item.marketFreshness) ? ` · ${marketFreshnessLabel(item.marketFreshness)}` : "";
         return `<li><strong>${h(label)} :</strong> ${h(offersLabel)} · ${h(signal)}${freshness}${item.latestPeriodLabel || item.latestPeriodCode ? ` · ${h(item.latestPeriodLabel || item.latestPeriodCode)}` : ""}</li>`;
       }).join("")}
@@ -9219,21 +9539,15 @@ function renderMarketVolumeRows(job = {}) {
 
 function renderMarketOneLineSummary(job = {}, result = {}) {
   const territory = App.state.profile?.marketPreference?.territory?.selected || "DEP-11";
-  const cacheKey = `${job.id || result.jobId || job.romeCode || ""}|${territory}|${App.state.dataset?.datasetVersion || ""}`;
+  const marketFingerprint = getMarketLayerIdentity()?.packageFingerprintSha256 || "no-market-id";
+  const cacheKey = `${job.id || result.jobId || job.romeCode || ""}|${territory}|${marketFingerprint}`;
   if (cacheKey && App.state.marketSummaryCache.has(cacheKey)) return App.state.marketSummaryCache.get(cacheKey);
-  const data = getJobMarketSnapshot(job, App.state.dataset, App.state.profile?.marketPreference);
-  const level = marketOpportunityLevel(data);
-  const labels = {
-    very_favorable: "Offres dans votre zone : très favorables",
-    favorable: "Offres dans votre zone : favorables",
-    moderate: "Offres dans votre zone : modérées",
-    limited: "Offres dans votre zone : limitées",
-    zero: "Offres dans votre zone : aucune offre observée",
-    unknown: "Offres locales : aucune donnée"
-  };
+  const synthesis = getJobMarketSynthesis(job, App.state.dataset, App.state.profile?.marketPreference);
+  const dimensions = synthesis.dimensions;
+  const territoryLabel = synthesis.dataTerritoryLabel || synthesis.territory?.label || "Territoire sélectionné";
   const html = `
     <div class="market-one-line">
-      <span>${h(labels[level] || labels.unknown)}</span>
+      <span><strong>${h(territoryLabel)}</strong> · ${h(marketDimensionCompactLabel("volume", dimensions.offerVolume))} · ${h(marketDimensionCompactLabel("présence", dimensions.territorialPresence))} · ${h(marketDimensionCompactLabel("tension", dimensions.tension))} · ${h(marketDimensionCompactLabel("difficulté BMO", dimensions.recruitmentDifficulty))} · ${h(marketDimensionCompactLabel("saisonnalité", dimensions.seasonality))}. ${h(synthesis.interpretation.text)}</span>
       <button class="tiny-button" type="button" data-action="open-market" data-job-id="${h(job.id || result.jobId || "")}">Voir le marché</button>
     </div>`;
   if (cacheKey) App.state.marketSummaryCache.set(cacheKey, html);
@@ -9258,30 +9572,70 @@ function marketOpportunityLevel(data = {}) {
 }
 
 function renderMarketDetailModal(job = {}, result = {}) {
-  const stats = getJobMarketStats(job, App.state.dataset);
+  const synthesis = getJobMarketSynthesis(job, App.state.dataset, App.state.profile?.marketPreference);
+  const dimensions = synthesis.dimensions;
   const rows = [
-    ["Aude", stats.departmental],
-    ["Occitanie", stats.regional],
-    ["France", stats.national]
+    ["Tension réelle", dimensions.tension],
+    ["Offres observées", dimensions.offerVolume],
+    ["Projets de recrutement BMO", dimensions.recruitmentProjects],
+    ["Difficulté de recrutement BMO", dimensions.recruitmentDifficulty],
+    ["Saisonnalité BMO", dimensions.seasonality],
+    ["Présence territoriale", dimensions.territorialPresence]
   ];
   return `
     <h2 data-dialog-job-id="${h(job.id)}">Marché observé — ${h(job.title)}</h2>
-    <p class="field-help">Ces chiffres décrivent des volumes d’offres observés. Tension du métier : non encore disponible.</p>
+    <p>${h(synthesis.interpretation.text)}</p>
+    ${synthesis.territoryFallback ? `<p class="warning-inline">Le territoire demandé ne dispose pas de cette donnée ; le niveau ${h(synthesis.dataTerritoryLabel || "disponible")} est affiché.</p>` : ""}
     <div class="compare-modal-grid">
       <table class="compare-modal-table">
-        <thead><tr><th>Territoire</th><th>Volume 12 mois</th><th>Période</th><th>Position relative</th><th>Fraîcheur</th><th>Source</th><th>Limites</th></tr></thead>
+        <thead><tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th><th>Territoire</th><th>Millésime</th><th>Source</th><th>Qualité / usage</th></tr></thead>
         <tbody>${rows.map(([label, item]) => `
           <tr>
             <td>${h(label)}</td>
-            <td>${Number.isFinite(item?.offers12m) ? h(formatNumberFr(item.offers12m)) : '<span class="missing">non disponible</span>'}</td>
-            <td>${h(item?.latestPeriodLabel || item?.latestPeriodCode || "non renseignée")}</td>
-            <td>${h(marketLabel(item?.territorialOfferSignal || item?.absoluteOfferSignal || "unknown"))}</td>
-            <td>${h(marketFreshnessLabel(item?.marketFreshness || "unknown"))}</td>
-            <td>${h(marketSourceNameLabel(item?.sourceName || item?.source || "non connectée"))}</td>
-            <td>Tension non calculée ; offres individuelles non affichées.</td>
+            <td>${marketDimensionValueHtml(item)}</td>
+            <td>${h(marketDimensionReading(item))}</td>
+            <td>${h(item.territoryLabel || synthesis.dataTerritoryLabel || "non renseigné")}</td>
+            <td>${h(item.sourceVintage || item.sourceUpdatedAt || "non renseigné")}</td>
+            <td>${h(marketSourceNameLabel(item.sourceName || "non connectée"))}</td>
+            <td>${h(marketDimensionQualityLabel(item))}</td>
           </tr>`).join("")}</tbody>
       </table>
-    </div>`;
+    </div>
+    <p class="field-help">Couverture : ${h(`${synthesis.sourceCoverage.present}/${synthesis.sourceCoverage.total} dimensions`)} · liaison FAP–ROME : ${h(marketMappingQualityLabel(synthesis.mappingQuality))}. Une donnée absente reste explicitement non disponible et n’est pas remplacée par le volume d’offres.</p>`;
+}
+
+function marketDimensionCompactLabel(label, dimension = {}) {
+  if (!marketDimensionKnown(dimension)) return `${label} non disponible`;
+  if (label === "volume") return `${formatNumberFr(dimension.value)} offres observées`;
+  if (["difficulté BMO", "saisonnalité"].includes(label)) return `${label} ${formatNumberFr(dimension.value)} %`;
+  return `${label} ${marketDimensionReading(dimension).toLowerCase()}`;
+}
+
+function marketDimensionValueHtml(dimension = {}) {
+  if (!marketDimensionKnown(dimension)) return '<span class="missing">non disponible</span>';
+  const suffix = String(dimension.unit || "").includes("%") || String(dimension.unit || "").includes("percent") ? " %" : "";
+  return h(`${formatNumberFr(dimension.value)}${suffix}`);
+}
+
+function marketDimensionReading(dimension = {}) {
+  if (!marketDimensionKnown(dimension)) return "Non disponible";
+  const labels = {
+    very_high: "Très élevé", high: "Élevé", moderate: "Modéré", medium: "Modéré", low: "Faible", very_low: "Très faible",
+    top_local: "Présence locale très forte", strong_local: "Présence locale forte", medium_local: "Présence locale moyenne",
+    weak_local: "Présence locale faible", zero_local: "Aucune présence observée", zero: "Zéro observé", unclassified: "Valeur observée"
+  };
+  return labels[dimension.level] || "Valeur observée";
+}
+
+function marketDimensionQualityLabel(dimension = {}) {
+  if (!marketDimensionKnown(dimension)) return "Absente ; poids nul";
+  if (!dimension.mapping?.rankingEligible) return `Disponible à titre descriptif ; liaison ${dimension.mapping?.method || "non établie"} ; poids nul`;
+  return `Admissible au classement ; confiance ${reliabilityPercent(dimension.confidence)}`;
+}
+
+function marketMappingQualityLabel(value = "unmapped") {
+  const method = typeof value === "object" ? value?.method : value;
+  return ({ official_crosswalk: "officielle", validated_local_mapping: "validée", exact: "exacte", validated: "validée", ambiguous: "ambiguë", weak: "faible", unmapped: "absente", not_required: "non requise", mixed: "mixte" })[method] || method || "absente";
 }
 
 function getResultVariants(result = {}, job = result.job || findJob(result.jobId)) {
@@ -9850,10 +10204,11 @@ function buildExplorationFacetAudit(dataset = App.state.dataset) {
     .map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationContextMatches(job, value)), unknownDataCount: 0 }));
   const market = [
     ["available", "Données disponibles"],
-    ["high_tension", "Volume fort"],
-    ["favorable", "Signal favorable"],
-    ["aude", "Signal Aude"],
-    ["occitanie", "Signal Occitanie"],
+    ["high_local_offer_volume", "Volume local élevé"],
+    ["real_high_tension", "Tension réelle élevée"],
+    ["strong_territorial_presence", "Présence territoriale forte"],
+    ["aude", "Volume élevé en Aude"],
+    ["occitanie", "Volume élevé en Occitanie"],
     ["national", "National seulement"],
     ["confirm", "Données à confirmer"]
   ].map(([value, label]) => ({ value, label, resultCount: countMatches(job => explorationMarketMatches(job, value)), unknownDataCount: 0 }));
@@ -9893,6 +10248,8 @@ function explorationConstraintIsKnown(job, filter) {
 
 function renderExplorationPage() {
   const filters = App.state.explorationFilters;
+  if (filters.market === "high_tension") filters.market = "high_local_offer_volume";
+  if (filters.market === "favorable") filters.market = "strong_territorial_presence";
   const facetAudit = buildExplorationFacetAudit(App.state.dataset);
   const jobs = getFilteredExplorationJobs();
   const domainOptions = facetOptionsWithCounts(facetAudit.domains, ["all", `Tous les domaines (${toArray(App.state.dataset?.jobs).length})`], filters.domain);
@@ -9914,7 +10271,7 @@ function renderExplorationPage() {
         ${selectField("Contexte", "exploration.context", filters.context, contextOptions).replace('data-field="exploration.context"', 'data-exploration-filter="context"')}
         ${selectField("Marché", "exploration.market", filters.market, marketOptions).replace('data-field="exploration.market"', 'data-exploration-filter="market"')}
         ${selectField("Territoire", "exploration.territory", filters.territory, TERRITORIES.map(item => [item.id, item.label])).replace('data-field="exploration.territory"', 'data-exploration-filter="territory"')}
-        ${selectField("Tri", "exploration.sort", filters.sort, [["profile", "Pertinence profil"], ["title", "Titre"], ["domain", "Domaine"], ["quick_access", "Accès rapide"], ["market", "Marché"], ["low_constraints", "Contraintes faibles"], ["remote", "Télétravail"]]).replace('data-field="exploration.sort"', 'data-exploration-filter="sort"')}
+        ${selectField("Tri", "exploration.sort", filters.sort, [["profile", "Pertinence profil"], ["title", "Titre"], ["domain", "Domaine"], ["quick_access", "Accès rapide"], ["market", "Volume d’offres observé"], ["low_constraints", "Contraintes faibles"], ["remote", "Télétravail"]]).replace('data-field="exploration.sort"', 'data-exploration-filter="sort"')}
         <label class="form-row full tag-option"><input type="checkbox" data-exploration-filter="favoritesOnly" value="yes" ${filters.favoritesOnly ? "checked" : ""}><span><span class="tag-name">Afficher seulement les favoris</span><span class="tag-meta">${App.state.favoriteJobs.length} favori(s) localement</span></span></label>
       </div>
       <div class="button-row no-print" style="margin-top:12px">
@@ -9931,7 +10288,9 @@ function renderExplorationPage() {
 function updateExplorationFilter(target) {
   const key = target.dataset.explorationFilter;
   if (!key) return;
-  App.state.explorationFilters[key] = target.type === "checkbox" ? target.checked : target.value;
+  const legacyMarketValues = { high_tension: "high_local_offer_volume", favorable: "strong_territorial_presence" };
+  const value = target.type === "checkbox" ? target.checked : target.value;
+  App.state.explorationFilters[key] = key === "market" ? (legacyMarketValues[value] || value) : value;
   App.state.explorationFacetAudit = null;
 }
 
@@ -10105,8 +10464,9 @@ function explorationMarketMatches(job, filter) {
   const market = getJobMarketSnapshot(job, App.state.dataset, { territory: selectedTerritory });
   if (filter === "all") return true;
   if (filter === "available") return market.sourceLevel !== "none";
-  if (filter === "high_tension") return ["top_local", "strong_local", "high"].includes(market.territorialOfferSignal) || market.absoluteOfferSignal === "high";
-  if (filter === "favorable") return ["top_local", "strong_local", "medium_local"].includes(market.territorialOfferSignal) || ["medium", "high"].includes(market.absoluteOfferSignal);
+  if (filter === "high_local_offer_volume") return ["top_local", "strong_local", "high"].includes(market.territorialOfferSignal) || market.absoluteOfferSignal === "high";
+  if (filter === "real_high_tension") return ["high", "very_high"].includes(getJobMarketSynthesis(job, App.state.dataset, { territory: selectedTerritory }).dimensions.tension.level);
+  if (filter === "strong_territorial_presence") return ["top_local", "strong_local", "medium_local"].includes(market.territorialOfferSignal);
   if (filter === "aude") {
     const aude = getJobMarketSnapshot(job, App.state.dataset, { territory: "DEP-11" });
     return ["top_local", "strong_local"].includes(aude.territorialOfferSignal) || aude.absoluteOfferSignal === "high";
@@ -10136,14 +10496,14 @@ function getJobMarketLevel(job, territory = App.state.profile?.marketPreference?
 }
 
 function marketLabel(level) {
-  if (["top_local", "strong_local"].includes(level)) return "Signal local fort";
-  if (level === "medium_local") return "Signal local moyen";
-  if (["weak_local", "zero_local"].includes(level)) return "Signal local faible";
-  if (level === "high") return "Marché favorable";
-  if (level === "medium") return "Marché moyen";
+  if (["top_local", "strong_local"].includes(level)) return "Présence locale forte";
+  if (level === "medium_local") return "Présence locale moyenne";
+  if (["weak_local", "zero_local"].includes(level)) return "Présence locale faible";
+  if (level === "high") return "Volume d’offres élevé";
+  if (level === "medium") return "Volume d’offres moyen";
   if (level === "zero") return "Aucune offre observée";
-  if (level === "low") return "Marché faible";
-  return "Marché non renseigné";
+  if (level === "low") return "Volume d’offres faible";
+  return "Volume d’offres non renseigné";
 }
 
 function marketSourceLevelLabel(level = "none") {
@@ -10164,6 +10524,9 @@ function marketFreshnessLabel(level = "unknown") {
 
 function marketSourceNameLabel(source = "") {
   if (source === "api_marche_travail") return "France Travail — statistiques offres/demandes d’emploi";
+  if (source === "france_travail_bmo") return "France Travail — BMO";
+  if (source === "dares_france_travail_tension") return "Dares / France Travail — tensions";
+  if (source === "boussole_pro_derived") return "Boussole Pro — calcul territorial dérivé";
   if (String(source).includes("estimated")) return "estimation locale Boussole Pro";
   return source || "non connectée";
 }
@@ -11094,11 +11457,12 @@ async function loadGeneratedRomeDataset(options = {}) {
   const marketFiles = {
     marketManifest: "market-import-manifest.json",
     marketQualityReport: "market-quality-report.json",
+    marketPackageIdentity: "market-package-identity.json",
+    marketContract: "market-contract.json",
+    fapRomeMappingStatus: "fap-rome-mapping-status.json",
     marketNational: "market-national.rome.json",
     marketOccitanie: "market-occitanie.rome.json",
-    marketAude: "market-aude.rome.json",
-    bmoFap2021: "bmo-fap2021.json",
-    fapRomeMappings: "fap-rome-mappings.json"
+    marketAude: "market-aude.rome.json"
   };
   const files = {
     manifest: "import-manifest.rome.json",
@@ -11124,11 +11488,12 @@ async function loadGeneratedRomeDataset(options = {}) {
     mappingsRomeCertifications: "mappings-rome-certifications.json",
     marketManifest: `market/${marketFiles.marketManifest}`,
     marketQualityReport: `market/${marketFiles.marketQualityReport}`,
+    marketPackageIdentity: `market/${marketFiles.marketPackageIdentity}`,
+    marketContract: `market/${marketFiles.marketContract}`,
+    fapRomeMappingStatus: `market/${marketFiles.fapRomeMappingStatus}`,
     marketNational: `market/${marketFiles.marketNational}`,
     marketOccitanie: `market/${marketFiles.marketOccitanie}`,
-    marketAude: `market/${marketFiles.marketAude}`,
-    bmoFap2021: `market/${marketFiles.bmoFap2021}`,
-    fapRomeMappings: `market/${marketFiles.fapRomeMappings}`
+    marketAude: `market/${marketFiles.marketAude}`
   };
   try {
     showLoading("Chargement des données générées", `Boussole Pro lit les fichiers JSON statiques dans ${basePath}. Merci de patienter.`);
@@ -11357,6 +11722,7 @@ function mergeGeneratedDatasetIntoApp(generated, options = {}) {
     confidence: 0.75,
     manifest: { ...(options.replace ? {} : (base.manifest || {})), ...manifest, datasetVersion: canonicalDatasetVersion(manifest.datasetVersion), datasetVersionAliases: unique([...toArray(manifest.datasetVersionAliases), ...Object.keys(DATASET_VERSION_ALIASES)]), provenance: "generated_rome", importedAt },
     runtimeBundleIdentity: normalizeRuntimeBundleManifest(compactGenerated.runtimeBundleManifest, { importedAt }),
+    marketLayerIdentity: compactGenerated.marketPackageIdentity || compactGenerated.marketManifest?.marketLayerIdentity || compactGenerated.runtimeBundleManifest?.marketLayerIdentity || null,
     ...collectionPatch
   };
   merged.qualityReports = buildGeneratedQualityReports(generated, merged);
@@ -11388,6 +11754,7 @@ function normalizeRuntimeBundleManifest(manifest = null, metadata = {}) {
     counts: manifest.counts || {},
     ruleVersions: manifest.ruleVersions || {},
     componentRoles: manifest.componentRoles || {},
+    marketLayerIdentity: manifest.marketLayerIdentity || null,
     coherence: manifest.coherence || null,
     comparisonScope: "local_packaged_runtime",
     status: manifest.status || "unknown",
@@ -11504,6 +11871,9 @@ function replaceDatasetCollections(base, generated, prepared = {}) {
     marketIndicators: Array.isArray(generated.marketIndicators) ? generated.marketIndicators : [],
     marketManifest: generated.marketManifest || null,
     marketQualityReport: generated.marketQualityReport || null,
+    marketLayerIdentity: generated.marketPackageIdentity || generated.marketManifest?.marketLayerIdentity || null,
+    marketContract: generated.marketContract || null,
+    fapRomeMappingStatus: generated.fapRomeMappingStatus || null,
     marketDatasets: buildGeneratedMarketDatasets(generated),
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : [],
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : []
@@ -11533,6 +11903,9 @@ function mergeDatasetCollections(base, generated, prepared = {}) {
     marketIndicators: Array.isArray(generated.marketIndicators) && generated.marketIndicators.length ? generated.marketIndicators : base.marketIndicators,
     marketManifest: generated.marketManifest || base.marketManifest || null,
     marketQualityReport: generated.marketQualityReport || base.marketQualityReport || null,
+    marketLayerIdentity: generated.marketPackageIdentity || generated.marketManifest?.marketLayerIdentity || base.marketLayerIdentity || null,
+    marketContract: generated.marketContract || base.marketContract || null,
+    fapRomeMappingStatus: generated.fapRomeMappingStatus || base.fapRomeMappingStatus || null,
     marketDatasets: buildGeneratedMarketDatasets(generated),
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : base.mappingsRomeFormations,
     mappingsRomeCertifications: Array.isArray(generated.mappingsRomeCertifications) ? generated.mappingsRomeCertifications : base.mappingsRomeCertifications
@@ -12716,7 +13089,12 @@ function handleActionClick(event) {
     downloadFile(`boussole-pro-corpus-compact-${dateStamp()}.json`, JSON.stringify(compact), "application/json");
   }
   if (action === "export-corpus-diagnostic") downloadFile(`boussole-pro-corpus-diagnostic-${dateStamp()}.json`, JSON.stringify({ ...App.state.dataset, build: getBuildMetadata() }, null, 2), "application/json");
-  if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify(App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset), null, 2), "application/json");
+  if (action === "export-quality") downloadFile(`boussole-pro-rapport-qualite-${dateStamp()}.json`, JSON.stringify({
+    build: getBuildMetadata(),
+    marketLayerIdentity: getMarketLayerIdentity(),
+    runtimeQuality: App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset),
+    marketQuality: App.state.dataset.marketQualityReport || null
+  }, null, 2), "application/json");
   if (action === "export-browser-performance") downloadFile(`rome500-browser-performance-report-${dateStamp()}.json`, JSON.stringify(createBrowserPerformanceReport(), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
   if (action === "compare-open") {
@@ -13219,19 +13597,20 @@ function calculateIntentComparison(intent, currentResults = App.state.results) {
 function reweightExistingResultForIntent(result = {}, criteria = {}) {
   const scores = result.scores || {};
   const marketDetail = result.scoreDetails?.market || { score: scores.market, source: "unknown", isEstimated: true };
-  const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, marketDetail, criteria.marketContext);
-  const nextGlobalScore = result.status === "excluded_for_now" ? 0 : weightedGlobalScore(scores, weightAdjustment.weights);
+  const marketInfluence = calculateSelectionScoreV077(criteria, {
+    personalFitScore: result.personalFitScore,
+    feasibilityScore: result.feasibilityScore,
+    marketOpportunityNormalized: result.marketOpportunityNormalized
+  }, marketDetail);
+  const nextGlobalScore = result.status === "excluded_for_now" ? 0 : marketInfluence.selectionScore;
   return {
     ...result,
     globalScore: nextGlobalScore,
-    rawGlobalScore: nextGlobalScore,
     scorePertinence: result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : nextGlobalScore,
-    selectionScore: result.status === "excluded_for_now" ? 0 : calculateSelectionScore(nextGlobalScore, scores, {
-      core: result.coreProfileMatch,
-      affinity: { score: 35 },
-      constraint: { warnings: toArray(result.scoreDetails?.constraints?.warnings) },
-      training: { statusHint: result.scoreDetails?.training?.statusHint }
-    }),
+    selectionScore: nextGlobalScore,
+    marketInfluence: result.status === "excluded_for_now"
+      ? { ...marketInfluence, selectionScore: 0, effectPoints: 0, excludedFromSelection: true }
+      : marketInfluence,
     engineIntent: criteria.engineIntent
   };
 }
@@ -13511,10 +13890,10 @@ function renderCompareModal(results = []) {
 
 function marketOpportunityLabel(data = {}) {
   return {
-    very_favorable: "très favorables",
-    favorable: "favorables",
-    moderate: "modérées",
-    limited: "limitées",
+    very_favorable: "volume observé très élevé",
+    favorable: "volume observé élevé",
+    moderate: "volume observé moyen",
+    limited: "volume observé faible",
     zero: "aucune offre observée",
     unknown: "aucune donnée"
   }[marketOpportunityLevel(data)] || "aucune donnée";
@@ -13881,7 +14260,8 @@ function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
   const highPriority = requestedPriority === "high" || ["quick_employment", "local_tension", "secure_recruitment"].includes(marketGoal) || ["quickEmployment", "localTension"].includes(criteria.engineIntent);
   const requestedTerritory = normalizeMarketTerritory(criteria.marketPreference?.territory);
   const requestedMarketWeight = normalizeWeights(criteria.criterionWeights || CONFIG.baseWeights).market || 0;
-  const effectiveMarketWeight = highPriority && averageReliability < 0.5 ? Math.min(requestedMarketWeight, 8) : requestedMarketWeight;
+  const marketDiscriminant = uniqueScores.length > 1 && averageReliability >= 0.35 && marketDataLevel !== "estimated" && marketScores.some(item => item.rankingUse === "normal");
+  const effectiveMarketWeight = marketDiscriminant ? Math.min(requestedMarketWeight, highPriority ? 15 : 8) : 0;
   return {
     requestedPriority,
     requestedTerritory,
@@ -13892,7 +14272,8 @@ function assessMarketContext(datasets = App.state.dataset, criteria = {}) {
     marketDataLevel,
     marketGoal,
     marketReliability: Number(averageReliability.toFixed(2)),
-    marketDiscriminant: uniqueScores.length > 1 && averageReliability >= 0.35 && marketDataLevel !== "estimated",
+    marketDiscriminant,
+    marketRankingPolicyRevision: "market-ranking-policy-v1",
     highPriority,
     uniformScore: uniqueScores.length === 1 ? uniqueScores[0] : null,
     sources: sourceSet.length ? sourceSet : [],
@@ -14260,6 +14641,7 @@ function prepareCompactResultsForExport(results = {}) {
     personalFitScore: result.personalFitScore ?? null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
+    marketInfluence: result.marketInfluence || null,
     selectionScore: result.selectionScore ?? result.globalScore,
     legacyCompositeScore: result.legacyCompositeScore ?? result.rawGlobalScore ?? result.globalScore,
     confidenceScore: result.confidenceScore,
@@ -14297,6 +14679,7 @@ function prepareCompactResultsForExport(results = {}) {
     weightMode: results.weightMode,
     weightOrigin: results.weightOrigin,
     criterionWeights: results.criterionWeights,
+    marketLayerIdentity: getMarketLayerIdentity(),
     marketContext: results.marketContext,
     diversityExplanation: results.diversityExplanation,
     stats: results.stats,
@@ -14333,7 +14716,13 @@ function compactMarketForExport(market = {}) {
     latestPeriodLabel: market.latestPeriodLabel || null,
     marketReliability: market.marketReliability ?? market.confidence ?? 0,
     isEstimated: Boolean(market.isEstimated),
-    rankingUse: market.rankingUse || ""
+    rankingUse: market.rankingUse || "",
+    marketContractRevision: market.marketContractRevision || BUILD_INFO.marketContractRevision,
+    marketLayerIdentity: market.marketLayerIdentity || getMarketLayerIdentity(),
+    dimensions: market.marketSynthesis?.dimensions || null,
+    unknownDimensions: toArray(market.unknownDimensions || market.marketSynthesis?.unknownDimensions),
+    mappingQuality: market.mappingQuality || market.marketSynthesis?.mappingQuality || "unmapped",
+    interpretation: market.marketSynthesis?.interpretation || null
   };
 }
 
@@ -14373,6 +14762,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
     personalFitScore: result.personalFitScore ?? null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
+    marketInfluence: result.marketInfluence || null,
     legacyCompositeScore: result.legacyCompositeScore ?? result.rawGlobalScore ?? result.globalScore,
     confidenceScore: result.confidenceScore,
     status: result.status,
@@ -14394,6 +14784,7 @@ function buildResultDiagnosticExport(results = App.state.results) {
     app: "boussole-pro-result-diagnostic",
     version: CONFIG.version,
     build: getBuildMetadata(),
+    marketLayerIdentity: getMarketLayerIdentity(),
     exportedAt: new Date().toISOString(),
     profileId: App.state.profile?.id || null,
     profileName: App.state.profile?.profileName || "",
@@ -14798,6 +15189,7 @@ function invalidateDatasetIndexes() {
   App.state.relatedVariantsCache = new Map();
   App.state.jobDerivedCache = new Map();
   App.state.marketSummaryCache = new Map();
+  App.state.marketSynthesisCache = new Map();
   App.state.officialConstraintCache = new Map();
   App.state.skillConceptCache = new Map();
   invalidateResultIndexes();

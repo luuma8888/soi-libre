@@ -88,7 +88,7 @@ try {
   const report = {
     schemaVersion: "2.0.0",
     reportKind: "rome500_browser_performance_benchmark",
-    reportDescription: "Benchmark local reproductible : cinq chargements froids complets et cinq recalculs chauds sur le meme paquet canonique.",
+    reportDescription: `Benchmark local reproductible : ${RUNS_PER_MODE} chargement(s) froid(s) complet(s) et ${RUNS_PER_MODE} recalcul(s) chaud(s) sur le meme paquet canonique.`,
     completionVerdict,
     validationVerdict: completionVerdict === "complete" && nonRegressionBudget.coldStatus === "within_budget" && nonRegressionBudget.warmStatus === "within_budget"
       ? "validated"

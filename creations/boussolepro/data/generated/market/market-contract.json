@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "2.0.0",
+  "marketContractRevision": "market-contract-v2.0.0-phase1",
+  "interpretationRevision": "market-interpretation-v1",
+  "rankingPolicyRevision": "market-ranking-policy-v1",
+  "dimensions": [
+    "offerVolume",
+    "recruitmentProjects",
+    "recruitmentDifficulty",
+    "seasonality",
+    "tension",
+    "territorialPresence",
+    "trend"
+  ],
+  "semanticRules": {
+    "offerVolumeIsNotTension": true,
+    "recruitmentProjectsAreNotObservedOffers": true,
+    "difficultyDoesNotEstablishCause": true,
+    "missingIsNotZero": true,
+    "suppressedIsNotZero": true,
+    "widerTerritoryFallbackMustBeExplicit": true,
+    "weakOrAmbiguousMappingCannotInfluenceRanking": true
+  },
+  "thresholds": {
+    "observedOfferVolume": {
+      "method": "product_absolute_threshold_v1",
+      "note": "Utilise seulement comme lecture de volume brut ; la presence relative compare les metiers dans un meme territoire et une meme periode."
+    },
+    "territorialPresence": {
+      "method": "percentile_within_same_territory_and_period_v1",
+      "topLocal": 90,
+      "strongLocal": 75,
+      "mediumLocal": 35
+    },
+    "bmoRates": {
+      "method": "product_rate_threshold_v1",
+      "highFromPercent": 60,
+      "moderateFromPercent": 30
+    },
+    "daresTension": {
+      "method": "official_published_discrete_class",
+      "classes": {
+        "1": "very_low",
+        "2": "low",
+        "3": "moderate",
+        "4": "high",
+        "5": "very_high"
+      }
+    }
+  }
+}

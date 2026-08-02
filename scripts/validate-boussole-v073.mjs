@@ -2,6 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import vm from "node:vm";
+import { fileURLToPath } from "node:url";
 import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 import { canonicalSha256 } from "./boussole-runtime-identity.mjs";
 
@@ -11,6 +12,7 @@ const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "gener
 const ROME500_DIR = path.join(GENERATED_DIR, "rome500-experimental");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
 const CEDRIC_PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
+const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v077-market-phase1-validation-report.json");
 
 const SECTOR_EXPECTATIONS = {
   G1201: { primary: "hotellerie_hebergement", boussoleDomainLabel: "Restauration, hôtellerie, tourisme et accueil", forbidden: ["education_enfance"] },
@@ -60,7 +62,7 @@ async function main() {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v076_runtime_parity_validation",
+    reportKind: "boussole_v077_market_phase1_validation",
     generatedAt: new Date().toISOString(),
     appVersion: buildMetadata.appVersion,
     buildId: buildMetadata.buildId,
@@ -88,17 +90,49 @@ async function main() {
   report.checks.testBenchDeterminism = validateTestBenchDeterminism(app);
   report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generated72);
+  report.checks.marketPhase1 = validateMarketPhase1(app);
 
   for (const group of Object.values(report.checks)) {
     for (const failure of group.failures || []) report.failures.push(failure);
   }
   report.status = report.failures.length ? "failed" : "ok";
 
-  await writeFile(path.join(GENERATED_DIR, "boussole-v076-runtime-parity-validation-report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
+  await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   if (report.status !== "ok") {
-    throw new Error(`[Boussole Pro] Validation v0.7.6 échouée: ${report.failures.join(", ")}`);
+    throw new Error(`[Boussole Pro] Validation v0.7.7 échouée: ${report.failures.join(", ")}`);
   }
-  console.log(`[Boussole Pro] Validation v0.7.6 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+  console.log(`[Boussole Pro] Validation v0.7.7 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+}
+
+function validateMarketPhase1(app) {
+  const failures = [];
+  const job = findJobByCode(app.App.state.dataset.jobs, "G1201") || app.App.state.dataset.jobs[0];
+  app.App.state.profile = app.normalizeProfile({ profileName: "Validation marché", hasRequestedResults: true });
+  const synthesis = app.getJobMarketSynthesis(job, app.App.state.dataset, { territory: "DEP-11" });
+  const summary = app.renderMarketOneLineSummary(job, {});
+  const detail = app.renderMarketDetailModal(job, {});
+  const identity = app.getMarketLayerIdentity(app.App.state.dataset);
+  const compatibility = app.assessMarketLayerCompatibility(app.App.state.dataset);
+  if (!compatibility.compatible) failures.push(...compatibility.issues.map(issue => `market:${issue}`));
+  if (synthesis.dimensions.tension.status !== "unknown") failures.push("market:false_tension_from_offers");
+  if (!summary.includes("tension non disponible")) failures.push("market:summary_missing_unknown_tension");
+  if (!summary.includes("difficulté BMO non disponible")) failures.push("market:summary_missing_unknown_bmo");
+  if (!detail.includes("Tension réelle") || !detail.includes("Projets de recrutement BMO")) failures.push("market:detail_dimensions_missing");
+  if (detail.includes(identity.packageFingerprintSha256 || "__missing__")) failures.push("market:fingerprint_exposed_in_default_ui");
+  if (!identity.packageFingerprintSha256) failures.push("market:identity_missing");
+  if (synthesis.dimensions.offerVolume.level === synthesis.dimensions.tension.level && synthesis.dimensions.tension.level !== "unknown") failures.push("market:volume_tension_alias");
+  return {
+    status: failures.length ? "failed" : "ok",
+    marketLayerIdentity: identity,
+    compatibility,
+    synthesis: {
+      interpretation: synthesis.interpretation,
+      unknownDimensions: synthesis.unknownDimensions,
+      mappingQuality: synthesis.mappingQuality,
+      sourceCoverage: synthesis.sourceCoverage
+    },
+    failures
+  };
 }
 
 function validateRuntimeBundleIdentity(app, generated = {}) {
@@ -169,7 +203,7 @@ function validateTestBenchDeterminism(app) {
   const secondSha256 = canonicalSha256(second);
   if (toArray(first.rows).length !== 12) failures.push(`bench:profiles_${toArray(first.rows).length}`);
   if (firstSha256 !== secondSha256) failures.push("bench:user_state_leak");
-  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.7.6", firstSha256, secondSha256, failures };
+  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.7.7", firstSha256, secondSha256, failures };
 }
 
 function validateSectors(app) {
@@ -636,7 +670,7 @@ function validateCedricScenario(app, envelope = null) {
   };
 }
 
-async function loadGeneratedBundle(directory = ROME500_DIR) {
+export async function loadGeneratedBundle(directory = ROME500_DIR) {
   return {
     manifest: await readJson(path.join(directory, "import-manifest.rome.json"), {}),
     runtimeBundleManifest: await readJson(path.join(directory, "runtime-bundle-manifest.json"), null),
@@ -662,7 +696,7 @@ async function loadGeneratedBundle(directory = ROME500_DIR) {
   };
 }
 
-function loadBoussoleEngine(html) {
+export function loadBoussoleEngine(html) {
   const script = html.match(/<script>([\s\S]*?)<\/script>/)?.[1]
     ?.replace('document.addEventListener("DOMContentLoaded", initApp);', "");
   if (!script) throw new Error("Impossible d’extraire le script de Boussole Pro.");
@@ -707,6 +741,8 @@ this.__boussole = {
   mergeGeneratedDatasetIntoApp,
   markDatasetAsOfficialRome,
   normalizeProfile,
+  createEmptyProfile,
+  setConstraintSeverity,
   mapUserProfileToCriteria,
   calculateTrainingScore,
   calculateConstraintScore,
@@ -725,6 +761,11 @@ this.__boussole = {
   getBuildMetadata,
   getRuntimeBundleIdentity,
   assessRuntimeBundleCompatibility,
+  getJobMarketSynthesis: typeof getJobMarketSynthesis === "function" ? getJobMarketSynthesis : null,
+  renderMarketOneLineSummary: typeof renderMarketOneLineSummary === "function" ? renderMarketOneLineSummary : null,
+  renderMarketDetailModal: typeof renderMarketDetailModal === "function" ? renderMarketDetailModal : null,
+  getMarketLayerIdentity: typeof getMarketLayerIdentity === "function" ? getMarketLayerIdentity : null,
+  assessMarketLayerCompatibility: typeof assessMarketLayerCompatibility === "function" ? assessMarketLayerCompatibility : null,
   runtimeComponentCounts
 };`, context, { timeout: 15000 });
   return context.__boussole;
@@ -752,7 +793,9 @@ function unique(items = []) {
   return [...new Set(toArray(items).filter(Boolean))];
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

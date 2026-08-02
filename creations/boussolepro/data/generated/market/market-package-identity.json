@@ -1,0 +1,146 @@
+{
+  "schemaVersion": "2.0.0",
+  "identityKind": "boussole_market_layer_identity",
+  "marketContractRevision": "market-contract-v2.0.0-phase1",
+  "packageFingerprintAlgorithm": "sha256_of_sorted_market_component_hashes_and_counts",
+  "packageFingerprintSha256": "cb91d82982701e2898aba1b8d92b4ae1f0ea36dc0156d0f42e69fd8a6c09113d",
+  "parserVersions": {
+    "xlsx": "xlsx-stream-reader-v1",
+    "phase1": "prepare-boussole-market-phase1-v1"
+  },
+  "sourcePublishedAt": {
+    "bmo": "2026-04-21",
+    "daresTension": "2026-02-04",
+    "fapNomenclature": "2024-04-30"
+  },
+  "sourceVintage": {
+    "offers": "2026T1",
+    "bmo": "2026",
+    "daresTension": "2024",
+    "fapNomenclature": "FAP2021"
+  },
+  "normalizedAt": "2026-08-02T10:00:00.000Z",
+  "derivedAt": "2026-08-02T10:00:00.000Z",
+  "packagedAt": "2026-08-02T10:00:00.000Z",
+  "sources": [
+    {
+      "id": "france_travail_market_api",
+      "producer": "France Travail",
+      "sourceVintage": "2026T1",
+      "url": "https://www.data.gouv.fr/dataservices/api-marche-du-travail"
+    },
+    {
+      "id": "france_travail_bmo_2026",
+      "producer": "France Travail",
+      "sourceVintage": "2026",
+      "sourcePublishedAt": "2026-04-21",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d"
+    },
+    {
+      "id": "dares_france_travail_tension_2024",
+      "producer": "Dares et France Travail",
+      "sourceVintage": "2024",
+      "sourcePublishedAt": "2026-02-04",
+      "url": "https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108"
+    },
+    {
+      "id": "dares_fap2021_nomenclature",
+      "producer": "Dares",
+      "sourceVintage": "FAP2021",
+      "sourcePublishedAt": "2024-04-30",
+      "url": "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true"
+    }
+  ],
+  "territories": [
+    "FR",
+    "REG-76",
+    "DEP-11"
+  ],
+  "counts": {
+    "offerNational": 437,
+    "offerRegional": 429,
+    "offerDepartmental": 382,
+    "bmoFapRows": 550,
+    "daresTensionFapRows": 627,
+    "fapRomeMappings": 0,
+    "fapRomeRankingEligible": 0
+  },
+  "coverage": {
+    "activeRomeJobs": 500,
+    "jobsWithObservedOffers": 437,
+    "jobsWithBmo": 0,
+    "jobsWithDaresTension": 0,
+    "bmoFapFamilies": 217,
+    "daresFapFamilies": 209
+  },
+  "mappingCoverage": {
+    "officialCrosswalk": 0,
+    "validatedLocal": 0,
+    "ambiguous": 0,
+    "unmapped": 217,
+    "absent": 217
+  },
+  "components": [
+    {
+      "fileName": "market-contract.json",
+      "sha256": "e3577489d1677938605044faf662caedbbd9d19c5d762a7ef3cbe65bca9d67cf",
+      "size": 1492,
+      "count": 1
+    },
+    {
+      "fileName": "market-national.rome.json",
+      "sha256": "9ce5fff43b8b66fe74aac12dc69814e0400c2e4c579a54395452fb9225162f03",
+      "size": 2082130,
+      "count": 437
+    },
+    {
+      "fileName": "market-occitanie.rome.json",
+      "sha256": "fefd7d28daf1836352f54459dff14c42df733af6961f96d318e7bd02aac2d2dc",
+      "size": 2004522,
+      "count": 429
+    },
+    {
+      "fileName": "market-aude.rome.json",
+      "sha256": "5a82fa4499d18cdf29a6d9c53da400f2d2ab052866df261f55b283df17b8fee9",
+      "size": 1712317,
+      "count": 382
+    },
+    {
+      "fileName": "bmo-fap2021.json",
+      "sha256": "c012e09b964c91ea5bd35a074dbd0dc17bc3f638af2a79c070a998d5f3894aa9",
+      "size": 1463096,
+      "count": 550
+    },
+    {
+      "fileName": "dares-tension-fap2021.json",
+      "sha256": "794984c5072667840ed93f41e4f18daff5cb4ca83d051c6bbcb66fa0afe9684f",
+      "size": 3603813,
+      "count": 627
+    },
+    {
+      "fileName": "fap2021-nomenclature.json",
+      "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
+      "size": 64203,
+      "count": 228
+    },
+    {
+      "fileName": "fap-rome-mappings.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "size": 3,
+      "count": 0
+    },
+    {
+      "fileName": "fap-rome-mapping-status.json",
+      "sha256": "6f4b182f1cecedd596f9acafa3bacabcfebf6d7648506a4675918e1b50a440e4",
+      "size": 740,
+      "count": 1
+    },
+    {
+      "fileName": "territories.json",
+      "sha256": "07215d3f089177d325d3f0a7fb9e7e8a61124a25c3d57f662b983f133ffdf98d",
+      "size": 755,
+      "count": 3
+    }
+  ],
+  "status": "offer_layer_ready_fap_sources_unmapped"
+}
