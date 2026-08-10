@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const ROOT = process.cwd();
 const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated");
@@ -149,7 +150,7 @@ async function main() {
   console.log(`[Boussole Pro] Appellations indexables: ${jobAppellations.length}. Codes essentiels absents: ${essentialGapReport.missingEssentialCodes.map(item => item.romeCode).join(", ") || "aucun"}.`);
 }
 
-function buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, datasetVersion = "rome-generated-v0.7") {
+export function buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, datasetVersion = "rome-generated-v0.7") {
   const referencedIds = unique([
     ...jobs.flatMap(job => [...arr(job.mobilizedSkillIds), ...arr(job.matchableSkillIds), ...arr(job.softSkillIds)]),
     ...mappings.flatMap(mapping => arr(mapping.skillIds))
@@ -516,7 +517,9 @@ function normalizeText(value) {
     .trim();
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}

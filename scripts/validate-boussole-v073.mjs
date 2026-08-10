@@ -9,7 +9,12 @@ import { canonicalSha256 } from "./boussole-runtime-identity.mjs";
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations", "boussolepro", "boussole-pro.html");
 const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated");
-const ROME500_DIR = path.join(GENERATED_DIR, "rome500-experimental");
+const EXPECTED_JOBS_COUNT = Number(process.env.BOUSSOLE_EXPECTED_JOBS_COUNT || 500);
+const TARGET_SUBDIR = process.env.BOUSSOLE_ROME_SUBDIR || "rome500-experimental";
+const ROME500_DIR = path.join(GENERATED_DIR, TARGET_SUBDIR);
+const ACCESS_SUMMARY_FILE = process.env.BOUSSOLE_ACCESS_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "access-summary.rome800.json" : "access-summary.rome500.json");
+const CONSTRAINT_SUMMARY_FILE = process.env.BOUSSOLE_CONSTRAINT_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "official-constraint-summary.rome800.json" : "official-constraint-summary.rome500.json");
+const MARKET_ENRICHMENT_FILE = process.env.BOUSSOLE_MARKET_ENRICHMENT_FILE || (EXPECTED_JOBS_COUNT === 800 ? "market-fap-enrichment.rome800.json" : "market-fap-enrichment.rome500.json");
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
 const CEDRIC_PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v080-market-phase2-validation-report.json");
@@ -91,6 +96,7 @@ async function main() {
   report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generated72);
   report.checks.marketPhase1 = validateMarketPhase1(app);
+  report.checks.performanceSemantics = validatePerformanceSemantics(app);
 
   for (const group of Object.values(report.checks)) {
     for (const failure of group.failures || []) report.failures.push(failure);
@@ -135,6 +141,22 @@ function validateMarketPhase1(app) {
   };
 }
 
+function validatePerformanceSemantics(app) {
+  const previousView = app.App.state.mainView;
+  const previousMetrics = app.App.state.performanceMetrics;
+  app.App.state.mainView = "data";
+  app.App.state.performanceMetrics = { datasetLoadMs: 10, normalizationMs: 5, profileScoringMs: 20, totalGeneratedLoadMs: 40, resultCardsRendered: 0 };
+  const report = app.createBrowserPerformanceReport();
+  app.App.state.mainView = previousView;
+  app.App.state.performanceMetrics = previousMetrics;
+  const failures = [];
+  if (report.runtimePerformanceVerdict !== "measured") failures.push("performance:runtime_not_measured");
+  if (report.scoringPerformanceVerdict !== "measured") failures.push("performance:scoring_not_measured");
+  if (report.renderValidationVerdict !== "not_measured") failures.push("performance:render_should_be_not_measured");
+  if (report.completionVerdict !== "partial_valid_without_render_measurement") failures.push("performance:global_verdict_too_alarmist");
+  return { status: failures.length ? "failed" : "ok", verdicts: { runtime: report.runtimePerformanceVerdict, scoring: report.scoringPerformanceVerdict, render: report.renderValidationVerdict, global: report.completionVerdict }, failures };
+}
+
 function validateRuntimeBundleIdentity(app, generated = {}) {
   const failures = [];
   const identity = app.getRuntimeBundleIdentity(app.App.state.dataset);
@@ -142,7 +164,7 @@ function validateRuntimeBundleIdentity(app, generated = {}) {
   if (!compatibility.compatible) failures.push(...compatibility.issues.map(issue => `runtime:${issue}`));
   if (identity.inputMode !== "packaged_corpus") failures.push("runtime:input_mode_not_packaged");
   if (identity.counts?.skillsEngine !== 9226) failures.push(`runtime:skills_engine_${identity.counts?.skillsEngine || 0}`);
-  if (identity.counts?.jobs !== 500) failures.push(`runtime:jobs_${identity.counts?.jobs || 0}`);
+  if (identity.counts?.jobs !== EXPECTED_JOBS_COUNT) failures.push(`runtime:jobs_${identity.counts?.jobs || 0}`);
   if (identity.status !== "coherent") failures.push(`runtime:status_${identity.status}`);
   if (generated.runtimeBundleManifest?.fingerprintSha256 !== identity.fingerprintSha256) failures.push("runtime:manifest_fingerprint_mismatch");
   return { status: failures.length ? "failed" : "ok", identity, compatibility, failures };
@@ -158,7 +180,7 @@ function validateCacheCompatibility(app) {
     wrongFingerprint: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, fingerprintSha256: "0".repeat(64) } }),
     missingSkillsEngine: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, counts: { ...expected.counts, skillsEngine: 0 } } }),
     staleAccessReport: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { ...expected, ruleVersions: { ...expected.ruleVersions, access: "v0.7.4-alpha" } } }),
-    realImport: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { inputMode: "real_import", counts: { jobs: 500, skillsEngine: 9226 } } })
+    realImport: app.assessRuntimeBundleCompatibility({ datasetVersion: expected.sourceDatasetVersion, runtimeBundleIdentity: { inputMode: "real_import", counts: { jobs: EXPECTED_JOBS_COUNT, skillsEngine: expected.counts.skillsEngine } } })
   };
   if (!cases.exact.compatible) failures.push("cache:exact_rejected");
   for (const name of ["previousBuild", "wrongFingerprint", "missingSkillsEngine", "staleAccessReport"]) {
@@ -492,9 +514,11 @@ function validateSectorExclusions(app) {
 
 function validateCorpusMaturity(app, generated = {}) {
   const failures = [];
-  const migrated = app.mergeGeneratedDatasetIntoApp({ ...generated, manifest: { ...(generated.manifest || {}), datasetVersion: "rome500-experimental-v0.7" } }, { replace: true });
-  if (migrated.datasetVersion !== "rome500-candidate-v0.7") failures.push("corpus:legacy_alias_not_migrated");
-  if (!toArray(migrated.manifest?.datasetVersionAliases).includes("rome500-experimental-v0.7")) failures.push("corpus:legacy_alias_not_documented");
+  const sourceVersion = EXPECTED_JOBS_COUNT === 500 ? "rome500-experimental-v0.7" : generated.manifest?.datasetVersion;
+  const expectedVersion = EXPECTED_JOBS_COUNT === 500 ? "rome500-candidate-v0.7" : "rome800-candidate-v0.1";
+  const migrated = app.mergeGeneratedDatasetIntoApp({ ...generated, manifest: { ...(generated.manifest || {}), datasetVersion: sourceVersion } }, { replace: true });
+  if (migrated.datasetVersion !== expectedVersion) failures.push("corpus:dataset_version_mismatch");
+  if (EXPECTED_JOBS_COUNT === 500 && !toArray(migrated.manifest?.datasetVersionAliases).includes("rome500-experimental-v0.7")) failures.push("corpus:legacy_alias_not_documented");
   return { status: failures.length ? "failed" : "ok", datasetVersion: migrated.datasetVersion, aliases: migrated.manifest?.datasetVersionAliases || [], failures };
 }
 
@@ -639,13 +663,17 @@ function validateCedricScenario(app, envelope = null) {
   }
   app.App.state.displayMode = "essential";
   const profileRoundTrip = app.normalizeProfile(JSON.parse(JSON.stringify({ profile })).profile);
+  const compactDataset = app.prepareCompactDatasetExport(app.App.state.dataset);
+  const compactRoundTrip = app.validateDataset(compactDataset);
+  const compactG1203 = findJobByCode(compactRoundTrip.normalized?.jobs, "G1203");
   const exports = {
     profile: profileRoundTrip.jobExperiences.length === 2,
     results: app.prepareCompactResultsForExport(results).top5.length === 5,
     diagnostic: app.buildResultDiagnosticExport(results)?.top5?.length === 5,
     bench: Boolean(app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052)?.summary),
-    compactCorpus: app.prepareCompactDatasetExport(app.App.state.dataset).jobs.length === 500,
-    diagnosticCorpus: app.App.state.dataset.jobs.length === 500,
+    compactCorpus: compactDataset.jobs.length === EXPECTED_JOBS_COUNT,
+    compactFapRoundTrip: compactRoundTrip.valid && compactG1203?.marketStats?.fapEnrichment?.fapMappings?.some(item => item.fapCode === "V5X81") && compactG1203.marketStats.fapEnrichment.territories?.["DEP-11"]?.[0]?.bmo?.recruitmentProjects?.value === 157,
+    diagnosticCorpus: app.App.state.dataset.jobs.length === EXPECTED_JOBS_COUNT,
     quality: app.App.state.dataset.accessSummaryQualityReport?.summary?.truthFailuresCount === 0,
     buildIdentity: [app.prepareCompactResultsForExport(results), app.buildResultDiagnosticExport(results), app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052), app.prepareCompactDatasetExport(app.App.state.dataset)].every(item => item.build?.buildId === app.getBuildMetadata().buildId),
     markdownBuild: app.resultsToMarkdown(results).includes(`Build : ${app.getBuildMetadata().buildId}`)
@@ -685,15 +713,15 @@ export async function loadGeneratedBundle(directory = ROME500_DIR) {
     jobAppellations: await readJson(path.join(directory, "job-appellations.rome.json"), []),
     mappings: await readJson(path.join(directory, "mappings.rome.json"), []),
     qualityReport: await readJson(path.join(directory, "data-quality-report.rome.json"), {}),
-    accessSummary: await readJson(path.join(directory, "access-summary.rome500.json"), []),
+    accessSummary: await readJson(path.join(directory, ACCESS_SUMMARY_FILE), []),
     accessSummaryQualityReport: await readJson(path.join(directory, "access-summary-quality-report.json"), null),
-    officialConstraintSummary: await readJson(path.join(directory, "official-constraint-summary.rome500.json"), []),
+    officialConstraintSummary: await readJson(path.join(directory, CONSTRAINT_SUMMARY_FILE), []),
     marketManifest: await readJson(path.join(MARKET_DIR, "market-import-manifest.json"), null),
     marketQualityReport: await readJson(path.join(MARKET_DIR, "market-quality-report.json"), null),
     marketNational: await readJson(path.join(MARKET_DIR, "market-national.rome.json"), []),
     marketOccitanie: await readJson(path.join(MARKET_DIR, "market-occitanie.rome.json"), []),
     marketAude: await readJson(path.join(MARKET_DIR, "market-aude.rome.json"), []),
-    marketFapEnrichment: await readJson(path.join(MARKET_DIR, "market-fap-enrichment.rome500.json"), [])
+    marketFapEnrichment: await readJson(path.join(MARKET_DIR, MARKET_ENRICHMENT_FILE), [])
   };
 }
 
@@ -743,6 +771,7 @@ this.__boussole = {
   markDatasetAsOfficialRome,
   normalizeProfile,
   createEmptyProfile,
+  createBrowserPerformanceReport,
   setConstraintSeverity,
   mapUserProfileToCriteria,
   calculateTrainingScore,
@@ -758,6 +787,7 @@ this.__boussole = {
   runDiagnosticProfiles,
   DIAGNOSTIC_TEST_PROFILES_V052,
   prepareCompactDatasetExport,
+  validateDataset,
   resultsToMarkdown,
   getBuildMetadata,
   getRuntimeBundleIdentity,

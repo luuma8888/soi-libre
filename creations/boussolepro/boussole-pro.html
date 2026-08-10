@@ -1708,7 +1708,10 @@ const BUILD_INFO = Object.freeze({
   marketPackageFingerprintSha256: "bfcd3b78ebbe4f43c593670c96f234ed12bc0408ac5365a1d9df14af99b0e2c0",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_7",
-  testProfilesRevision: "integrated-12-v0.8.0"
+  testProfilesRevision: "integrated-12-v0.8.0",
+  expectedJobsCount: 500,
+  expectedSkillsEngineCount: 9226,
+  expectedAccessSummaryCount: 500
 });
 
 const DATASET_VERSION_ALIASES = Object.freeze({
@@ -1775,7 +1778,7 @@ function expectedRuntimeBundleIdentity() {
     runtimeBundleRevision: BUILD_INFO.runtimeBundleRevision,
     fingerprintSha256: BUILD_INFO.runtimeBundleFingerprintSha256,
     sourceDatasetVersion: canonicalDatasetVersion(BUILD_INFO.defaultDatasetVersion),
-    counts: { jobs: 500, skillsEngine: 9226, accessSummary: 500 },
+    counts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
     ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: BUILD_INFO.appVersion },
     comparisonScope: "local_packaged_runtime"
   };
@@ -3662,10 +3665,13 @@ async function initApp() {
   const mustReloadPackagedCorpus = Boolean(App.state.pendingPackagedDatasetRef || App.state.runtimeMigration?.action === "reload_packaged_corpus");
   if (mustReloadPackagedCorpus) {
     await loadGeneratedRomeDataset({
-      basePath: "data/generated/rome500-experimental/",
+      basePath: "data/generated/rome800-candidate/",
       marketBasePath: "data/generated/market/",
-      label: "Corpus ROME500 candidat consolidé",
-      corpusMode: "generated_rome_500_candidate",
+      label: "Corpus ROME800 candidat consolidé",
+      corpusMode: "generated_rome_800_candidate",
+      accessSummaryFilename: "access-summary.rome800.json",
+      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
+      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
       replace: true,
       persist: true
     });
@@ -9946,7 +9952,7 @@ function renderDiagnosticJobCard(result, options = {}) {
         </div>
       </div>
       ${result.resultInterpretation ? `<div class="summary-box"><strong>${h(result.resultInterpretation.mainReason)}</strong><p>${h(result.resultInterpretation.dataConfidenceExplanation)}</p></div>` : ""}
-      ${renderMarketBox(result.scoreDetails?.market, job, { compact: true })}
+      ${renderMarketOneLineSummary(job, result)}
       ${options.showVariants && variants.length ? `<div class="summary-box"><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ")}</div>` : ""}
       <div class="button-row no-print">
         <button class="tiny-button" type="button" data-result-action="details">Détails</button>
@@ -9976,7 +9982,7 @@ function renderJobDetailsPanelContent(result = {}) {
     ${renderAccessPaths(job)}
     <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
     <p><strong>Données manquantes :</strong> ${toArray(result.missingData).map(item => h(item.message)).join(" ") || "Aucune donnée manquante majeure."}</p>
-    ${renderMarketBox(result.scoreDetails?.market, job)}
+    ${renderMarketOneLineSummary(job, result)}
     ${renderEvidenceSummary(result.evidenceSummary)}
     ${renderScoreDetails(result.scoreDetails)}
     ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
@@ -10023,7 +10029,7 @@ function renderDetailedJobDetails(result = {}) {
       <p><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 10).map(h).join(", ") || "contextes à vérifier."}</p>
       <p><strong>Contraintes confirmées :</strong> ${getConfirmedConstraintLabels(job).slice(0, 8).map(h).join(", ") || "aucune contrainte officielle confirmée."}</p>
       ${getUnknownConstraintLabel(job) ? `<p class="field-help">${h(getUnknownConstraintLabel(job))}</p>` : ""}
-      ${renderMarketBox(result.scoreDetails?.market, job)}
+      ${renderMarketOneLineSummary(job, result)}
       <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
       ${renderEvidenceSummary(result.evidenceSummary)}
       ${renderScoreDetails(result.scoreDetails)}
@@ -11241,6 +11247,7 @@ function renderDataPage() {
         <select data-corpus-mode>
           <option value="auto" ${App.state.corpusMode === "auto" ? "selected" : ""}>Automatique</option>
           <option value="generated_rome" ${App.state.corpusMode === "generated_rome" ? "selected" : ""}>ROME généré</option>
+          <option value="generated_rome_800_candidate" ${App.state.corpusMode === "generated_rome_800_candidate" ? "selected" : ""}>ROME 800 candidat consolidé</option>
           <option value="generated_rome_500_candidate" ${["generated_rome_500_candidate", "generated_rome_500_experimental"].includes(App.state.corpusMode) ? "selected" : ""}>ROME 500 candidat consolidé</option>
           <option value="curated" ${App.state.corpusMode === "curated" ? "selected" : ""}>Corpus local enrichi estimatif</option>
           <option value="sample" ${App.state.corpusMode === "sample" ? "selected" : ""}>Sample minimal</option>
@@ -11518,6 +11525,18 @@ async function setCorpusMode(mode) {
     });
     return;
   }
+  if (mode === "generated_rome_800_candidate") {
+    await loadGeneratedRomeDataset({
+      basePath: "data/generated/rome800-candidate/",
+      marketBasePath: "data/generated/market/",
+      label: "creations/boussolepro/data/generated/rome800-candidate",
+      corpusMode: "generated_rome_800_candidate",
+      accessSummaryFilename: "access-summary.rome800.json",
+      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
+      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json"
+    });
+    return;
+  }
   if (mode === "auto") {
     const currentProvenance = App.state.dataset?.provenance || "";
     if (currentProvenance && !["sample", "curated_clairmetier_ai_logic"].includes(currentProvenance)) {
@@ -11545,7 +11564,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     marketPackageIdentity: "market-package-identity.json",
     marketContract: "market-contract.json",
     fapRomeMappingStatus: "fap-rome-mapping-status.json",
-    marketFapEnrichment: "market-fap-enrichment.rome500.json",
+    marketFapEnrichment: options.marketFapEnrichmentFilename || "market-fap-enrichment.rome500.json",
     marketNational: "market-national.rome.json",
     marketOccitanie: "market-occitanie.rome.json",
     marketAude: "market-aude.rome.json"
@@ -11564,9 +11583,9 @@ async function loadGeneratedRomeDataset(options = {}) {
     jobAppellations: "job-appellations.rome.json",
     mappings: "mappings.rome.json",
     qualityReport: "data-quality-report.rome.json",
-    accessSummary: "access-summary.rome500.json",
+    accessSummary: options.accessSummaryFilename || "access-summary.rome500.json",
     accessSummaryQualityReport: "access-summary-quality-report.json",
-    officialConstraintSummary: "official-constraint-summary.rome500.json",
+    officialConstraintSummary: options.officialConstraintSummaryFilename || "official-constraint-summary.rome500.json",
     skillConceptImpactReport: "skill-concept-impact-report.json",
     trainings: "formations.onisep.json",
     certifications: "certifications.certifinfo.json",
@@ -11626,7 +11645,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     const normalizationStartedAt = nowMs();
     const nextDataset = mergeGeneratedDatasetIntoApp(generated, { replace });
     const runtimeCompatibility = assessRuntimeBundleCompatibility(nextDataset);
-    if (corpusMode === "generated_rome_500_candidate" && !runtimeCompatibility.compatible) {
+    if (["generated_rome_500_candidate", "generated_rome_800_candidate"].includes(corpusMode) && !runtimeCompatibility.compatible) {
       throw new Error(`Paquet de données incohérent : ${runtimeCompatibility.issues.join(", ")}. Actualisez les fichiers de la livraison.`);
     }
     App.state.dataset = nextDataset;
@@ -12006,7 +12025,8 @@ function buildGeneratedMarketDatasets(generated = {}) {
     occitanie: Array.isArray(generated.marketOccitanie) ? generated.marketOccitanie : [],
     aude: Array.isArray(generated.marketAude) ? generated.marketAude : [],
     bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
-    fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : []
+    fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : [],
+    fapEnrichment: Array.isArray(generated.marketFapEnrichment) ? generated.marketFapEnrichment : []
   };
 }
 
@@ -13187,7 +13207,7 @@ function handleActionClick(event) {
     runtimeQuality: App.state.dataset.qualityReport || generateDataQualityReport(App.state.dataset),
     marketQuality: App.state.dataset.marketQualityReport || null
   }, null, 2), "application/json");
-  if (action === "export-browser-performance") downloadFile(`rome500-browser-performance-report-${dateStamp()}.json`, JSON.stringify(createBrowserPerformanceReport(), null, 2), "application/json");
+  if (action === "export-browser-performance") downloadFile(`boussole-browser-performance-report-${dateStamp()}.json`, JSON.stringify(createBrowserPerformanceReport(), null, 2), "application/json");
   if (action === "compare-favorites") compareFavoriteJobs();
   if (action === "compare-open") {
     openCompareModal();
@@ -14511,7 +14531,8 @@ function prepareCompactDatasetExport(dataset = App.state.dataset) {
     occitanie: filterMarketRowsForActiveCodes(compact.marketDatasets?.occitanie, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     aude: filterMarketRowsForActiveCodes(compact.marketDatasets?.aude, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     bmoFap2021: [],
-    fapRomeMappings: []
+    fapRomeMappings: [],
+    fapEnrichment: filterMarketRowsForActiveCodes(compact.marketDatasets?.fapEnrichment, activeRomeCodes)
   };
   if (compact.qualityReports) {
     compact.qualityReports = {
@@ -14521,7 +14542,7 @@ function prepareCompactDatasetExport(dataset = App.state.dataset) {
     };
   }
   compact.qualityReport = compactQualityReportSummary(compact.qualityReport);
-  compact.note = "Export compact par défaut : référentiels bruts, mappings détaillés et historiques marché retirés. Les métiers gardent les relations utiles au matching ; utiliser l’export diagnostic complet pour l’audit complet.";
+  compact.note = "Export compact par défaut : référentiels bruts, tables BMO/Dares, mappings FAP détaillés et historiques marché retirés. L’enrichissement FAP dérivé des métiers actifs, les volumes utiles et les relations de matching sont conservés ; utiliser l’export diagnostic complet pour l’audit complet.";
   return compact;
 }
 
@@ -14595,7 +14616,17 @@ function compactJobForDatasetExport(job = {}) {
 function compactMarketStatsForDatasetExport(marketStats = null, availabilityStatus = "") {
   if (!marketStats || typeof marketStats !== "object") return marketStats;
   const levels = ["national", "regional", "departmental", "local_basin"];
-  const compacted = {};
+  const compacted = {
+    romeCode: marketStats.romeCode || "",
+    sourceLevel: marketStats.sourceLevel || "none",
+    sourceName: marketStats.sourceName || marketStats.source || "unknown",
+    sourceUpdatedAt: marketStats.sourceUpdatedAt || marketStats.updatedAt || null,
+    marketDataKind: marketStats.marketDataKind || "offers_volume",
+    marketInterpretationLabel: marketStats.marketInterpretationLabel || "Volume d’offres observé",
+    fapEnrichment: marketStats.fapEnrichment && typeof marketStats.fapEnrichment === "object"
+      ? marketStats.fapEnrichment
+      : null
+  };
   levels.forEach(level => {
     const row = marketStats[level];
     if (!row || row.offers12m === null || row.offers12m === undefined) return;
@@ -14614,7 +14645,7 @@ function compactMarketStatsForDatasetExport(marketStats = null, availabilityStat
       marketFreshness: row.marketFreshness || ""
     };
   });
-  if (Object.keys(compacted).length) return compacted;
+  if (levels.some(level => compacted[level]) || compacted.fapEnrichment) return compacted;
   return { availabilityStatus: availabilityStatus || "official_unavailable_for_rome_code" };
 }
 
@@ -14659,12 +14690,36 @@ function createBrowserPerformanceReport() {
   const marketCoverage = calculateMarketCoverage(dataset, mapUserProfileToCriteria(App.state.profile));
   const scoreValues = completeList.map(result => Number(result.globalScore || 0)).filter(Number.isFinite);
   const cardsRendered = Number(App.state.performanceMetrics?.resultCardsRendered || 0);
-  const renderValidation = completeList.length === 500 && cardsRendered > 0 ? "complete" : cardsRendered > 0 ? "partial" : "invalid_for_render_validation";
+  const metrics = normalizePerformanceMetricsForReport(App.state.performanceMetrics || {});
+  const runtimeMeasured = ["datasetLoadMs", "normalizationMs", "totalGeneratedLoadMs"]
+    .some(key => metrics[key]?.measurementStatus === "measured");
+  const scoringMeasured = metrics.profileScoringMs?.measurementStatus === "measured" && completeList.length === jobs.length;
+  const renderValidation = cardsRendered > 0
+    ? (completeList.length === jobs.length ? "complete" : "partial")
+    : "not_measured";
+  const completionVerdict = runtimeMeasured && scoringMeasured && renderValidation === "complete"
+    ? "validated"
+    : runtimeMeasured && scoringMeasured && renderValidation === "not_measured"
+      ? "partial_valid_without_render_measurement"
+      : runtimeMeasured && scoringMeasured
+        ? "partial_valid_with_incomplete_render_measurement"
+      : "partial_measurement";
   return {
     schemaVersion: "2.0.0",
-    reportKind: "rome500_browser_performance_snapshot",
+    reportKind: "boussole_browser_performance_snapshot",
     reportDescription: "Instantané ponctuel de la session courante ; ce rapport n'est pas le benchmark multi-essais.",
-    completionVerdict: renderValidation,
+    completionVerdict,
+    runtimePerformanceVerdict: runtimeMeasured ? "measured" : "not_measured",
+    scoringPerformanceVerdict: scoringMeasured ? "measured" : completeList.length ? "partial" : "not_measured",
+    renderValidationVerdict: renderValidation,
+    renderValidationReason: renderValidation === "not_measured"
+      ? `Export depuis la vue ${App.state.mainView || "inconnue"}, sans carte Résultats rendue.`
+      : renderValidation === "partial" ? "Des cartes sont rendues, mais le calcul ne couvre pas tout le corpus actif." : null,
+    validationVerdicts: {
+      runtime: runtimeMeasured ? "measured" : "not_measured",
+      scoring: scoringMeasured ? "complete" : completeList.length ? "partial" : "not_measured",
+      render: renderValidation
+    },
     generatedAt: new Date().toISOString(),
     ...getBuildMetadata(dataset),
     runtimeBundleIdentity: getRuntimeBundleIdentity(dataset),
@@ -14673,7 +14728,8 @@ function createBrowserPerformanceReport() {
       browser: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
       headless: "unknown",
       viewport: typeof window !== "undefined" ? { width: window.innerWidth || null, height: window.innerHeight || null } : null,
-      cacheMode: "session_snapshot"
+      cacheMode: "session_snapshot",
+      activeView: App.state.mainView || "unknown"
     },
     dataset: {
       name: dataset.datasetName || "",
@@ -14695,7 +14751,7 @@ function createBrowserPerformanceReport() {
       averageScore: scoreValues.length ? Math.round(scoreValues.reduce((sum, value) => sum + value, 0) / scoreValues.length) : 0,
       scoreDistribution: scoreDistribution(scoreValues)
     },
-    performanceMetrics: normalizePerformanceMetricsForReport(App.state.performanceMetrics || {}),
+    performanceMetrics: metrics,
     privacy: "Rapport technique sans profil, sans note personnelle, sans secret et sans donnée saisie libre."
   };
 }
@@ -15846,6 +15902,22 @@ if (typeof window !== "undefined") {
         persist: false
       });
     },
+    loadActiveCandidate() {
+      if (BUILD_INFO.expectedJobsCount >= 800) {
+        return loadGeneratedRomeDataset({
+          basePath: "data/generated/rome800-candidate/",
+          marketBasePath: "data/generated/market/",
+          label: "ROME800 candidat consolidé",
+          corpusMode: "generated_rome_800_candidate",
+          accessSummaryFilename: "access-summary.rome800.json",
+          officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
+          marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
+          replace: true,
+          persist: false
+        });
+      }
+      return this.loadRome500();
+    },
     runIntegratedBench() {
       return runDiagnosticProfiles(DIAGNOSTIC_TEST_PROFILES_V052);
     },
@@ -15875,6 +15947,9 @@ if (typeof window !== "undefined") {
       App.state.performanceMetrics.resultsInteractiveMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
       recordPerformanceMetric("totalGeneratedLoadMs", totalStartedAt);
       return { jobsCount: App.state.dataset.jobs.length, resultsComputed: App.state.results?.completeList?.length || 0 };
+    },
+    async recalculateActiveCandidate() {
+      return this.recalculateRome500();
     },
     measureCompactExport() {
       const startedAt = nowMs();

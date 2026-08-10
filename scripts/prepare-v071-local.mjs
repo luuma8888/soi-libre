@@ -1,5 +1,6 @@
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
@@ -90,7 +91,7 @@ async function main() {
   console.log(`[Boussole Pro] v0.7.1: ${contextMapping.confirmedRules.length} règles de contextes confirmées, ${constraintSummary.filter(row => row.confirmedSignals.length).length} métiers avec contrainte officielle.`);
 }
 
-function buildAccessSummary(job = {}, explicitRule = null, metadata = {}) {
+export function buildAccessSummary(job = {}, explicitRule = null, metadata = {}) {
   const text = normalizeMultilineText(job.accessConditions?.text || "");
   const normalized = normalizeText(text);
   const hasText = Boolean(text);
@@ -496,7 +497,7 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
-function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, accessSummaryGeneratedAt = null) {
+export function buildAccessQualityReport(accessSummary, jobs, rulesDocument = {}, accessSummaryGeneratedAt = null) {
   const ambiguous = accessSummary.filter(row => row.warnings.length);
   const categoryCounts = countBy(accessSummary.map(row => row.accessLevelCategory));
   const requirementKindCounts = countBy(accessSummary.map(row => row.requirementKind));
@@ -586,7 +587,7 @@ function isGenericRequiredCredentialLabel(label = "") {
   return /^(certification|diplome|qualification) (est |reste |peut )?(obligatoire|exigee|requise)/.test(text) || text.length < 5;
 }
 
-function buildOfficialContextConstraintMapping(contexts) {
+export function buildOfficialContextConstraintMapping(contexts) {
   const byLabel = new Map(contexts.map(context => [normalizeText(context.label), context]));
   const confirmedRules = CONTEXT_CONSTRAINT_RULES.map(([label, target, value]) => {
     const context = byLabel.get(normalizeText(label));
@@ -609,7 +610,7 @@ function buildOfficialContextConstraintMapping(contexts) {
   };
 }
 
-function buildOfficialConstraintSummary(job, mapping) {
+export function buildOfficialConstraintSummary(job, mapping) {
   const contextIds = new Set(arr(job.workContexts));
   const labels = new Set(arr(job.romeWorkContextLabels).map(normalizeText));
   const confirmedSignals = mapping.confirmedRules
@@ -873,7 +874,9 @@ async function writeJson(file, value) {
   await writeFile(file, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}

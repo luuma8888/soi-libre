@@ -1,92 +1,95 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { buildRome500AuditArtifacts } from "./audit-rome-500-generated.mjs";
 import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 
-const GENERATED_DIR = path.join("creations", "boussolepro", "data", "generated");
-const EXPERIMENTAL_DIR = path.join(GENERATED_DIR, "rome500-experimental");
-const BATCHES_DIR = path.join(EXPERIMENTAL_DIR, "batches");
-const MARKET_DIR = path.join(GENERATED_DIR, "market");
-const DATASET_VERSION = "rome500-candidate-v0.7";
+const ROOT = process.cwd();
+const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated");
+const OUTPUT_SUBDIR = process.env.ROME_MERGE_OUTPUT_SUBDIR || "rome500-experimental";
+const BASE_SUBDIR = process.env.ROME_MERGE_BASE_SUBDIR || "";
+const OUTPUT_DIR = path.join(GENERATED_DIR, OUTPUT_SUBDIR);
+const BASE_DIR = BASE_SUBDIR ? path.join(GENERATED_DIR, BASE_SUBDIR) : null;
+const BATCHES_DIR = path.join(OUTPUT_DIR, "batches");
+const EXPECTED_COUNT = Number(process.env.ROME_MERGE_EXPECTED_COUNT || 500);
+const DATASET_VERSION = process.env.ROME_MERGE_DATASET_VERSION || (EXPECTED_COUNT === 800 ? "rome800-candidate-v0.1" : "rome500-candidate-v0.7");
+const STRICT = String(process.env.ROME_MERGE_STRICT || "false").toLowerCase() === "true";
+
+const COLLECTIONS = [
+  ["jobs.rome.json", /^jobs\.batch-\d+\.json$/, "id"],
+  ["mappings.rome.json", /^mappings\.batch-\d+\.json$/, row => row.jobId || row.romeCode],
+  ["job-appellations.rome.json", /^appellations\.batch-\d+\.json$/, "id"],
+  ["rome-raw-skills.json", /^rome-raw-skills\.batch-\d+\.json$/, referenceId],
+  ["skills.rome.json", /^skills\.batch-\d+\.json$/, referenceId],
+  ["knowledge.rome.json", /^knowledge\.batch-\d+\.json$/, referenceId],
+  ["certification-like.rome.json", /^certification-like\.batch-\d+\.json$/, referenceId],
+  ["skills-matchable.rome.json", /^skills-matchable\.batch-\d+\.json$/, referenceId],
+  ["work-contexts.rome.json", /^work-contexts\.batch-\d+\.json$/, referenceId]
+];
 
 async function main() {
-  await mkdir(EXPERIMENTAL_DIR, { recursive: true });
+  await mkdir(OUTPUT_DIR, { recursive: true });
   const batchFiles = await readdir(BATCHES_DIR).catch(() => []);
-  const jobs = uniqueBy(await readBatchRows(batchFiles, /^jobs\.batch-\d+\.json$/), "id");
-  const mappings = uniqueBy(await readBatchRows(batchFiles, /^mappings\.batch-\d+\.json$/), "jobId");
-  const jobAppellations = uniqueBy(await readBatchRows(batchFiles, /^appellations\.batch-\d+\.json$/), "id");
-  const batchReports = await readBatchRows(batchFiles, /^report\.batch-\d+\.json$/);
-
-  if (!jobs.length) {
-    throw new Error("Fusion ROME500 impossible : aucun fichier batches/jobs.batch-XX.json exploitable.");
+  const merged = {};
+  for (const [outputName, pattern, key] of COLLECTIONS) {
+    const baseRows = BASE_DIR ? await readJson(path.join(BASE_DIR, outputName), []) : [];
+    const batchRows = await readBatchRows(batchFiles, pattern);
+    merged[outputName] = uniqueBy([...baseRows, ...batchRows], key);
   }
+
+  const jobs = merged["jobs.rome.json"];
+  const codes = unique(jobs.map(job => job.romeCode).filter(Boolean));
+  const baseCodes = new Set((BASE_DIR ? await readJson(path.join(BASE_DIR, "jobs.rome.json"), []) : []).map(job => job.romeCode));
+  const additionsCount = codes.filter(code => !baseCodes.has(code)).length;
+  const batchReports = await readBatchRows(batchFiles, /^report\.batch-\d+\.json$/);
+  const selectionDocument = await readJson(path.join(ROOT, "creations", "boussolepro", "data", "local", `rome-codes-${EXPECTED_COUNT}.json`), null);
+  const selectedCodes = new Set((selectionDocument?.codes || []).map(row => typeof row === "string" ? row : row.romeCode));
+  if (!jobs.length) throw new Error("Fusion ROME impossible : aucun métier de base ou de lot exploitable.");
+  if (STRICT && codes.length !== EXPECTED_COUNT) throw new Error(`Fusion ROME incomplète : ${codes.length}/${EXPECTED_COUNT} codes uniques.`);
 
   const dataset = {
     schemaVersion: "1.0.0",
-    datasetName: "Boussole Pro — corpus ROME 500 candidat consolidé",
+    datasetName: `Boussole Pro — corpus ROME ${EXPECTED_COUNT} candidat consolidé`,
     datasetVersion: DATASET_VERSION,
     sourceDate: new Date().toISOString().slice(0, 10),
     importedAt: new Date().toISOString(),
     provenance: "generated_rome_candidate",
     jobs,
-    mappings,
-    jobAppellations,
-    rawSkills: await readJson(path.join(EXPERIMENTAL_DIR, "rome-raw-skills.json"), []),
-    skills: await readJson(path.join(EXPERIMENTAL_DIR, "skills.rome.json"), []),
-    matchableSkills: await readJson(path.join(EXPERIMENTAL_DIR, "skills-matchable.rome.json"), []),
-    knowledge: await readJson(path.join(EXPERIMENTAL_DIR, "knowledge.rome.json"), []),
-    certificationLike: await readJson(path.join(EXPERIMENTAL_DIR, "certification-like.rome.json"), []),
-    workContexts: await readJson(path.join(EXPERIMENTAL_DIR, "work-contexts.rome.json"), []),
-    trainings: [],
-    certifications: [],
-    marketIndicators: [],
-    sources: [{
-      id: "france_travail_rome500_experimental",
-      name: "France Travail ROME 4.0 via GitHub Actions - corpus 500 candidat consolidé",
-      provenance: "generated_rome_candidate",
-      accessMode: "github-actions-generated"
-    }]
+    mappings: merged["mappings.rome.json"],
+    jobAppellations: merged["job-appellations.rome.json"],
+    rawSkills: merged["rome-raw-skills.json"],
+    skills: merged["skills.rome.json"],
+    matchableSkills: merged["skills-matchable.rome.json"],
+    knowledge: merged["knowledge.rome.json"],
+    certificationLike: merged["certification-like.rome.json"],
+    workContexts: merged["work-contexts.rome.json"],
+    trainings: [], certifications: [], marketIndicators: [],
+    sources: [{ id: `france_travail_rome${EXPECTED_COUNT}_candidate`, name: `France Travail ROME 4.0 — corpus ${EXPECTED_COUNT} candidat`, provenance: "generated_rome_candidate", accessMode: "github-actions-generated" }]
+  };
+  const reportedFailedCodes = unique(batchReports.flatMap(report => (report.failedCodes || []).map(item => typeof item === "string" ? item : item.code)));
+  const failedCodes = selectedCodes.size ? reportedFailedCodes.filter(code => selectedCodes.has(code)) : reportedFailedCodes;
+  const qualityReport = buildDataQualityReport(dataset, {
+    generatedAt: new Date().toISOString(), branch: process.env.GITHUB_REF_NAME || "local",
+    requestedCodes: codes, successfulCodes: codes, failedCodes, failures: failedCodes,
+    optionalReferentials: [], datasetVersion: DATASET_VERSION
+  });
+  qualityReport.candidateCorpus = {
+    expectedCodesCount: EXPECTED_COUNT, actualCodesCount: codes.length, uniqueCodesCount: codes.length,
+    baseCodesPreserved: baseCodes.size, additionsCount, batchReportsCount: batchReports.length,
+    recoveredOrReplacedFailuresCount: reportedFailedCodes.length - failedCodes.length,
+    status: codes.length === EXPECTED_COUNT && !failedCodes.length ? "complete" : "incomplete",
+    resumable: true
   };
 
-  const successfulCodes = unique(jobs.map(job => job.romeCode).filter(Boolean));
-  const requestedCodes = unique(batchReports.flatMap(report => report.codeSelection?.source === "ROME_CODES_FILE"
-    ? []
-    : report.successfulCodes || []
-  ).concat(successfulCodes));
-  const failedCodes = unique(batchReports.flatMap(report => report.failedCodes || []));
-  const qualityReport = buildDataQualityReport(dataset, {
-    generatedAt: new Date().toISOString(),
-    branch: process.env.GITHUB_REF_NAME || "local",
-    requestedCodes: requestedCodes.length ? requestedCodes : successfulCodes,
-    successfulCodes,
-    failedCodes,
-    failures: failedCodes,
-    optionalReferentials: [],
-    datasetVersion: DATASET_VERSION
+  await Promise.all(COLLECTIONS.map(([name]) => writeJson(path.join(OUTPUT_DIR, name), merged[name])));
+  await writeJson(path.join(OUTPUT_DIR, "data-quality-report.rome.json"), qualityReport);
+  await writeJson(path.join(OUTPUT_DIR, "import-manifest.rome.json"), {
+    schemaVersion: "1.0.0", datasetName: dataset.datasetName, datasetVersion: DATASET_VERSION,
+    importedAt: dataset.importedAt, provenance: dataset.provenance, jobsCount: jobs.length,
+    mappingsCount: dataset.mappings.length, appellationsCount: dataset.jobAppellations.length,
+    retainedBaseCodesCount: baseCodes.size, additionsCount, batchReportsCount: batchReports.length,
+    promotionStatus: codes.length === EXPECTED_COUNT && !failedCodes.length ? "candidate" : "incomplete",
+    warning: codes.length === EXPECTED_COUNT ? null : `Corpus incomplet : ${codes.length}/${EXPECTED_COUNT} codes.`
   });
-  qualityReport.experimental500 = buildExperimental500Thresholds(dataset, qualityReport, batchReports);
-
-  await writeJson(path.join(EXPERIMENTAL_DIR, "jobs.rome.json"), dataset.jobs);
-  await writeJson(path.join(EXPERIMENTAL_DIR, "mappings.rome.json"), dataset.mappings);
-  await writeJson(path.join(EXPERIMENTAL_DIR, "job-appellations.rome.json"), dataset.jobAppellations);
-  await writeJson(path.join(EXPERIMENTAL_DIR, "data-quality-report.rome.json"), qualityReport);
-  await writeJson(path.join(EXPERIMENTAL_DIR, "import-manifest.rome.json"), {
-    schemaVersion: "1.0.0",
-    datasetName: dataset.datasetName,
-    datasetVersion: DATASET_VERSION,
-    importedAt: dataset.importedAt,
-    provenance: "generated_rome_candidate",
-    jobsCount: jobs.length,
-    mappingsCount: mappings.length,
-    appellationsCount: jobAppellations.length,
-    batchReportsCount: batchReports.length,
-    promotionStatus: qualityReport.experimental500.promotable ? "candidate" : "experimental_only",
-    warning: "Ce corpus ROME 500 ne remplace pas automatiquement le corpus ROME 72 de référence."
-  });
-
-  const audit = await buildRome500AuditArtifacts({ generatedDir: EXPERIMENTAL_DIR, marketDir: MARKET_DIR });
-  console.log(`[Boussole Pro] Fusion ROME500: ${jobs.length} métiers, ${mappings.length} mappings, statut ${qualityReport.experimental500.promotable ? "candidate" : "experimental_only"}.`);
-  console.log(`[Boussole Pro] Audit ROME500: score matching ${Math.round((audit.quality?.matchingReadiness?.score || 0) * 100)}%.`);
+  console.log(`[Boussole Pro] Fusion ROME${EXPECTED_COUNT}: ${codes.length} métiers uniques, ${baseCodes.size} conservés, ${additionsCount} ajouts.`);
 }
 
 async function readBatchRows(batchFiles, pattern) {
@@ -95,69 +98,13 @@ async function readBatchRows(batchFiles, pattern) {
   return rows.flatMap(row => Array.isArray(row) ? row : [row]).filter(Boolean);
 }
 
-function buildExperimental500Thresholds(dataset, qualityReport, batchReports) {
-  const jobs = dataset.jobs || [];
-  const coverage = qualityReport.coverage || {};
-  const thresholds = {
-    skills: ratio(coverage.jobsWithSkillsCount, jobs.length),
-    primarySector: ratio(jobs.filter(job => job.primarySectorId).length, jobs.length),
-    description: ratio(coverage.jobsWithOfficialDescriptionCount, jobs.length),
-    appellations: ratio(coverage.jobsWithAppellationsCount, jobs.length),
-    accessConditions: ratio(jobs.filter(job => job.accessConditions?.text).length, jobs.length),
-    contexts: ratio(coverage.jobsWithContextsCount, jobs.length),
-    shellJobs: ratio((qualityReport.missingMapping || []).filter(item => item.missingSkills).length, jobs.length)
-  };
-  const promotable = thresholds.skills >= 0.98 &&
-    thresholds.primarySector >= 0.98 &&
-    thresholds.description >= 0.9 &&
-    thresholds.appellations >= 0.9 &&
-    thresholds.accessConditions >= 0.85 &&
-    thresholds.contexts >= 0.8 &&
-    thresholds.shellJobs <= 0.05;
-  return {
-    status: promotable ? "candidate_after_regression_tests" : "experimental_only",
-    promotable,
-    thresholds,
-    batchReports: batchReports.map(report => ({
-      batchLabel: report.batchLabel,
-      jobsCount: report.jobsCount,
-      successfulCodesCount: report.successfulCodesCount,
-      failedCodesCount: report.failedCodesCount
-    })),
-    warnings: promotable
-      ? ["Relancer les profils de regression avant toute promotion."]
-      : ["Seuils de couverture non atteints : conserver le corpus 500 en expérimental."]
-  };
-}
-
-async function readJson(file, fallback) {
-  try {
-    return JSON.parse(await readFile(file, "utf8"));
-  } catch {
-    return fallback;
-  }
-}
-
-async function writeJson(file, value) {
-  await writeFile(file, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-}
-
+async function readJson(file, fallback) { try { return JSON.parse(await readFile(file, "utf8")); } catch { return fallback; } }
+async function writeJson(file, value) { await writeFile(file, `${JSON.stringify(value, null, 2)}\n`, "utf8"); }
+function referenceId(item = {}) { return item.id || item.officialId || item.rawId || item.code || item.label; }
 function uniqueBy(items, key) {
   const seen = new Set();
-  return items.filter(item => {
-    const value = typeof key === "function" ? key(item) : item?.[key];
-    if (!value || seen.has(value)) return false;
-    seen.add(value);
-    return true;
-  });
+  return items.filter(item => { const value = typeof key === "function" ? key(item) : item?.[key]; if (!value || seen.has(value)) return false; seen.add(value); return true; });
 }
+function unique(items = []) { return [...new Set(items.filter(Boolean))]; }
 
-function unique(items = []) {
-  return [...new Set(items.filter(Boolean))];
-}
-
-function ratio(part, total) {
-  return total ? Number((part / total).toFixed(2)) : 0;
-}
-
-await main();
+main().catch(error => { console.error(error); process.exit(1); });

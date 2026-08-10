@@ -19,6 +19,7 @@ const marketRequestDelayMs = Math.max(0, Number(env.MARKET_REQUEST_DELAY_MS || 2
 const marketActivityType = env.MARKET_ACTIVITY_TYPE || "ROME";
 const marketPeriodType = env.MARKET_PERIOD_TYPE || "TRIMESTRE";
 const marketNomenclatureType = env.MARKET_NOMENCLATURE_TYPE || "ORIGINEOFF";
+const mergeExistingPackage = parseBoolean(env.MARKET_MERGE_EXISTING || "false");
 const marketDebugRequests = [];
 let marketTokenObtained = false;
 
@@ -87,11 +88,22 @@ async function main() {
   let fapRomeMappings = [];
 
   try {
-    if (dryRun) {
-      const preserved = await readExistingOfferRows();
+    if (mergeExistingPackage) {
+      const preserved = await readExistingMarketPackage();
       rowsByLevel.national.push(...preserved.national);
       rowsByLevel.regional.push(...preserved.regional);
       rowsByLevel.departmental.push(...preserved.departmental);
+      bmoRows = preserved.bmoRows;
+      fapRomeMappings = preserved.fapRomeMappings;
+      diagnostics.push({ source: "existing_market_package", status: "merged", reason: "Les lignes déjà validées sont conservées ; les nouvelles lignes remplacent seulement les mêmes couples métier/territoire." });
+    }
+    if (dryRun) {
+      if (!mergeExistingPackage) {
+        const preserved = await readExistingOfferRows();
+        rowsByLevel.national.push(...preserved.national);
+        rowsByLevel.regional.push(...preserved.regional);
+        rowsByLevel.departmental.push(...preserved.departmental);
+      }
       diagnostics.push({
         source: "api_marche_travail",
         status: "dry_run_existing_rows_preserved",
@@ -114,7 +126,7 @@ async function main() {
     } else if (requestedSources.includes("bmo")) {
       const bmoResult = await fetchBmoData();
       diagnostics.push(...bmoResult.diagnostics);
-      bmoRows = bmoResult.rows;
+      bmoRows = mergeRows(bmoRows, bmoResult.rows, row => `${row.fapCode || row.code || ""}|${row.territoryCode || row.territory || ""}`);
     }
 
     if (dryRun && env.FAP_ROME_MAPPING_URL) {
@@ -126,9 +138,12 @@ async function main() {
     } else if (env.FAP_ROME_MAPPING_URL) {
       const mappingResult = await fetchFapRomeMappings();
       diagnostics.push(...mappingResult.diagnostics);
-      fapRomeMappings = mappingResult.rows;
+      fapRomeMappings = mergeRows(fapRomeMappings, mappingResult.rows, row => `${row.romeCode || ""}|${row.qualificationCode || ""}|${row.fapCodeDetailed || row.fapCode || ""}`);
     }
 
+    rowsByLevel.national = mergeRows([], rowsByLevel.national, marketRowKey);
+    rowsByLevel.regional = mergeRows([], rowsByLevel.regional, marketRowKey);
+    rowsByLevel.departmental = mergeRows([], rowsByLevel.departmental, marketRowKey);
     enrichRowsByLevel(rowsByLevel);
     const coverage = buildCoverage(rowsByLevel, bmoRows);
     const totalMarketRows = rowsByLevel.national.length + rowsByLevel.regional.length + rowsByLevel.departmental.length;
@@ -1062,6 +1077,37 @@ async function readExistingOfferRows() {
     }
   }
   return output;
+}
+
+async function readExistingMarketPackage() {
+  const offers = await readExistingOfferRows();
+  const [bmoRows, fapRomeMappings] = await Promise.all([
+    readExistingJson("bmo-fap2021.json"),
+    readExistingJson("fap-rome-mappings.json")
+  ]);
+  return { ...offers, bmoRows, fapRomeMappings };
+}
+
+async function readExistingJson(fileName) {
+  try {
+    const rows = JSON.parse(await readFile(path.join(OUTPUT_DIR, fileName), "utf8"));
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+function marketRowKey(row = {}) {
+  return `${row.romeCode || row.code || ""}|${row.territoryCode || row.codeTerritoire || row.territoryId || ""}`;
+}
+
+function mergeRows(existing = [], incoming = [], keyOf = row => row.id) {
+  const merged = new Map();
+  [...existing, ...incoming].forEach(row => {
+    const key = keyOf(row);
+    if (key && !/^\|?$/.test(key)) merged.set(key, row);
+  });
+  return [...merged.values()];
 }
 
 function territoryRows() {

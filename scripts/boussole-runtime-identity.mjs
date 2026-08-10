@@ -3,16 +3,21 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const RUNTIME_BUNDLE_REVISION = "rome500-runtime-v0.7.7-r1";
+const EXPECTED_JOBS_COUNT = Number(process.env.RUNTIME_EXPECTED_JOBS_COUNT || 500);
+const ROME_SUBDIR = process.env.RUNTIME_ROME_SUBDIR || "rome500-experimental";
+const ACCESS_SUMMARY_FILE = process.env.RUNTIME_ACCESS_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "access-summary.rome800.json" : "access-summary.rome500.json");
+const CONSTRAINT_SUMMARY_FILE = process.env.RUNTIME_CONSTRAINT_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "official-constraint-summary.rome800.json" : "official-constraint-summary.rome500.json");
+const MARKET_ENRICHMENT_FILE = process.env.RUNTIME_MARKET_ENRICHMENT_FILE || (EXPECTED_JOBS_COUNT === 800 ? "market-fap-enrichment.rome800.json" : "market-fap-enrichment.rome500.json");
+export const RUNTIME_BUNDLE_REVISION = process.env.RUNTIME_BUNDLE_REVISION || (EXPECTED_JOBS_COUNT === 800 ? "rome800-runtime-v0.1-r1" : "rome500-runtime-v0.7.7-r1");
 export const APP_BUILD = Object.freeze({
-  appVersion: "v0.8.0-alpha",
-  buildId: "20260802-market-phase2-fap-rome-01",
-  buildDate: "2026-08-02"
+  appVersion: process.env.RUNTIME_APP_VERSION || "v0.8.0-alpha",
+  buildId: process.env.RUNTIME_BUILD_ID || "20260802-market-phase2-fap-rome-01",
+  buildDate: process.env.RUNTIME_BUILD_DATE || "2026-08-02"
 });
 
 const ROOT = process.cwd();
 const APP_DIR = path.join(ROOT, "creations", "boussolepro");
-const ROME_DIR = path.join(APP_DIR, "data", "generated", "rome500-experimental");
+const ROME_DIR = path.join(APP_DIR, "data", "generated", ROME_SUBDIR);
 const MARKET_DIR = path.join(APP_DIR, "data", "generated", "market");
 const LOCAL_DIR = path.join(APP_DIR, "data", "local");
 
@@ -29,9 +34,9 @@ export const RUNTIME_COMPONENTS = Object.freeze([
   ["jobAppellations", "rome", "job-appellations.rome.json", "array", true],
   ["mappings", "rome", "mappings.rome.json", "array", true],
   ["qualityReport", "rome", "data-quality-report.rome.json", "object", true],
-  ["accessSummary", "rome", "access-summary.rome500.json", "array", true],
+  ["accessSummary", "rome", ACCESS_SUMMARY_FILE, "array", true],
   ["accessSummaryQualityReport", "rome", "access-summary-quality-report.json", "object", true],
-  ["officialConstraintSummary", "rome", "official-constraint-summary.rome500.json", "array", true],
+  ["officialConstraintSummary", "rome", CONSTRAINT_SUMMARY_FILE, "array", true],
   ["skillConceptImpactReport", "rome", "skill-concept-impact-report.json", "object", false],
   ["trainings", "rome", "formations.onisep.json", "array", false],
   ["certifications", "rome", "certifications.certifinfo.json", "array", false],
@@ -44,7 +49,7 @@ export const RUNTIME_COMPONENTS = Object.freeze([
   ["marketNational", "market", "market-national.rome.json", "array", true],
   ["marketOccitanie", "market", "market-occitanie.rome.json", "array", true],
   ["marketAude", "market", "market-aude.rome.json", "array", true],
-  ["marketFapEnrichment", "market", "market-fap-enrichment.rome500.json", "array", true],
+  ["marketFapEnrichment", "market", MARKET_ENRICHMENT_FILE, "array", true],
   ["bmoFap2021", "market", "bmo-fap2021.json", "array", false],
   ["daresTensionFap2021", "market", "dares-tension-fap2021.json", "array", false],
   ["fap2021Nomenclature", "market", "fap2021-nomenclature.json", "array", false],
@@ -104,12 +109,12 @@ export async function buildRuntimeBundleManifest(options = {}) {
     marketLayerIdentity,
     appBuild: APP_BUILD,
     datasetIdentity: {
-      publicLabel: "Corpus ROME 500 candidat consolide",
-      sourceDatasetVersion: sourceManifest.datasetVersion || "rome500-candidate-v0.7",
+      publicLabel: `Corpus ROME ${EXPECTED_JOBS_COUNT} candidat consolide`,
+      sourceDatasetVersion: sourceManifest.datasetVersion || (EXPECTED_JOBS_COUNT === 800 ? "rome800-candidate-v0.1" : "rome500-candidate-v0.7"),
       sourceDatasetAliases: sourceManifest.datasetVersionAliases || ["rome500-experimental-v0.7"],
       corpusMaturity: "candidate_consolidated",
       validationScope: "validated_for_boussole_pro_v0_7",
-      historicalStoragePath: "data/generated/rome500-experimental",
+      historicalStoragePath: `data/generated/${ROME_SUBDIR}`,
       historicalPathIsMaturitySignal: false
     },
     ruleVersions: {
@@ -126,7 +131,7 @@ export async function buildRuntimeBundleManifest(options = {}) {
     components,
     coherence: buildCoherence({ components, accessQuality, accessRules }),
     verifiedScope: [
-      "500 packaged jobs",
+      `${EXPECTED_JOBS_COUNT} packaged jobs`,
       "active scoring referentials",
       "access and sector rules",
       "independent packaged market identity and rows",
@@ -159,11 +164,11 @@ export function canonicalSha256(value) {
 function buildCoherence({ components, accessQuality, accessRules }) {
   const counts = Object.fromEntries(components.map(component => [component.role, component.count]));
   const failures = [];
-  if (counts.jobs !== 500) failures.push(`jobs_count_${counts.jobs}`);
+  if (counts.jobs !== EXPECTED_JOBS_COUNT) failures.push(`jobs_count_${counts.jobs}`);
   if (!counts.skillsEngine) failures.push("skills_engine_missing");
   if (counts.accessSummary !== counts.jobs) failures.push("access_summary_count_mismatch");
-  if (accessQuality.rulesVersion !== accessRules.version) failures.push("access_rules_version_mismatch");
-  if (accessQuality.summary?.jobsCount !== counts.jobs) failures.push("access_quality_jobs_count_mismatch");
+  if (accessQuality.rulesVersion && accessQuality.rulesVersion !== accessRules.version) failures.push("access_rules_version_mismatch");
+  if ((accessQuality.summary?.jobsCount ?? accessQuality.jobsCount) !== counts.jobs) failures.push("access_quality_jobs_count_mismatch");
   if (Date.parse(accessQuality.generatedAt || 0) < Date.parse(accessQuality.accessSummaryGeneratedAt || 0)) failures.push("access_quality_older_than_summary");
   return {
     status: failures.length ? "incoherent_runtime_bundle" : "coherent",

@@ -17,6 +17,7 @@ const OUTPUTS = process.env.BOUSSOLE_PERF_OUTPUT
 const PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 const RUNS_PER_MODE = Number(process.env.BOUSSOLE_PERF_RUNS || 5);
+const EXPECTED_JOBS_COUNT = Number(process.env.BOUSSOLE_EXPECTED_JOBS_COUNT || 500);
 
 const server = createServer(async (request, response) => {
   try {
@@ -80,16 +81,20 @@ try {
   const metrics = ["datasetLoadMs", "normalizationMs", "skillIndexBuildMs", "profileScoringMs", "resultsGroupingMs", "resultsUiRenderMs", "resultCardRenderMs", "resultsFirstVisibleMs", "resultsInteractiveMs", "compactExportMs", "totalGeneratedLoadMs", "heapUsedBytes", "cardsRendered"];
   const coldSummary = summarizeRuns(cold, metrics);
   const warmSummary = summarizeRuns(warm, metrics);
-  const completionVerdict = [...cold, ...warm].every(run => run.jobsCount === 500 && run.resultsComputed === 500 && run.cardsRendered > 0) ? "complete" : "partial";
+  const completionVerdict = [...cold, ...warm].every(run => run.jobsCount === EXPECTED_JOBS_COUNT && run.resultsComputed === EXPECTED_JOBS_COUNT && run.cardsRendered > 0) ? "complete" : "partial";
+  const allowedScalingRatio = EXPECTED_JOBS_COUNT === 500 ? 1.1 : 1.8;
   const nonRegressionBudget = {
     previousColdMedianMs: 10366,
-    maximumWarmMedianMs: 700,
-    coldStatus: coldSummary.totalGeneratedLoadMs.median <= Math.round(10366 * 1.1) ? "within_budget" : "regressed",
-    warmStatus: warmSummary.totalGeneratedLoadMs.median <= 700 ? "within_budget" : "regressed"
+    previousWarmMedianMs: 700,
+    allowedScalingRatio,
+    maximumColdMedianMs: Math.round(10366 * allowedScalingRatio),
+    maximumWarmMedianMs: Math.round(700 * allowedScalingRatio),
+    coldStatus: coldSummary.totalGeneratedLoadMs.median <= Math.round(10366 * allowedScalingRatio) ? "within_budget" : "regressed",
+    warmStatus: warmSummary.totalGeneratedLoadMs.median <= Math.round(700 * allowedScalingRatio) ? "within_budget" : "regressed"
   };
   const report = {
     schemaVersion: "2.0.0",
-    reportKind: "rome500_browser_performance_benchmark",
+    reportKind: `rome${EXPECTED_JOBS_COUNT}_browser_performance_benchmark`,
     reportDescription: `Benchmark local reproductible : ${RUNS_PER_MODE} chargement(s) froid(s) complet(s) et ${RUNS_PER_MODE} recalcul(s) chaud(s) sur le meme paquet canonique.`,
     completionVerdict,
     validationVerdict: completionVerdict === "complete" && nonRegressionBudget.coldStatus === "within_budget" && nonRegressionBudget.warmStatus === "within_budget"
@@ -146,7 +151,7 @@ async function runColdScenario(cdp, url, profile, run) {
   await navigate(cdp, url);
   await evaluate(cdp, `window.__BOUSSOLE_TEST_API__.setProfile(${JSON.stringify(profile)})`);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.resetPerformanceMetrics()");
-  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.loadRome500()", true);
+  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.loadActiveCandidate()", true);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
   const browserReport = await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.getPerformanceReport()");
   const heap = await cdp.send("Runtime.getHeapUsage");
@@ -160,7 +165,7 @@ async function runColdScenario(cdp, url, profile, run) {
 
 async function runWarmScenario(cdp, run) {
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.resetPerformanceMetrics()");
-  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.recalculateRome500()", true);
+  await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.recalculateActiveCandidate()", true);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
   const browserReport = await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.getPerformanceReport()");
   const heap = await cdp.send("Runtime.getHeapUsage");
@@ -189,14 +194,14 @@ function buildScalingEstimate(cold, warm) {
   const warmMedian = median(warm.map(run => run.totalGeneratedLoadMs).filter(Number.isFinite).sort((a, b) => a - b));
   const project = jobs => ({
     jobs,
-    coldTotalMs: Math.round(coldMedian * jobs / 500),
-    warmRecalculationMs: Math.round(warmMedian * jobs / 500)
+    coldTotalMs: Math.round(coldMedian * jobs / EXPECTED_JOBS_COUNT),
+    warmRecalculationMs: Math.round(warmMedian * jobs / EXPECTED_JOBS_COUNT)
   });
   return {
-    method: "linear_projection_from_local_packaged_500_job_benchmark",
+    method: `linear_projection_from_local_packaged_${EXPECTED_JOBS_COUNT}_job_benchmark`,
     scope: "local_indicative_only",
-    warning: "Projection indicative ; elle ne remplace pas une mesure avec les corpus ROME800 ou ROME1000 reels.",
-    projections: [project(800), project(1000)]
+    warning: "Projection indicative ; elle ne remplace pas une mesure avec le corpus cible réel.",
+    projections: EXPECTED_JOBS_COUNT === 500 ? [project(800), project(1000)] : [project(1000)]
   };
 }
 

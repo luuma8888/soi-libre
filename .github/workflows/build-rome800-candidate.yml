@@ -1,0 +1,175 @@
+name: Build ROME800 candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: boussole-rome800-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-rome800:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Fetch official ROME universe
+        run: node scripts/fetch-rome-universe.mjs
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_SCOPE: "nomenclatureRome api_rome-fiches-metiersv1"
+          FT_SCOPE_METIERS: ${{ vars.FT_SCOPE_METIERS }}
+          FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
+          FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
+      - name: Select 300 deterministic additions
+        run: node scripts/prepare-rome800-selection.mjs
+      - name: Fetch only the 300 additions in resumable batches
+        shell: bash
+        run: |
+          for batch in 1 2 3; do
+            export ROME_BATCH_INDEX="$batch"
+            node scripts/sync-france-travail-rome.mjs
+          done
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_SCOPE: "nomenclatureRome api_rome-fiches-metiersv1"
+          FT_SCOPE_METIERS: ${{ vars.FT_SCOPE_METIERS }}
+          FT_SCOPE_COMPETENCES: ${{ vars.FT_SCOPE_COMPETENCES }}
+          FT_SCOPE_CONTEXTES: ${{ vars.FT_SCOPE_CONTEXTES }}
+          FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
+          FT_ROME_FICHES_METIERS_URL: ${{ vars.FT_ROME_FICHES_METIERS_URL }}
+          FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
+          FT_ROME_COMPETENCES_URL: ${{ vars.FT_ROME_COMPETENCES_URL }}
+          FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
+          FT_RATE_LIMIT_MS: ${{ vars.FT_RATE_LIMIT_MS || '1100' }}
+          ROME_CODES_FILE: creations/boussolepro/data/local/rome-codes-800-additions.json
+          ROME_BATCH_SIZE: "100"
+          ROME_OUTPUT_SUBDIR: rome800-candidate
+          ROME_DATASET_MODE: rome800
+          ROME_DATASET_VERSION: rome800-candidate-v0.1
+      - name: Prepare targeted recovery when a fiche failed
+        id: recovery
+        run: node scripts/prepare-rome800-recovery.mjs >> "$GITHUB_OUTPUT"
+      - name: Fetch official recovery candidates
+        if: ${{ steps.recovery.outputs.recovery_count != '0' }}
+        run: node scripts/sync-france-travail-rome.mjs
+        env:
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_SCOPE: "nomenclatureRome api_rome-fiches-metiersv1"
+          FT_SCOPE_METIERS: ${{ vars.FT_SCOPE_METIERS }}
+          FT_SCOPE_COMPETENCES: ${{ vars.FT_SCOPE_COMPETENCES }}
+          FT_SCOPE_CONTEXTES: ${{ vars.FT_SCOPE_CONTEXTES }}
+          FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
+          FT_ROME_FICHES_METIERS_URL: ${{ vars.FT_ROME_FICHES_METIERS_URL }}
+          FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
+          FT_ROME_COMPETENCES_URL: ${{ vars.FT_ROME_COMPETENCES_URL }}
+          FT_ROME_CONTEXTES_URL: ${{ vars.FT_ROME_CONTEXTES_URL }}
+          ROME_CODES_FILE: creations/boussolepro/data/local/rome-codes-800-recovery.json
+          ROME_BATCH_INDEX: "1"
+          ROME_BATCH_SIZE: "100"
+          ROME_BATCH_LABEL: "90"
+          ROME_OUTPUT_SUBDIR: rome800-candidate
+          ROME_DATASET_MODE: rome800
+          ROME_DATASET_VERSION: rome800-candidate-v0.1
+      - name: Merge ROME500 and additions
+        run: node scripts/merge-rome500-batches.mjs
+        env:
+          ROME_MERGE_OUTPUT_SUBDIR: rome800-candidate
+          ROME_MERGE_BASE_SUBDIR: rome500-experimental
+          ROME_MERGE_EXPECTED_COUNT: "800"
+          ROME_MERGE_DATASET_VERSION: rome800-candidate-v0.1
+          ROME_MERGE_STRICT: "true"
+      - name: Build candidate derived indexes
+        run: node scripts/prepare-rome-candidate-derived.mjs
+        env:
+          ROME_CANDIDATE_SUBDIR: rome800-candidate
+          ROME_CANDIDATE_VERSION: rome800-candidate-v0.1
+      - name: Extend observed market volumes only to additions
+        run: node scripts/generate-market-data.mjs
+        env:
+          DRY_RUN: "false"
+          MARKET_MERGE_EXISTING: "true"
+          MARKET_SOURCE: api_marche_travail
+          MARKET_TERRITORIES: ${{ vars.MARKET_TERRITORIES || 'FR,REG-76,DEP-11' }}
+          MARKET_ROME_CODES_FILE: creations/boussolepro/data/local/rome-codes-800-additions.json
+          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
+          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
+          FT_MARKET_SCOPE: ${{ vars.FT_MARKET_SCOPE }}
+          FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
+          FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
+          MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
+          MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
+          MARKET_PERIOD_TYPE: ${{ vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
+          MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
+          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
+          MARKET_FAIL_ON_EMPTY: "true"
+      - name: Rebuild FAP BMO Dares context for 800 jobs
+        run: node scripts/prepare-boussole-market-phase2.mjs
+        env:
+          MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome800-candidate/jobs.rome.json
+          MARKET_FAP_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
+          MARKET_DATASET_VERSION: market-v3-phase2-rome800-2026-08-10
+          FAP_ROME_SOURCE_PATH: creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx
+      - name: Build coherent runtime identity
+        run: node scripts/boussole-runtime-identity.mjs
+        env:
+          RUNTIME_EXPECTED_JOBS_COUNT: "800"
+          RUNTIME_ROME_SUBDIR: rome800-candidate
+          RUNTIME_ACCESS_SUMMARY_FILE: access-summary.rome800.json
+          RUNTIME_CONSTRAINT_SUMMARY_FILE: official-constraint-summary.rome800.json
+          RUNTIME_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
+          RUNTIME_BUNDLE_REVISION: rome800-runtime-v0.1-r1
+          RUNTIME_APP_VERSION: v0.8.1-alpha
+          RUNTIME_BUILD_ID: 20260810-rome800-market-continuity-01
+          RUNTIME_BUILD_DATE: "2026-08-10"
+      - name: Activate ROME800 build identity
+        run: node scripts/activate-rome800-runtime.mjs
+        env:
+          RUNTIME_BUILD_ID: 20260810-rome800-market-continuity-01
+          RUNTIME_BUILD_DATE: "2026-08-10"
+      - name: Run corpus and 12-profile validations
+        run: |
+          node scripts/validate-rome800-candidate.mjs
+          node scripts/validate-boussole-v073.mjs
+        env:
+          BOUSSOLE_EXPECTED_JOBS_COUNT: "800"
+          BOUSSOLE_ROME_SUBDIR: rome800-candidate
+          BOUSSOLE_ACCESS_SUMMARY_FILE: access-summary.rome800.json
+          BOUSSOLE_CONSTRAINT_SUMMARY_FILE: official-constraint-summary.rome800.json
+          BOUSSOLE_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
+          BOUSSOLE_VALIDATION_REPORT: creations/boussolepro/data/generated/rome800-candidate/rome800-functional-validation-report.json
+      - name: Measure cold and warm browser performance
+        run: node scripts/measure-boussole-rome500-browser.mjs
+        env:
+          CHROMIUM_PATH: /usr/bin/google-chrome
+          BOUSSOLE_EXPECTED_JOBS_COUNT: "800"
+          BOUSSOLE_PERF_RUNS: "5"
+          BOUSSOLE_PERF_OUTPUT: creations/boussolepro/data/generated/rome800-candidate/rome800-browser-performance-benchmark.json
+      - name: Check that no secret was written
+        run: node scripts/check-no-secrets.mjs
+      - name: Build offline delivery artifact
+        run: node scripts/build-rome800-delivery.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boussole-pro-v0.8.1-alpha-rome800
+          path: tmp/monde-pro/livraison-boussole-pro-v0.8.1-alpha-rome800
+          if-no-files-found: error
+          retention-days: 14
+      - name: Commit generated ROME800 package
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add creations/boussolepro/boussole-pro.html creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/market
+          git commit -m "Build ROME800 candidate corpus" || echo "No changes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

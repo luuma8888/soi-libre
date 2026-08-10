@@ -5,7 +5,9 @@ import { readXlsxRows, XLSX_READER_INFO } from "./market-xlsx.mjs";
 
 const ROOT = process.cwd();
 const MARKET_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", "market");
-const JOBS_PATH = path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "jobs.rome.json");
+const JOBS_PATH = path.resolve(ROOT, process.env.MARKET_JOBS_PATH || "creations/boussolepro/data/generated/rome500-experimental/jobs.rome.json");
+const ENRICHMENT_FILENAME = process.env.MARKET_FAP_ENRICHMENT_FILE || "market-fap-enrichment.rome500.json";
+const MARKET_DATASET_VERSION = process.env.MARKET_DATASET_VERSION || "market-v3-phase2-2026-08-02";
 const SOURCE_PATH = path.resolve(ROOT, process.env.FAP_ROME_SOURCE_PATH || "creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx");
 const NORMALIZED_AT = process.env.MARKET_NORMALIZED_AT || new Date().toISOString();
 const CONTRACT_REVISION = "market-contract-v3.0.0-phase2";
@@ -44,7 +46,7 @@ async function main() {
   await writeMarket("fap-rome-mappings.json", mappings);
   await writeMarket("fap-rome-parsing-report.json", parsingReport);
   await writeMarket("fap-rome-cardinality-report.json", cardinalityReport);
-  await writeMarketCompact("market-fap-enrichment.rome500.json", enrichment);
+  await writeMarketCompact(ENRICHMENT_FILENAME, enrichment);
   await writeMarket("fap-rome-mapping-status.json", mappingStatus);
   await writeMarket("market-contract.json", {
     ...contract,
@@ -55,7 +57,7 @@ async function main() {
 
   const newFiles = [
     "fap-rome-source-metadata.json", "fap-rome-mappings.json", "fap-rome-parsing-report.json",
-    "fap-rome-cardinality-report.json", "market-fap-enrichment.rome500.json", "fap-rome-mapping-status.json", "market-contract.json"
+    "fap-rome-cardinality-report.json", ENRICHMENT_FILENAME, "fap-rome-mapping-status.json", "market-contract.json"
   ];
   const runtimeComponentFiles = [
     "market-contract.json",
@@ -68,7 +70,7 @@ async function main() {
     "fap-rome-mappings.json",
     "fap-rome-mapping-status.json",
     "territories.json",
-    "market-fap-enrichment.rome500.json"
+    ENRICHMENT_FILENAME
   ];
   const components = await hashMarketFiles(runtimeComponentFiles);
   const fingerprint = sha256(components.map(item => `${item.fileName}:${item.sha256}:${item.count}`).sort().join("\n"));
@@ -146,7 +148,7 @@ async function main() {
     ...manifest,
     schemaVersion: "3.0.0",
     datasetName: "Boussole Pro - couche marché phase 2",
-    datasetVersion: "market-v3-phase2-2026-08-02",
+    datasetVersion: MARKET_DATASET_VERSION,
     marketContractRevision: CONTRACT_REVISION,
     marketLayerIdentity: nextIdentity,
     files: unique([...(manifest.files || []), ...newFiles, "market-package-identity.json"]),

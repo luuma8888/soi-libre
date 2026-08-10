@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { buildRome500AuditArtifacts } from "./audit-rome-500-generated.mjs";
 import { buildDataQualityReport } from "./build-data-quality-report.mjs";
 import { mergeRomeDatasets } from "./normalize-rome-api.mjs";
@@ -135,15 +136,15 @@ async function main() {
         outputPlan.files.jobs,
         outputPlan.files.manifest,
         outputPlan.files.dataQuality,
-        ...(outputPlan.mode === "rome500_batch" ? [outputPlan.files.batchReport] : []),
-        "rome-raw-skills.json",
-        "skills.rome.json",
-        "knowledge.rome.json",
-        "certification-like.rome.json",
-        "skills-matchable.rome.json",
-        "work-contexts.rome.json",
-        "job-appellations.rome.json",
-        "mappings.rome.json",
+        ...(outputPlan.batchLabel ? [outputPlan.files.batchReport] : []),
+        outputPlan.files.rawSkills,
+        outputPlan.files.skills,
+        outputPlan.files.knowledge,
+        outputPlan.files.certificationLike,
+        outputPlan.files.matchableSkills,
+        outputPlan.files.workContexts,
+        outputPlan.files.appellations,
+        outputPlan.files.mappings,
         "formations.onisep.json",
         "certifications.certifinfo.json",
         "mappings-rome-formations.json",
@@ -168,19 +169,19 @@ async function main() {
         "license_to_verify"
       ].filter(Boolean)
     });
-    await writeGeneratedJson("rome-raw-skills.json", dataset.rawSkills || [], { pretty: false });
-    await writeGeneratedJson("skills.rome.json", dataset.skills || []);
-    await writeGeneratedJson("knowledge.rome.json", dataset.knowledge || []);
-    await writeGeneratedJson("certification-like.rome.json", dataset.certificationLike || []);
-    await writeGeneratedJson("skills-matchable.rome.json", dataset.matchableSkills || []);
-    await writeGeneratedJson("work-contexts.rome.json", dataset.workContexts || []);
+    await writeGeneratedJson(outputPlan.files.rawSkills, dataset.rawSkills || [], { pretty: false });
+    await writeGeneratedJson(outputPlan.files.skills, dataset.skills || []);
+    await writeGeneratedJson(outputPlan.files.knowledge, dataset.knowledge || []);
+    await writeGeneratedJson(outputPlan.files.certificationLike, dataset.certificationLike || []);
+    await writeGeneratedJson(outputPlan.files.matchableSkills, dataset.matchableSkills || []);
+    await writeGeneratedJson(outputPlan.files.workContexts, dataset.workContexts || []);
     await writeGeneratedJson(outputPlan.files.appellations, dataset.jobAppellations || []);
     await writeGeneratedJson(outputPlan.files.mappings, dataset.mappings || []);
     await writeGeneratedJson("formations.onisep.json", []);
     await writeGeneratedJson("certifications.certifinfo.json", []);
     await writeGeneratedJson("mappings-rome-formations.json", []);
     await writeGeneratedJson("mappings-rome-certifications.json", []);
-    if (outputPlan.mode === "rome500_batch") {
+    if (outputPlan.batchLabel) {
       await writeGeneratedJson(outputPlan.files.batchReport, buildRome500BatchReport(dataset, report, syncMeta, outputPlan));
       console.log(`[Boussole Pro] Lot ROME500 ${outputPlan.batchLabel}: ${dataset.jobs.length}/${requestedCodes.length} metiers ecrits dans ${outputPlan.basePath}`);
     } else {
@@ -526,6 +527,18 @@ async function fetchOptionalRomeReferentials(mainToken, requestedCodes = []) {
     await sleep(Number(process.env.FT_RATE_LIMIT_MS || DEFAULT_RATE_LIMIT_MS));
   }
   return { parts, diagnostics, referentials };
+}
+
+export async function fetchRomeMetiersUniverse(token, endpointUrl = process.env.FT_ROME_METIERS_URL || "") {
+  if (!endpointUrl) throw new Error("FT_ROME_METIERS_URL est requis pour récupérer l'univers ROME officiel.");
+  const response = await fetch(endpointUrl, {
+    headers: {
+      Authorization: `Bearer ${token.access_token || token.token || token}`,
+      Accept: "application/json"
+    }
+  });
+  if (!response.ok) throw new Error(`Échec univers ROME : ${response.status} ${await safeResponseText(response)}`);
+  return extractArrayFromApiResponse(await response.json());
 }
 
 async function fetchRomeMetiersDetails(endpointUrl, token, codes = []) {
@@ -976,13 +989,17 @@ async function readRomeCodesFile(filePath = "") {
 
 function buildOutputPlan(codeSelection = {}) {
   const batchIndex = Number(codeSelection.batchIndex || 0);
-  const experimental = Boolean(batchIndex) || /500/.test(codeSelection.filePath || "") || process.env.ROME_DATASET_MODE === "rome500";
-  const batchLabel = batchIndex ? String(batchIndex).padStart(2, "0") : "";
+  const datasetMode = String(process.env.ROME_DATASET_MODE || "").trim().toLowerCase();
+  const experimental = Boolean(batchIndex) || /500|800/.test(codeSelection.filePath || "") || ["rome500", "rome800"].includes(datasetMode);
+  const corpusSize = datasetMode === "rome800" || /800/.test(codeSelection.filePath || "") ? 800 : 500;
+  const candidateVersion = corpusSize === 800 ? "rome800-candidate-v0.1" : ROME500_EXPERIMENTAL_VERSION;
+  const explicitBatchLabel = String(process.env.ROME_BATCH_LABEL || "").replace(/\D/g, "").slice(0, 3);
+  const batchLabel = explicitBatchLabel || (batchIndex ? String(batchIndex).padStart(2, "0") : "");
   if (experimental && batchLabel) {
     return {
-      mode: "rome500_batch",
-      datasetName: "Boussole Pro — corpus ROME 500 candidat consolidé",
-      datasetVersion: `${process.env.ROME_DATASET_VERSION || ROME500_EXPERIMENTAL_VERSION}-batch-${batchLabel}`,
+      mode: `rome${corpusSize}_batch`,
+      datasetName: `Boussole Pro — ajouts du corpus ROME ${corpusSize} candidat`,
+      datasetVersion: `${process.env.ROME_DATASET_VERSION || candidateVersion}-batch-${batchLabel}`,
       batchLabel,
       basePath: "batches/",
       files: {
@@ -992,14 +1009,20 @@ function buildOutputPlan(codeSelection = {}) {
         dataQuality: `batches/data-quality.batch-${batchLabel}.json`,
         batchReport: `batches/report.batch-${batchLabel}.json`,
         manifest: `batches/import-manifest.batch-${batchLabel}.json`,
-        syncError: `batches/sync-error.batch-${batchLabel}.json`
+        syncError: `batches/sync-error.batch-${batchLabel}.json`,
+        rawSkills: `batches/rome-raw-skills.batch-${batchLabel}.json`,
+        skills: `batches/skills.batch-${batchLabel}.json`,
+        knowledge: `batches/knowledge.batch-${batchLabel}.json`,
+        certificationLike: `batches/certification-like.batch-${batchLabel}.json`,
+        matchableSkills: `batches/skills-matchable.batch-${batchLabel}.json`,
+        workContexts: `batches/work-contexts.batch-${batchLabel}.json`
       }
     };
   }
   return {
-    mode: experimental ? "rome500_full_experimental" : "rome72_reference",
-    datasetName: experimental ? "Boussole Pro — corpus ROME 500 candidat consolidé" : "Boussole Pro - corpus ROME 72 de référence",
-    datasetVersion: process.env.ROME_DATASET_VERSION || (experimental ? ROME500_EXPERIMENTAL_VERSION : ROME72_REFERENCE_VERSION),
+    mode: experimental ? `rome${corpusSize}_full_candidate` : "rome72_reference",
+    datasetName: experimental ? `Boussole Pro — corpus ROME ${corpusSize} candidat consolidé` : "Boussole Pro - corpus ROME 72 de référence",
+    datasetVersion: process.env.ROME_DATASET_VERSION || (experimental ? candidateVersion : ROME72_REFERENCE_VERSION),
     batchLabel,
     basePath: "",
     files: {
@@ -1009,7 +1032,13 @@ function buildOutputPlan(codeSelection = {}) {
       dataQuality: "data-quality-report.rome.json",
       batchReport: "data-quality-report.rome.json",
       manifest: "import-manifest.rome.json",
-      syncError: "sync-error.json"
+      syncError: "sync-error.json",
+      rawSkills: "rome-raw-skills.json",
+      skills: "skills.rome.json",
+      knowledge: "knowledge.rome.json",
+      certificationLike: "certification-like.rome.json",
+      matchableSkills: "skills-matchable.rome.json",
+      workContexts: "work-contexts.rome.json"
     }
   };
 }
@@ -1177,4 +1206,4 @@ export async function writeGeneratedJson(name, data, options = {}) {
   await writeFile(new URL(name, OUT_DIR), `${JSON.stringify(data, null, pretty ? 2 : 0)}\n`, "utf8");
 }
 
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main();
