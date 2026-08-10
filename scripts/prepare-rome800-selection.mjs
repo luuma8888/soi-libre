@@ -3,12 +3,16 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = process.cwd();
-const BASE_FILE = path.join(ROOT, "creations", "boussolepro", "data", "local", "rome-codes-500.json");
+const BASE_FILE = path.resolve(ROOT, process.env.ROME_SELECTION_BASE_FILE || "creations/boussolepro/data/local/rome-codes-500.json");
 const UNIVERSE_FILE = path.resolve(ROOT, process.env.ROME_UNIVERSE_FILE || "creations/boussolepro/data/local/rome-universe-official.json");
 const FAP_FILE = path.join(ROOT, "creations", "boussolepro", "data", "generated", "market", "fap-rome-mappings.json");
-const OUTPUT_DIR = path.join(ROOT, "creations", "boussolepro", "data", "local");
+const OUTPUT_DIR = path.resolve(ROOT, process.env.ROME_SELECTION_OUTPUT_DIR || "creations/boussolepro/data/local");
 const REQUIRED_PRIORITY_CODES = ["K1202", "K1206", "K1208", "K1210", "K1215", "K2113", "A1503"];
-const TARGET_SIZE = 800;
+const TARGET_SIZE = Number(process.env.ROME_SELECTION_TARGET_SIZE || 800);
+const BASE_EXPECTED_COUNT = Number(process.env.ROME_SELECTION_BASE_COUNT || 500);
+const CORPUS_VERSION = process.env.ROME_SELECTION_CORPUS_VERSION || `rome${TARGET_SIZE}-candidate-v0.1`;
+const OUTPUT_PREFIX = process.env.ROME_SELECTION_OUTPUT_PREFIX || `rome-codes-${TARGET_SIZE}`;
+const BASE_CORPUS_LABEL = process.env.ROME_SELECTION_BASE_LABEL || `ROME${BASE_EXPECTED_COUNT}`;
 
 const DOMAIN_LABELS = {
   A: "Agriculture, pêche, nature, espaces verts, animaux", B: "Arts et façonnage d'ouvrages d'art",
@@ -23,20 +27,20 @@ export async function main() {
     readJson(BASE_FILE), readJson(UNIVERSE_FILE), readJson(FAP_FILE, [])
   ]);
   const universeRows = Array.isArray(universeDocument) ? universeDocument : universeDocument.records;
-  const result = buildRome800Selection({ baseRows: base.codes, universeRows, fapRows });
+  const result = buildRomeCandidateSelection({ baseRows: base.codes, universeRows, fapRows });
   await mkdir(OUTPUT_DIR, { recursive: true });
   await Promise.all([
-    writeJson(path.join(OUTPUT_DIR, "rome-codes-800.json"), result.selection),
-    writeJson(path.join(OUTPUT_DIR, "rome-codes-800-additions.json"), result.additions),
-    writeJson(path.join(OUTPUT_DIR, "rome-codes-800-audit.json"), result.audit)
+    writeJson(path.join(OUTPUT_DIR, `${OUTPUT_PREFIX}.json`), result.selection),
+    writeJson(path.join(OUTPUT_DIR, `${OUTPUT_PREFIX}-additions.json`), result.additions),
+    writeJson(path.join(OUTPUT_DIR, `${OUTPUT_PREFIX}-audit.json`), result.audit)
   ]);
-  console.log(`[Boussole Pro] Sélection ROME800 : ${result.selection.codes.length} codes, dont ${result.additions.codes.length} ajouts officiels.`);
+  console.log(`[Boussole Pro] Sélection ROME${TARGET_SIZE} : ${result.selection.codes.length} codes, dont ${result.additions.codes.length} ajouts officiels.`);
 }
 
-export function buildRome800Selection({ baseRows = [], universeRows = [], fapRows = [] }) {
+export function buildRomeCandidateSelection({ baseRows = [], universeRows = [], fapRows = [] }) {
   const base = normalizeRows(baseRows);
   const universe = normalizeRows(universeRows);
-  if (base.length !== 500) throw new Error(`Le socle canonique doit contenir exactement 500 codes uniques, reçu : ${base.length}.`);
+  if (base.length !== BASE_EXPECTED_COUNT) throw new Error(`Le socle canonique doit contenir exactement ${BASE_EXPECTED_COUNT} codes uniques, reçu : ${base.length}.`);
   if (universe.length < TARGET_SIZE) throw new Error(`L'univers officiel doit contenir au moins ${TARGET_SIZE} codes uniques, reçu : ${universe.length}.`);
 
   const baseCodes = new Set(base.map(row => row.romeCode));
@@ -54,7 +58,7 @@ export function buildRome800Selection({ baseRows = [], universeRows = [], fapRow
   while (selected.length < TARGET_SIZE - base.length) {
     const currentCounts = countByDomain([...base, ...selected]);
     const remaining = available.filter(row => !selectedCodes.has(row.romeCode));
-    if (!remaining.length) throw new Error("Impossible de compléter la sélection ROME800.");
+    if (!remaining.length) throw new Error(`Impossible de compléter la sélection ROME${TARGET_SIZE}.`);
     remaining.sort((left, right) => compareCandidates(left, right, { currentCounts, targetByDomain, selectedFamilies, fapCodes }));
     const candidate = remaining[0];
     const reason = currentCounts[candidate.domainLetter] < (targetByDomain[candidate.domainLetter] || 0)
@@ -87,22 +91,22 @@ export function buildRome800Selection({ baseRows = [], universeRows = [], fapRow
     .sort((left, right) => compareCandidates(left, right, { currentCounts: finalCounts, targetByDomain, selectedFamilies, fapCodes }))
     .slice(0, 50)
     .map(row => ({ ...row, domainLabel: DOMAIN_LABELS[row.domainLetter] || "Domaine ROME à vérifier", selectionReasons: ["official_recovery_reserve"], apiRetrievalStatus: "not_requested" }));
-  const combined = [...base.map(row => ({ ...row, retainedFromRome500: true })), ...additions]
+  const combined = [...base.map(row => ({ ...row, retainedFromParentCorpus: true })), ...additions]
     .sort((a, b) => a.romeCode.localeCompare(b.romeCode));
   const missingRequired = REQUIRED_PRIORITY_CODES.filter(code => !combined.some(row => row.romeCode === code));
   const domainCounts = countByDomain(combined);
   return {
     selection: {
       schemaVersion: "1.0.0", sourceVersion: "ROME actif via API France Travail", selectionSize: TARGET_SIZE,
-      corpusVersion: "rome800-candidate-v0.1", method: "ROME500 conservé + 300 ajouts officiels déterministes équilibrés par domaines et familles ; FAP et accessibilité utilisées en critères secondaires",
+      corpusVersion: CORPUS_VERSION, method: `${BASE_CORPUS_LABEL} conservé + ${TARGET_SIZE - base.length} ajouts officiels déterministes équilibrés par domaines et familles ; FAP et accessibilité utilisées en critères secondaires`,
       retainedCodesCount: base.length, additionsCount: additions.length, domainQuotas: targetByDomain, codes: combined
     },
     additions: {
-      schemaVersion: "1.0.0", selectionSize: additions.length, parentCorpusVersion: "rome800-candidate-v0.1",
-      purpose: "Synchronisation incrémentale des seuls codes absents du corpus ROME500", codes: additions
+      schemaVersion: "1.0.0", selectionSize: additions.length, parentCorpusVersion: CORPUS_VERSION,
+      purpose: `Synchronisation incrémentale des seuls codes absents du corpus ${BASE_CORPUS_LABEL}`, codes: additions
     },
     audit: {
-      schemaVersion: "1.0.0", reportKind: "rome800_selection_audit", generatedAt: new Date().toISOString(),
+      schemaVersion: "1.0.0", reportKind: `rome${TARGET_SIZE}_selection_audit`, generatedAt: new Date().toISOString(),
       sourceValidity: "france_travail_rome_metiers_api", baseCodesCount: base.length, officialUniverseCount: universe.length,
       additionsCount: additions.length, finalCodesCount: combined.length, uniqueFinalCodesCount: new Set(combined.map(row => row.romeCode)).size,
       requiredPriorityCodes: REQUIRED_PRIORITY_CODES, requiredPriorityCodesPresent: REQUIRED_PRIORITY_CODES.filter(code => !missingRequired.includes(code)),
@@ -114,6 +118,8 @@ export function buildRome800Selection({ baseRows = [], universeRows = [], fapRow
     }
   };
 }
+
+export const buildRome800Selection = buildRomeCandidateSelection;
 
 function compareCandidates(left, right, context) {
   const score = row => {

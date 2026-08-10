@@ -63,7 +63,7 @@ async function main() {
   Object.assign(accessQuality, runtimeReportBuildMetadata, {
     datasetVersion: "rome500-candidate-v0.7",
     corpusMaturity: "candidate_consolidated",
-    validationScope: "validated_for_boussole_pro_v0_7",
+    validationScope: "validated_for_boussole_pro_v0_8",
     derivedAt: accessSummaryGeneratedAt
   });
   const contextMapping = buildOfficialContextConstraintMapping(contexts);

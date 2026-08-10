@@ -1698,8 +1698,8 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.8.1-alpha",
-  buildId: "20260810-rome800-market-continuity-01",
+  appVersion: "v0.8.2-alpha",
+  buildId: "20260810-runtime-data-boundary-01",
   buildDate: "2026-08-10",
   defaultDatasetVersion: "rome800-candidate-v0.1",
   runtimeBundleRevision: "rome800-runtime-v0.1-r1",
@@ -1708,7 +1708,7 @@ const BUILD_INFO = Object.freeze({
   marketPackageFingerprintSha256: "0c2c18bd156c1126984172defbebd86f37d13ce38cee72e2e2aea41e143c25c8",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_8",
-  testProfilesRevision: "integrated-12-v0.8.1",
+  testProfilesRevision: "integrated-12-v0.8.2",
   expectedJobsCount: 800,
   expectedSkillsEngineCount: 11771,
   expectedAccessSummaryCount: 800
@@ -1717,6 +1717,76 @@ const BUILD_INFO = Object.freeze({
 const DATASET_VERSION_ALIASES = Object.freeze({
   "rome500-experimental-v0.7": "rome500-candidate-v0.7"
 });
+
+const ACTIVE_RUNTIME_DESCRIPTOR_PATH = "data/generated/active-runtime.json";
+
+function fallbackActiveRuntimeDescriptor() {
+  return {
+    schemaVersion: "1.0.0",
+    descriptorKind: "boussole_active_runtime_fallback",
+    source: "application_fallback",
+    runtime: {
+      basePath: "data/generated/rome800-candidate/",
+      marketBasePath: "data/generated/market/",
+      label: "Corpus ROME800 candidat consolidé",
+      corpusMode: "generated_rome_active",
+      expectedJobsCount: BUILD_INFO.expectedJobsCount,
+      datasetVersion: BUILD_INFO.defaultDatasetVersion,
+      runtimeBundleRevision: BUILD_INFO.runtimeBundleRevision,
+      runtimeBundleFingerprintSha256: BUILD_INFO.runtimeBundleFingerprintSha256,
+      accessSummaryFilename: "access-summary.rome800.json",
+      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
+      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
+      expectedCounts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
+      ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: "v0.8.1-alpha" },
+      validationScope: BUILD_INFO.validationScope
+    },
+    market: {
+      marketContractRevision: BUILD_INFO.marketContractRevision,
+      packageFingerprintSha256: BUILD_INFO.marketPackageFingerprintSha256
+    }
+  };
+}
+
+function normalizeActiveRuntimeDescriptor(raw = {}) {
+  const fallback = fallbackActiveRuntimeDescriptor();
+  const runtime = raw.runtime || {};
+  if (!runtime.basePath || !runtime.runtimeBundleRevision || !Number(runtime.expectedJobsCount)) return fallback;
+  return {
+    ...raw,
+    source: raw.source || "generated_active_runtime",
+    runtime: { ...fallback.runtime, ...runtime, expectedCounts: runtime.expectedCounts || fallback.runtime.expectedCounts },
+    market: { ...fallback.market, ...(raw.market || {}) }
+  };
+}
+
+async function loadActiveRuntimeDescriptor() {
+  try {
+    return normalizeActiveRuntimeDescriptor(await fetchJsonIfExists(ACTIVE_RUNTIME_DESCRIPTOR_PATH));
+  } catch {
+    return fallbackActiveRuntimeDescriptor();
+  }
+}
+
+function activeRuntimeLoadOptions(descriptor = App?.state?.activeRuntimeDescriptor || fallbackActiveRuntimeDescriptor()) {
+  const runtime = descriptor.runtime || fallbackActiveRuntimeDescriptor().runtime;
+  return {
+    basePath: runtime.basePath,
+    marketBasePath: runtime.marketBasePath || "data/generated/market/",
+    label: runtime.label || `Corpus ROME${runtime.expectedJobsCount || ""} candidat consolidé`,
+    corpusMode: runtime.corpusMode || "generated_rome_active",
+    accessSummaryFilename: runtime.accessSummaryFilename,
+    officialConstraintSummaryFilename: runtime.officialConstraintSummaryFilename,
+    marketFapEnrichmentFilename: runtime.marketFapEnrichmentFilename,
+    requireRuntimeCompatibility: true
+  };
+}
+
+async function loadActiveGeneratedDataset(options = {}) {
+  const descriptor = options.descriptor || await loadActiveRuntimeDescriptor();
+  App.state.activeRuntimeDescriptor = descriptor;
+  return loadGeneratedRomeDataset({ ...activeRuntimeLoadOptions(descriptor), ...options, descriptor: undefined });
+}
 
 function canonicalDatasetVersion(version = "") {
   return DATASET_VERSION_ALIASES[version] || version || BUILD_INFO.defaultDatasetVersion;
@@ -1773,13 +1843,14 @@ function getBuildMetadata(dataset = App?.state?.dataset) {
 }
 
 function expectedRuntimeBundleIdentity() {
+  const active = App?.state?.activeRuntimeDescriptor?.runtime || {};
   return {
     inputMode: "packaged_corpus",
-    runtimeBundleRevision: BUILD_INFO.runtimeBundleRevision,
-    fingerprintSha256: BUILD_INFO.runtimeBundleFingerprintSha256,
-    sourceDatasetVersion: canonicalDatasetVersion(BUILD_INFO.defaultDatasetVersion),
-    counts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
-    ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: BUILD_INFO.appVersion },
+    runtimeBundleRevision: active.runtimeBundleRevision || BUILD_INFO.runtimeBundleRevision,
+    fingerprintSha256: active.runtimeBundleFingerprintSha256 || BUILD_INFO.runtimeBundleFingerprintSha256,
+    sourceDatasetVersion: canonicalDatasetVersion(active.datasetVersion || BUILD_INFO.defaultDatasetVersion),
+    counts: active.expectedCounts || { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
+    ruleVersions: active.ruleVersions || { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: BUILD_INFO.appVersion },
     comparisonScope: "local_packaged_runtime"
   };
 }
@@ -1819,9 +1890,10 @@ function getMarketLayerIdentity(dataset = App?.state?.dataset) {
 
 function assessMarketLayerCompatibility(dataset = App?.state?.dataset) {
   const actual = getMarketLayerIdentity(dataset);
+  const active = App?.state?.activeRuntimeDescriptor?.market || {};
   const expected = {
-    marketContractRevision: BUILD_INFO.marketContractRevision,
-    packageFingerprintSha256: BUILD_INFO.marketPackageFingerprintSha256
+    marketContractRevision: active.marketContractRevision || BUILD_INFO.marketContractRevision,
+    packageFingerprintSha256: active.packageFingerprintSha256 || BUILD_INFO.marketPackageFingerprintSha256
   };
   const issues = [];
   if (actual.marketContractRevision !== expected.marketContractRevision) issues.push("market_contract_revision_mismatch");
@@ -3162,6 +3234,8 @@ const App = {
     generatedDataStatus: "non configuré",
     generatedDataMessage: "Aucune synchronisation ROME générée n’a encore été chargée.",
     performanceMetrics: {},
+    performanceCapture: null,
+    activeRuntimeDescriptor: null,
     runtimeMigration: null,
     marketMigration: null,
     pendingPackagedDatasetRef: null,
@@ -3640,6 +3714,7 @@ async function initApp() {
   };
 
   showLoading("Préparation de Boussole Pro", "Chargement du corpus local et reprise du profil. Cela peut prendre quelques secondes.");
+  App.state.activeRuntimeDescriptor = await loadActiveRuntimeDescriptor();
   const loaded = loadStoredData();
   if (App.state.corpusMode === "curated") {
     App.state.dataset = loadCuratedData();
@@ -3662,16 +3737,9 @@ async function initApp() {
   applyStoredTheme();
   invalidateDatasetIndexes();
   bindGlobalEvents();
-  const mustReloadPackagedCorpus = Boolean(App.state.pendingPackagedDatasetRef || App.state.runtimeMigration?.action === "reload_packaged_corpus");
+  const mustReloadPackagedCorpus = shouldReloadPackagedCorpus({ loaded });
   if (mustReloadPackagedCorpus) {
-    await loadGeneratedRomeDataset({
-      basePath: "data/generated/rome800-candidate/",
-      marketBasePath: "data/generated/market/",
-      label: "Corpus ROME800 candidat consolidé",
-      corpusMode: "generated_rome_800_candidate",
-      accessSummaryFilename: "access-summary.rome800.json",
-      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
-      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
+    await loadActiveGeneratedDataset({
       replace: true,
       persist: true
     });
@@ -3687,6 +3755,19 @@ async function initApp() {
   renderAll();
   hideLoading({ delay: 180 });
   showToast(mustReloadPackagedCorpus ? "Données techniques actualisées. Votre profil et vos favoris sont conservés." : "Boussole Pro est prêt. Tout fonctionne en local.");
+}
+
+function shouldReloadPackagedCorpus({ loaded = true, dataset = App.state.dataset, corpusMode = App.state.corpusMode, descriptor = App.state.activeRuntimeDescriptor, pendingRef = App.state.pendingPackagedDatasetRef, runtimeMigration = App.state.runtimeMigration } = {}) {
+  const activeRuntimeAvailable = Boolean(descriptor?.runtime?.basePath);
+  const currentRuntime = getRuntimeBundleIdentity(dataset || {});
+  const importedRuntimeActive = currentRuntime.inputMode === "real_import";
+  const packagedRuntimeAllowed = !["sample", "curated"].includes(corpusMode);
+  return activeRuntimeAvailable && packagedRuntimeAllowed && !importedRuntimeActive && Boolean(
+    !loaded ||
+    pendingRef ||
+    runtimeMigration?.action === "reload_packaged_corpus" ||
+    currentRuntime.fingerprintSha256 !== descriptor.runtime.runtimeBundleFingerprintSha256
+  );
 }
 
 function loadSampleData() {
@@ -4510,7 +4591,9 @@ function importDatasetFile(file, forcedType = App.state.pendingImportType || "co
         showImportError(validation.errors.join(" "));
         return;
       }
-      App.state.dataset = validation.normalized;
+      App.state.dataset = markDatasetAsRealImport(validation.normalized);
+      App.state.corpusMode = "imported";
+      saveSettings({ corpusMode: App.state.corpusMode });
       App.state.dataset.qualityReport = generateDataQualityReport(App.state.dataset);
       if (App.state.profile) migrateProfileSkillSelections(App.state.profile, App.state.dataset);
       saveDataset(App.state.dataset);
@@ -4519,6 +4602,18 @@ function importDatasetFile(file, forcedType = App.state.pendingImportType || "co
       showToast("Import termine. Le rapport qualite a ete regenere.");
     })
     .catch(() => showImportError("Lecture du fichier impossible."));
+}
+
+function markDatasetAsRealImport(dataset = {}) {
+  const runtime = getRuntimeBundleIdentity(dataset);
+  dataset.provenance = "real_import";
+  dataset.runtimeBundleIdentity = {
+    ...runtime,
+    inputMode: "real_import",
+    comparisonScope: "not_comparable_environment",
+    importedAt: new Date().toISOString()
+  };
+  return dataset;
 }
 
 function validateDataset(data, type = "corpus") {
@@ -11347,7 +11442,8 @@ function renderDataPage() {
         ${metric("Métiers niveau départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
         ${metric("Zéro offre Aude", marketCoverage.jobsWithZeroDepartmentalOffers || 0)}
         ${metric("Données anciennes", marketCoverage.jobsWithStaleMarketData || 0)}
-        ${metric("BMO rapproché", marketCoverage.jobsWithBmo || 0)}
+        ${metric("Métiers avec contexte BMO", marketCoverage.jobsWithBmo || 0)}
+        ${metric("Familles FAP BMO", getMarketLayerIdentity(App.state.dataset)?.coverage?.bmoFapFamilies || 0)}
         ${metric("Tension Dares rapprochée", marketCoverage.jobsWithDaresTension || 0)}
         ${metric("Correspondance FAP officielle", marketCoverage.jobsWithOfficialFapMapping || 0)}
         ${metric("Sans donnée", marketCoverage.jobsWithoutMarket || 0)}
@@ -11525,16 +11621,8 @@ async function setCorpusMode(mode) {
     });
     return;
   }
-  if (mode === "generated_rome_800_candidate") {
-    await loadGeneratedRomeDataset({
-      basePath: "data/generated/rome800-candidate/",
-      marketBasePath: "data/generated/market/",
-      label: "creations/boussolepro/data/generated/rome800-candidate",
-      corpusMode: "generated_rome_800_candidate",
-      accessSummaryFilename: "access-summary.rome800.json",
-      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
-      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json"
-    });
+  if (["generated_rome_active", "generated_rome_800_candidate"].includes(mode)) {
+    await loadActiveGeneratedDataset();
     return;
   }
   if (mode === "auto") {
@@ -11554,6 +11642,11 @@ async function setCorpusMode(mode) {
 
 async function loadGeneratedRomeDataset(options = {}) {
   const totalStartedAt = nowMs();
+  beginPerformanceCapture({
+    operation: "generated_dataset_load",
+    cacheMode: options.cacheMode || "session",
+    activeView: App.state.mainView || "unknown"
+  });
   const basePath = options.basePath || "data/generated/";
   const corpusLabel = options.label || "données générées";
   const corpusMode = options.corpusMode || "generated_rome";
@@ -11645,7 +11738,7 @@ async function loadGeneratedRomeDataset(options = {}) {
     const normalizationStartedAt = nowMs();
     const nextDataset = mergeGeneratedDatasetIntoApp(generated, { replace });
     const runtimeCompatibility = assessRuntimeBundleCompatibility(nextDataset);
-    if (["generated_rome_500_candidate", "generated_rome_800_candidate"].includes(corpusMode) && !runtimeCompatibility.compatible) {
+    if (options.requireRuntimeCompatibility !== false && generated.runtimeBundleManifest && !runtimeCompatibility.compatible) {
       throw new Error(`Paquet de données incohérent : ${runtimeCompatibility.issues.join(", ")}. Actualisez les fichiers de la livraison.`);
     }
     App.state.dataset = nextDataset;
@@ -11669,11 +11762,21 @@ async function loadGeneratedRomeDataset(options = {}) {
     hideLoading({ delay: 120 });
     const resultsRenderStartedAt = nowMs();
     renderAll();
-    recordPerformanceMetric("resultsUiRenderMs", resultsRenderStartedAt);
-    App.state.performanceMetrics.resultCardsRendered = document.querySelectorAll(".job-card").length;
+    recordPerformanceMetric("resultsUiRenderMs", resultsRenderStartedAt, { stage: "render", cacheMode: options.cacheMode || "session" });
+    const renderedCards = document.querySelectorAll(".job-card").length;
+    recordPerformanceObservation("resultCardsRendered", renderedCards || null, {
+      stage: "render",
+      cacheMode: options.cacheMode || "session",
+      reason: renderedCards ? null : `La vue active ${App.state.mainView || "inconnue"} ne rend aucune carte résultat.`
+    });
     await waitForUiFrame();
-    App.state.performanceMetrics.resultsFirstVisibleMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
-    App.state.performanceMetrics.resultsInteractiveMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
+    if (renderedCards) {
+      recordPerformanceObservation("resultsFirstVisibleMs", Math.max(1, Math.round(nowMs() - totalStartedAt)), { stage: "first_visible", cacheMode: options.cacheMode || "session" });
+      recordPerformanceObservation("resultsInteractiveMs", Math.max(1, Math.round(nowMs() - totalStartedAt)), { stage: "interactive", cacheMode: options.cacheMode || "session" });
+    } else {
+      recordPerformanceObservation("resultsFirstVisibleMs", null, { stage: "first_visible", reason: "Vue Résultats non active pendant la mesure." });
+      recordPerformanceObservation("resultsInteractiveMs", null, { stage: "interactive", reason: "Vue Résultats non active pendant la mesure." });
+    }
     showToast(`Données générées chargées. Marché : ${marketRowsLoaded.total} ligne(s).`);
   } catch (error) {
     App.state.generatedDataStatus = "erreur";
@@ -14689,7 +14792,7 @@ function createBrowserPerformanceReport() {
   const completeList = toArray(results.completeList);
   const marketCoverage = calculateMarketCoverage(dataset, mapUserProfileToCriteria(App.state.profile));
   const scoreValues = completeList.map(result => Number(result.globalScore || 0)).filter(Number.isFinite);
-  const cardsRendered = Number(App.state.performanceMetrics?.resultCardsRendered || 0);
+  const cardsRendered = performanceMetricValue(App.state.performanceMetrics?.resultCardsRendered) || 0;
   const metrics = normalizePerformanceMetricsForReport(App.state.performanceMetrics || {});
   const runtimeMeasured = ["datasetLoadMs", "normalizationMs", "totalGeneratedLoadMs"]
     .some(key => metrics[key]?.measurementStatus === "measured");
@@ -14772,13 +14875,33 @@ function normalizePerformanceMetricsForReport(metrics = {}) {
     "totalGeneratedLoadMs"
   ];
   return Object.fromEntries(expected.map(key => {
-    const raw = Number(metrics[key]);
-    const measured = Number.isFinite(raw) && raw > 0;
-    return [key, { value: measured ? raw : null, measurementStatus: measured ? "measured" : "not_measured" }];
+    const raw = metrics[key];
+    const entry = raw && typeof raw === "object" ? raw : {};
+    const value = performanceMetricValue(raw);
+    const stale = Boolean(entry.captureId && App.state.performanceCapture?.id && entry.captureId !== App.state.performanceCapture.id);
+    const measurementStatus = stale
+      ? "stale"
+      : ["measured", "not_measured", "stale"].includes(entry.measurementStatus)
+        ? entry.measurementStatus
+        : value !== null && value > 0 ? "measured" : "not_measured";
+    return [key, {
+      value: measurementStatus === "measured" ? value : null,
+      measurementStatus,
+      stage: entry.stage || null,
+      capturedAt: entry.capturedAt || null,
+      cacheMode: entry.cacheMode || App.state.performanceCapture?.context?.cacheMode || null,
+      activeView: entry.activeView || null,
+      reason: entry.reason || null
+    }];
   }).concat([
-    ["resultCardsRendered", Number(metrics.resultCardsRendered) > 0
-      ? { value: Number(metrics.resultCardsRendered), measurementStatus: "measured" }
-      : { value: null, measurementStatus: "not_measured", reason: "Aucune carte résultat détectée dans la vue ouverte." }],
+    ["resultCardsRendered", (() => {
+      const raw = metrics.resultCardsRendered;
+      const entry = raw && typeof raw === "object" ? raw : {};
+      const value = performanceMetricValue(raw);
+      return value > 0
+        ? { ...entry, value, measurementStatus: "measured" }
+        : { ...entry, value: null, measurementStatus: entry.measurementStatus || "not_measured", reason: entry.reason || "Aucune carte résultat détectée dans la vue ouverte." };
+    })()],
     ["updatedAt", metrics.updatedAt || null]
   ]));
 }
@@ -15610,10 +15733,43 @@ function nowMs() {
   return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
 }
 
-function recordPerformanceMetric(key, startedAt) {
+function beginPerformanceCapture(context = {}) {
+  App.state.performanceCapture = {
+    id: `capture-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    startedAt: new Date().toISOString(),
+    context: { ...context }
+  };
+  App.state.performanceMetrics = {};
+  return App.state.performanceCapture;
+}
+
+function recordPerformanceObservation(key, value, metadata = {}) {
   App.state.performanceMetrics = App.state.performanceMetrics || {};
-  App.state.performanceMetrics[key] = Math.max(1, Math.round(nowMs() - startedAt));
-  App.state.performanceMetrics.updatedAt = new Date().toISOString();
+  const numericValue = Number(value);
+  const measured = Number.isFinite(numericValue) && numericValue > 0;
+  const capturedAt = new Date().toISOString();
+  App.state.performanceMetrics[key] = {
+    value: measured ? numericValue : null,
+    measurementStatus: measured ? "measured" : "not_measured",
+    stage: metadata.stage || key,
+    capturedAt,
+    cacheMode: metadata.cacheMode || App.state.performanceCapture?.context?.cacheMode || null,
+    activeView: metadata.activeView || App.state.mainView || "unknown",
+    captureId: App.state.performanceCapture?.id || null,
+    reason: measured ? null : metadata.reason || "Mesure non capturée dans ce contexte."
+  };
+  App.state.performanceMetrics.updatedAt = capturedAt;
+  return App.state.performanceMetrics[key];
+}
+
+function recordPerformanceMetric(key, startedAt, metadata = {}) {
+  return recordPerformanceObservation(key, Math.max(1, Math.round(nowMs() - startedAt)), metadata);
+}
+
+function performanceMetricValue(metric) {
+  const raw = metric && typeof metric === "object" ? metric.value : metric;
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : null;
 }
 
 function isProfileFieldFilled(profile, field) {
@@ -15892,6 +16048,7 @@ if (typeof window !== "undefined") {
     },
     resetPerformanceMetrics() {
       App.state.performanceMetrics = {};
+      App.state.performanceCapture = null;
     },
     loadRome500() {
       return loadGeneratedRomeDataset({
@@ -15904,20 +16061,7 @@ if (typeof window !== "undefined") {
       });
     },
     loadActiveCandidate() {
-      if (BUILD_INFO.expectedJobsCount >= 800) {
-        return loadGeneratedRomeDataset({
-          basePath: "data/generated/rome800-candidate/",
-          marketBasePath: "data/generated/market/",
-          label: "ROME800 candidat consolidé",
-          corpusMode: "generated_rome_800_candidate",
-          accessSummaryFilename: "access-summary.rome800.json",
-          officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
-          marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
-          replace: true,
-          persist: false
-        });
-      }
-      return this.loadRome500();
+      return loadActiveGeneratedDataset({ replace: true, persist: false, cacheMode: "cold" });
     },
     runIntegratedBench() {
       return runDiagnosticProfiles(DIAGNOSTIC_TEST_PROFILES_V052);
@@ -15936,16 +16080,18 @@ if (typeof window !== "undefined") {
     },
     async recalculateRome500() {
       const totalStartedAt = nowMs();
+      beginPerformanceCapture({ operation: "active_candidate_recalculation", cacheMode: "warm", activeView: App.state.mainView || "results" });
       const scoringStartedAt = nowMs();
       calculateAndStoreResults({ force: true, persist: false });
       recordPerformanceMetric("profileScoringMs", scoringStartedAt);
       const resultsRenderStartedAt = nowMs();
       renderAll();
-      recordPerformanceMetric("resultsUiRenderMs", resultsRenderStartedAt);
-      App.state.performanceMetrics.resultCardsRendered = document.querySelectorAll(".job-card").length;
+      recordPerformanceMetric("resultsUiRenderMs", resultsRenderStartedAt, { stage: "render", cacheMode: "warm" });
+      const renderedCards = document.querySelectorAll(".job-card").length;
+      recordPerformanceObservation("resultCardsRendered", renderedCards || null, { stage: "render", cacheMode: "warm", reason: renderedCards ? null : "Aucune carte résultat rendue." });
       await waitForUiFrame();
-      App.state.performanceMetrics.resultsFirstVisibleMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
-      App.state.performanceMetrics.resultsInteractiveMs = Math.max(1, Math.round(nowMs() - totalStartedAt));
+      recordPerformanceObservation("resultsFirstVisibleMs", renderedCards ? Math.max(1, Math.round(nowMs() - totalStartedAt)) : null, { stage: "first_visible", cacheMode: "warm", reason: renderedCards ? null : "Vue Résultats non mesurée." });
+      recordPerformanceObservation("resultsInteractiveMs", renderedCards ? Math.max(1, Math.round(nowMs() - totalStartedAt)) : null, { stage: "interactive", cacheMode: "warm", reason: renderedCards ? null : "Vue Résultats non mesurée." });
       recordPerformanceMetric("totalGeneratedLoadMs", totalStartedAt);
       return { jobsCount: App.state.dataset.jobs.length, resultsComputed: App.state.results?.completeList?.length || 0 };
     },

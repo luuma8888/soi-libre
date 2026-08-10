@@ -5,10 +5,11 @@ import { fileURLToPath } from "node:url";
 
 const EXPECTED_JOBS_COUNT = Number(process.env.RUNTIME_EXPECTED_JOBS_COUNT || 500);
 const ROME_SUBDIR = process.env.RUNTIME_ROME_SUBDIR || "rome500-experimental";
-const ACCESS_SUMMARY_FILE = process.env.RUNTIME_ACCESS_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "access-summary.rome800.json" : "access-summary.rome500.json");
-const CONSTRAINT_SUMMARY_FILE = process.env.RUNTIME_CONSTRAINT_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "official-constraint-summary.rome800.json" : "official-constraint-summary.rome500.json");
-const MARKET_ENRICHMENT_FILE = process.env.RUNTIME_MARKET_ENRICHMENT_FILE || (EXPECTED_JOBS_COUNT === 800 ? "market-fap-enrichment.rome800.json" : "market-fap-enrichment.rome500.json");
-export const RUNTIME_BUNDLE_REVISION = process.env.RUNTIME_BUNDLE_REVISION || (EXPECTED_JOBS_COUNT === 800 ? "rome800-runtime-v0.1-r1" : "rome500-runtime-v0.7.7-r1");
+const ACCESS_SUMMARY_FILE = process.env.RUNTIME_ACCESS_SUMMARY_FILE || `access-summary.rome${EXPECTED_JOBS_COUNT}.json`;
+const CONSTRAINT_SUMMARY_FILE = process.env.RUNTIME_CONSTRAINT_SUMMARY_FILE || `official-constraint-summary.rome${EXPECTED_JOBS_COUNT}.json`;
+const MARKET_ENRICHMENT_FILE = process.env.RUNTIME_MARKET_ENRICHMENT_FILE || `market-fap-enrichment.rome${EXPECTED_JOBS_COUNT}.json`;
+export const RUNTIME_BUNDLE_REVISION = process.env.RUNTIME_BUNDLE_REVISION || (EXPECTED_JOBS_COUNT === 500 ? "rome500-runtime-v0.7.7-r1" : `rome${EXPECTED_JOBS_COUNT}-runtime-v0.1-r1`);
+export const RUNTIME_RELEASE_ID = process.env.RUNTIME_RELEASE_ID || `${RUNTIME_BUNDLE_REVISION}-data`;
 export const APP_BUILD = Object.freeze({
   appVersion: process.env.RUNTIME_APP_VERSION || "v0.8.0-alpha",
   buildId: process.env.RUNTIME_BUILD_ID || "20260802-market-phase2-fap-rome-01",
@@ -103,6 +104,7 @@ export async function buildRuntimeBundleManifest(options = {}) {
     manifestKind: "boussole_runtime_bundle_identity",
     derivedAt,
     inputMode: "packaged_corpus",
+    runtimeReleaseId: RUNTIME_RELEASE_ID,
     runtimeBundleRevision: RUNTIME_BUNDLE_REVISION,
     fingerprintAlgorithm: "sha256_of_sorted_non_market_runtime_component_hashes_and_counts",
     fingerprintSha256,
@@ -110,10 +112,10 @@ export async function buildRuntimeBundleManifest(options = {}) {
     appBuild: APP_BUILD,
     datasetIdentity: {
       publicLabel: `Corpus ROME ${EXPECTED_JOBS_COUNT} candidat consolide`,
-      sourceDatasetVersion: sourceManifest.datasetVersion || (EXPECTED_JOBS_COUNT === 800 ? "rome800-candidate-v0.1" : "rome500-candidate-v0.7"),
+      sourceDatasetVersion: sourceManifest.datasetVersion || (EXPECTED_JOBS_COUNT === 500 ? "rome500-candidate-v0.7" : `rome${EXPECTED_JOBS_COUNT}-candidate-v0.1`),
       sourceDatasetAliases: sourceManifest.datasetVersionAliases || ["rome500-experimental-v0.7"],
       corpusMaturity: "candidate_consolidated",
-      validationScope: "validated_for_boussole_pro_v0_7",
+      validationScope: process.env.RUNTIME_VALIDATION_SCOPE || "validated_for_boussole_pro_v0_8",
       historicalStoragePath: `data/generated/${ROME_SUBDIR}`,
       historicalPathIsMaturitySignal: false
     },

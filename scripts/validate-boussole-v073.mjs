@@ -12,9 +12,9 @@ const GENERATED_DIR = path.join(ROOT, "creations", "boussolepro", "data", "gener
 const EXPECTED_JOBS_COUNT = Number(process.env.BOUSSOLE_EXPECTED_JOBS_COUNT || 500);
 const TARGET_SUBDIR = process.env.BOUSSOLE_ROME_SUBDIR || "rome500-experimental";
 const ROME500_DIR = path.join(GENERATED_DIR, TARGET_SUBDIR);
-const ACCESS_SUMMARY_FILE = process.env.BOUSSOLE_ACCESS_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "access-summary.rome800.json" : "access-summary.rome500.json");
-const CONSTRAINT_SUMMARY_FILE = process.env.BOUSSOLE_CONSTRAINT_SUMMARY_FILE || (EXPECTED_JOBS_COUNT === 800 ? "official-constraint-summary.rome800.json" : "official-constraint-summary.rome500.json");
-const MARKET_ENRICHMENT_FILE = process.env.BOUSSOLE_MARKET_ENRICHMENT_FILE || (EXPECTED_JOBS_COUNT === 800 ? "market-fap-enrichment.rome800.json" : "market-fap-enrichment.rome500.json");
+const ACCESS_SUMMARY_FILE = process.env.BOUSSOLE_ACCESS_SUMMARY_FILE || `access-summary.rome${EXPECTED_JOBS_COUNT}.json`;
+const CONSTRAINT_SUMMARY_FILE = process.env.BOUSSOLE_CONSTRAINT_SUMMARY_FILE || `official-constraint-summary.rome${EXPECTED_JOBS_COUNT}.json`;
+const MARKET_ENRICHMENT_FILE = process.env.BOUSSOLE_MARKET_ENRICHMENT_FILE || `market-fap-enrichment.rome${EXPECTED_JOBS_COUNT}.json`;
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
 const CEDRIC_PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v080-market-phase2-validation-report.json");
@@ -60,11 +60,13 @@ async function main() {
   const buildMetadata = await readBoussoleBuildMetadata(HTML_PATH);
   const app = loadBoussoleEngine(html);
   const generated = await loadGeneratedBundle();
-  const baselineDirectory = EXPECTED_JOBS_COUNT === 800 ? path.join(GENERATED_DIR, "rome500-experimental") : GENERATED_DIR;
+  const baselineSubdir = process.env.BOUSSOLE_BASELINE_SUBDIR || (EXPECTED_JOBS_COUNT === 800 ? "rome500-experimental" : EXPECTED_JOBS_COUNT > 800 ? `rome${EXPECTED_JOBS_COUNT - 200}-candidate` : "");
+  const baselineDirectory = baselineSubdir ? path.join(GENERATED_DIR, baselineSubdir) : GENERATED_DIR;
+  const baselineSize = Number(process.env.BOUSSOLE_BASELINE_JOBS_COUNT || (EXPECTED_JOBS_COUNT === 800 ? 500 : EXPECTED_JOBS_COUNT > 800 ? EXPECTED_JOBS_COUNT - 200 : EXPECTED_JOBS_COUNT));
   const generatedBaseline = await loadGeneratedBundle(baselineDirectory, {
-    accessSummaryFile: "access-summary.rome500.json",
-    constraintSummaryFile: "official-constraint-summary.rome500.json",
-    marketEnrichmentFile: "market-fap-enrichment.rome500.json"
+    accessSummaryFile: `access-summary.rome${baselineSize}.json`,
+    constraintSummaryFile: `official-constraint-summary.rome${baselineSize}.json`,
+    marketEnrichmentFile: `market-fap-enrichment.rome${baselineSize}.json`
   });
   const cedricEnvelope = await readJson(CEDRIC_PROFILE_PATH, null);
   app.App.state.dataset = app.mergeGeneratedDatasetIntoApp(generated, { replace: true });
@@ -72,7 +74,7 @@ async function main() {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v080_market_phase2_validation",
+    reportKind: `boussole_v08x_rome${EXPECTED_JOBS_COUNT}_validation`,
     generatedAt: new Date().toISOString(),
     appVersion: buildMetadata.appVersion,
     buildId: buildMetadata.buildId,
@@ -110,9 +112,9 @@ async function main() {
 
   await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   if (report.status !== "ok") {
-    throw new Error(`[Boussole Pro] Validation v0.8.0 échouée: ${report.failures.join(", ")}`);
+    throw new Error(`[Boussole Pro] Validation v0.8.x échouée: ${report.failures.join(", ")}`);
   }
-  console.log(`[Boussole Pro] Validation v0.8.0 OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+  console.log(`[Boussole Pro] Validation v0.8.x OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
 }
 
 function validateMarketPhase1(app) {
@@ -521,7 +523,7 @@ function validateSectorExclusions(app) {
 function validateCorpusMaturity(app, generated = {}) {
   const failures = [];
   const sourceVersion = EXPECTED_JOBS_COUNT === 500 ? "rome500-experimental-v0.7" : generated.manifest?.datasetVersion;
-  const expectedVersion = EXPECTED_JOBS_COUNT === 500 ? "rome500-candidate-v0.7" : "rome800-candidate-v0.1";
+  const expectedVersion = process.env.BOUSSOLE_EXPECTED_DATASET_VERSION || (EXPECTED_JOBS_COUNT === 500 ? "rome500-candidate-v0.7" : `rome${EXPECTED_JOBS_COUNT}-candidate-v0.1`);
   const migrated = app.mergeGeneratedDatasetIntoApp({ ...generated, manifest: { ...(generated.manifest || {}), datasetVersion: sourceVersion } }, { replace: true });
   if (migrated.datasetVersion !== expectedVersion) failures.push("corpus:dataset_version_mismatch");
   if (EXPECTED_JOBS_COUNT === 500 && !toArray(migrated.manifest?.datasetVersionAliases).includes("rome500-experimental-v0.7")) failures.push("corpus:legacy_alias_not_documented");
@@ -794,6 +796,8 @@ this.__boussole = {
   DIAGNOSTIC_TEST_PROFILES_V052,
   prepareCompactDatasetExport,
   validateDataset,
+  markDatasetAsRealImport,
+  shouldReloadPackagedCorpus,
   resultsToMarkdown,
   getBuildMetadata,
   getRuntimeBundleIdentity,

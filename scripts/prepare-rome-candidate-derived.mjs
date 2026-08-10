@@ -10,14 +10,20 @@ const TARGET_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generate
 const BASE_SUBDIR = process.env.ROME_CANDIDATE_BASE_SUBDIR || "rome500-experimental";
 const BASE_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", BASE_SUBDIR);
 const LOCAL_DIR = path.join(ROOT, "creations", "boussolepro", "data", "local");
+const TARGET_SIZE = Number(process.env.ROME_CANDIDATE_EXPECTED_COUNT || DATASET_VERSION.match(/rome(\d+)/)?.[1] || 800);
+const BASE_SIZE = Number(process.env.ROME_CANDIDATE_BASE_COUNT || BASE_SUBDIR.match(/rome(\d+)/)?.[1] || 500);
+const ACCESS_FILENAME = process.env.ROME_CANDIDATE_ACCESS_FILE || `access-summary.rome${TARGET_SIZE}.json`;
+const CONSTRAINT_FILENAME = process.env.ROME_CANDIDATE_CONSTRAINT_FILE || `official-constraint-summary.rome${TARGET_SIZE}.json`;
+const BASE_ACCESS_FILENAME = process.env.ROME_CANDIDATE_BASE_ACCESS_FILE || `access-summary.rome${BASE_SIZE}.json`;
+const BASE_CONSTRAINT_FILENAME = process.env.ROME_CANDIDATE_BASE_CONSTRAINT_FILE || `official-constraint-summary.rome${BASE_SIZE}.json`;
 
 async function main() {
   const [jobs, mappings, rawSkills, filteredSkills, contexts, accessRulesDocument, baseAccessSummary, baseConstraintSummary] = await Promise.all([
     readTarget("jobs.rome.json", []), readTarget("mappings.rome.json", []), readTarget("rome-raw-skills.json", []),
     readTarget("skills.rome.json", []), readTarget("work-contexts.rome.json", []),
     readJson(path.join(LOCAL_DIR, "access-rules-v074.json"), { rules: {}, verifiedAt: null }),
-    readJson(path.join(BASE_DIR, "access-summary.rome500.json"), []),
-    readJson(path.join(BASE_DIR, "official-constraint-summary.rome500.json"), [])
+    readJson(path.join(BASE_DIR, BASE_ACCESS_FILENAME), []),
+    readJson(path.join(BASE_DIR, BASE_CONSTRAINT_FILENAME), [])
   ]);
   if (!jobs.length) throw new Error(`Aucun métier à dériver dans ${TARGET_SUBDIR}.`);
   const { skillsEngine, integrityReport } = buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, DATASET_VERSION);
@@ -30,7 +36,7 @@ async function main() {
   const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, generatedAt);
   Object.assign(accessQuality, {
     datasetVersion: DATASET_VERSION,
-    buildId: process.env.RUNTIME_BUILD_ID || "20260810-rome800-market-continuity-01",
+    buildId: process.env.RUNTIME_BUILD_ID || `rome${TARGET_SIZE}-candidate-local`,
     identityScope: "runtime_bundle_component",
     status: accessSummary.length === jobs.length && !accessQuality.truthFailures.length ? "complete" : "incomplete"
   });
@@ -44,9 +50,9 @@ async function main() {
   await Promise.all([
     writeTarget("skills-engine.rome.json", skillsEngine),
     writeTarget("skill-reference-integrity-report.json", integrityReport),
-    writeTarget("access-summary.rome800.json", accessSummary),
+    writeTarget(ACCESS_FILENAME, accessSummary),
     writeTarget("access-summary-quality-report.json", accessQuality),
-    writeTarget("official-constraint-summary.rome800.json", officialConstraintSummary),
+    writeTarget(CONSTRAINT_FILENAME, officialConstraintSummary),
     writeTarget("data-quality-report.rome.json", qualityReport)
   ]);
   console.log(`[Boussole Pro] Dérivés ${DATASET_VERSION}: ${skillsEngine.length} compétences moteur, ${baseAccessByCode.size} accès historiques conservés, ${accessSummary.length - baseAccessByCode.size} accès ajoutés.`);

@@ -374,6 +374,8 @@ function deriveCounts(enrichment, mappings, bmoRows, daresRows, offerNational, o
     runtimeLoadedRows: { compactFapEnrichmentRows: enrichment.length },
     coverage: {
       activeRomeJobs: enrichment.length,
+      bmoFapFamilies: unique(bmoRows.map(row => row.fapCode)).length,
+      daresFapFamilies: unique(daresRows.map(row => row.fapCode)).length,
       jobsWithObservedOffers: unique([...offerNational, ...offerRegional, ...offerDepartmental].filter(row => Number.isFinite(Number(row.offers12m))).map(row => row.romeCode)).length,
       jobsWithOfficialFapMapping: withMapping.length,
       jobsWithBmo: withBmo.length,

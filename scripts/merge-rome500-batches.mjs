@@ -10,7 +10,7 @@ const OUTPUT_DIR = path.join(GENERATED_DIR, OUTPUT_SUBDIR);
 const BASE_DIR = BASE_SUBDIR ? path.join(GENERATED_DIR, BASE_SUBDIR) : null;
 const BATCHES_DIR = path.join(OUTPUT_DIR, "batches");
 const EXPECTED_COUNT = Number(process.env.ROME_MERGE_EXPECTED_COUNT || 500);
-const DATASET_VERSION = process.env.ROME_MERGE_DATASET_VERSION || (EXPECTED_COUNT === 800 ? "rome800-candidate-v0.1" : "rome500-candidate-v0.7");
+const DATASET_VERSION = process.env.ROME_MERGE_DATASET_VERSION || (EXPECTED_COUNT === 500 ? "rome500-candidate-v0.7" : `rome${EXPECTED_COUNT}-candidate-v0.1`);
 const STRICT = String(process.env.ROME_MERGE_STRICT || "false").toLowerCase() === "true";
 
 const COLLECTIONS = [

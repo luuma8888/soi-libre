@@ -990,9 +990,11 @@ async function readRomeCodesFile(filePath = "") {
 function buildOutputPlan(codeSelection = {}) {
   const batchIndex = Number(codeSelection.batchIndex || 0);
   const datasetMode = String(process.env.ROME_DATASET_MODE || "").trim().toLowerCase();
-  const experimental = Boolean(batchIndex) || /500|800/.test(codeSelection.filePath || "") || ["rome500", "rome800"].includes(datasetMode);
-  const corpusSize = datasetMode === "rome800" || /800/.test(codeSelection.filePath || "") ? 800 : 500;
-  const candidateVersion = corpusSize === 800 ? "rome800-candidate-v0.1" : ROME500_EXPERIMENTAL_VERSION;
+  const sizeFromMode = Number(datasetMode.match(/^rome(\d+)$/)?.[1] || 0);
+  const sizeFromPath = Number(String(codeSelection.filePath || "").match(/rome-codes-(\d+)/)?.[1] || 0);
+  const corpusSize = sizeFromMode || sizeFromPath || 500;
+  const experimental = Boolean(batchIndex) || Boolean(sizeFromMode || sizeFromPath);
+  const candidateVersion = corpusSize === 500 ? ROME500_EXPERIMENTAL_VERSION : `rome${corpusSize}-candidate-v0.1`;
   const explicitBatchLabel = String(process.env.ROME_BATCH_LABEL || "").replace(/\D/g, "").slice(0, 3);
   const batchLabel = explicitBatchLabel || (batchIndex ? String(batchIndex).padStart(2, "0") : "");
   if (experimental && batchLabel) {

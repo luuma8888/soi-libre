@@ -3,14 +3,18 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const LOCAL_DIR = path.join(ROOT, "creations", "boussolepro", "data", "local");
-const BATCHES_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome800-candidate", "batches");
+const TARGET_SIZE = Number(process.env.ROME_RECOVERY_TARGET_SIZE || 800);
+const TARGET_SUBDIR = process.env.ROME_RECOVERY_TARGET_SUBDIR || `rome${TARGET_SIZE}-candidate`;
+const FILE_PREFIX = process.env.ROME_RECOVERY_FILE_PREFIX || `rome-codes-${TARGET_SIZE}`;
+const CORPUS_VERSION = process.env.ROME_RECOVERY_CORPUS_VERSION || `rome${TARGET_SIZE}-candidate-v0.1`;
+const BATCHES_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", TARGET_SUBDIR, "batches");
 const PRIORITIES = new Set(["K1202", "K1206", "K1208", "K1210", "K1215", "K2113", "A1503"]);
 
 async function main() {
   const [selection, additions, audit] = await Promise.all([
-    readJson(path.join(LOCAL_DIR, "rome-codes-800.json")),
-    readJson(path.join(LOCAL_DIR, "rome-codes-800-additions.json")),
-    readJson(path.join(LOCAL_DIR, "rome-codes-800-audit.json"))
+    readJson(path.join(LOCAL_DIR, `${FILE_PREFIX}.json`)),
+    readJson(path.join(LOCAL_DIR, `${FILE_PREFIX}-additions.json`)),
+    readJson(path.join(LOCAL_DIR, `${FILE_PREFIX}-audit.json`))
   ]);
   const reportFiles = (await readdir(BATCHES_DIR)).filter(name => /^report\.batch-0[1-3]\.json$/.test(name));
   const reports = await Promise.all(reportFiles.map(name => readJson(path.join(BATCHES_DIR, name))));
@@ -34,12 +38,12 @@ async function main() {
   audit.requiredPriorityCodesUnavailable = unique([...(audit.requiredPriorityCodesUnavailable || []), ...failedPriorities]);
   audit.domainCounts = countByDomain(selection.codes);
 
-  const recovery = { schemaVersion: "1.0.0", selectionSize: replacementRows.length, parentCorpusVersion: "rome800-candidate-v0.1", purpose: "Relance ciblée des remplaçants officiels après échec de fiche", codes: replacementRows };
+  const recovery = { schemaVersion: "1.0.0", selectionSize: replacementRows.length, parentCorpusVersion: CORPUS_VERSION, purpose: "Relance ciblée des remplaçants officiels après échec de fiche", codes: replacementRows };
   await Promise.all([
-    writeJson(path.join(LOCAL_DIR, "rome-codes-800.json"), selection),
-    writeJson(path.join(LOCAL_DIR, "rome-codes-800-additions.json"), additions),
-    writeJson(path.join(LOCAL_DIR, "rome-codes-800-audit.json"), audit),
-    writeJson(path.join(LOCAL_DIR, "rome-codes-800-recovery.json"), recovery)
+    writeJson(path.join(LOCAL_DIR, `${FILE_PREFIX}.json`), selection),
+    writeJson(path.join(LOCAL_DIR, `${FILE_PREFIX}-additions.json`), additions),
+    writeJson(path.join(LOCAL_DIR, `${FILE_PREFIX}-audit.json`), audit),
+    writeJson(path.join(LOCAL_DIR, `${FILE_PREFIX}-recovery.json`), recovery)
   ]);
   process.stdout.write(`recovery_count=${replacementRows.length}\n`);
 }
