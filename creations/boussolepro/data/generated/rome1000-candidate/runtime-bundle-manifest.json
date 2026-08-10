@@ -1,0 +1,668 @@
+{
+  "schemaVersion": "2.1.0",
+  "manifestKind": "boussole_runtime_bundle_identity",
+  "derivedAt": "2026-08-10T13:35:58.137Z",
+  "inputMode": "packaged_corpus",
+  "runtimeReleaseId": "20260810-rome1000-data-01",
+  "runtimeBundleRevision": "rome1000-runtime-v0.1-r1",
+  "fingerprintAlgorithm": "sha256_of_sorted_non_market_runtime_component_hashes_and_counts",
+  "fingerprintSha256": "f3c2ce2a3a754bf903d93467a600b3bdb20c8d6d9bb6819fafd344aaf3b5848b",
+  "marketLayerIdentity": {
+    "schemaVersion": "3.0.0",
+    "identityKind": "boussole_market_layer_identity",
+    "marketContractRevision": "market-contract-v3.0.0-phase2",
+    "packageFingerprintAlgorithm": "sha256_of_sorted_market_component_hashes_and_counts",
+    "packageFingerprintSha256": "4a22d1fa69cbb0966671239a24d75f02e25552d334bb8e54b3b33ee60a9dae01",
+    "parserVersions": {
+      "xlsx": "xlsx-stream-reader-v1",
+      "phase1": "prepare-boussole-market-phase1-v1",
+      "phase2": "prepare-boussole-market-phase2-v1"
+    },
+    "sourcePublishedAt": {
+      "bmo": "2026-04-21",
+      "daresTension": "2026-02-04",
+      "fapNomenclature": "2024-04-30"
+    },
+    "sourceVintage": {
+      "offers": "2026T1",
+      "bmo": "2026",
+      "daresTension": "2024",
+      "fapNomenclature": "FAP2021"
+    },
+    "normalizedAt": "2026-08-10T13:35:57.441Z",
+    "derivedAt": "2026-08-10T13:35:57.441Z",
+    "packagedAt": "2026-08-10T13:35:57.441Z",
+    "sources": [
+      {
+        "id": "france_travail_market_api",
+        "producer": "France Travail",
+        "sourceVintage": "2026T1",
+        "url": "https://www.data.gouv.fr/dataservices/api-marche-du-travail"
+      },
+      {
+        "id": "france_travail_bmo_2026",
+        "producer": "France Travail",
+        "sourceVintage": "2026",
+        "sourcePublishedAt": "2026-04-21",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d"
+      },
+      {
+        "id": "dares_france_travail_tension_2024",
+        "producer": "Dares et France Travail",
+        "sourceVintage": "2024",
+        "sourcePublishedAt": "2026-02-04",
+        "url": "https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108"
+      },
+      {
+        "id": "dares_fap2021_nomenclature",
+        "producer": "Dares",
+        "sourceVintage": "FAP2021",
+        "sourcePublishedAt": "2024-04-30",
+        "url": "https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true"
+      },
+      {
+        "id": "dares_fap2021_rome_crosswalk",
+        "producer": "Dares",
+        "resourceLabel": "Table de passage FAP 2021 / Rome",
+        "pageUrl": "https://dares.travail-emploi.gouv.fr/donnees/la-nomenclature-des-familles-professionnelles-2021",
+        "directUrl": "https://dares.travail-emploi.gouv.fr/sites/default/files/f83237de4f41868cb73b0e1aafe4800c/Dares_FAP2021_Table_passage_ROME.xlsx",
+        "archivedRetrievalUrl": "https://web.archive.org/web/20240425053231id_/https://dares.travail-emploi.gouv.fr/sites/default/files/f83237de4f41868cb73b0e1aafe4800c/Dares_FAP2021_Table_passage_ROME.xlsx",
+        "fileName": "Dares_FAP2021_Table_passage_ROME.xlsx",
+        "format": "xlsx",
+        "sourceVintage": "FAP2021",
+        "retrievalStatus": "official_copy_archived_from_public_page",
+        "sizeBytes": 69092,
+        "sha256": "2f3808fa1aa05981f79988befa528580e697fca45f19dff1a72d6afbb5866241",
+        "headers": [
+          "fap_2021",
+          "intitule_fap",
+          "rome",
+          "qualification",
+          "intitule_rome"
+        ],
+        "rows": 1096
+      }
+    ],
+    "territories": [
+      "FR",
+      "REG-76",
+      "DEP-11"
+    ],
+    "counts": {
+      "offerNational": 894,
+      "offerRegional": 883,
+      "offerDepartmental": 785,
+      "bmoFapRows": 550,
+      "daresTensionFapRows": 627,
+      "fapRomeMappings": 1096,
+      "fapRomeRankingEligible": 0,
+      "fapRomeSourceRows": 1096,
+      "derivedRomeRows": 1000
+    },
+    "coverage": {
+      "activeRomeJobs": 1000,
+      "jobsWithObservedOffers": 894,
+      "jobsWithBmo": 491,
+      "jobsWithDaresTension": 482,
+      "bmoFapFamilies": 217,
+      "daresFapFamilies": 209,
+      "jobsWithOfficialFapMapping": 510,
+      "jobsWithBmoProjects": 491,
+      "jobsWithBmoDifficulty": 170,
+      "jobsWithBmoSeasonality": 96,
+      "jobsWithDaresPublishedClass": 482,
+      "jobsWithDaresImputed": 404,
+      "jobsQualificationDependent": 270,
+      "jobsWithMultipleStatisticalFap": 258,
+      "jobsWithSharedFapFamily": 478,
+      "jobsWithoutOfficialFapMapping": 490,
+      "displayEligibleJobs": 491,
+      "rankingEligibleJobsBmoDares": 0
+    },
+    "mappingCoverage": {
+      "activeRomeCodes": 1000,
+      "sourceRows": 1096,
+      "mappedActiveRome": 510,
+      "missingActiveRome": 490,
+      "qualificationDependent": 270,
+      "multipleStatisticalFap": 258,
+      "sharedFamily": 478,
+      "displayEligible": 491,
+      "rankingEligible": 0
+    },
+    "components": [
+      {
+        "fileName": "market-contract.json",
+        "sha256": "42574d688861d94d6440a48d94cb3f65f90f5ee456876e7f44e0267d4bc459fd",
+        "count": 1
+      },
+      {
+        "fileName": "market-national.rome.json",
+        "sha256": "96138c7940ffdad41fe250f123e5aab72407fb3b7a152e2cc3946ff8466f628b",
+        "count": 894
+      },
+      {
+        "fileName": "market-occitanie.rome.json",
+        "sha256": "a492f6d08a612564e02dc53ffac1fc2b60d4ddf02f4a93cae0b63727bd5d9229",
+        "count": 883
+      },
+      {
+        "fileName": "market-aude.rome.json",
+        "sha256": "f14c163f8e9c25031cd47c971a9596cf0b7634d79282f2321e343da9ff0a112b",
+        "count": 785
+      },
+      {
+        "fileName": "bmo-fap2021.json",
+        "sha256": "ff989a73b9e4abddef6d71fa2ff03cb623ede4f41aee470bb48ec95d6d353453",
+        "count": 550
+      },
+      {
+        "fileName": "dares-tension-fap2021.json",
+        "sha256": "38be1e63042d0f104dd3ece2ac5125024c36ea7d53677b57a04ea5efc0113b90",
+        "count": 627
+      },
+      {
+        "fileName": "fap2021-nomenclature.json",
+        "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
+        "count": 228
+      },
+      {
+        "fileName": "fap-rome-mappings.json",
+        "sha256": "3a145f00906f62fad52c980241b65b5717de9c8fa98572bede2db5c598303577",
+        "count": 1096
+      },
+      {
+        "fileName": "fap-rome-mapping-status.json",
+        "sha256": "6783b9c1ec5cd6411e1c6bb6900f2d7334638f997444f43ac1a48ae9794716af",
+        "count": 1
+      },
+      {
+        "fileName": "territories.json",
+        "sha256": "07215d3f089177d325d3f0a7fb9e7e8a61124a25c3d57f662b983f133ffdf98d",
+        "count": 3
+      },
+      {
+        "fileName": "market-fap-enrichment.rome1000.json",
+        "sha256": "4940fa0675f907d97eeb22eef8d042b4d4acfc01336dc0759ba51d2cc7bc5e5e",
+        "count": 1000
+      }
+    ],
+    "status": "market_phase2_fap_bmo_dares_active_context_only",
+    "packagedSourceRows": {
+      "bmoFapRows": 550,
+      "daresTensionFapRows": 627,
+      "fapRomeSourceRows": 1096
+    },
+    "derivedRomeRows": {
+      "total": 1000,
+      "withOfficialMapping": 510,
+      "withBmo": 491,
+      "withDares": 482
+    },
+    "runtimeLoadedRows": {
+      "compactFapEnrichmentRows": 1000
+    }
+  },
+  "appBuild": {
+    "appVersion": "v0.8.2-alpha",
+    "buildId": "20260810-runtime-data-boundary-01",
+    "buildDate": "2026-08-10"
+  },
+  "datasetIdentity": {
+    "publicLabel": "Corpus ROME 1000 candidat consolide",
+    "sourceDatasetVersion": "rome1000-candidate-v0.1",
+    "sourceDatasetAliases": [
+      "rome500-experimental-v0.7"
+    ],
+    "corpusMaturity": "candidate_consolidated",
+    "validationScope": "validated_for_boussole_pro_v0_8",
+    "historicalStoragePath": "data/generated/rome1000-candidate",
+    "historicalPathIsMaturitySignal": false
+  },
+  "ruleVersions": {
+    "access": "v0.7.6-alpha",
+    "sectors": "v0.7.5-alpha",
+    "scoring": "v0.8.2-alpha"
+  },
+  "counts": {
+    "manifest": 1,
+    "jobs": 1000,
+    "skills": 8682,
+    "skillsEngine": 13159,
+    "skillIntegrityReport": 1,
+    "matchableSkills": 2578,
+    "knowledge": 20067,
+    "certificationLike": 2252,
+    "workContexts": 191,
+    "jobAppellations": 10030,
+    "mappings": 1000,
+    "qualityReport": 1,
+    "accessSummary": 1000,
+    "accessSummaryQualityReport": 1,
+    "officialConstraintSummary": 1000,
+    "trainings": 0,
+    "certifications": 0,
+    "mappingsRomeFormations": 0,
+    "mappingsRomeCertifications": 0,
+    "marketManifest": 1,
+    "marketQualityReport": 1,
+    "marketContract": 1,
+    "marketPackageIdentity": 1,
+    "marketNational": 894,
+    "marketOccitanie": 883,
+    "marketAude": 785,
+    "marketFapEnrichment": 1000,
+    "bmoFap2021": 550,
+    "daresTensionFap2021": 627,
+    "fap2021Nomenclature": 228,
+    "fapRomeMappings": 1096,
+    "fapRomeMappingStatus": 1,
+    "accessRules": 1,
+    "sectorRules": 1
+  },
+  "componentRoles": {
+    "skills": "filtered_reference_and_display",
+    "skillsEngine": "active_scoring_reference",
+    "matchableSkills": "profile_selection_reference"
+  },
+  "components": [
+    {
+      "role": "manifest",
+      "area": "rome",
+      "fileName": "import-manifest.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/import-manifest.rome.json",
+      "required": true,
+      "count": 1,
+      "size": 453,
+      "sha256": "6f3034bd92cec87968213b74a87ae006c5bb446a55efbb85037c58f4c21b10d9",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "jobs",
+      "area": "rome",
+      "fileName": "jobs.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/jobs.rome.json",
+      "required": true,
+      "count": 1000,
+      "size": 36060481,
+      "sha256": "e83b52818092d480c4e814cb4b48f71be773e2b958bb9c643ba30902ccdbe727",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "skills",
+      "area": "rome",
+      "fileName": "skills.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/skills.rome.json",
+      "required": true,
+      "count": 8682,
+      "size": 6890449,
+      "sha256": "fcd92d9427654f48f0e64899a7bb83d642b66331a443ea8fe613ee1dfb426649",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "skillsEngine",
+      "area": "rome",
+      "fileName": "skills-engine.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/skills-engine.rome.json",
+      "required": true,
+      "count": 13159,
+      "size": 7649393,
+      "sha256": "274e66e109deebb29448e6572a92a97e160db60dfec3b7ae52c17eee6dd6e8d0",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "skillIntegrityReport",
+      "area": "rome",
+      "fileName": "skill-reference-integrity-report.json",
+      "relativePath": "data/generated/rome1000-candidate/skill-reference-integrity-report.json",
+      "required": true,
+      "count": 1,
+      "size": 536,
+      "sha256": "c0e3f7c6ba714ae5c73846b677c15d4bdde147e0bcec0e86c5c658398d12a492",
+      "sourceGeneratedAt": "2026-08-10T13:30:33.364Z"
+    },
+    {
+      "role": "matchableSkills",
+      "area": "rome",
+      "fileName": "skills-matchable.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/skills-matchable.rome.json",
+      "required": true,
+      "count": 2578,
+      "size": 2030734,
+      "sha256": "1311fc61ad7532f3a5ed981ca4ae588fc4a34bfe9f01f482ded381b5f840bd58",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "knowledge",
+      "area": "rome",
+      "fileName": "knowledge.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/knowledge.rome.json",
+      "required": true,
+      "count": 20067,
+      "size": 7069817,
+      "sha256": "882649c8dda057874c48da16af33928b2db63667c379295117d3a5c479be503e",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "certificationLike",
+      "area": "rome",
+      "fileName": "certification-like.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/certification-like.rome.json",
+      "required": true,
+      "count": 2252,
+      "size": 1758983,
+      "sha256": "bc24967a7b15056a33c93a33d4cd8d616ce4e34d738515fbd5e3b9f211572f3e",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "workContexts",
+      "area": "rome",
+      "fileName": "work-contexts.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/work-contexts.rome.json",
+      "required": true,
+      "count": 191,
+      "size": 67931,
+      "sha256": "6918d95f138d7fae493ec00cbe01834d4a519ca54cdf30751d367f79354fb30d",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "jobAppellations",
+      "area": "rome",
+      "fileName": "job-appellations.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/job-appellations.rome.json",
+      "required": true,
+      "count": 10030,
+      "size": 3070617,
+      "sha256": "db6c815176230ce7cf2c698531d8336bdff6bd206841ed9df64db33e3022143a",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "mappings",
+      "area": "rome",
+      "fileName": "mappings.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/mappings.rome.json",
+      "required": true,
+      "count": 1000,
+      "size": 2643437,
+      "sha256": "43ca0448cb64883b4f917e9df6da340810894101556f95d870bb710633bbf4e1",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "qualityReport",
+      "area": "rome",
+      "fileName": "data-quality-report.rome.json",
+      "relativePath": "data/generated/rome1000-candidate/data-quality-report.rome.json",
+      "required": true,
+      "count": 1,
+      "size": 52868,
+      "sha256": "a6dc61e8ae65d21c5b4f8165fc32d57cd0914006cee5b2b6cc03a1537e689f8f",
+      "sourceGeneratedAt": "2026-08-10T13:30:31.613Z"
+    },
+    {
+      "role": "accessSummary",
+      "area": "rome",
+      "fileName": "access-summary.rome1000.json",
+      "relativePath": "data/generated/rome1000-candidate/access-summary.rome1000.json",
+      "required": true,
+      "count": 1000,
+      "size": 1531108,
+      "sha256": "415e708dc66b67ab212d5a46a24113530a117615e73be27572b4f0842d77dce3",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "accessSummaryQualityReport",
+      "area": "rome",
+      "fileName": "access-summary-quality-report.json",
+      "relativePath": "data/generated/rome1000-candidate/access-summary-quality-report.json",
+      "required": true,
+      "count": 1,
+      "size": 239667,
+      "sha256": "ecbd7b88c08641c5487cb63f0d7ed999e446fbd5674ab0bf95cf6b2bbea8015f",
+      "sourceGeneratedAt": "2026-08-10T13:30:33.412Z"
+    },
+    {
+      "role": "officialConstraintSummary",
+      "area": "rome",
+      "fileName": "official-constraint-summary.rome1000.json",
+      "relativePath": "data/generated/rome1000-candidate/official-constraint-summary.rome1000.json",
+      "required": true,
+      "count": 1000,
+      "size": 747348,
+      "sha256": "0c0c73d95b513cc222eb32a691b729f705df474a5f4f1a41419907817bd4c047",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "trainings",
+      "area": "rome",
+      "fileName": "formations.onisep.json",
+      "relativePath": "data/generated/rome1000-candidate/formations.onisep.json",
+      "required": false,
+      "count": 0,
+      "size": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "certifications",
+      "area": "rome",
+      "fileName": "certifications.certifinfo.json",
+      "relativePath": "data/generated/rome1000-candidate/certifications.certifinfo.json",
+      "required": false,
+      "count": 0,
+      "size": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "mappingsRomeFormations",
+      "area": "rome",
+      "fileName": "mappings-rome-formations.json",
+      "relativePath": "data/generated/rome1000-candidate/mappings-rome-formations.json",
+      "required": false,
+      "count": 0,
+      "size": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "mappingsRomeCertifications",
+      "area": "rome",
+      "fileName": "mappings-rome-certifications.json",
+      "relativePath": "data/generated/rome1000-candidate/mappings-rome-certifications.json",
+      "required": false,
+      "count": 0,
+      "size": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketManifest",
+      "area": "market",
+      "fileName": "market-import-manifest.json",
+      "relativePath": "data/generated/market/market-import-manifest.json",
+      "required": true,
+      "count": 1,
+      "size": 8407,
+      "sha256": "9ae7cf4d72c94129bcef533bc30acb8a9bad70bf4eb435b98976d5e2242eb805",
+      "sourceGeneratedAt": "2026-08-10T13:30:33.542Z"
+    },
+    {
+      "role": "marketQualityReport",
+      "area": "market",
+      "fileName": "market-quality-report.json",
+      "relativePath": "data/generated/market/market-quality-report.json",
+      "required": true,
+      "count": 1,
+      "size": 13359,
+      "sha256": "32d343b236aa3cd6b65cb7c94d3434bbb062c7bffa8a59bd22564a12d68af244",
+      "sourceGeneratedAt": "2026-08-10T13:35:57.441Z"
+    },
+    {
+      "role": "marketContract",
+      "area": "market",
+      "fileName": "market-contract.json",
+      "relativePath": "data/generated/market/market-contract.json",
+      "required": true,
+      "count": 1,
+      "size": 1612,
+      "sha256": "42574d688861d94d6440a48d94cb3f65f90f5ee456876e7f44e0267d4bc459fd",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketPackageIdentity",
+      "area": "market",
+      "fileName": "market-package-identity.json",
+      "relativePath": "data/generated/market/market-package-identity.json",
+      "required": true,
+      "count": 1,
+      "size": 6426,
+      "sha256": "7e49536043e18e0abe512c58e3d0fc02132aae50b4f848bed3c8eea0a12b37ab",
+      "sourceGeneratedAt": {
+        "offers": "2026T1",
+        "bmo": "2026",
+        "daresTension": "2024",
+        "fapNomenclature": "FAP2021"
+      }
+    },
+    {
+      "role": "marketNational",
+      "area": "market",
+      "fileName": "market-national.rome.json",
+      "relativePath": "data/generated/market/market-national.rome.json",
+      "required": true,
+      "count": 894,
+      "size": 4045950,
+      "sha256": "96138c7940ffdad41fe250f123e5aab72407fb3b7a152e2cc3946ff8466f628b",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketOccitanie",
+      "area": "market",
+      "fileName": "market-occitanie.rome.json",
+      "relativePath": "data/generated/market/market-occitanie.rome.json",
+      "required": true,
+      "count": 883,
+      "size": 3923892,
+      "sha256": "a492f6d08a612564e02dc53ffac1fc2b60d4ddf02f4a93cae0b63727bd5d9229",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketAude",
+      "area": "market",
+      "fileName": "market-aude.rome.json",
+      "relativePath": "data/generated/market/market-aude.rome.json",
+      "required": true,
+      "count": 785,
+      "size": 3334514,
+      "sha256": "f14c163f8e9c25031cd47c971a9596cf0b7634d79282f2321e343da9ff0a112b",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "marketFapEnrichment",
+      "area": "market",
+      "fileName": "market-fap-enrichment.rome1000.json",
+      "relativePath": "data/generated/market/market-fap-enrichment.rome1000.json",
+      "required": true,
+      "count": 1000,
+      "size": 3353401,
+      "sha256": "4940fa0675f907d97eeb22eef8d042b4d4acfc01336dc0759ba51d2cc7bc5e5e",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "bmoFap2021",
+      "area": "market",
+      "fileName": "bmo-fap2021.json",
+      "relativePath": "data/generated/market/bmo-fap2021.json",
+      "required": false,
+      "count": 550,
+      "size": 1463096,
+      "sha256": "ff989a73b9e4abddef6d71fa2ff03cb623ede4f41aee470bb48ec95d6d353453",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "daresTensionFap2021",
+      "area": "market",
+      "fileName": "dares-tension-fap2021.json",
+      "relativePath": "data/generated/market/dares-tension-fap2021.json",
+      "required": false,
+      "count": 627,
+      "size": 3603813,
+      "sha256": "38be1e63042d0f104dd3ece2ac5125024c36ea7d53677b57a04ea5efc0113b90",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "fap2021Nomenclature",
+      "area": "market",
+      "fileName": "fap2021-nomenclature.json",
+      "relativePath": "data/generated/market/fap2021-nomenclature.json",
+      "required": false,
+      "count": 228,
+      "size": 64203,
+      "sha256": "b7033c1f7800812e89ee4ad22ddb221d6fb503d9af40962469d4c8199e58672d",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "fapRomeMappings",
+      "area": "market",
+      "fileName": "fap-rome-mappings.json",
+      "relativePath": "data/generated/market/fap-rome-mappings.json",
+      "required": false,
+      "count": 1096,
+      "size": 1063440,
+      "sha256": "3a145f00906f62fad52c980241b65b5717de9c8fa98572bede2db5c598303577",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "fapRomeMappingStatus",
+      "area": "market",
+      "fileName": "fap-rome-mapping-status.json",
+      "relativePath": "data/generated/market/fap-rome-mapping-status.json",
+      "required": true,
+      "count": 1,
+      "size": 696,
+      "sha256": "6783b9c1ec5cd6411e1c6bb6900f2d7334638f997444f43ac1a48ae9794716af",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "accessRules",
+      "area": "local",
+      "fileName": "access-rules-v074.json",
+      "relativePath": "data/local/access-rules-v074.json",
+      "required": true,
+      "count": 1,
+      "size": 17077,
+      "sha256": "713ab84b6583346ac818c8250f8be9e10d7adc66ed4c1b76d8b9fbc3e614fdb9",
+      "sourceGeneratedAt": null
+    },
+    {
+      "role": "sectorRules",
+      "area": "local",
+      "fileName": "rome-sector-mapping-v2.json",
+      "relativePath": "data/local/rome-sector-mapping-v2.json",
+      "required": true,
+      "count": 1,
+      "size": 11046,
+      "sha256": "024a92104423c01a2669ba2ee23c4389ed72bf75e7e8329518c60cd4c8090046",
+      "sourceGeneratedAt": null
+    }
+  ],
+  "coherence": {
+    "status": "coherent",
+    "failures": [],
+    "accessSummaryGeneratedAt": "2026-08-10T13:30:33.365Z",
+    "accessQualityGeneratedAt": "2026-08-10T13:30:33.412Z",
+    "accessRulesVersion": "v0.7.6-alpha"
+  },
+  "verifiedScope": [
+    "1000 packaged jobs",
+    "active scoring referentials",
+    "access and sector rules",
+    "independent packaged market identity and rows",
+    "local deterministic test bench"
+  ],
+  "notVerifiedScope": [
+    "real_import_user_environment",
+    "interactive_user_performance"
+  ],
+  "status": "coherent"
+}
