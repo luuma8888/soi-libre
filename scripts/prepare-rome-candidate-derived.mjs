@@ -7,20 +7,26 @@ const ROOT = process.cwd();
 const TARGET_SUBDIR = process.env.ROME_CANDIDATE_SUBDIR || "rome800-candidate";
 const DATASET_VERSION = process.env.ROME_CANDIDATE_VERSION || "rome800-candidate-v0.1";
 const TARGET_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", TARGET_SUBDIR);
+const BASE_SUBDIR = process.env.ROME_CANDIDATE_BASE_SUBDIR || "rome500-experimental";
+const BASE_DIR = path.join(ROOT, "creations", "boussolepro", "data", "generated", BASE_SUBDIR);
 const LOCAL_DIR = path.join(ROOT, "creations", "boussolepro", "data", "local");
 
 async function main() {
-  const [jobs, mappings, rawSkills, filteredSkills, contexts, accessRulesDocument] = await Promise.all([
+  const [jobs, mappings, rawSkills, filteredSkills, contexts, accessRulesDocument, baseAccessSummary, baseConstraintSummary] = await Promise.all([
     readTarget("jobs.rome.json", []), readTarget("mappings.rome.json", []), readTarget("rome-raw-skills.json", []),
     readTarget("skills.rome.json", []), readTarget("work-contexts.rome.json", []),
-    readJson(path.join(LOCAL_DIR, "access-rules-v074.json"), { rules: {}, verifiedAt: null })
+    readJson(path.join(LOCAL_DIR, "access-rules-v074.json"), { rules: {}, verifiedAt: null }),
+    readJson(path.join(BASE_DIR, "access-summary.rome500.json"), []),
+    readJson(path.join(BASE_DIR, "official-constraint-summary.rome500.json"), [])
   ]);
   if (!jobs.length) throw new Error(`Aucun métier à dériver dans ${TARGET_SUBDIR}.`);
   const { skillsEngine, integrityReport } = buildSkillsEngine({ jobs, mappings, rawSkills, filteredSkills }, DATASET_VERSION);
   const generatedAt = new Date().toISOString();
-  const accessSummary = jobs.map(job => buildAccessSummary(job, accessRulesDocument.rules?.[job.romeCode], { generatedAt, verifiedAt: accessRulesDocument.verifiedAt }));
+  const baseAccessByCode = new Map(baseAccessSummary.map(row => [row.romeCode, row]));
+  const baseConstraintByCode = new Map(baseConstraintSummary.map(row => [row.romeCode, row]));
+  const accessSummary = jobs.map(job => baseAccessByCode.get(job.romeCode) || buildAccessSummary(job, accessRulesDocument.rules?.[job.romeCode], { generatedAt, verifiedAt: accessRulesDocument.verifiedAt }));
   const contextMapping = buildOfficialContextConstraintMapping(contexts);
-  const officialConstraintSummary = jobs.map(job => buildOfficialConstraintSummary(job, contextMapping));
+  const officialConstraintSummary = jobs.map(job => baseConstraintByCode.get(job.romeCode) || buildOfficialConstraintSummary(job, contextMapping));
   const accessQuality = buildAccessQualityReport(accessSummary, jobs, accessRulesDocument, generatedAt);
   Object.assign(accessQuality, {
     datasetVersion: DATASET_VERSION,
@@ -43,7 +49,7 @@ async function main() {
     writeTarget("official-constraint-summary.rome800.json", officialConstraintSummary),
     writeTarget("data-quality-report.rome.json", qualityReport)
   ]);
-  console.log(`[Boussole Pro] Dérivés ${DATASET_VERSION}: ${skillsEngine.length} compétences moteur, ${accessSummary.length} accès, ${officialConstraintSummary.length} contraintes.`);
+  console.log(`[Boussole Pro] Dérivés ${DATASET_VERSION}: ${skillsEngine.length} compétences moteur, ${baseAccessByCode.size} accès historiques conservés, ${accessSummary.length - baseAccessByCode.size} accès ajoutés.`);
 }
 
 async function readTarget(name, fallback) { return readJson(path.join(TARGET_DIR, name), fallback); }

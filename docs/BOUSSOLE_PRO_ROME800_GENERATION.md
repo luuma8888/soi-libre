@@ -10,7 +10,7 @@ Le fichier du workflow doit d'abord être présent sur la branche par défaut af
 
 1. Ouvrir **Actions > Build ROME800 candidate**.
 2. Choisir la branche `soi-libre-codex`.
-3. Cliquer sur **Run workflow**. Aucun paramètre n'est requis.
+3. Laisser **Réutiliser un checkpoint** désactivé pour une première génération, puis cliquer sur **Run workflow**.
 
 Le workflow réutilise les secrets et variables France Travail déjà configurés. Aucun secret ne doit être saisi dans l'application, un fichier JSON ou un commentaire GitHub.
 
@@ -32,6 +32,8 @@ Le workflow réutilise les secrets et variables France Travail déjà configuré
 ## Reprise
 
 Les sorties de chaque lot sont séparées dans `data/generated/rome800-candidate/batches`. Une relance du workflow reprend la même sélection déterministe et ne rappelle jamais les 500 métiers historiques. La fusion refuse toute livraison différente de 800 codes uniques.
+
+Après la validation structurelle, le workflow enregistre un checkpoint des données générées avant les contrôles fonctionnels et de performance. Si un échec survient ensuite, relancer le workflow avec **Réutiliser un checkpoint** activé évite les appels API longs et rejoue uniquement les identités, validations et la livraison.
 
 ## Vérifications attendues
 

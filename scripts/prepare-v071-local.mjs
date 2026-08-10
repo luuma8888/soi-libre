@@ -110,7 +110,8 @@ export function buildAccessSummary(job = {}, explicitRule = null, metadata = {})
     : [];
   const mandatoryDiplomas = unique(mandatorySentences.flatMap(extractDiplomaMentions));
   const recommendedDiplomas = unique(optionalSentences.flatMap(extractDiplomaMentions));
-  const requiredCredentialLabels = unique([...directRequiredCredentials, ...globalRequiredCredentials]);
+  const requiredCredentialLabels = unique([...directRequiredCredentials, ...globalRequiredCredentials])
+    .filter(label => !isGenericRequiredCredentialLabel(label));
   const optionalCredentialLabels = unique(optionalSentences.flatMap(extractOptionalCredentialLabels));
   const regulated = mandatorySentences.some(sentence => isRegulatedAccessSentence(sentence));
   const diplomaRange = inferDiplomaRange(text, { noDiplomaPossible, mandatorySentences, optionalSentences });

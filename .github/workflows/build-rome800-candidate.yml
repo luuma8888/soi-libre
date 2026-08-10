@@ -2,6 +2,12 @@ name: Build ROME800 candidate
 
 on:
   workflow_dispatch:
+    inputs:
+      reuse_generated:
+        description: "Réutiliser un checkpoint ROME800 déjà généré et relancer seulement identités, validations et livraison."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -22,6 +28,7 @@ jobs:
         with:
           node-version: "24"
       - name: Fetch official ROME universe
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/fetch-rome-universe.mjs
         env:
           FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
@@ -31,8 +38,10 @@ jobs:
           FT_TOKEN_URL: ${{ vars.FT_TOKEN_URL }}
           FT_ROME_METIERS_URL: ${{ vars.FT_ROME_METIERS_URL }}
       - name: Select 300 deterministic additions
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/prepare-rome800-selection.mjs
       - name: Fetch only the 300 additions in resumable batches
+        if: ${{ !inputs.reuse_generated }}
         shell: bash
         run: |
           for batch in 1 2 3; do
@@ -58,10 +67,11 @@ jobs:
           ROME_DATASET_MODE: rome800
           ROME_DATASET_VERSION: rome800-candidate-v0.1
       - name: Prepare targeted recovery when a fiche failed
+        if: ${{ !inputs.reuse_generated }}
         id: recovery
         run: node scripts/prepare-rome800-recovery.mjs >> "$GITHUB_OUTPUT"
       - name: Fetch official recovery candidates
-        if: ${{ steps.recovery.outputs.recovery_count != '0' }}
+        if: ${{ !inputs.reuse_generated && steps.recovery.outputs.recovery_count != '0' }}
         run: node scripts/sync-france-travail-rome.mjs
         env:
           FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
@@ -83,6 +93,7 @@ jobs:
           ROME_DATASET_MODE: rome800
           ROME_DATASET_VERSION: rome800-candidate-v0.1
       - name: Merge ROME500 and additions
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/merge-rome500-batches.mjs
         env:
           ROME_MERGE_OUTPUT_SUBDIR: rome800-candidate
@@ -91,11 +102,14 @@ jobs:
           ROME_MERGE_DATASET_VERSION: rome800-candidate-v0.1
           ROME_MERGE_STRICT: "true"
       - name: Build candidate derived indexes
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/prepare-rome-candidate-derived.mjs
         env:
           ROME_CANDIDATE_SUBDIR: rome800-candidate
           ROME_CANDIDATE_VERSION: rome800-candidate-v0.1
+          ROME_CANDIDATE_BASE_SUBDIR: rome500-experimental
       - name: Extend observed market volumes only to additions
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/generate-market-data.mjs
         env:
           DRY_RUN: "false"
@@ -115,6 +129,7 @@ jobs:
           MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
           MARKET_FAIL_ON_EMPTY: "true"
       - name: Rebuild FAP BMO Dares context for 800 jobs
+        if: ${{ !inputs.reuse_generated }}
         run: node scripts/prepare-boussole-market-phase2.mjs
         env:
           MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome800-candidate/jobs.rome.json
@@ -133,15 +148,23 @@ jobs:
           RUNTIME_APP_VERSION: v0.8.1-alpha
           RUNTIME_BUILD_ID: 20260810-rome800-market-continuity-01
           RUNTIME_BUILD_DATE: "2026-08-10"
+      - name: Validate generated ROME800 structure
+        run: node scripts/validate-rome800-candidate.mjs
+      - name: Save resumable generated checkpoint
+        if: ${{ !inputs.reuse_generated }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/market
+          git commit -m "Checkpoint generated ROME800 data" || echo "No checkpoint changes"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
       - name: Activate ROME800 build identity
         run: node scripts/activate-rome800-runtime.mjs
         env:
           RUNTIME_BUILD_ID: 20260810-rome800-market-continuity-01
           RUNTIME_BUILD_DATE: "2026-08-10"
-      - name: Run corpus and 12-profile validations
-        run: |
-          node scripts/validate-rome800-candidate.mjs
-          node scripts/validate-boussole-v073.mjs
+      - name: Run functional and 12-profile validations
+        run: node scripts/validate-boussole-v073.mjs
         env:
           BOUSSOLE_EXPECTED_JOBS_COUNT: "800"
           BOUSSOLE_ROME_SUBDIR: rome800-candidate

@@ -14693,7 +14693,7 @@ function createBrowserPerformanceReport() {
   const metrics = normalizePerformanceMetricsForReport(App.state.performanceMetrics || {});
   const runtimeMeasured = ["datasetLoadMs", "normalizationMs", "totalGeneratedLoadMs"]
     .some(key => metrics[key]?.measurementStatus === "measured");
-  const scoringMeasured = metrics.profileScoringMs?.measurementStatus === "measured" && completeList.length === jobs.length;
+  const scoringMeasured = metrics.profileScoringMs?.measurementStatus === "measured";
   const renderValidation = cardsRendered > 0
     ? (completeList.length === jobs.length ? "complete" : "partial")
     : "not_measured";
@@ -14711,6 +14711,7 @@ function createBrowserPerformanceReport() {
     completionVerdict,
     runtimePerformanceVerdict: runtimeMeasured ? "measured" : "not_measured",
     scoringPerformanceVerdict: scoringMeasured ? "measured" : completeList.length ? "partial" : "not_measured",
+    scoringCoverageVerdict: completeList.length === jobs.length ? "complete_corpus" : completeList.length ? "partial_corpus" : "not_available",
     renderValidationVerdict: renderValidation,
     renderValidationReason: renderValidation === "not_measured"
       ? `Export depuis la vue ${App.state.mainView || "inconnue"}, sans carte Résultats rendue.`
