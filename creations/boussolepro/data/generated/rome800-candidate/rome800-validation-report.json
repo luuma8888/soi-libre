@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0.0",
+  "reportKind": "rome800_candidate_validation",
+  "generatedAt": "2026-08-10T11:45:31.048Z",
+  "status": "passed",
+  "assertions": [
+    {
+      "id": "selection_exactly_800",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "base_500_preserved",
+      "pass": true,
+      "observed": 500
+    },
+    {
+      "id": "additions_exactly_300",
+      "pass": true,
+      "observed": 300
+    },
+    {
+      "id": "jobs_exactly_800",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "selection_matches_jobs",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "priority_codes_present",
+      "pass": true,
+      "observed": []
+    },
+    {
+      "id": "skills_references_resolved",
+      "pass": true,
+      "observed": []
+    },
+    {
+      "id": "access_summary_complete",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "constraints_summary_complete",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "market_existing_coverage_preserved",
+      "pass": true,
+      "observed": {
+        "national": 714,
+        "regional": 705,
+        "departmental": 626
+      }
+    },
+    {
+      "id": "fap_enrichment_exactly_800",
+      "pass": true,
+      "observed": 800
+    },
+    {
+      "id": "g1203_market_truth",
+      "pass": true,
+      "observed": {
+        "fapCode": "V5X81",
+        "fapDetailedCodes": [
+          "V5X81"
+        ],
+        "fapLabels": [
+          "Professionnels de l'animation socioculturelle"
+        ],
+        "qualificationCodes": [],
+        "bmo": {
+          "year": "2026",
+          "territoryLabel": "Aude",
+          "recruitmentProjects": {
+            "status": "available",
+            "value": 157,
+            "unit": "recruitment_projects",
+            "level": "unclassified",
+            "confidence": 0.95
+          },
+          "recruitmentDifficulty": {
+            "status": "suppressed_partial",
+            "value": null,
+            "unit": "percent_of_recruitment_projects",
+            "level": "unknown",
+            "confidence": 0.4,
+            "details": {
+              "knownProjects": 46,
+              "suppressedRows": 1
+            }
+          },
+          "seasonality": {
+            "status": "suppressed_partial",
+            "value": null,
+            "unit": "percent_of_recruitment_projects",
+            "level": "unknown",
+            "confidence": 0.4,
+            "details": {
+              "knownProjects": 100,
+              "suppressedRows": 1
+            }
+          },
+          "suppressed": {
+            "difficultRows": 1,
+            "seasonalRows": 1
+          }
+        },
+        "dares": {
+          "year": "2024",
+          "territoryLabel": "Aude",
+          "tension": {
+            "status": "available",
+            "value": -0.599501053171529,
+            "unit": "standardized_tension_index",
+            "level": "very_low",
+            "confidence": 0.95,
+            "details": {
+              "publishedDiscreteClass": 1,
+              "imputed": false,
+              "sufficientVolume": true
+            }
+          },
+          "publishedDiscreteClass": 1,
+          "sufficientVolume": true,
+          "imputed": false,
+          "displayAsOfficialClass": true
+        }
+      }
+    },
+    {
+      "id": "selection_audit_coherent",
+      "pass": true,
+      "observed": {
+        "finalCodesCount": 800,
+        "additionsCount": 300
+      }
+    },
+    {
+      "id": "runtime_identity_coherent",
+      "pass": true,
+      "observed": {
+        "status": "coherent",
+        "failures": [],
+        "accessSummaryGeneratedAt": "2026-08-10T11:37:17.112Z",
+        "accessQualityGeneratedAt": "2026-08-10T11:37:17.166Z",
+        "accessRulesVersion": "v0.7.6-alpha"
+      }
+    },
+    {
+      "id": "market_identity_recomputed",
+      "pass": true,
+      "observed": {
+        "offerNational": 714,
+        "offerRegional": 705,
+        "offerDepartmental": 626,
+        "bmoFapRows": 550,
+        "daresTensionFapRows": 627,
+        "fapRomeMappings": 1096,
+        "fapRomeRankingEligible": 0,
+        "fapRomeSourceRows": 1096,
+        "derivedRomeRows": 800
+      }
+    }
+  ],
+  "failuresCount": 0,
+  "privacy": "Aucun profil utilisateur, texte libre, secret ou jeton n'est inclus."
+}

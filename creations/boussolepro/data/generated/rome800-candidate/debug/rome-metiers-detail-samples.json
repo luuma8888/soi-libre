@@ -1,0 +1,581 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-10T11:32:49.102Z",
+  "branch": "soi-libre-codex",
+  "source": "rome_metiers_detail_api",
+  "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+  "totalRecords": 100,
+  "diagnosticCodes": [
+    "A1203",
+    "K1303",
+    "M1607",
+    "M1805"
+  ],
+  "note": "Diagnostic structurel des enregistrements detailles ROME Metiers recuperes par code. Ces champs peuvent enrichir jobs.rome.json seulement quand les chemins sont presents et stables.",
+  "fieldAvailability": {
+    "code": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "title": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "description": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "appellations": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "characteristics": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "skillRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "softSkillRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "knowledgeRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "contextRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "accessConditions": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "certificationRefs": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "relatedRomeCodes": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    },
+    "regulatoryTags": {
+      "samplesWithField": 0,
+      "samplesTotal": 0,
+      "status": "not_available_in_sample"
+    }
+  },
+  "conclusion": {
+    "status": "shell_only_code_libelle",
+    "usedForDataset": true,
+    "normalizationAllowed": [
+      "code",
+      "title"
+    ],
+    "missingRichFields": [
+      "description",
+      "appellations",
+      "characteristics",
+      "skillRefs",
+      "softSkillRefs",
+      "knowledgeRefs",
+      "contextRefs",
+      "accessConditions",
+      "certificationRefs",
+      "relatedRomeCodes",
+      "regulatoryTags"
+    ],
+    "message": "Les echantillons ROME Metiers contiennent seulement code/libelle. Cette route ne doit pas etre utilisee pour inventer descriptions, appellations, contextes, conditions d'acces ou certifications.",
+    "nextAction": "Identifier une route de detail ou de liaison officielle pour appellations, contextes, conditions d'acces et mobilites."
+  },
+  "unavailableFieldReport": [
+    {
+      "field": "description",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "definition",
+        "description",
+        "descriptif",
+        "resume",
+        "finalite"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "appellations",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "appellations",
+        "appellationsMetier",
+        "libelles",
+        "intitules"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "characteristics",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "caracteristiques",
+        "conditionsExercice",
+        "situationsTravail"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "skillRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "competences",
+        "savoirFaire",
+        "groupesCompetences"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "softSkillRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "savoirEtre",
+        "savoirEtreProfessionnels"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "knowledgeRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "savoirs",
+        "connaissances",
+        "groupesSavoirs"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "contextRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "contextesTravail",
+        "conditionsExerciceActivite",
+        "environnementsTravail"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "accessConditions",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "conditionsAcces",
+        "accesEmploi",
+        "accesEmploiMetier",
+        "prerequis"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "certificationRefs",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "certifications",
+        "habilitations",
+        "reglementation"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "relatedRomeCodes",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "mobilites",
+        "metiersProches",
+        "prochesMetiers"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    },
+    {
+      "field": "regulatoryTags",
+      "endpointTested": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
+      "expectedPathHints": [
+        "reglementation",
+        "obligatoire",
+        "autorisation"
+      ],
+      "detectedPaths": [],
+      "actualRootKeys": [],
+      "actualStructures": {
+        "A1203": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "K1303": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1607": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        },
+        "M1805": {
+          "found": false,
+          "rootKeys": [],
+          "recursivePathCount": 0
+        }
+      },
+      "status": "not_available_in_sample",
+      "reason": "Les echantillons de cette route exposent uniquement la structure disponible, actuellement code/libelle pour les codes testes. La donnee ne peut pas etre reliee sans route de detail ou relation officielle."
+    }
+  ],
+  "samples": {
+    "A1203": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    },
+    "K1303": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    },
+    "M1607": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    },
+    "M1805": {
+      "found": false,
+      "rootKeys": [],
+      "recursivePaths": [],
+      "detectedFields": {
+        "code": [],
+        "title": [],
+        "description": [],
+        "appellations": [],
+        "characteristics": [],
+        "skillRefs": [],
+        "softSkillRefs": [],
+        "knowledgeRefs": [],
+        "contextRefs": [],
+        "accessConditions": [],
+        "certificationRefs": [],
+        "relatedRomeCodes": [],
+        "regulatoryTags": []
+      },
+      "sanitizedSample": null
+    }
+  }
+}
