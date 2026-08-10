@@ -16,6 +16,7 @@ const ACCESS_SUMMARY_FILE = process.env.BOUSSOLE_ACCESS_SUMMARY_FILE || `access-
 const CONSTRAINT_SUMMARY_FILE = process.env.BOUSSOLE_CONSTRAINT_SUMMARY_FILE || `official-constraint-summary.rome${EXPECTED_JOBS_COUNT}.json`;
 const MARKET_ENRICHMENT_FILE = process.env.BOUSSOLE_MARKET_ENRICHMENT_FILE || `market-fap-enrichment.rome${EXPECTED_JOBS_COUNT}.json`;
 const MARKET_DIR = path.join(GENERATED_DIR, "market");
+const ACTIVE_RUNTIME_PATH = path.resolve(process.env.BOUSSOLE_ACTIVE_RUNTIME_DESCRIPTOR || path.join(GENERATED_DIR, "active-runtime.json"));
 const CEDRIC_PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const REPORT_PATH = process.env.BOUSSOLE_VALIDATION_REPORT || path.join(GENERATED_DIR, "boussole-v080-market-phase2-validation-report.json");
 
@@ -60,6 +61,7 @@ async function main() {
   const buildMetadata = await readBoussoleBuildMetadata(HTML_PATH);
   const app = loadBoussoleEngine(html);
   const generated = await loadGeneratedBundle();
+  const activeRuntimeDescriptor = await readJson(ACTIVE_RUNTIME_PATH, null);
   const baselineSubdir = process.env.BOUSSOLE_BASELINE_SUBDIR || (EXPECTED_JOBS_COUNT === 800 ? "rome500-experimental" : EXPECTED_JOBS_COUNT > 800 ? `rome${EXPECTED_JOBS_COUNT - 200}-candidate` : "");
   const baselineDirectory = baselineSubdir ? path.join(GENERATED_DIR, baselineSubdir) : GENERATED_DIR;
   const baselineSize = Number(process.env.BOUSSOLE_BASELINE_JOBS_COUNT || (EXPECTED_JOBS_COUNT === 800 ? 500 : EXPECTED_JOBS_COUNT > 800 ? EXPECTED_JOBS_COUNT - 200 : EXPECTED_JOBS_COUNT));
@@ -69,6 +71,7 @@ async function main() {
     marketEnrichmentFile: `market-fap-enrichment.rome${baselineSize}.json`
   });
   const cedricEnvelope = await readJson(CEDRIC_PROFILE_PATH, null);
+  app.App.state.activeRuntimeDescriptor = activeRuntimeDescriptor;
   app.App.state.dataset = app.mergeGeneratedDatasetIntoApp(generated, { replace: true });
   app.markDatasetAsOfficialRome(app.App.state.dataset, generated.manifest);
 
@@ -87,6 +90,7 @@ async function main() {
     status: "ok"
   };
 
+  report.checks.activeRuntimeDescriptor = validateActiveRuntimeDescriptor({ activeRuntimeDescriptor, generated, buildMetadata, htmlSha256 });
   report.checks.sectors = validateSectors(app);
   report.checks.jobDisplay = validateJobDisplay(app);
   report.checks.access = validateAccess(app);
@@ -115,6 +119,40 @@ async function main() {
     throw new Error(`[Boussole Pro] Validation v0.8.x échouée: ${report.failures.join(", ")}`);
   }
   console.log(`[Boussole Pro] Validation v0.8.x OK (${report.jobsCount} métiers, SHA ${htmlSha256.slice(0, 12)}...).`);
+}
+
+export function validateActiveRuntimeDescriptor({ activeRuntimeDescriptor, generated, buildMetadata, htmlSha256 }) {
+  const failures = [];
+  const descriptorRuntime = activeRuntimeDescriptor?.runtime || {};
+  const descriptorMarket = activeRuntimeDescriptor?.market || {};
+  const generatedRuntime = generated.runtimeBundleManifest || {};
+  const generatedMarket = generated.marketPackageIdentity || {};
+  const expectedBasePath = `data/generated/${TARGET_SUBDIR}/`;
+  if (!activeRuntimeDescriptor || activeRuntimeDescriptor.descriptorKind !== "boussole_active_runtime") failures.push("active-runtime:descriptor_missing_or_invalid");
+  if (descriptorRuntime.basePath !== expectedBasePath) failures.push("active-runtime:target_path_mismatch");
+  if (Number(descriptorRuntime.expectedJobsCount) !== EXPECTED_JOBS_COUNT) failures.push("active-runtime:expected_jobs_count_mismatch");
+  if (descriptorRuntime.datasetVersion !== generatedRuntime.datasetIdentity?.sourceDatasetVersion) failures.push("active-runtime:dataset_version_mismatch");
+  if (descriptorRuntime.runtimeBundleRevision !== generatedRuntime.runtimeBundleRevision) failures.push("active-runtime:runtime_revision_mismatch");
+  if (descriptorRuntime.runtimeBundleFingerprintSha256 !== generatedRuntime.fingerprintSha256) failures.push("active-runtime:runtime_fingerprint_mismatch");
+  if (canonicalSha256(descriptorRuntime.expectedCounts || {}) !== canonicalSha256(generatedRuntime.counts || {})) failures.push("active-runtime:runtime_counts_mismatch");
+  if (canonicalSha256(descriptorRuntime.ruleVersions || {}) !== canonicalSha256(generatedRuntime.ruleVersions || {})) failures.push("active-runtime:rule_versions_mismatch");
+  if (descriptorRuntime.validationScope !== generatedRuntime.datasetIdentity?.validationScope) failures.push("active-runtime:validation_scope_mismatch");
+  if (descriptorMarket.marketContractRevision !== generatedMarket.marketContractRevision) failures.push("active-runtime:market_contract_revision_mismatch");
+  if (descriptorMarket.packageFingerprintSha256 !== generatedMarket.packageFingerprintSha256) failures.push("active-runtime:market_fingerprint_mismatch");
+  if (activeRuntimeDescriptor?.appSource?.appVersion !== buildMetadata.appVersion) failures.push("active-runtime:app_version_mismatch");
+  if (activeRuntimeDescriptor?.appSource?.buildId !== buildMetadata.buildId) failures.push("active-runtime:app_build_mismatch");
+  if (activeRuntimeDescriptor?.appSource?.sourceArtifactSha256 !== htmlSha256) failures.push("active-runtime:app_source_sha256_mismatch");
+  return {
+    status: failures.length ? "failed" : "ok",
+    descriptorKind: activeRuntimeDescriptor?.descriptorKind || null,
+    targetBasePath: descriptorRuntime.basePath || null,
+    expectedJobsCount: descriptorRuntime.expectedJobsCount || null,
+    runtimeBundleRevision: descriptorRuntime.runtimeBundleRevision || null,
+    runtimeFingerprintSha256: descriptorRuntime.runtimeBundleFingerprintSha256 || null,
+    marketFingerprintSha256: descriptorMarket.packageFingerprintSha256 || null,
+    applicationSourceSha256: activeRuntimeDescriptor?.appSource?.sourceArtifactSha256 || null,
+    failures
+  };
 }
 
 function validateMarketPhase1(app) {
@@ -726,6 +764,7 @@ export async function loadGeneratedBundle(directory = ROME500_DIR, options = {})
     officialConstraintSummary: await readJson(path.join(directory, options.constraintSummaryFile || CONSTRAINT_SUMMARY_FILE), []),
     marketManifest: await readJson(path.join(MARKET_DIR, "market-import-manifest.json"), null),
     marketQualityReport: await readJson(path.join(MARKET_DIR, "market-quality-report.json"), null),
+    marketPackageIdentity: await readJson(path.join(MARKET_DIR, "market-package-identity.json"), null),
     marketNational: await readJson(path.join(MARKET_DIR, "market-national.rome.json"), []),
     marketOccitanie: await readJson(path.join(MARKET_DIR, "market-occitanie.rome.json"), []),
     marketAude: await readJson(path.join(MARKET_DIR, "market-aude.rome.json"), []),
