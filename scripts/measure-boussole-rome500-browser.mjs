@@ -14,7 +14,9 @@ const OUTPUTS = process.env.BOUSSOLE_PERF_OUTPUT
       path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-browser-performance-benchmark.json"),
       path.join(ROOT, "creations", "boussolepro", "data", "generated", "rome500-experimental", "rome500-browser-performance-benchmark.json")
     ];
-const PROFILE_PATH = path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
+const PROFILE_PATH = process.env.BOUSSOLE_PERF_PROFILE_PATH
+  ? path.resolve(process.env.BOUSSOLE_PERF_PROFILE_PATH)
+  : path.join(ROOT, "tmp", "monde-pro", "profils tests", "boussole-pro-profil-cedric-2026-07-10.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 const RUNS_PER_MODE = Number(process.env.BOUSSOLE_PERF_RUNS || 5);
 const EXPECTED_JOBS_COUNT = Number(process.env.BOUSSOLE_EXPECTED_JOBS_COUNT || 500);
@@ -55,8 +57,7 @@ try {
   await cdp.send("Runtime.enable");
   await cdp.send("Network.enable");
   const browserVersion = await cdp.send("Browser.getVersion");
-  const profileEnvelope = JSON.parse(await readFile(PROFILE_PATH, "utf8"));
-  const profile = profileEnvelope.profile || profileEnvelope.data || profileEnvelope;
+  const { profile, source: profileSource } = await loadPerformanceProfile(PROFILE_PATH);
   profile.hasRequestedResults = true;
   profile.completedBoussole = true;
   profile.jobExperiences = [
@@ -111,6 +112,7 @@ try {
       headless: true,
       viewport: { width: 1365, height: 900 },
       profile: "profil technique anonymise",
+      profileSource,
       coldRuns: cold.length,
       warmRuns: warm.length,
       servedUrl: appUrl,
@@ -141,6 +143,43 @@ try {
 } finally {
   chromium.kill("SIGTERM");
   await new Promise(resolve => server.close(resolve));
+}
+
+async function loadPerformanceProfile(profilePath) {
+  try {
+    const envelope = JSON.parse(await readFile(profilePath, "utf8"));
+    const profile = envelope.profile || envelope.data || envelope;
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+      throw new Error("Le profil de performance local ne contient pas un objet exploitable.");
+    }
+    return { profile, source: "local_file" };
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+    return {
+      source: "integrated_fallback",
+      profile: {
+        profileName: "Profil test - enfance et relation",
+        diplomaLevel: 3,
+        experienceDomains: ["animation", "petite_enfance", "social"],
+        domainOrientation: { animation: "heart", petite_enfance: "heart", social: "heart" },
+        skills: ["skill-animation", "skill-early-childhood", "skill-active-listening", "skill-communication"],
+        semanticSkillKeys: ["group_animation", "care_relationship", "customer_support"],
+        weakSkills: ["skill-data"],
+        interests: ["enfants", "transmettre", "accompagner"],
+        values: ["care", "meaning", "service"],
+        preferredWorkStyles: ["team"],
+        preferredEnvironments: ["public_contact"],
+        preferredSchedule: "day",
+        needForSecurity: "medium",
+        needForAutonomy: "medium",
+        needForMeaning: "high",
+        trainingOpenness: "open_if_meaningful",
+        searchHorizon: "open_exploration",
+        constraintSeverities: { nightWork: "avoid", heavyLoad: "conditional", noise: "conditional" },
+        criterionWeights: { skills: 25, training: 18, constraints: 22, values: 20, context: 10, market: 5 }
+      }
+    };
+  }
 }
 
 async function runColdScenario(cdp, url, profile, run) {
