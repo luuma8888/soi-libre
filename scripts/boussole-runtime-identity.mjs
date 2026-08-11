@@ -8,6 +8,7 @@ const ROME_SUBDIR = process.env.RUNTIME_ROME_SUBDIR || "rome500-experimental";
 const ACCESS_SUMMARY_FILE = process.env.RUNTIME_ACCESS_SUMMARY_FILE || `access-summary.rome${EXPECTED_JOBS_COUNT}.json`;
 const CONSTRAINT_SUMMARY_FILE = process.env.RUNTIME_CONSTRAINT_SUMMARY_FILE || `official-constraint-summary.rome${EXPECTED_JOBS_COUNT}.json`;
 const MARKET_ENRICHMENT_FILE = process.env.RUNTIME_MARKET_ENRICHMENT_FILE || `market-fap-enrichment.rome${EXPECTED_JOBS_COUNT}.json`;
+const MARKET_TRENDS_FILE = process.env.RUNTIME_MARKET_TRENDS_FILE || `market-trends.rome${EXPECTED_JOBS_COUNT}.json`;
 export const RUNTIME_BUNDLE_REVISION = process.env.RUNTIME_BUNDLE_REVISION || (EXPECTED_JOBS_COUNT === 500 ? "rome500-runtime-v0.7.7-r1" : `rome${EXPECTED_JOBS_COUNT}-runtime-v0.1-r1`);
 export const RUNTIME_RELEASE_ID = process.env.RUNTIME_RELEASE_ID || `${RUNTIME_BUNDLE_REVISION}-data`;
 export const APP_BUILD = Object.freeze({
@@ -46,11 +47,13 @@ export const RUNTIME_COMPONENTS = Object.freeze([
   ["marketManifest", "market", "market-import-manifest.json", "object", true],
   ["marketQualityReport", "market", "market-quality-report.json", "object", true],
   ["marketContract", "market", "market-contract.json", "object", true],
+  ["marketTemporalContract", "market", "market-temporal-contract.json", "object", true],
   ["marketPackageIdentity", "market", "market-package-identity.json", "object", true],
   ["marketNational", "market", "market-national.rome.json", "array", true],
   ["marketOccitanie", "market", "market-occitanie.rome.json", "array", true],
   ["marketAude", "market", "market-aude.rome.json", "array", true],
   ["marketFapEnrichment", "market", MARKET_ENRICHMENT_FILE, "array", true],
+  ["marketTrends", "market", MARKET_TRENDS_FILE, "jobs", EXPECTED_JOBS_COUNT === 1000],
   ["bmoFap2021", "market", "bmo-fap2021.json", "array", false],
   ["daresTensionFap2021", "market", "dares-tension-fap2021.json", "array", false],
   ["fap2021Nomenclature", "market", "fap2021-nomenclature.json", "array", false],
@@ -74,7 +77,7 @@ export async function buildRuntimeBundleManifest(options = {}) {
       continue;
     }
     const parsed = JSON.parse(buffer);
-    const count = kind === "array" ? parsed.length : 1;
+    const count = kind === "array" ? parsed.length : kind === "jobs" ? (parsed.jobs || []).length : 1;
     components.push({
       role,
       area,

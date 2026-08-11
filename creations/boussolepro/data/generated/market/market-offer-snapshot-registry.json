@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0.0",
+  "temporalContractRevision": "market-temporal-contract-v1.0.0",
+  "generatedAt": "2026-08-11T20:30:00.000Z",
+  "indicatorId": "observed_offer_volume_12m",
+  "sourceName": "france_travail_market_api",
+  "minimumComparableSnapshots": 3,
+  "comparisonStatus": "insufficient_history",
+  "methodAudit": {
+    "result": "current_package_exposes_one_period_only",
+    "apiSupportsPeriodType": true,
+    "historicalPeriodParameterVerifiedLocally": false,
+    "decision": "append_only_real_snapshot_registry_no_backfill"
+  },
+  "snapshots": [
+    {
+      "period": "2026T1",
+      "packageFingerprintSha256": "a865e36c678d51b121df9f858c506eade85b60ccc80466830f5e39c2fccd1cd3",
+      "sourceMethod": "POST",
+      "territories": {
+        "FR": 894,
+        "REG-76": 883,
+        "DEP-11": 785
+      },
+      "comparisonStatus": "insufficient_history",
+      "synthetic": false
+    }
+  ]
+}

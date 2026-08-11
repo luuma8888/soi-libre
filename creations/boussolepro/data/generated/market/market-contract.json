@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "3.0.0",
-  "marketContractRevision": "market-contract-v3.0.0-phase2",
-  "interpretationRevision": "market-interpretation-v1",
+  "schemaVersion": "4.0.0",
+  "marketContractRevision": "market-contract-v4.0.0-phase3",
+  "interpretationRevision": "market-interpretation-v2",
   "rankingPolicyRevision": "market-ranking-policy-v1",
   "dimensions": [
     "offerVolume",
@@ -22,7 +22,11 @@
     "weakOrAmbiguousMappingCannotInfluenceRanking": true,
     "qualificationMustBePreserved": true,
     "fapFamilyDataIsContextOnly": true,
-    "bmoDaresRankingEligible": false
+    "bmoDaresRankingEligible": false,
+    "temporalTrendsAreDescriptiveOnly": true,
+    "temporalTrendsRankingWeight": 0,
+    "historicalOffersRequireThreeComparableSnapshots": true,
+    "noSyntheticHistory": true
   },
   "thresholds": {
     "observedOfferVolume": {
@@ -50,5 +54,6 @@
         "5": "very_high"
       }
     }
-  }
+  },
+  "temporalContractRevision": "market-temporal-contract-v1.0.0"
 }

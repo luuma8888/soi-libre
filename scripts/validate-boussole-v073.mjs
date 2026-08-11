@@ -68,7 +68,8 @@ async function main() {
   const generatedBaseline = await loadGeneratedBundle(baselineDirectory, {
     accessSummaryFile: `access-summary.rome${baselineSize}.json`,
     constraintSummaryFile: `official-constraint-summary.rome${baselineSize}.json`,
-    marketEnrichmentFile: `market-fap-enrichment.rome${baselineSize}.json`
+    marketEnrichmentFile: `market-fap-enrichment.rome${baselineSize}.json`,
+    marketTrendsFile: `market-trends.rome${baselineSize}.json`
   });
   const cedricEnvelope = await readJson(CEDRIC_PROFILE_PATH, null);
   app.App.state.activeRuntimeDescriptor = activeRuntimeDescriptor;
@@ -104,9 +105,11 @@ async function main() {
   report.checks.cacheCompatibility = validateCacheCompatibility(app);
   report.checks.accessLabels = validateAccessLabels(generated);
   report.checks.testBenchDeterminism = validateTestBenchDeterminism(app);
+  report.checks.top5ThemeContract = validateTop5ThemeContract(app);
   report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generatedBaseline);
   report.checks.marketPhase1 = validateMarketPhase1(app);
+  report.checks.marketInterpretationMatrix = validateMarketInterpretationMatrix(app);
   report.checks.performanceSemantics = validatePerformanceSemantics(app);
 
   for (const group of Object.values(report.checks)) {
@@ -138,6 +141,7 @@ export function validateActiveRuntimeDescriptor({ activeRuntimeDescriptor, gener
   if (canonicalSha256(descriptorRuntime.ruleVersions || {}) !== canonicalSha256(generatedRuntime.ruleVersions || {})) failures.push("active-runtime:rule_versions_mismatch");
   if (descriptorRuntime.validationScope !== generatedRuntime.datasetIdentity?.validationScope) failures.push("active-runtime:validation_scope_mismatch");
   if (descriptorMarket.marketContractRevision !== generatedMarket.marketContractRevision) failures.push("active-runtime:market_contract_revision_mismatch");
+  if (descriptorMarket.temporalContractRevision !== generatedMarket.temporalContractRevision) failures.push("active-runtime:temporal_contract_revision_mismatch");
   if (descriptorMarket.packageFingerprintSha256 !== generatedMarket.packageFingerprintSha256) failures.push("active-runtime:market_fingerprint_mismatch");
   if (activeRuntimeDescriptor?.appSource?.appVersion !== buildMetadata.appVersion) failures.push("active-runtime:app_version_mismatch");
   if (activeRuntimeDescriptor?.appSource?.buildId !== buildMetadata.buildId) failures.push("active-runtime:app_build_mismatch");
@@ -271,7 +275,79 @@ function validateTestBenchDeterminism(app) {
   const secondSha256 = canonicalSha256(second);
   if (toArray(first.rows).length !== 12) failures.push(`bench:profiles_${toArray(first.rows).length}`);
   if (firstSha256 !== secondSha256) failures.push("bench:user_state_leak");
+  for (const row of first.rows) {
+    const themeIds = toArray(row.top5).map(item => item.top5ThemeId || item.themeId).filter(Boolean);
+    if (themeIds.length && new Set(themeIds).size !== themeIds.length) failures.push(`bench:${row.id}:duplicate_top5_theme`);
+  }
   return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.8.0", firstSha256, secondSha256, failures };
+}
+
+function validateTop5ThemeContract(app) {
+  const failures = [];
+  const make = ({ id, code, title, score, status = "possible_now", confidence = 80, feasibility = 80 }) => ({
+    jobId: id,
+    romeCode: code,
+    title,
+    globalScore: score,
+    selectionScore: score,
+    confidenceScore: confidence,
+    feasibilityScore: feasibility,
+    status,
+    scores: { constraints: 20, values: 10, training: 15, market: 0 },
+    coreProfileMatch: { level: "compatible" },
+    job: { id, romeCode: code, title, family: title, domain: title, primarySectorId: "unknown", secondarySectorIds: [], appellations: [], skillGroups: [], requiredSkills: [], optionalSkills: [], interestTags: [], transitionTags: [], relatedJobs: [] }
+  });
+  const input = [
+    make({ id: "animation-best", code: "G1203", title: "Animateur jeunesse", score: 94 }),
+    make({ id: "animation-variant", code: "G1235", title: "Animateur de séjour de vacances", score: 90 }),
+    make({ id: "coordination", code: "K1206", title: "Coordinateur socioculturel", score: 88 }),
+    make({ id: "social", code: "K1217", title: "Éducateur socioéducatif", score: 84 }),
+    make({ id: "digital", code: "M1805", title: "Développeur web", score: 80 }),
+    make({ id: "nature", code: "A1203", title: "Agent des espaces naturels", score: 76 }),
+    make({ id: "excluded", code: "Z0001", title: "Comptable", score: 99, status: "excluded_for_now" })
+  ];
+  const orderBefore = input.map(item => `${item.jobId}:${item.globalScore}:${item.selectionScore}`);
+  const first = app.diversifyTopResults(input);
+  const second = app.diversifyTopResults(input);
+  const themes = first.top5.map(item => item.top5ThemeId);
+  if (first.top5.length !== 5 || new Set(themes).size !== 5) failures.push("top5:five_distinct_themes_expected");
+  if (first.top5[0]?.jobId !== "animation-best") failures.push("top5:best_global_representative_not_first");
+  if (first.top5.some(item => item.jobId === "animation-variant")) failures.push("top5:variant_used_as_representative");
+  if (!toArray(first.variantsByJob["animation-best"]).some(item => item.jobId === "animation-variant")) failures.push("top5:variant_not_discoverable");
+  if (first.top5.some(item => ["excluded_for_now", "discouraged"].includes(item.status))) failures.push("top5:inadmissible_filler");
+  if (canonicalSha256(first) !== canonicalSha256(second)) failures.push("top5:nondeterministic_selection");
+  if (canonicalSha256(orderBefore) !== canonicalSha256(input.map(item => `${item.jobId}:${item.globalScore}:${item.selectionScore}`))) failures.push("top5:source_order_or_scores_mutated");
+  const narrow = app.diversifyTopResults(input.slice(0, 4));
+  if (narrow.top5.length >= 5 || !narrow.top5ShortfallReason) failures.push("top5:honest_shortfall_missing");
+  return {
+    status: failures.length ? "failed" : "ok",
+    revision: first.top5ThemeContractRevision,
+    threshold: first.top5RelevanceThreshold,
+    themes,
+    representatives: first.top5.map(item => ({ jobId: item.jobId, themeId: item.top5ThemeId, score: item.selectionScore })),
+    failures
+  };
+}
+
+function validateMarketInterpretationMatrix(app) {
+  const failures = [];
+  const dimension = (level, status = "available", value = 1) => ({ level, status, value });
+  const cases = [
+    { id: "low_strong", input: { offerVolume: dimension("low"), territorialPresence: dimension("strong_local", "available", 87), nationalOfferVolume: dimension("high"), territoryLabel: "Aude" }, expected: "low_absolute_volume_strong_local_presence", forbidden: /peu représenté/i },
+    { id: "low_weak", input: { offerVolume: dimension("low"), territorialPresence: dimension("weak_local"), nationalOfferVolume: dimension("high"), territoryLabel: "Aude" }, expected: "active_national_low_local" },
+    { id: "high_strong", input: { offerVolume: dimension("high"), territorialPresence: dimension("top_local", "available", 96), nationalOfferVolume: dimension("high"), territoryLabel: "Aude" }, expected: "high_absolute_and_local_presence" },
+    { id: "tension_low", input: { tension: dimension("very_high"), offerVolume: dimension("low"), territorialPresence: dimension("strong_local"), territoryLabel: "Aude" }, expected: "high_tension_low_volume" },
+    { id: "bmo_masked", input: { recruitmentProjects: dimension("unclassified"), recruitmentDifficulty: dimension("unknown", "suppressed_partial", null), seasonality: dimension("unknown", "suppressed_partial", null) }, expected: "partial_data" },
+    { id: "territory_fallback", input: { offerVolume: { ...dimension("medium"), territoryLabel: "Occitanie" }, territorialPresence: dimension("medium_local"), territoryLabel: "Occitanie" }, expected: "partial_data" },
+    { id: "no_history", input: { trend: dimension("unknown", "insufficient_history", null) }, expected: "no_robust_data" }
+  ];
+  const rows = cases.map(test => {
+    const actual = app.interpretMarketSynthesis(test.input);
+    if (actual.caseId !== test.expected) failures.push(`market-matrix:${test.id}:${actual.caseId}`);
+    if (test.forbidden?.test(actual.text)) failures.push(`market-matrix:${test.id}:contradictory_text`);
+    return { id: test.id, expected: test.expected, actual };
+  });
+  return { status: failures.length ? "failed" : "ok", rows, failures };
 }
 
 function validateSectors(app) {
@@ -634,7 +710,7 @@ export function validateCedricScenario(app, envelope = null) {
       accessPaths: result.scoreDetails?.training?.accessFeasibility?.accessPaths || []
     } : null];
   }));
-  const top5 = results.top5.map(result => ({ romeCode: result.job?.romeCode || result.romeCode, title: result.title, score: result.globalScore, status: result.status, mainReason: result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || null }));
+  const top5 = results.top5.map(result => ({ romeCode: result.job?.romeCode || result.romeCode, title: result.title, score: result.globalScore, status: result.status, top5ThemeId: result.top5ThemeId, top5ThemeLabel: result.top5ThemeLabel, mainReason: result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || null }));
   const constraintUnknownAsStrong = results.completeList.filter(result => {
     const detail = result.scoreDetails?.constraints || {};
     return detail.activeCount > 0 && detail.unknownCount === detail.activeCount && result.scores?.constraints >= 14;
@@ -658,6 +734,8 @@ export function validateCedricScenario(app, envelope = null) {
   if (mediumPrefixHardExclusions.length) failures.push(`cedric:medium_prefix_hard_exclusions_${mediumPrefixHardExclusions.length}`);
   if (possibleNowWithMissingAccess.length) failures.push(`cedric:possible_now_with_missing_access_${possibleNowWithMissingAccess.length}`);
   if (top5[0]?.romeCode !== "G1203") failures.push(`cedric:G1203_not_first_${top5[0]?.romeCode || "missing"}`);
+  if (new Set(top5.map(item => item.top5ThemeId)).size !== top5.length) failures.push("cedric:duplicate_top5_theme");
+  if (top5.filter(item => ["G1203", "G1235"].includes(item.romeCode)).length > 1) failures.push("cedric:animation_variants_repeat_top5");
   if (top5.some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top5");
   if (results.completeList.slice(0, 15).some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top15");
   if (rows.G1202?.primarySectorId !== "culture_communication" || !rows.G1202?.secondarySectorIds.includes("education_enfance")) failures.push("cedric:G1202_bad_sector");
@@ -765,6 +843,8 @@ export async function loadGeneratedBundle(directory = ROME500_DIR, options = {})
     marketManifest: await readJson(path.join(MARKET_DIR, "market-import-manifest.json"), null),
     marketQualityReport: await readJson(path.join(MARKET_DIR, "market-quality-report.json"), null),
     marketPackageIdentity: await readJson(path.join(MARKET_DIR, "market-package-identity.json"), null),
+    marketTemporalContract: await readJson(path.join(MARKET_DIR, "market-temporal-contract.json"), null),
+    marketTrends: await readJson(path.join(MARKET_DIR, options.marketTrendsFile || `market-trends.rome${EXPECTED_JOBS_COUNT}.json`), null),
     marketNational: await readJson(path.join(MARKET_DIR, "market-national.rome.json"), []),
     marketOccitanie: await readJson(path.join(MARKET_DIR, "market-occitanie.rome.json"), []),
     marketAude: await readJson(path.join(MARKET_DIR, "market-aude.rome.json"), []),
@@ -825,6 +905,9 @@ this.__boussole = {
   calculateConstraintScore,
   calculateContextScore,
   calculateAllMatches,
+  diversifyTopResults,
+  inferTop5Theme,
+  interpretMarketSynthesis,
   getJobSectorProfile,
   evaluateSectorExclusionDecision,
   createExplorationResultShell,

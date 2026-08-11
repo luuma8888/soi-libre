@@ -39,12 +39,14 @@ export async function main() {
       accessSummaryFilename: process.env.RUNTIME_ACCESS_SUMMARY_FILE || `access-summary.rome${EXPECTED_COUNT}.json`,
       officialConstraintSummaryFilename: process.env.RUNTIME_CONSTRAINT_SUMMARY_FILE || `official-constraint-summary.rome${EXPECTED_COUNT}.json`,
       marketFapEnrichmentFilename: process.env.RUNTIME_MARKET_ENRICHMENT_FILE || `market-fap-enrichment.rome${EXPECTED_COUNT}.json`,
+      marketTrendsFilename: process.env.RUNTIME_MARKET_TRENDS_FILE || `market-trends.rome${EXPECTED_COUNT}.json`,
       expectedCounts: runtime.counts,
       ruleVersions: runtime.ruleVersions || {},
       validationScope: runtime.datasetIdentity?.validationScope || "validated_for_boussole_pro_v0_8"
     },
     market: {
       marketContractRevision: market.marketContractRevision,
+      temporalContractRevision: market.temporalContractRevision || null,
       packageFingerprintSha256: market.packageFingerprintSha256,
       counts: market.counts || {},
       coverage: market.coverage || {}

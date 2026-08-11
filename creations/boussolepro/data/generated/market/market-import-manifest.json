@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "3.0.0",
-  "datasetName": "Boussole Pro - couche marché phase 2",
-  "datasetVersion": "market-v3-phase2-rome1000-2026-08-10",
-  "generatedAt": "2026-08-10T13:30:33.542Z",
-  "status": "completed_with_official_fap_rome_context_activation",
+  "schemaVersion": "4.0.0",
+  "datasetName": "Boussole Pro - couche marché phase 3",
+  "datasetVersion": "market-v4-phase3-rome1000-2026-08-11",
+  "generatedAt": "2026-08-11T20:30:00.000Z",
+  "status": "completed_with_official_recent_evolution_context_only",
   "outputPath": "creations/boussolepro/data/generated/market/",
   "files": [
     "territories.json",
@@ -20,7 +20,15 @@
     "market-fap-enrichment.rome1000.json",
     "fap-rome-mapping-status.json",
     "market-contract.json",
-    "market-package-identity.json"
+    "market-package-identity.json",
+    "dares-tension-fap2021.json",
+    "fap2021-nomenclature.json",
+    "market-temporal-contract.json",
+    "market-temporal-series.json",
+    "market-offer-snapshot-registry.json",
+    "market-trends.rome1000.json",
+    "market-trends-source-metadata.json",
+    "market-trends-quality-report.json"
   ],
   "sourcePolicy": {
     "noActiveOffers": true,
@@ -40,32 +48,47 @@
     "offerVolumeIsNotTension": true,
     "weakOrAmbiguousMappingCannotInfluenceRanking": true
   },
-  "marketContractRevision": "market-contract-v3.0.0-phase2",
+  "marketContractRevision": "market-contract-v4.0.0-phase3",
   "marketLayerIdentity": {
-    "schemaVersion": "3.0.0",
+    "schemaVersion": "4.0.0",
     "identityKind": "boussole_market_layer_identity",
-    "marketContractRevision": "market-contract-v3.0.0-phase2",
+    "marketContractRevision": "market-contract-v4.0.0-phase3",
     "packageFingerprintAlgorithm": "sha256_of_sorted_market_component_hashes_and_counts",
-    "packageFingerprintSha256": "4a22d1fa69cbb0966671239a24d75f02e25552d334bb8e54b3b33ee60a9dae01",
+    "packageFingerprintSha256": "77e2d098f0019564239bc03e7f5e5cfa8c1b19e502ec9c33c991fc6c540e1795",
     "parserVersions": {
       "xlsx": "xlsx-stream-reader-v1",
       "phase1": "prepare-boussole-market-phase1-v1",
-      "phase2": "prepare-boussole-market-phase2-v1"
+      "phase2": "prepare-boussole-market-phase2-v1",
+      "phase3": "prepare-boussole-market-phase3-v1"
     },
     "sourcePublishedAt": {
       "bmo": "2026-04-21",
       "daresTension": "2026-02-04",
-      "fapNomenclature": "2024-04-30"
+      "fapNomenclature": "2024-04-30",
+      "bmoHistoryLatest": "2026-04-21",
+      "daresTensionHistoryLatest": "2026-02-04"
     },
     "sourceVintage": {
       "offers": "2026T1",
       "bmo": "2026",
       "daresTension": "2024",
-      "fapNomenclature": "FAP2021"
+      "fapNomenclature": "FAP2021",
+      "bmoHistory": [
+        "2024",
+        "2025",
+        "2026"
+      ],
+      "daresTensionHistory": [
+        "2023",
+        "2024"
+      ],
+      "offerHistory": [
+        "2026T1"
+      ]
     },
-    "normalizedAt": "2026-08-10T13:35:57.441Z",
-    "derivedAt": "2026-08-10T13:35:57.441Z",
-    "packagedAt": "2026-08-10T13:35:57.441Z",
+    "normalizedAt": "2026-08-11T20:30:00.000Z",
+    "derivedAt": "2026-08-11T20:30:00.000Z",
+    "packagedAt": "2026-08-11T20:30:00.000Z",
     "sources": [
       {
         "id": "france_travail_market_api",
@@ -78,7 +101,11 @@
         "producer": "France Travail",
         "sourceVintage": "2026",
         "sourcePublishedAt": "2026-04-21",
-        "url": "https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d"
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d",
+        "retrievedForNormalizationAt": "2026-08-11T20:30:00.000Z",
+        "localInputSizeBytes": 3755481,
+        "localInputSha256": "735d0443b799b4c18c145055f87244a355a48b6286ee98ddbab272491d9792e0",
+        "format": "xlsx"
       },
       {
         "id": "dares_france_travail_tension_2024",
@@ -115,6 +142,50 @@
           "intitule_rome"
         ],
         "rows": 1096
+      },
+      {
+        "id": "france_travail_bmo_2024",
+        "producer": "France Travail",
+        "sourceVintage": "2024",
+        "sourcePublishedAt": "2024-04-25",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/4319f5e8-a8e6-476c-8da0-c0d3439ebb55",
+        "retrievedForNormalizationAt": "2026-08-11T20:30:00.000Z",
+        "localInputSizeBytes": 3491167,
+        "localInputSha256": "12983d7415493635e4e04bb1504f464ddbc3521c5e605d99010af1011e570ff1",
+        "format": "xlsx"
+      },
+      {
+        "id": "france_travail_bmo_2025",
+        "producer": "France Travail",
+        "sourceVintage": "2025",
+        "sourcePublishedAt": "2025-04-17",
+        "url": "https://www.data.gouv.fr/api/1/datasets/r/54478315-aafd-4070-b8df-a5647297e0c0",
+        "retrievedForNormalizationAt": "2026-08-11T20:30:00.000Z",
+        "localInputSizeBytes": 3273557,
+        "localInputSha256": "244e71ec6514800afe6f18823cd817c20426683cc0e87e9c7c30688e99a3532a",
+        "format": "xlsx"
+      },
+      {
+        "id": "dares_tension_2023",
+        "producer": "Dares et France Travail",
+        "sourceVintage": "2023",
+        "sourcePublishedAt": "2025-04-30",
+        "url": "https://statistiques.pole-emploi.org/offres/Handlers/HTFile.ashx?MEDIAID=183486&SITEKEY=7550205d-2042-4165-bb99-fd14a4b3f938",
+        "retrievedForNormalizationAt": "2026-08-11T20:30:00.000Z",
+        "localInputSizeBytes": 66370787,
+        "localInputSha256": "c5ca6583e30f6f5e44f724936e26a0068d6b3e8fa49824f7487b55f69ddedf31",
+        "format": "xlsx"
+      },
+      {
+        "id": "dares_tension_2024",
+        "producer": "Dares et France Travail",
+        "sourceVintage": "2024",
+        "sourcePublishedAt": "2026-02-04",
+        "url": "https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108",
+        "retrievedForNormalizationAt": "2026-08-11T20:30:00.000Z",
+        "localInputSizeBytes": 71386286,
+        "localInputSha256": "8d91d46acff79d74a4ba9f1d65c51b00340c143661046cf1827eda655f2bc3c3",
+        "format": "xlsx"
       }
     ],
     "territories": [
@@ -131,7 +202,10 @@
       "fapRomeMappings": 1096,
       "fapRomeRankingEligible": 0,
       "fapRomeSourceRows": 1096,
-      "derivedRomeRows": 1000
+      "derivedRomeRows": 1000,
+      "temporalSeriesPoints": 6312,
+      "marketTrendRuntimeRows": 1000,
+      "offerSnapshots": 1
     },
     "coverage": {
       "activeRomeJobs": 1000,
@@ -167,7 +241,7 @@
     "components": [
       {
         "fileName": "market-contract.json",
-        "sha256": "42574d688861d94d6440a48d94cb3f65f90f5ee456876e7f44e0267d4bc459fd",
+        "sha256": "58c88b1485fa48a49404100d9ac51bd5aa07c847faa189deb369816da5661a9a",
         "count": 1
       },
       {
@@ -219,9 +293,39 @@
         "fileName": "market-fap-enrichment.rome1000.json",
         "sha256": "4940fa0675f907d97eeb22eef8d042b4d4acfc01336dc0759ba51d2cc7bc5e5e",
         "count": 1000
+      },
+      {
+        "fileName": "market-temporal-contract.json",
+        "sha256": "580461bc0d9b8e79939967c27c67ab1cfcd5604cb308c6ebdfcaf37f180df6c7",
+        "count": 1
+      },
+      {
+        "fileName": "market-temporal-series.json",
+        "sha256": "f055f3b27ce025cd68d628c7cad4cabf3a05db28ff7c46842cf6f4c15c7f0515",
+        "count": 6312
+      },
+      {
+        "fileName": "market-offer-snapshot-registry.json",
+        "sha256": "d93dd454d40201838ee55e5b288837f51291122535703ace8539e471e44ef1a9",
+        "count": 1
+      },
+      {
+        "fileName": "market-trends.rome1000.json",
+        "sha256": "d88af577f07e2497201320d4be6c17df218e6bd5a29ed780bf816f92ea94908e",
+        "count": 1000
+      },
+      {
+        "fileName": "market-trends-source-metadata.json",
+        "sha256": "0d13775c0d76ce90f04a62cc9871f2b0ffaa63ad68ad16b3c5c6704a9d9038f1",
+        "count": 1
+      },
+      {
+        "fileName": "market-trends-quality-report.json",
+        "sha256": "c1eb938e35885601669ed61a335ff651e4408b1801b63d8d4931984fd3b735b3",
+        "count": 1
       }
     ],
-    "status": "market_phase2_fap_bmo_dares_active_context_only",
+    "status": "market_phase3_official_recent_evolution_context_only",
     "packagedSourceRows": {
       "bmoFapRows": 550,
       "daresTensionFapRows": 627,
@@ -234,7 +338,23 @@
       "withDares": 482
     },
     "runtimeLoadedRows": {
-      "compactFapEnrichmentRows": 1000
+      "compactFapEnrichmentRows": 1000,
+      "marketTrendRuntimeRows": 1000
+    },
+    "temporalContractRevision": "market-temporal-contract-v1.0.0",
+    "temporalCoverage": {
+      "activeRomeJobs": 1000,
+      "jobsWithBmoHistory": 491,
+      "jobsWithDaresHistory": 466,
+      "bmoTemporalPoints": 5058,
+      "daresTemporalPoints": 1254,
+      "suppressedBmoPoints": 3039,
+      "imputedDaresPointsExcludedFromTrend": 302,
+      "offerSnapshots": 1,
+      "offerHistoryComparisonStatus": "insufficient_history",
+      "jobsWithBmo": 491,
+      "jobsWithDaresTension": 482
     }
-  }
+  },
+  "temporalContractRevision": "market-temporal-contract-v1.0.0"
 }

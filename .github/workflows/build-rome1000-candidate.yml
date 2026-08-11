@@ -135,35 +135,6 @@ jobs:
           ROME_CANDIDATE_EXPECTED_COUNT: "1000"
           ROME_CANDIDATE_BASE_SUBDIR: rome800-candidate
           ROME_CANDIDATE_BASE_COUNT: "800"
-      - name: Extend observed market volumes only to additions
-        if: ${{ !inputs.reuse_generated }}
-        run: node scripts/generate-market-data.mjs
-        env:
-          DRY_RUN: "false"
-          MARKET_MERGE_EXISTING: "true"
-          MARKET_SOURCE: api_marche_travail
-          MARKET_TERRITORIES: ${{ vars.MARKET_TERRITORIES || 'FR,REG-76,DEP-11' }}
-          MARKET_ROME_CODES_FILE: creations/boussolepro/data/local/rome-codes-1000-additions.json
-          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
-          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
-          FT_MARKET_SCOPE: ${{ vars.FT_MARKET_SCOPE }}
-          FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
-          FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
-          MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
-          MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
-          MARKET_PERIOD_TYPE: ${{ vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
-          MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
-          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
-          MARKET_FAIL_ON_EMPTY: "true"
-      - name: Rebuild FAP BMO Dares context for 1000 jobs
-        if: ${{ !inputs.reuse_generated }}
-        run: node scripts/prepare-boussole-market-phase2.mjs
-        env:
-          MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome1000-candidate/jobs.rome.json
-          MARKET_FAP_ENRICHMENT_FILE: market-fap-enrichment.rome1000.json
-          MARKET_DATASET_VERSION: market-v3-phase2-rome1000-2026-08-10
-          FAP_ROME_SOURCE_PATH: creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx
-
       - name: Build coherent ROME1000 runtime identity
         run: node scripts/boussole-runtime-identity.mjs
         env:
@@ -172,11 +143,12 @@ jobs:
           RUNTIME_ACCESS_SUMMARY_FILE: access-summary.rome1000.json
           RUNTIME_CONSTRAINT_SUMMARY_FILE: official-constraint-summary.rome1000.json
           RUNTIME_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome1000.json
-          RUNTIME_BUNDLE_REVISION: rome1000-runtime-v0.1-r1
-          RUNTIME_RELEASE_ID: 20260810-rome1000-data-01
-          RUNTIME_APP_VERSION: v0.8.2-alpha
-          RUNTIME_BUILD_ID: 20260810-runtime-data-boundary-01
-          RUNTIME_BUILD_DATE: "2026-08-10"
+          RUNTIME_MARKET_TRENDS_FILE: market-trends.rome1000.json
+          RUNTIME_BUNDLE_REVISION: rome1000-runtime-v0.1-r2
+          RUNTIME_RELEASE_ID: 20260811-rome1000-market-phase3-01
+          RUNTIME_APP_VERSION: v0.8.3-alpha
+          RUNTIME_BUILD_ID: 20260811-top5-market-trends-01
+          RUNTIME_BUILD_DATE: "2026-08-11"
           RUNTIME_VALIDATION_SCOPE: validated_for_boussole_pro_v0_8
       - name: Validate generated ROME1000 structure
         run: node scripts/validate-rome-candidate.mjs
@@ -195,7 +167,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git status --porcelain
           git diff --name-only
-          git add creations/boussolepro/data/local/rome-codes-1000.json creations/boussolepro/data/local/rome-codes-1000-additions.json creations/boussolepro/data/local/rome-codes-1000-audit.json creations/boussolepro/data/local/rome-codes-1000-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome1000-candidate creations/boussolepro/data/generated/market creations/boussolepro/data/generated/workflow-boundary-report.json
+          git add creations/boussolepro/data/local/rome-codes-1000.json creations/boussolepro/data/local/rome-codes-1000-additions.json creations/boussolepro/data/local/rome-codes-1000-audit.json creations/boussolepro/data/local/rome-codes-1000-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome1000-candidate creations/boussolepro/data/generated/workflow-boundary-report.json
           node scripts/verify-workflow-data-boundary.mjs verify-staged
           git commit -m "Checkpoint generated ROME1000 data" || echo "No checkpoint changes"
           git push origin "HEAD:${GITHUB_REF_NAME}"
@@ -238,11 +210,11 @@ jobs:
         env:
           ROME_DELIVERY_EXPECTED_COUNT: "1000"
           ROME_DELIVERY_SUBDIR: rome1000-candidate
-          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.2-alpha-rome1000
+          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome1000
       - uses: actions/upload-artifact@v6
         with:
-          name: boussole-pro-v0.8.2-alpha-rome1000-data
-          path: tmp/monde-pro/livraison-boussole-pro-v0.8.2-alpha-rome1000
+          name: boussole-pro-v0.8.3-alpha-rome1000-data
+          path: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome1000
           if-no-files-found: error
           retention-days: 14
       - name: Commit generated ROME1000 package only
@@ -251,7 +223,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git status --porcelain
           git diff --name-only
-          git add creations/boussolepro/data/local/rome-codes-1000.json creations/boussolepro/data/local/rome-codes-1000-additions.json creations/boussolepro/data/local/rome-codes-1000-audit.json creations/boussolepro/data/local/rome-codes-1000-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome1000-candidate creations/boussolepro/data/generated/market creations/boussolepro/data/generated/active-runtime.json creations/boussolepro/data/generated/workflow-boundary-report.json
+          git add creations/boussolepro/data/local/rome-codes-1000.json creations/boussolepro/data/local/rome-codes-1000-additions.json creations/boussolepro/data/local/rome-codes-1000-audit.json creations/boussolepro/data/local/rome-codes-1000-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome1000-candidate creations/boussolepro/data/generated/active-runtime.json creations/boussolepro/data/generated/workflow-boundary-report.json
           node scripts/verify-workflow-data-boundary.mjs verify-staged
           git commit -m "Build ROME1000 candidate data" || echo "No changes"
           git push origin "HEAD:${GITHUB_REF_NAME}"

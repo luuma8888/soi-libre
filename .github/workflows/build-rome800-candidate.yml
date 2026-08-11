@@ -112,34 +112,6 @@ jobs:
           ROME_CANDIDATE_SUBDIR: rome800-candidate
           ROME_CANDIDATE_VERSION: rome800-candidate-v0.1
           ROME_CANDIDATE_BASE_SUBDIR: rome500-experimental
-      - name: Extend observed market volumes only to additions
-        if: ${{ !inputs.reuse_generated }}
-        run: node scripts/generate-market-data.mjs
-        env:
-          DRY_RUN: "false"
-          MARKET_MERGE_EXISTING: "true"
-          MARKET_SOURCE: api_marche_travail
-          MARKET_TERRITORIES: ${{ vars.MARKET_TERRITORIES || 'FR,REG-76,DEP-11' }}
-          MARKET_ROME_CODES_FILE: creations/boussolepro/data/local/rome-codes-800-additions.json
-          FT_CLIENT_ID: ${{ secrets.FT_CLIENT_ID }}
-          FT_CLIENT_SECRET: ${{ secrets.FT_CLIENT_SECRET }}
-          FT_MARKET_SCOPE: ${{ vars.FT_MARKET_SCOPE }}
-          FT_MARKET_TOKEN_URL: ${{ vars.FT_MARKET_TOKEN_URL }}
-          FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
-          MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
-          MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
-          MARKET_PERIOD_TYPE: ${{ vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
-          MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
-          MARKET_REQUEST_DELAY_MS: ${{ vars.MARKET_REQUEST_DELAY_MS || '250' }}
-          MARKET_FAIL_ON_EMPTY: "true"
-      - name: Rebuild FAP BMO Dares context for 800 jobs
-        if: ${{ !inputs.reuse_generated }}
-        run: node scripts/prepare-boussole-market-phase2.mjs
-        env:
-          MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome800-candidate/jobs.rome.json
-          MARKET_FAP_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
-          MARKET_DATASET_VERSION: market-v3-phase2-rome800-2026-08-10
-          FAP_ROME_SOURCE_PATH: creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx
       - name: Build coherent runtime identity
         run: node scripts/boussole-runtime-identity.mjs
         env:
@@ -150,9 +122,9 @@ jobs:
           RUNTIME_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
           RUNTIME_BUNDLE_REVISION: rome800-runtime-v0.1-r1
           RUNTIME_RELEASE_ID: 20260810-rome800-data-boundary-01
-          RUNTIME_APP_VERSION: v0.8.2-alpha
-          RUNTIME_BUILD_ID: 20260810-runtime-data-boundary-01
-          RUNTIME_BUILD_DATE: "2026-08-10"
+          RUNTIME_APP_VERSION: v0.8.3-alpha
+          RUNTIME_BUILD_ID: 20260811-top5-market-trends-01
+          RUNTIME_BUILD_DATE: "2026-08-11"
           RUNTIME_VALIDATION_SCOPE: validated_for_boussole_pro_v0_8
       - name: Validate generated ROME800 structure
         run: node scripts/validate-rome800-candidate.mjs
@@ -166,7 +138,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git status --porcelain
           git diff --name-only
-          git add creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/market creations/boussolepro/data/generated/workflow-boundary-report.json
+          git add creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/workflow-boundary-report.json
           node scripts/verify-workflow-data-boundary.mjs verify-staged
           git commit -m "Checkpoint generated ROME800 data" || echo "No checkpoint changes"
           git push origin "HEAD:${GITHUB_REF_NAME}"
@@ -205,11 +177,11 @@ jobs:
         env:
           ROME_DELIVERY_EXPECTED_COUNT: "800"
           ROME_DELIVERY_SUBDIR: rome800-candidate
-          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.2-alpha-rome800
+          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome800
       - uses: actions/upload-artifact@v6
         with:
-          name: boussole-pro-v0.8.2-alpha-rome800-data
-          path: tmp/monde-pro/livraison-boussole-pro-v0.8.2-alpha-rome800
+          name: boussole-pro-v0.8.3-alpha-rome800-data
+          path: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome800
           if-no-files-found: error
           retention-days: 14
       - name: Commit generated ROME800 package
@@ -218,7 +190,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git status --porcelain
           git diff --name-only
-          git add creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/market creations/boussolepro/data/generated/active-runtime.json creations/boussolepro/data/generated/workflow-boundary-report.json
+          git add creations/boussolepro/data/local/rome-codes-800.json creations/boussolepro/data/local/rome-codes-800-additions.json creations/boussolepro/data/local/rome-codes-800-audit.json creations/boussolepro/data/local/rome-codes-800-recovery.json creations/boussolepro/data/local/rome-universe-official.json creations/boussolepro/data/generated/rome800-candidate creations/boussolepro/data/generated/active-runtime.json creations/boussolepro/data/generated/workflow-boundary-report.json
           node scripts/verify-workflow-data-boundary.mjs verify-staged
           git commit -m "Build ROME800 candidate corpus" || echo "No changes"
           git push origin "HEAD:${GITHUB_REF_NAME}"

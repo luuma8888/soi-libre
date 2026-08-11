@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "temporalContractRevision": "market-temporal-contract-v1.0.0",
+  "marketContractRevision": "market-contract-v4.0.0-phase3",
+  "requiredFields": [
+    "indicatorId",
+    "sourceName",
+    "sourceVintage",
+    "period",
+    "territoryId",
+    "territoryLabel",
+    "classificationVersion",
+    "statisticalFamilyId",
+    "romeCode",
+    "value",
+    "unit",
+    "status",
+    "isSuppressed",
+    "isImputed",
+    "mappingMethod",
+    "mappingConfidence",
+    "comparisonStatus",
+    "breakReason"
+  ],
+  "comparisonStatuses": [
+    "comparable",
+    "insufficient_history",
+    "missing_value",
+    "suppressed_value",
+    "classification_break",
+    "territory_break",
+    "method_break",
+    "shared_family_context_only"
+  ],
+  "comparableWindows": {
+    "bmo": [
+      "2024",
+      "2025",
+      "2026"
+    ],
+    "daresTension": [
+      "2023",
+      "2024"
+    ],
+    "observedOffersMinimumSnapshots": 3
+  },
+  "classificationRules": {
+    "bmo": "FAP2021 same source schema and territory",
+    "daresTension": "FAP2021 direct recent evolution; explicit break before 2023",
+    "offers": "same API method, activity nomenclature, territory and period definition"
+  },
+  "rankingPolicy": {
+    "bmo": 0,
+    "daresTension": 0,
+    "observedOfferTrend": 0
+  },
+  "missingValuePolicy": "masked_missing_or_imputed_values_are_never_zero_and_do_not_receive_a_trend_label"
+}

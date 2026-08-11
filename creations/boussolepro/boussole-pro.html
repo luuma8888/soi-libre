@@ -1698,20 +1698,21 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.8.2-alpha",
-  buildId: "20260810-runtime-data-boundary-01",
-  buildDate: "2026-08-10",
-  defaultDatasetVersion: "rome800-candidate-v0.1",
-  runtimeBundleRevision: "rome800-runtime-v0.1-r1",
-  runtimeBundleFingerprintSha256: "0cba2f8cefb798a2133c4ca3836dd201ceb790f363acd7abdc034591cf7eded2",
-  marketContractRevision: "market-contract-v3.0.0-phase2",
-  marketPackageFingerprintSha256: "0c2c18bd156c1126984172defbebd86f37d13ce38cee72e2e2aea41e143c25c8",
+  appVersion: "v0.8.3-alpha",
+  buildId: "20260811-top5-market-trends-01",
+  buildDate: "2026-08-11",
+  defaultDatasetVersion: "rome1000-candidate-v0.1",
+  runtimeBundleRevision: "rome1000-runtime-v0.1-r2",
+  runtimeBundleFingerprintSha256: "f3c2ce2a3a754bf903d93467a600b3bdb20c8d6d9bb6819fafd344aaf3b5848b",
+  marketContractRevision: "market-contract-v4.0.0-phase3",
+  temporalContractRevision: "market-temporal-contract-v1.0.0",
+  marketPackageFingerprintSha256: "77e2d098f0019564239bc03e7f5e5cfa8c1b19e502ec9c33c991fc6c540e1795",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_8",
-  testProfilesRevision: "integrated-12-v0.8.2",
-  expectedJobsCount: 800,
-  expectedSkillsEngineCount: 11771,
-  expectedAccessSummaryCount: 800
+  testProfilesRevision: "integrated-12-v0.8.3",
+  expectedJobsCount: 1000,
+  expectedSkillsEngineCount: 13159,
+  expectedAccessSummaryCount: 1000
 });
 
 const DATASET_VERSION_ALIASES = Object.freeze({
@@ -1726,23 +1727,25 @@ function fallbackActiveRuntimeDescriptor() {
     descriptorKind: "boussole_active_runtime_fallback",
     source: "application_fallback",
     runtime: {
-      basePath: "data/generated/rome800-candidate/",
+      basePath: "data/generated/rome1000-candidate/",
       marketBasePath: "data/generated/market/",
-      label: "Corpus ROME800 candidat consolidé",
+      label: "Corpus ROME1000 candidat consolidé",
       corpusMode: "generated_rome_active",
       expectedJobsCount: BUILD_INFO.expectedJobsCount,
       datasetVersion: BUILD_INFO.defaultDatasetVersion,
       runtimeBundleRevision: BUILD_INFO.runtimeBundleRevision,
       runtimeBundleFingerprintSha256: BUILD_INFO.runtimeBundleFingerprintSha256,
-      accessSummaryFilename: "access-summary.rome800.json",
-      officialConstraintSummaryFilename: "official-constraint-summary.rome800.json",
-      marketFapEnrichmentFilename: "market-fap-enrichment.rome800.json",
+      accessSummaryFilename: "access-summary.rome1000.json",
+      officialConstraintSummaryFilename: "official-constraint-summary.rome1000.json",
+      marketFapEnrichmentFilename: "market-fap-enrichment.rome1000.json",
+      marketTrendsFilename: "market-trends.rome1000.json",
       expectedCounts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
-      ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: "v0.8.1-alpha" },
+      ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: "v0.8.3-alpha" },
       validationScope: BUILD_INFO.validationScope
     },
     market: {
       marketContractRevision: BUILD_INFO.marketContractRevision,
+      temporalContractRevision: BUILD_INFO.temporalContractRevision,
       packageFingerprintSha256: BUILD_INFO.marketPackageFingerprintSha256
     }
   };
@@ -1778,6 +1781,7 @@ function activeRuntimeLoadOptions(descriptor = App?.state?.activeRuntimeDescript
     accessSummaryFilename: runtime.accessSummaryFilename,
     officialConstraintSummaryFilename: runtime.officialConstraintSummaryFilename,
     marketFapEnrichmentFilename: runtime.marketFapEnrichmentFilename,
+    marketTrendsFilename: runtime.marketTrendsFilename,
     requireRuntimeCompatibility: true
   };
 }
@@ -1877,6 +1881,7 @@ function getMarketLayerIdentity(dataset = App?.state?.dataset) {
   return {
     identityKind: identity.identityKind || "boussole_market_layer_identity",
     marketContractRevision: identity.marketContractRevision || BUILD_INFO.marketContractRevision,
+    temporalContractRevision: identity.temporalContractRevision || BUILD_INFO.temporalContractRevision,
     packageFingerprintSha256: identity.packageFingerprintSha256 || null,
     sourceVintage: identity.sourceVintage || {},
     territories: toArray(identity.territories),
@@ -1893,10 +1898,12 @@ function assessMarketLayerCompatibility(dataset = App?.state?.dataset) {
   const active = App?.state?.activeRuntimeDescriptor?.market || {};
   const expected = {
     marketContractRevision: active.marketContractRevision || BUILD_INFO.marketContractRevision,
+    temporalContractRevision: active.temporalContractRevision || BUILD_INFO.temporalContractRevision,
     packageFingerprintSha256: active.packageFingerprintSha256 || BUILD_INFO.marketPackageFingerprintSha256
   };
   const issues = [];
   if (actual.marketContractRevision !== expected.marketContractRevision) issues.push("market_contract_revision_mismatch");
+  if (actual.temporalContractRevision !== expected.temporalContractRevision) issues.push("temporal_contract_revision_mismatch");
   if (actual.packageFingerprintSha256 !== expected.packageFingerprintSha256) issues.push("market_package_fingerprint_mismatch");
   return {
     compatible: issues.length === 0,
@@ -1959,7 +1966,9 @@ if (typeof window !== "undefined") {
   });
 }
 
-const TOP5_DIVERSITY_SCORE_DELTA = 4;
+const TOP5_THEME_CONTRACT_REVISION = "top5-functional-themes-v1";
+const TOP5_MIN_SELECTION_SCORE = 60;
+const TOP5_SELECTION_SCORE_WINDOW = 22;
 
 const DISPLAY_MODE_POLICY = {
   essential: {
@@ -5399,6 +5408,12 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
     top5: diversified.top5,
     variantsByJob: diversified.variantsByJob,
     diversityExplanation: diversified.diversityExplanation,
+    top5ThemeContractRevision: diversified.top5ThemeContractRevision,
+    top5RelevanceThreshold: diversified.top5RelevanceThreshold,
+    top5AdmissibleCandidateCount: diversified.top5AdmissibleCandidateCount,
+    top5AdmissibleThemeCount: diversified.top5AdmissibleThemeCount,
+    top5UnselectedThemeRepresentatives: diversified.top5UnselectedThemeRepresentatives,
+    top5ShortfallReason: diversified.top5ShortfallReason,
     visibleRecommended,
     visibleSecondary,
     visibleExcludedButRelevant,
@@ -5995,6 +6010,14 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     scoreCapsApplied: toArray(details.scoreCaps?.caps),
     top5SelectionReason: result.top5SelectionReason || "",
     top5SelectionLabel: result.top5SelectionLabel || "",
+    top5PresenceReason: result.top5PresenceReason || "",
+    top5ThemeId: result.top5ThemeId || "",
+    top5ThemeLabel: result.top5ThemeLabel || "",
+    top5ThemeConfidence: result.top5ThemeConfidence ?? null,
+    top5ThemeEvidence: result.top5ThemeEvidence || null,
+    top5ThemeCandidateCount: result.top5ThemeCandidateCount || 0,
+    top5VariantIds: toArray(result.top5VariantIds),
+    top5BestUnselectedCandidate: result.top5BestUnselectedCandidate || null,
     resultInterpretation: result.resultInterpretation || null,
     marketWeightWarning: details.weightAdjustment?.warning || "",
     subScores,
@@ -8350,7 +8373,9 @@ function interpretMarketSynthesis(input = {}) {
   if (high(input.tension) && low(input.offerVolume)) return marketInterpretation("high_tension_low_volume", "Les recrutements sont difficiles à satisfaire, mais ils restent peu nombreux dans le territoire sélectionné.");
   if (high(input.offerVolume) && high(input.seasonality)) return marketInterpretation("high_volume_high_seasonality", "Les recrutements sont nombreux, mais une grande part est saisonnière.");
   if (high(input.recruitmentDifficulty)) return marketInterpretation("high_difficulty_unknown_causes", "Les employeurs déclarent des difficultés de recrutement. Les données disponibles ne permettent pas d’en attribuer automatiquement la cause aux conditions de travail.");
+  if (low(input.offerVolume) && ["strong_local", "top_local"].includes(input.territorialPresence?.level)) return marketInterpretation("low_absolute_volume_strong_local_presence", `Le volume absolu reste modeste, mais ce métier figure parmi les plus représentés dans ${input.territoryLabel || "le territoire sélectionné"}.`);
   if (high(input.nationalOfferVolume) && low(input.offerVolume)) return marketInterpretation("active_national_low_local", `Le métier est bien présent en France, mais peu représenté dans ${input.territoryLabel || "le territoire sélectionné"} ; la mobilité élargirait les possibilités.`);
+  if (high(input.offerVolume) && ["strong_local", "top_local"].includes(input.territorialPresence?.level)) return marketInterpretation("high_absolute_and_local_presence", `Le volume observé est important et ce métier figure parmi les plus représentés dans ${input.territoryLabel || "le territoire sélectionné"}.`);
   if (high(input.offerVolume) && ["moderate", "medium", "unknown"].includes(input.tension?.level || "unknown")) return marketInterpretation("high_local_volume_no_high_tension", "Le volume local est important, sans preuve d’une tension forte.");
   const known = [input.offerVolume, input.recruitmentProjects, input.recruitmentDifficulty, input.seasonality, input.tension, input.territorialPresence].filter(marketDimensionKnown);
   if (known.length) {
@@ -8360,13 +8385,13 @@ function interpretMarketSynthesis(input = {}) {
     if (marketDimensionKnown(input.recruitmentDifficulty)) present.push("la difficulté BMO");
     if (marketDimensionKnown(input.seasonality)) present.push("la saisonnalité");
     if (marketDimensionKnown(input.tension)) present.push("la tension Dares");
-    return marketInterpretation("partial_data", `Données partielles : ${present.join(", ")} ${present.length > 1 ? "sont connus" : "est connu"} ; les autres dimensions ne sont pas disponibles.`);
+    return marketInterpretation("partial_data", `Données partielles : ${present.join(", ")} disponible${present.length > 1 ? "s" : ""} ; les autres dimensions ne sont pas disponibles.`);
   }
   return marketInterpretation("no_robust_data", "Données marché insuffisantes pour ce métier et ce territoire.");
 }
 
 function marketInterpretation(caseId, text) {
-  return { revision: "market-interpretation-v1", caseId, text };
+  return { revision: "market-interpretation-v2", caseId, text };
 }
 
 function marketDimensionKnown(item = {}) {
@@ -8413,36 +8438,86 @@ function determineFeasibilityStatus(globalScore, scores, criteria, job, details 
   return "discouraged";
 }
 
+function inferTop5Theme(job = {}) {
+  const romeCode = String(job.romeCode || "").toUpperCase();
+  const title = normalizeText(job.title || "");
+  const appellations = normalizeText(toArray(job.appellations).join(" "));
+  const skillGroups = normalizeText(toArray(job.skillGroups).map(group => group.label || group.issueLabel || group.id).join(" "));
+  const sectors = [job.primarySectorId, ...toArray(job.secondarySectorIds)].filter(Boolean);
+  const text = normalizeText(`${title} ${job.domain || ""} ${job.family || ""} ${appellations} ${skillGroups}`);
+  const matched = (id, label, evidence, confidence = 0.9) => ({
+    id,
+    label,
+    confidence,
+    evidence: { method: "ordered_functional_rules", matched: evidence, revision: TOP5_THEME_CONTRACT_REVISION }
+  });
+
+  if (["G1203", "G1235"].includes(romeCode)) return matched("animation_ateliers", "Animation et ateliers", `rome:${romeCode}:animation_variant`, 1);
+  if (romeCode === "G1238") return matched("numerique_mediation", "Médiation numérique", "rome:G1238:digital_mediation", 1);
+  if (romeCode === "K1206") return matched("coordination_pilotage", "Coordination et pilotage", "rome:K1206:sociocultural_coordination", 1);
+  if (/coordonn|coordinateur|coordinatrice|pilotage|chef de projet|directeur|directrice|responsable/.test(title)) return matched("coordination_pilotage", "Coordination et pilotage", "title:coordination_or_management", 0.98);
+  if (/mediateur numerique|mediation numerique|atelier multimedia|espace public numerique|fablab/.test(`${title} ${appellations}`)) return matched("numerique_mediation", "Médiation numérique", "title_or_appellation:digital_mediation", 0.98);
+  if (/socioeduc|educateur|action sociale|travailleur social|insertion|orientation professionnelle|accompagn/.test(`${title} ${appellations}`)) return matched("socioeducatif_accompagnement", "Socio-éducatif et accompagnement", "title_or_appellation:social_support", 0.96);
+  if (/petite enfance|assistant maternel|auxiliaire de puericulture|creche|atsem|ecole maternelle|garde d enfant/.test(text)) return matched("enfance_ecole", "Enfance et école", "job_text:childhood_school", 0.96);
+  if (/professeur|enseignant|enseignante|formateur|formatrice|formation professionnelle/.test(`${title} ${appellations}`)) return matched("enseignement_formation", "Enseignement et formation", "title_or_appellation:teaching", 0.96);
+  if (/animateur|animatrice|animation|accueil de loisirs|sejour de vacances|loisir|ludothe|atelier pedagogique/.test(`${title} ${appellations}`)) return matched("animation_ateliers", "Animation et ateliers", "title_or_appellation:facilitation", 0.96);
+  if (/biblioth|documental|archive|musee|patrimoine|culture|spectacle|artiste|creation artistique|mediation culturelle/.test(text)) return matched("culture_mediation_creation", "Culture, médiation et création", "job_text:culture_creation", 0.92);
+
+  if (/geomat|cartograph|topograph|systeme d information geographique|\bsig\b/.test(text)) return matched("numerique_geomatique", "Numérique et géomatique", "job_text:geomatics", 0.94);
+  if (/data|donnee|statistic|business intelligence|analyste informatique/.test(text)) return matched("numerique_donnees", "Numérique et données", "job_text:data", 0.92);
+  if (/developpeur|developpeuse|programm|logiciel|web|integration informatique/.test(text)) return matched("numerique_developpement", "Développement numérique", "job_text:software_development", 0.92);
+  if (/reseau informatique|systeme informatique|support informatique|assistance informatique|cybersecur|telecom/.test(text)) return matched("numerique_systemes_support", "Systèmes et support numérique", "job_text:systems_support", 0.92);
+  if (/redacteur|redactrice|communication|contenu|community manager|graphiste|multimedia/.test(text)) return matched("numerique_contenu", "Communication et contenus", "job_text:digital_content", 0.88);
+  if (sectors.includes("numerique") || /informatique|numerique/.test(text)) return matched("numerique_autre", "Numérique", "sector_or_text:digital", 0.76);
+
+  if (/veterinaire|soigneur animal|elevage|eleveur|animal|aquacult|apicul/.test(text)) return matched("animaux_elevage", "Animaux et élevage", "job_text:animals", 0.92);
+  if (/agric|maraich|horticul|viticul|arboricul|forest|sylvicul/.test(text)) return matched("agriculture_foret", "Agriculture et forêt", "job_text:agriculture_forestry", 0.92);
+  if (/nature|environnement|biodivers|riviere|milieu naturel|espace vert|jardin/.test(text)) return matched("nature_environnement", "Nature et environnement", "job_text:nature_environment", 0.9);
+  if (/ressources humaines|recrutement|paie|gestion du personnel/.test(text)) return matched("ressources_humaines", "Ressources humaines", "job_text:human_resources", 0.92);
+  if (/secretariat|administratif|comptab|gestionnaire|juridique|finance|banque|assurance/.test(text)) return matched("administratif_gestion", "Administration et gestion", "job_text:administration_management", 0.88);
+  if (/accueil|reception|standard|information du public|concierge|tourisme/.test(text)) return matched("accueil_service", "Accueil et service", "job_text:reception_service", 0.9);
+  if (/hotel|hebergement|etage|gouvernant/.test(text)) return matched("hotellerie_hebergement", "Hôtellerie et hébergement", "job_text:hospitality", 0.92);
+  if (/restauration|cuisin|serveur|serveuse|aliment|boulanger|patissier/.test(text)) return matched("restauration_alimentation", "Restauration et alimentation", "job_text:food_service", 0.92);
+  if (/nettoyage|proprete|agent d entretien|menage|blanchisserie/.test(text)) return matched("proprete_entretien", "Propreté et entretien", "job_text:cleaning", 0.94);
+  if (/commerce|commercial|vente|vendeur|vendeuse|magasin|acheteur/.test(text)) return matched("commerce_vente", "Commerce et vente", "job_text:sales", 0.9);
+  if (/infirm|medec|soin|sante|pharmac|aide soignant|therap|psycholog/.test(text)) return matched("sante_soin", "Santé et soin", "job_text:healthcare", 0.9);
+  if (/logistique|transport|conducteur|conductrice|chauffeur|livreur|magasinier|manutention/.test(text)) return matched("logistique_transport", "Logistique et transport", "job_text:logistics_transport", 0.9);
+  if (/maintenance|mecanicien|mecanicienne|reparation|installation technique|electromecan/.test(text)) return matched("maintenance_technique", "Maintenance et technique", "job_text:maintenance", 0.9);
+  if (/batiment|construction|chantier|macon|menuisier|plombier|electricien du batiment|couvreur/.test(text)) return matched("batiment_construction", "Bâtiment et construction", "job_text:construction", 0.9);
+  if (/securite|surveillance|prevention|secours|police|pompier/.test(text)) return matched("securite_prevention", "Sécurité et prévention", "job_text:safety", 0.9);
+  if (/industrie|production|fabrication|usinage|assemblage|conditionnement|laboratoire|qualite/.test(text)) return matched("production_industrie", "Production et industrie", "job_text:production", 0.86);
+
+  const sector = job.primarySectorId || "autre";
+  const fallbackLabels = {
+    education_enfance: "Éducation et enfance", social_insertion: "Social et insertion", culture_communication: "Culture et communication",
+    numerique: "Numérique", nature_animaux: "Nature et animaux", agriculture: "Agriculture", administratif_gestion: "Administration et gestion",
+    hotellerie_hebergement: "Hôtellerie et hébergement", restauration_alimentation: "Restauration et alimentation", proprete_entretien: "Propreté et entretien",
+    commerce_vente: "Commerce et vente", sante_soin: "Santé et soin", logistique_transport: "Logistique et transport",
+    industrie_production: "Production et industrie", maintenance_technique: "Maintenance et technique", batiment_construction: "Bâtiment et construction",
+    securite_prevention: "Sécurité et prévention"
+  };
+  return matched(`fallback_${normalizeText(sector).replace(/\s+/g, "_") || "autre"}`, fallbackLabels[sector] || "Direction à préciser", `fallback:primary_sector:${sector}`, 0.55);
+}
+
 function inferCareerPathway(job = {}) {
-  const text = normalizeText(`${job.title || ""} ${job.domain || ""} ${job.family || ""} ${toArray(job.appellations).join(" ")}`);
-  if (/animation|animateur|atelier|loisir|jeu|lud/.test(text)) return "animation_ateliers";
-  if (/petite enfance|garde d enfant|assistant maternel|creche/.test(text)) return "petite_enfance";
-  if (/professeur|enseign|formateur|formation/.test(text)) return "enseignement_formation";
-  if (/insertion|orientation|conseiller|accompagn/.test(text)) return "insertion_accompagnement";
-  if (/educateur|social|socio/.test(text)) return "intervention_socioeducative";
-  if (/culture|document|bibli|mediat|ludothe/.test(text)) return "mediation_culture_jeu";
-  if (/coord|projet|responsable|chef/.test(text)) return "coordination_projets";
-  if (/informatique|web|data|logiciel|numerique/.test(text)) return "numerique_creatif";
-  if (/nature|environnement|jardin|agric|animal|foret/.test(text)) return "nature_sensibilisation";
-  if (/hotel|reception|restauration|serveur|etage/.test(text)) return "hotellerie_service";
-  if (/nettoyage|proprete|entretien/.test(text)) return "proprete_entretien";
-  return "voie_a_preciser";
+  return inferTop5Theme(job).id;
 }
 
 function careerPathwayLabel(pathwayId) {
-  return {
-    animation_ateliers: "Voie animation / ateliers",
-    petite_enfance: "Voie petite enfance",
-    enseignement_formation: "Voie transmission",
-    intervention_socioeducative: "Voie socio-éducative",
-    mediation_culture_jeu: "Voie culture / jeu",
-    coordination_projets: "Voie coordination",
-    insertion_accompagnement: "Voie insertion / accompagnement",
-    numerique_creatif: "Voie numérique",
-    nature_sensibilisation: "Voie nature",
-    hotellerie_service: "Voie service",
-    proprete_entretien: "Voie propreté"
-  }[pathwayId] || "Voie à préciser";
+  const labels = {
+    animation_ateliers: "Animation et ateliers", coordination_pilotage: "Coordination et pilotage",
+    socioeducatif_accompagnement: "Socio-éducatif et accompagnement", enfance_ecole: "Enfance et école",
+    enseignement_formation: "Enseignement et formation", culture_mediation_creation: "Culture, médiation et création",
+    numerique_mediation: "Médiation numérique", numerique_geomatique: "Numérique et géomatique", numerique_donnees: "Numérique et données",
+    numerique_developpement: "Développement numérique", numerique_systemes_support: "Systèmes et support numérique", numerique_contenu: "Communication et contenus",
+    numerique_autre: "Numérique", animaux_elevage: "Animaux et élevage", agriculture_foret: "Agriculture et forêt",
+    nature_environnement: "Nature et environnement", ressources_humaines: "Ressources humaines", administratif_gestion: "Administration et gestion",
+    accueil_service: "Accueil et service", hotellerie_hebergement: "Hôtellerie et hébergement", restauration_alimentation: "Restauration et alimentation",
+    proprete_entretien: "Propreté et entretien", commerce_vente: "Commerce et vente", sante_soin: "Santé et soin",
+    logistique_transport: "Logistique et transport", maintenance_technique: "Maintenance et technique", batiment_construction: "Bâtiment et construction",
+    securite_prevention: "Sécurité et prévention", production_industrie: "Production et industrie"
+  };
+  return labels[pathwayId] || "Direction à préciser";
 }
 
 function buildVisibleRecommended(compatible, top5) {
@@ -8512,6 +8587,8 @@ function buildCalibrationAudit(results = {}) {
   const top5 = toArray(results.top5);
   const families = countBy(top5.map(result => result.job?.family || result.title || "inconnu"));
   const domains = countBy(top5.map(result => result.job?.domain || "inconnu"));
+  const themes = countBy(top5.map(result => result.top5ThemeId || "unclassified"));
+  const themeRepeatWithAlternatives = Number(results.top5AdmissibleThemeCount || 0) >= 5 && Object.values(themes).some(count => count > 1);
   const top5Reasons = countBy(top5.map(result => result.top5SelectionReason || "unqualified"));
   const scores = complete.map(result => result.globalScore).filter(value => Number.isFinite(value));
   const scoreSpread = scores.length ? Math.round(Math.max(...scores) - Math.min(...scores)) : 0;
@@ -8522,7 +8599,8 @@ function buildCalibrationAudit(results = {}) {
     highExcluded.length ? `${highExcluded.length} métier(s) exclus auraient une pertinence élevée si la contrainte changeait.` : "",
     highScoreWithConstraintWarnings.length ? `${highScoreWithConstraintWarnings.length} métier(s) montent haut malgré un score contraintes réduit.` : "",
     highScoreLowConfidence.length ? `${highScoreLowConfidence.length} métier(s) ont un score élevé avec une confiance faible.` : "",
-    Object.values(families).some(count => count >= 3) ? "Le Top 5 reste concentré sur une même famille : diversité à surveiller." : "",
+    themeRepeatWithAlternatives ? "Le Top 5 répète une direction alors qu’au moins cinq thèmes admissibles existent." : "",
+    !themeRepeatWithAlternatives && Object.values(families).some(count => count >= 3) ? "Le Top 5 partage une famille ROME, mais conserve des directions fonctionnelles distinctes ou ne dispose pas de cinq alternatives admissibles." : "",
     ...profilesWarnings.map(item => item.message)
   ].filter(Boolean);
   return {
@@ -8543,7 +8621,7 @@ function buildCalibrationAudit(results = {}) {
     marketContext: results.marketContext || {},
     marketCoverage: results.marketContext?.marketCoverage || {},
     profilesWarnings,
-    top5Diversity: { families, domains },
+    top5Diversity: { families, domains, themes, admissibleThemeCount: results.top5AdmissibleThemeCount || 0, themeRepeatWithAlternatives },
     highExcluded,
     highScoreWithConstraintWarnings,
     highScoreLowConfidence,
@@ -8665,98 +8743,106 @@ function evaluateCurrentTestProfileExpectations(results = {}) {
 }
 
 function diversifyTopResults(results) {
-  const compatible = results
-    .filter(result => result.status !== "excluded_for_now" && result.status !== "discouraged" && result.globalScore >= 45 && (result.scores?.constraints || 0) > 6)
-    .sort((a, b) => (b.selectionScore || b.globalScore) - (a.selectionScore || a.globalScore) || b.globalScore - a.globalScore);
-  const selected = [];
-  const variantsByJob = {};
-  const expectedPrimarySectorIds = new Set(getExpectedPrimarySectorIdsForTop5());
-  const scoreOf = result => Number(result?.selectionScore || result?.globalScore || 0);
-  const foundationRank = result => {
-    const level = result?.coreProfileMatch?.coreProfileLevel || result?.coreProfileMatch?.level || "";
-    if (["heart_current", "heart_secondary", "core"].includes(level)) return 4;
-    if (["compatible", "support_tool", "past_transferable"].includes(level)) return 3;
-    if (level === "exploratory") return 2;
-    if (level === "avoid_main") return 1;
-    return 0;
-  };
-  const isContrary = result => Boolean(result?.coreProfileMatch?.excludedMatch || result?.coreProfileMatch?.avoidMainMatch || result?.coreProfileMatch?.coreProfileLevel === "avoid_main");
-  const isPrimaryRelevant = result => Boolean(
-    result?.coreProfileMatch?.matchedPrimarySector ||
-    ["heart_current", "heart_secondary"].includes(result?.coreProfileMatch?.coreProfileLevel) ||
-    result?.coreProfileMatch?.level === "core"
+  const source = toArray(results);
+  const scoreOf = result => Number(result?.selectionScore ?? result?.globalScore ?? 0);
+  const compareCandidates = (a, b) =>
+    scoreOf(b) - scoreOf(a) ||
+    Number(b?.globalScore || 0) - Number(a?.globalScore || 0) ||
+    Number(b?.confidenceScore || 0) - Number(a?.confidenceScore || 0) ||
+    Number(b?.feasibilityScore || 0) - Number(a?.feasibilityScore || 0) ||
+    String(a?.romeCode || a?.job?.romeCode || a?.jobId || "").localeCompare(String(b?.romeCode || b?.job?.romeCode || b?.jobId || ""), "fr");
+  const isContrary = result => Boolean(
+    result?.coreProfileMatch?.excludedMatch ||
+    result?.coreProfileMatch?.avoidMainMatch ||
+    result?.coreProfileMatch?.coreProfileLevel === "avoid_main"
   );
-  const primarySectorOf = result => result?.coreProfileMatch?.primarySectorId || result?.job?.primarySectorId || "";
-  const selectedExpectedSectorCount = () => selected.filter(result => expectedPrimarySectorIds.has(primarySectorOf(result))).length;
-  const shouldDelayOutsideExpectedSector = candidate => {
-    if (expectedPrimarySectorIds.size < 2 || selectedExpectedSectorCount() >= 3) return false;
-    if (expectedPrimarySectorIds.has(primarySectorOf(candidate))) return false;
-    const nearExpectedCandidates = ranked.filter(result =>
-      !selected.some(item => item.jobId === result.jobId) &&
-      result.jobId !== candidate.jobId &&
-      expectedPrimarySectorIds.has(primarySectorOf(result)) &&
-      scoreOf(result) >= scoreOf(candidate) - 4
-    );
-    return nearExpectedCandidates.length >= Math.max(1, 3 - selectedExpectedSectorCount());
-  };
-  const bestScore = scoreOf(compatible[0]);
-  const ranked = compatible.slice().sort((a, b) => {
-    const relevantDelta = Number(isPrimaryRelevant(b)) - Number(isPrimaryRelevant(a));
-    if (relevantDelta) return relevantDelta;
-    const foundationDelta = foundationRank(b) - foundationRank(a);
-    if (foundationDelta) return foundationDelta;
-    return scoreOf(b) - scoreOf(a) || b.globalScore - a.globalScore;
+  const statusAdmissible = result => !["excluded_for_now", "discouraged"].includes(result?.status);
+  const baseCandidates = source.filter(result => statusAdmissible(result) && !isContrary(result) && (result.scores?.constraints || 0) > 6);
+  const bestScore = Math.max(0, ...baseCandidates.map(scoreOf));
+  const relevanceThreshold = Math.min(bestScore, Math.max(TOP5_MIN_SELECTION_SCORE, bestScore - TOP5_SELECTION_SCORE_WINDOW));
+  const admissible = baseCandidates
+    .filter(result => scoreOf(result) >= relevanceThreshold)
+    .map(result => ({ result, theme: inferTop5Theme(result.job || result) }))
+    .sort((a, b) => compareCandidates(a.result, b.result));
+  const groups = new Map();
+  admissible.forEach(entry => {
+    if (!groups.has(entry.theme.id)) groups.set(entry.theme.id, []);
+    groups.get(entry.theme.id).push(entry);
   });
-  const tryAddCandidate = (candidate, mode = "score") => {
-    if (selected.length >= 5 || selected.some(item => item.jobId === candidate.jobId)) return false;
-    const candidateSelectionScore = scoreOf(candidate);
-    if (mode !== "fill" && candidateSelectionScore < bestScore - 12 && selected.length >= 3) return false;
-    if (mode !== "fill" && shouldDelayOutsideExpectedSector(candidate)) return false;
-    const variantParent = selected.find(item => isVariantOf(candidate, item));
-    if (variantParent && mode !== "fill") {
-      variantsByJob[variantParent.jobId] = variantsByJob[variantParent.jobId] || [];
-      variantsByJob[variantParent.jobId].push(candidate);
-      return false;
-    }
-    if (mode === "relevant" && !isPrimaryRelevant(candidate)) return false;
-    if (mode === "diversity") {
-      if (isContrary(candidate)) return false;
-      const nearestSelectedScore = selected.length ? Math.max(...selected.map(scoreOf)) : bestScore;
-      if (nearestSelectedScore - candidateSelectionScore > TOP5_DIVERSITY_SCORE_DELTA) return false;
-      const weakerThanSelected = selected.some(item => foundationRank(candidate) + 1 < foundationRank(item));
-      if (weakerThanSelected) return false;
-      const direction = jobDirectionKey(candidate.job);
-      if (selected.some(item => jobDirectionKey(item.job) === direction)) return false;
-    }
-    const diversityScore = calculateDiversityScore(candidate, selected);
-    candidate.diversityScore = diversityScore;
-    candidate.top5SelectionReason = top5SelectionReasonCode(candidate, mode);
-    candidate.top5SelectionLabel = top5SelectionLabel(candidate.top5SelectionReason);
-    candidate.qualitativeRole = candidate.top5SelectionReason;
-    if (candidate.diagnostic) {
-      candidate.diagnostic.top5SelectionReason = candidate.top5SelectionReason;
-      candidate.diagnostic.top5SelectionLabel = candidate.top5SelectionLabel;
-    }
-    selected.push(candidate);
-    return true;
-  };
-  ranked.forEach(candidate => tryAddCandidate(candidate, "relevant"));
-  ranked.forEach(candidate => tryAddCandidate(candidate, "score"));
-  ranked.forEach(candidate => tryAddCandidate(candidate, "diversity"));
-  compatible.forEach(candidate => tryAddCandidate(candidate, "fill"));
+  groups.forEach(entries => entries.sort((a, b) => compareCandidates(a.result, b.result)));
+
+  const representatives = [...groups.values()]
+    .map(entries => entries[0])
+    .sort((a, b) => compareCandidates(a.result, b.result));
+  const selectedEntries = representatives.slice(0, 5);
+  const selectedThemeIds = new Set(selectedEntries.map(entry => entry.theme.id));
+  const variantsByJob = {};
+  const selected = selectedEntries.map(entry => {
+    const themeCandidates = groups.get(entry.theme.id) || [];
+    const variants = themeCandidates.slice(1).map(item => item.result).sort(compareCandidates);
+    variantsByJob[entry.result.jobId] = variants;
+    const role = top5SelectionReasonCode(entry.result, "theme_representative");
+    const bestUnselected = variants[0] || null;
+    return {
+      ...entry.result,
+      top5SelectionReason: role,
+      top5SelectionLabel: top5SelectionLabel(role),
+      top5PresenceReason: "theme_representative",
+      top5ThemeId: entry.theme.id,
+      top5ThemeLabel: entry.theme.label,
+      top5ThemeConfidence: entry.theme.confidence,
+      top5ThemeEvidence: entry.theme.evidence,
+      top5ThemeCandidateCount: themeCandidates.length,
+      top5VariantIds: variants.map(item => item.jobId),
+      top5BestUnselectedCandidate: bestUnselected ? {
+        jobId: bestUnselected.jobId,
+        romeCode: bestUnselected.romeCode || bestUnselected.job?.romeCode || "",
+        title: bestUnselected.title,
+        selectionScore: scoreOf(bestUnselected)
+      } : null,
+      qualitativeRole: role,
+      diagnostic: entry.result.diagnostic ? {
+        ...entry.result.diagnostic,
+        top5SelectionReason: role,
+        top5SelectionLabel: top5SelectionLabel(role),
+        top5PresenceReason: "theme_representative",
+        top5ThemeId: entry.theme.id
+      } : entry.result.diagnostic
+    };
+  });
+  const unselectedThemeRepresentatives = representatives
+    .filter(entry => !selectedThemeIds.has(entry.theme.id))
+    .map(entry => ({
+      top5ThemeId: entry.theme.id,
+      top5ThemeLabel: entry.theme.label,
+      jobId: entry.result.jobId,
+      romeCode: entry.result.romeCode || entry.result.job?.romeCode || "",
+      title: entry.result.title,
+      selectionScore: scoreOf(entry.result)
+    }));
+  const shortfallReason = selected.length < 5
+    ? `Seulement ${selected.length} direction(s) atteignent le plancher de pertinence ${Math.round(relevanceThreshold)}/100 sans exclusion, découragement ni contradiction avec le profil.`
+    : "";
   return {
-    top5: selected.slice(0, 5),
+    top5: selected,
     variantsByJob,
-    diversityExplanation: "Le Top 5 privilégie d’abord la pertinence, le score et le cœur de profil. La diversité intervient seulement pour départager des pistes proches, dans une marge de 4 points."
+    top5ThemeContractRevision: TOP5_THEME_CONTRACT_REVISION,
+    top5RelevanceThreshold: relevanceThreshold,
+    top5AdmissibleCandidateCount: admissible.length,
+    top5AdmissibleThemeCount: groups.size,
+    top5UnselectedThemeRepresentatives: unselectedThemeRepresentatives,
+    top5ShortfallReason: shortfallReason,
+    diversityExplanation: `Chaque carte représente la meilleure piste d’une direction professionnelle distincte. Les métiers proches restent accessibles dans les variantes et dans les résultats qui suivent.${shortfallReason ? ` ${shortfallReason}` : ""}`
   };
 }
 
 function top5SelectionReasonCode(result, mode) {
   const level = result.coreProfileMatch?.coreProfileLevel || result.coreProfileMatch?.level;
-  if (result.coreProfileMatch?.supportToolMatch && mode !== "relaxed") return "support_hybrid";
-  if (level === "heart_current" && mode !== "fill" && mode !== "relaxed") return "heart_current";
-  if (level === "heart_secondary" && mode !== "fill" && mode !== "relaxed") return "secondary_branch";
-  if (level === "support_tool" && mode !== "relaxed") return "support_hybrid";
+  if (result.coreProfileMatch?.supportToolMatch) return "support_hybrid";
+  if (level === "heart_current") return "heart_current";
+  if (level === "heart_secondary") return "secondary_branch";
+  if (level === "support_tool") return "support_hybrid";
+  if (mode === "theme_representative" && ["core", "compatible", "past_transferable"].includes(level)) return "core_match";
   if (mode === "diversity") return "diversity_pick";
   if (mode === "relevant" || mode === "score") return "core_match";
   if (["weak", "exploratory", "avoid_main", "past_transferable"].includes(level) || result.status === "explore_with_caution" || mode === "relaxed") return "exploratory";
@@ -9565,7 +9651,7 @@ function renderResults() {
     </section>
     <section class="results-section top-results-section print-section">
       <h2>Top 5 diversifié</h2>
-      <p>Ces cinq pistes maximum sont choisies pour éviter de répéter trop de métiers proches. Les variantes restent sous chaque métier principal.</p>
+      <p>Chaque carte représente la meilleure piste d’une direction professionnelle distincte. Les métiers proches restent accessibles dans les variantes et dans les résultats qui suivent.</p>
       <div class="job-list">${top5.map(result => renderJobCard(result, { featured: true, showVariants: true })).join("") || emptyState("Aucun Top 5 disponible avec le profil actuel.")}</div>
     </section>
     <section class="results-section print-section">
@@ -9744,6 +9830,7 @@ function renderMarketDetailModal(job = {}, result = {}) {
     <p>${h(synthesis.interpretation.text)}</p>
     ${synthesis.territoryFallback ? `<p class="warning-inline">Le territoire demandé ne dispose pas de cette donnée ; le niveau ${h(synthesis.dataTerritoryLabel || "disponible")} est affiché.</p>` : ""}
     ${renderFapFamilyMarketDetail(synthesis.snapshot?.fapContext)}
+    ${renderRecentMarketEvolution(job, synthesis)}
     <div class="compare-modal-grid">
       <table class="compare-modal-table">
         <thead><tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th><th>Territoire</th><th>Millésime</th><th>Source</th><th>Qualité / usage</th></tr></thead>
@@ -9781,6 +9868,63 @@ function renderFapFamilyMarketDetail(context = {}) {
         <td>${marketCompactSourceValue(family.dares?.tension)}</td>
       </tr>`).join("")}
     </tbody></table></div><p class="field-help">Ces repères sont descriptifs et ont un poids nul dans le classement.</p></div>`;
+}
+
+function renderRecentMarketEvolution(job = {}, synthesis = {}) {
+  const packageData = App.state.dataset?.marketTrends || App.state.dataset?.marketDatasets?.trends;
+  const trend = toArray(packageData?.jobs).find(item => item.romeCode === job.romeCode);
+  if (!trend) return '<div class="reason-box"><strong>Évolution récente</strong><p class="field-help">Historique officiel non disponible pour ce code ROME.</p></div>';
+  const territoryId = synthesis.territory?.id || normalizeMarketTerritory(App.state.profile?.marketPreference?.territory).id;
+  const familyByCode = new Map(toArray(packageData?.families).map(family => [family.fapCode, family]));
+  const families = toArray(trend.familyMappings).map(mapping => {
+    const family = familyByCode.get(mapping.fapCode);
+    return family ? {
+      ...family,
+      qualificationCodes: toArray(mapping.qualificationCodes),
+      series: family.territories?.[territoryId] || family.territories?.FR || null
+    } : null;
+  }).filter(family => family?.series);
+  if (!families.length) return '<div class="reason-box"><strong>Évolution récente</strong><p class="field-help">Historique officiel non disponible pour ce territoire.</p></div>';
+  return `<div class="reason-box"><strong>Évolution récente</strong>
+    <p class="field-help">Valeurs officielles comparées à famille FAP, territoire et méthode constants. Ces évolutions sont descriptives et ont un poids nul dans le classement.</p>
+    ${families.map(family => `<div class="compare-modal-grid">
+      <table class="compare-modal-table">
+        <caption>${h(family.fapCode)} · ${h(family.fapLabel || "Famille FAP")}</caption>
+        <thead><tr><th>Source</th><th>Période</th><th>Projets</th><th>Difficulté</th><th>Saisonnalité</th><th>Statut</th></tr></thead>
+        <tbody>
+          ${toArray(family.series.bmo?.periods).map(period => `<tr><td>BMO</td><td>${h(period.period)}</td><td>${marketTrendValue(period.projects)}</td><td>${marketTrendValue(period.difficultyRate, true)}</td><td>${marketTrendValue(period.seasonalityRate, true)}</td><td>${h(marketComparisonStatusLabel(family.series.bmo?.comparisonStatus))}</td></tr>`).join("")}
+          ${toArray(family.series.dares?.periods).map(period => `<tr><td>Dares</td><td>${h(period.period)}</td><td colspan="3">Indice ${marketTrendValue(period.index)}${Number.isFinite(period.publishedClass) ? ` · classe ${h(period.publishedClass)}` : ""}</td><td>${h(marketComparisonStatusLabel(family.series.dares?.comparisonStatus))}</td></tr>`).join("")}
+        </tbody>
+      </table>
+      <p class="field-help">BMO : ${h(marketEvolutionLabel(family.series.bmo?.evolution))}. Dares : ${h(marketEvolutionLabel(family.series.dares?.evolution))}. Rupture de nomenclature explicitée avant 2023 pour cette comparaison Dares.</p>
+    </div>`).join("")}
+    <p class="field-help">Offres observées : historique insuffisant. Un seul instantané réel est enregistré ; trois observations comparables sont requises avant d’afficher une évolution.</p>
+  </div>`;
+}
+
+function marketTrendValue(dimension = {}, percent = false) {
+  if (!Number.isFinite(Number(dimension?.value))) return '<span class="missing">non disponible</span>';
+  return h(`${formatNumberFr(Number(dimension.value))}${percent ? " %" : ""}`);
+}
+
+function marketComparisonStatusLabel(status = "") {
+  return {
+    comparable: "comparable",
+    insufficient_history: "historique insuffisant",
+    missing_value: "valeur manquante",
+    suppressed_value: "valeur masquée",
+    classification_break: "rupture de nomenclature",
+    territory_break: "territoire non comparable",
+    method_break: "méthode non comparable",
+    shared_family_context_only: "contexte de famille partagé"
+  }[status] || "à vérifier";
+}
+
+function marketEvolutionLabel(evolution = {}) {
+  if (!evolution || evolution.comparisonStatus !== "comparable") return marketComparisonStatusLabel(evolution?.comparisonStatus || "insufficient_history");
+  const exact = Number.isFinite(evolution.absolute) ? `écart ${evolution.absolute > 0 ? "+" : ""}${formatNumberFr(evolution.absolute)}` : "écart non calculé";
+  const label = { increase: "hausse", stable: "stable", decrease: "baisse", exact_values_low_base: "valeurs exactes, base trop faible pour un taux robuste" }[evolution.status] || "évolution à vérifier";
+  return `${label} entre ${evolution.from} et ${evolution.to} (${exact}, ${evolution.periodsCount || 0} périodes)`;
 }
 
 function marketCompactSourceValue(dimension = null, percent = false) {
@@ -9922,6 +10066,11 @@ function renderJobCard(result, options = {}) {
   return html;
 }
 
+function renderTop5ThemeBadge(result = {}, options = {}) {
+  if (!options.featured || !result.top5ThemeLabel) return "";
+  return `<span class="badge outline">Direction : ${h(result.top5ThemeLabel)}</span>`;
+}
+
 function renderSeparatedScoreStrip(result = {}) {
   const personal = Math.round(result.personalFitScore ?? result.globalScore ?? 0);
   const feasibility = Math.round(result.feasibilityScore ?? 0);
@@ -9948,6 +10097,7 @@ function renderEssentialJobCard(result, options = {}) {
         <div>
           <h3 class="job-title">${h(result.title)}</h3>
           <p>${h(mainReason)}</p>
+          ${options.featured ? `<div class="badge-row">${renderTop5ThemeBadge(result, options)}</div>` : ""}
         </div>
         <div class="score-pill"><span>${Math.round(displayedScore)}</span><small>/100</small></div>
       </div>
@@ -9978,6 +10128,7 @@ function renderDetailedJobCard(result, options = {}) {
           <h3 class="job-title">${h(result.title)}</h3>
           <p class="job-subtitle">${h(job?.domain || "Domaine à vérifier")} · ${h(careerPathwayLabel(inferCareerPathway(job || result)))}</p>
           <div class="badge-row">
+            ${renderTop5ThemeBadge(result, options)}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
             <span class="badge outline">${h(getAccessDisplayLabel(job))}</span>
@@ -10024,6 +10175,7 @@ function renderDiagnosticJobCard(result, options = {}) {
           <div class="badge-row">
             ${options.featured ? `<span class="badge gold">Top 5</span>` : ""}
             ${options.featured && result.top5SelectionLabel ? `<span class="badge sage">${h(result.top5SelectionLabel)}</span>` : ""}
+            ${renderTop5ThemeBadge(result, options)}
             ${result.coreProfileMatch?.coreProfileLevel ? `<span class="badge outline">${h(coreProfileLevelLabel(result.coreProfileMatch.coreProfileLevel))}</span>` : result.coreProfileMatch?.level === "core" ? `<span class="badge sage">Cœur du profil</span>` : result.coreProfileMatch?.level === "exploratory" ? `<span class="badge outline">Exploratoire</span>` : ""}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
             <span class="badge outline">Confiance ${Math.round(result.confidenceScore)}%</span>
@@ -10957,6 +11109,8 @@ function runDiagnosticProfiles(testProfiles = []) {
         title: result.title,
         score: result.globalScore,
         selection: result.top5SelectionReason || "",
+        top5ThemeId: result.top5ThemeId || "",
+        top5ThemeLabel: result.top5ThemeLabel || "",
         coreProfileLevel: result.coreProfileMatch?.coreProfileLevel || "",
         family: result.job?.family || ""
       })),
@@ -11138,6 +11292,19 @@ function detectTestBenchAnomalies(results = {}, test = {}, profileEvidence = {})
     if (test.id === "admin-calme" && foundCount < 3) anomalies.push({ type: "admin_expected_rome_underrepresented", severity: "warning", message: `Profil administratif : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 3.` });
     if (test.id === "numerique-distance" && foundCount < 2) anomalies.push({ type: "digital_expected_rome_underrepresented", severity: "warning", message: `Profil numérique : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 2.` });
   }
+  const themeCounts = countBy(top.map(result => result.top5ThemeId || inferTop5Theme(result).id || "inconnu"));
+  const repeatedThemeCount = Math.max(0, ...Object.values(themeCounts));
+  const admissibleThemeCount = new Set(toArray(results.completeList)
+    .filter(result => ["compatible", "conditional"].includes(result.status) && !result.finalContrary)
+    .map(result => result.top5ThemeId || inferTop5Theme(result).id)
+    .filter(Boolean)).size;
+  if (repeatedThemeCount > 1 && admissibleThemeCount >= 5) {
+    anomalies.push({
+      type: "top5_theme_duplicate_with_alternative",
+      severity: "warning",
+      message: "Le Top 5 répète une direction fonctionnelle alors qu’au moins cinq directions admissibles existent."
+    });
+  }
   const familyCounts = countBy(top.map(result => result.job?.family || "inconnu"));
   const familyConcentrationCount = Math.max(0, ...Object.values(familyCounts));
   if (familyConcentrationCount >= 4) {
@@ -11151,9 +11318,11 @@ function detectTestBenchAnomalies(results = {}, test = {}, profileEvidence = {})
       ["enfance-relation", "social-education-commerce-exclu", "education-numerique-outil", "old_experience_transferable"].includes(test.id);
     anomalies.push({
       type: "top5_family_concentration",
-      severity: expectedByProfile ? "info" : "warning",
-      familyConcentration: { count: familyConcentrationCount, expectedByProfile, severity: expectedByProfile ? "info" : "warning" },
-      message: expectedByProfile ? "Top 5 concentré sur une famille cohérente avec le profil." : "Top 5 concentré sur une seule famille."
+      severity: "info",
+      familyConcentration: { count: familyConcentrationCount, expectedByProfile, severity: "info", functionalThemes: Object.keys(themeCounts).length },
+      message: expectedByProfile
+        ? "Plusieurs pistes relèvent d’une famille ROME cohérente avec le profil, avec des directions fonctionnelles distinguées."
+        : "Concentration de famille ROME observée ; la diversité fonctionnelle reste évaluée séparément."
     });
   }
   const scoreCounts = countBy(top.map(result => String(Math.round(result.globalScore || 0))));
@@ -11656,6 +11825,8 @@ async function loadGeneratedRomeDataset(options = {}) {
     marketQualityReport: "market-quality-report.json",
     marketPackageIdentity: "market-package-identity.json",
     marketContract: "market-contract.json",
+    marketTemporalContract: "market-temporal-contract.json",
+    marketTrends: options.marketTrendsFilename || "market-trends.rome1000.json",
     fapRomeMappingStatus: "fap-rome-mapping-status.json",
     marketFapEnrichment: options.marketFapEnrichmentFilename || "market-fap-enrichment.rome500.json",
     marketNational: "market-national.rome.json",
@@ -11688,6 +11859,8 @@ async function loadGeneratedRomeDataset(options = {}) {
     marketQualityReport: `market/${marketFiles.marketQualityReport}`,
     marketPackageIdentity: `market/${marketFiles.marketPackageIdentity}`,
     marketContract: `market/${marketFiles.marketContract}`,
+    marketTemporalContract: `market/${marketFiles.marketTemporalContract}`,
+    marketTrends: `market/${marketFiles.marketTrends}`,
     fapRomeMappingStatus: `market/${marketFiles.fapRomeMappingStatus}`,
     marketFapEnrichment: `market/${marketFiles.marketFapEnrichment}`,
     marketNational: `market/${marketFiles.marketNational}`,
@@ -12008,7 +12181,11 @@ function compactGeneratedDatasetForBrowser(generated = {}) {
     marketNational: filterMarketRowsForActiveCodes(generated.marketNational, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     marketOccitanie: filterMarketRowsForActiveCodes(generated.marketOccitanie, activeRomeCodes).map(compactMarketRowForActiveCorpus),
     marketAude: filterMarketRowsForActiveCodes(generated.marketAude, activeRomeCodes).map(compactMarketRowForActiveCorpus),
-    marketFapEnrichment: toArray(generated.marketFapEnrichment).filter(item => activeRomeCodes.has(item.romeCode))
+    marketFapEnrichment: toArray(generated.marketFapEnrichment).filter(item => activeRomeCodes.has(item.romeCode)),
+    marketTrends: generated.marketTrends && typeof generated.marketTrends === "object" ? {
+      ...generated.marketTrends,
+      jobs: toArray(generated.marketTrends.jobs).filter(item => activeRomeCodes.has(item.romeCode))
+    } : null
   };
 }
 
@@ -12083,6 +12260,8 @@ function replaceDatasetCollections(base, generated, prepared = {}) {
     marketQualityReport: generated.marketQualityReport || null,
     marketLayerIdentity: generated.marketPackageIdentity || generated.marketManifest?.marketLayerIdentity || null,
     marketContract: generated.marketContract || null,
+    marketTemporalContract: generated.marketTemporalContract || null,
+    marketTrends: generated.marketTrends || null,
     fapRomeMappingStatus: generated.fapRomeMappingStatus || null,
     marketDatasets: buildGeneratedMarketDatasets(generated),
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : [],
@@ -12115,6 +12294,8 @@ function mergeDatasetCollections(base, generated, prepared = {}) {
     marketQualityReport: generated.marketQualityReport || base.marketQualityReport || null,
     marketLayerIdentity: generated.marketPackageIdentity || generated.marketManifest?.marketLayerIdentity || base.marketLayerIdentity || null,
     marketContract: generated.marketContract || base.marketContract || null,
+    marketTemporalContract: generated.marketTemporalContract || base.marketTemporalContract || null,
+    marketTrends: generated.marketTrends || base.marketTrends || null,
     fapRomeMappingStatus: generated.fapRomeMappingStatus || base.fapRomeMappingStatus || null,
     marketDatasets: buildGeneratedMarketDatasets(generated),
     mappingsRomeFormations: Array.isArray(generated.mappingsRomeFormations) ? generated.mappingsRomeFormations : base.mappingsRomeFormations,
@@ -12129,7 +12310,8 @@ function buildGeneratedMarketDatasets(generated = {}) {
     aude: Array.isArray(generated.marketAude) ? generated.marketAude : [],
     bmoFap2021: Array.isArray(generated.bmoFap2021) ? generated.bmoFap2021 : [],
     fapRomeMappings: Array.isArray(generated.fapRomeMappings) ? generated.fapRomeMappings : [],
-    fapEnrichment: Array.isArray(generated.marketFapEnrichment) ? generated.marketFapEnrichment : []
+    fapEnrichment: Array.isArray(generated.marketFapEnrichment) ? generated.marketFapEnrichment : [],
+    trends: generated.marketTrends && typeof generated.marketTrends === "object" ? generated.marketTrends : null
   };
 }
 
@@ -14922,6 +15104,14 @@ function prepareCompactResultsForExport(results = {}) {
     status: result.status,
     top5SelectionReason: result.top5SelectionReason || "",
     top5SelectionLabel: result.top5SelectionLabel || "",
+    top5PresenceReason: result.top5PresenceReason || "",
+    top5ThemeId: result.top5ThemeId || "",
+    top5ThemeLabel: result.top5ThemeLabel || "",
+    top5ThemeConfidence: result.top5ThemeConfidence ?? null,
+    top5ThemeEvidence: result.top5ThemeEvidence || null,
+    top5ThemeCandidateCount: result.top5ThemeCandidateCount || 0,
+    top5VariantIds: toArray(result.top5VariantIds),
+    top5BestUnselectedCandidate: result.top5BestUnselectedCandidate || null,
     coreProfileMatchScore: result.coreProfileMatchScore || 0,
     resultFoundation: result.resultInterpretation?.resultFoundation || "",
     scores: result.scores,
@@ -14956,6 +15146,12 @@ function prepareCompactResultsForExport(results = {}) {
     marketLayerIdentity: getMarketLayerIdentity(),
     marketContext: results.marketContext,
     diversityExplanation: results.diversityExplanation,
+    top5ThemeContractRevision: results.top5ThemeContractRevision || TOP5_THEME_CONTRACT_REVISION,
+    top5RelevanceThreshold: results.top5RelevanceThreshold ?? null,
+    top5AdmissibleCandidateCount: results.top5AdmissibleCandidateCount || 0,
+    top5AdmissibleThemeCount: results.top5AdmissibleThemeCount || 0,
+    top5UnselectedThemeRepresentatives: toArray(results.top5UnselectedThemeRepresentatives),
+    top5ShortfallReason: results.top5ShortfallReason || "",
     stats: results.stats,
     counts: {
       top5: toArray(results.top5).length,
@@ -15044,6 +15240,14 @@ function buildResultDiagnosticExport(results = App.state.results) {
     market: result.scoreDetails?.market || null,
     top5SelectionReason: result.top5SelectionReason || "",
     top5SelectionLabel: result.top5SelectionLabel || "",
+    top5PresenceReason: result.top5PresenceReason || "",
+    top5ThemeId: result.top5ThemeId || "",
+    top5ThemeLabel: result.top5ThemeLabel || "",
+    top5ThemeConfidence: result.top5ThemeConfidence ?? null,
+    top5ThemeEvidence: result.top5ThemeEvidence || null,
+    top5ThemeCandidateCount: result.top5ThemeCandidateCount || 0,
+    top5VariantIds: toArray(result.top5VariantIds),
+    top5BestUnselectedCandidate: result.top5BestUnselectedCandidate || null,
     coreProfileMatchScore: result.coreProfileMatchScore || 0,
     coreProfileMatch: result.coreProfileMatch || null,
     coreProfileLevel: result.coreProfileMatch?.coreProfileLevel || "",
@@ -15076,6 +15280,14 @@ function buildResultDiagnosticExport(results = App.state.results) {
       provenance: App.state.dataset?.provenance || ""
     },
     calibrationAudit: results?.calibrationAudit || {},
+    top5SelectionContract: {
+      revision: results?.top5ThemeContractRevision || TOP5_THEME_CONTRACT_REVISION,
+      relevanceThreshold: results?.top5RelevanceThreshold ?? null,
+      admissibleCandidateCount: results?.top5AdmissibleCandidateCount || 0,
+      admissibleThemeCount: results?.top5AdmissibleThemeCount || 0,
+      unselectedThemeRepresentatives: toArray(results?.top5UnselectedThemeRepresentatives),
+      shortfallReason: results?.top5ShortfallReason || ""
+    },
     testBenchReport: App.state.testBenchReport || null,
     top5: toArray(results?.top5).map(stripDiagnosticResult),
     visibleRecommended: toArray(results?.visibleRecommended).map(stripDiagnosticResult),

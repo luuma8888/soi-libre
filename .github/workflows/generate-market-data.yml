@@ -18,7 +18,7 @@ on:
       rome_codes_file:
         description: "Fichier JSON/TXT de codes. Vide = MARKET_ROME_CODES_FILE puis liste ROME500 versionnée."
         required: false
-        default: "creations/boussolepro/data/local/rome-codes-500.json"
+        default: "creations/boussolepro/data/local/rome-codes-1000.json"
       period_type:
         description: "Type de période, ex. TRIMESTRE. Vide = variable MARKET_PERIOD_TYPE."
         required: false
@@ -41,6 +41,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
+      - name: Record application source boundary
+        run: sha256sum creations/boussolepro/boussole-pro.html > "$RUNNER_TEMP/boussole-app-before.sha256"
       - name: Resolve execution mode
         id: mode
         shell: bash
@@ -56,7 +58,7 @@ jobs:
         env:
           MARKET_RESOLVE_ONLY: "true"
           MARKET_ROME_CODES: ${{ inputs.rome_codes || '' }}
-          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-500.json' }}
+          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-1000.json' }}
       - name: Generate static market data
         run: node scripts/generate-market-data.mjs
         env:
@@ -70,7 +72,7 @@ jobs:
           FT_MARKET_API_URL: ${{ vars.FT_MARKET_API_URL }}
           MARKET_EXTRA_QUERY: ${{ vars.MARKET_EXTRA_QUERY }}
           MARKET_ROME_CODES: ${{ inputs.rome_codes || '' }}
-          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-500.json' }}
+          MARKET_ROME_CODES_FILE: ${{ inputs.rome_codes_file || vars.MARKET_ROME_CODES_FILE || 'creations/boussolepro/data/local/rome-codes-1000.json' }}
           MARKET_ACTIVITY_TYPE: ${{ vars.MARKET_ACTIVITY_TYPE || 'ROME' }}
           MARKET_PERIOD_TYPE: ${{ inputs.period_type || vars.MARKET_PERIOD_TYPE || 'TRIMESTRE' }}
           MARKET_NOMENCLATURE_TYPE: ${{ vars.MARKET_NOMENCLATURE_TYPE || 'ORIGINEOFF' }}
@@ -83,27 +85,87 @@ jobs:
       - name: Download official BMO and Dares sources
         if: ${{ steps.mode.outputs.real == 'true' }}
         run: |
-          curl --fail --location --retry 3 "$BMO_DATA_URL" --output "$RUNNER_TEMP/bmo-2026.xlsx"
-          curl --fail --location --retry 3 "$DARES_TENSION_DATA_URL" --output "$RUNNER_TEMP/dares-tension-2024.xlsx"
+          curl --fail --location --retry 3 "$BMO_2024_DATA_URL" --output "$RUNNER_TEMP/bmo-2024.zip"
+          unzip -q "$RUNNER_TEMP/bmo-2024.zip" -d "$RUNNER_TEMP/bmo-2024"
+          curl --fail --location --retry 3 "$BMO_2025_DATA_URL" --output "$RUNNER_TEMP/bmo-2025.xlsx"
+          curl --fail --location --retry 3 "$BMO_2026_DATA_URL" --output "$RUNNER_TEMP/bmo-2026.xlsx"
+          curl --fail --location --retry 3 "$DARES_TENSION_2023_DATA_URL" --output "$RUNNER_TEMP/dares-tension-2023.xlsx"
+          curl --fail --location --retry 3 "$DARES_TENSION_2024_DATA_URL" --output "$RUNNER_TEMP/dares-tension-2024.xlsx"
           curl --fail --location --retry 3 "$FAP_NOMENCLATURE_URL" --output "$RUNNER_TEMP/fap2021.csv"
         env:
-          BMO_DATA_URL: ${{ vars.BMO_DATA_URL || 'https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d' }}
-          DARES_TENSION_DATA_URL: ${{ vars.DARES_TENSION_DATA_URL || 'https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108' }}
+          BMO_2024_DATA_URL: ${{ vars.BMO_2024_DATA_URL || 'https://www.data.gouv.fr/api/1/datasets/r/4319f5e8-a8e6-476c-8da0-c0d3439ebb55' }}
+          BMO_2025_DATA_URL: ${{ vars.BMO_2025_DATA_URL || 'https://www.data.gouv.fr/api/1/datasets/r/54478315-aafd-4070-b8df-a5647297e0c0' }}
+          BMO_2026_DATA_URL: ${{ vars.BMO_DATA_URL || 'https://www.data.gouv.fr/api/1/datasets/r/228917c7-c22e-4766-835e-fcb923f29b3d' }}
+          DARES_TENSION_2023_DATA_URL: ${{ vars.DARES_TENSION_2023_DATA_URL || 'https://statistiques.pole-emploi.org/offres/Handlers/HTFile.ashx?MEDIAID=183486&SITEKEY=7550205d-2042-4165-bb99-fd14a4b3f938' }}
+          DARES_TENSION_2024_DATA_URL: ${{ vars.DARES_TENSION_DATA_URL || 'https://statistiques.francetravail.org/offres/Handlers/HTFile.ashx?MEDIAID=187108' }}
           FAP_NOMENCLATURE_URL: ${{ vars.FAP_NOMENCLATURE_URL || 'https://data.dares.travail-emploi.gouv.fr/api/explore/v2.1/catalog/datasets/dares_nomenclature_fap2021/exports/csv?use_labels=true' }}
       - name: Normalize market phase 1 contract
+        if: ${{ steps.mode.outputs.real == 'true' }}
         run: node scripts/prepare-boussole-market-phase1.mjs
         env:
           BMO_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/bmo-2026.xlsx', runner.temp) || '' }}
           DARES_TENSION_XLSX_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/dares-tension-2024.xlsx', runner.temp) || '' }}
           FAP_CSV_PATH: ${{ steps.mode.outputs.real == 'true' && format('{0}/fap2021.csv', runner.temp) || '' }}
       - name: Derive official FAP to ROME market context
+        if: ${{ steps.mode.outputs.real == 'true' }}
         run: node scripts/prepare-boussole-market-phase2.mjs
         env:
           FAP_ROME_SOURCE_PATH: creations/boussolepro/data/sources/market/fap-rome/Dares_FAP2021_Table_passage_ROME.xlsx
+          MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome1000-candidate/jobs.rome.json
+          MARKET_FAP_ENRICHMENT_FILE: market-fap-enrichment.rome1000.json
+          MARKET_DATASET_VERSION: market-v3-phase2-rome1000-workflow
+      - name: Build official recent market evolution
+        if: ${{ steps.mode.outputs.real == 'true' }}
+        run: node scripts/prepare-boussole-market-phase3.mjs
+        env:
+          BMO_2024_XLSX_PATH: ${{ runner.temp }}/bmo-2024/Donnees_consolidees_2024/Base_open_data_BMO_2024.xlsx
+          BMO_2025_XLSX_PATH: ${{ runner.temp }}/bmo-2025.xlsx
+          BMO_2026_XLSX_PATH: ${{ runner.temp }}/bmo-2026.xlsx
+          DARES_TENSION_2023_XLSX_PATH: ${{ runner.temp }}/dares-tension-2023.xlsx
+          DARES_TENSION_2024_XLSX_PATH: ${{ runner.temp }}/dares-tension-2024.xlsx
+          MARKET_JOBS_PATH: creations/boussolepro/data/generated/rome1000-candidate/jobs.rome.json
+          MARKET_TRENDS_RUNTIME_FILE: market-trends.rome1000.json
+      - name: Validate market phase 3
+        if: ${{ steps.mode.outputs.real == 'true' }}
+        run: node scripts/validate-boussole-market-phase3.mjs
+      - name: Refresh ROME1000 runtime data identity
+        if: ${{ steps.mode.outputs.real == 'true' }}
+        run: |
+          node scripts/boussole-runtime-identity.mjs
+          node scripts/write-active-runtime-descriptor.mjs
+        env:
+          RUNTIME_EXPECTED_JOBS_COUNT: "1000"
+          RUNTIME_ROME_SUBDIR: rome1000-candidate
+          RUNTIME_ACCESS_SUMMARY_FILE: access-summary.rome1000.json
+          RUNTIME_CONSTRAINT_SUMMARY_FILE: official-constraint-summary.rome1000.json
+          RUNTIME_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome1000.json
+          RUNTIME_MARKET_TRENDS_FILE: market-trends.rome1000.json
+          RUNTIME_BUNDLE_REVISION: rome1000-runtime-v0.1-r2
+          RUNTIME_RELEASE_ID: 20260811-rome1000-market-phase3-01
+          RUNTIME_APP_VERSION: v0.8.3-alpha
+          RUNTIME_BUILD_ID: 20260811-top5-market-trends-01
+          RUNTIME_BUILD_DATE: "2026-08-11"
+      - name: Enforce application source boundary
+        run: |
+          sha256sum --check "$RUNNER_TEMP/boussole-app-before.sha256"
+          git diff --exit-code -- creations/boussolepro/boussole-pro.html
+      - uses: actions/upload-artifact@v6
+        if: ${{ steps.mode.outputs.real == 'true' }}
+        with:
+          name: boussole-pro-v0.8.3-alpha-market-phase3
+          path: |
+            creations/boussolepro/data/generated/market/market-package-identity.json
+            creations/boussolepro/data/generated/market/market-trends-quality-report.json
+            creations/boussolepro/data/generated/market/market-phase3-validation-report.json
+            creations/boussolepro/data/generated/active-runtime.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Commit generated market data
+        if: ${{ steps.mode.outputs.real == 'true' }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add creations/boussolepro/data/generated/market
+          git add creations/boussolepro/data/generated/market creations/boussolepro/data/generated/rome1000-candidate/runtime-bundle-manifest.json creations/boussolepro/data/generated/active-runtime.json
+          git reset -- creations/boussolepro/data/generated/market/market-phase3-validation-report.json
           git commit -m "Update generated market data" || echo "No changes"
           git push origin "HEAD:${GITHUB_REF_NAME}"
