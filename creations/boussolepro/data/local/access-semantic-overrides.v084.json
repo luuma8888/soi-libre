@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0.0",
+  "referenceVersion": "boussole-semantic-v1",
+  "policy": "Les contradictions et obligations réglementaires non résolues ne peuvent jamais produire un accès direct.",
+  "overrides": [
+    {
+      "romeCode": "K1308",
+      "requirementKind": "multiple_routes_with_mandatory_conditions",
+      "specificCredentialRequired": true,
+      "mandatoryQualification": true,
+      "regulated": true,
+      "contradictoryEvidence": false,
+      "requiredCredentialLabels": [
+        "CAP Accompagnant éducatif petite enfance ou équivalent selon la voie"
+      ],
+      "requiredExams": [
+        "Concours territorial d'ATSEM pour la voie publique habituelle"
+      ],
+      "competitionRequired": true,
+      "accessPaths": [
+        {
+          "pathId": "atsem-public",
+          "label": "École publique - voie territoriale habituelle",
+          "requiredCredentialLabels": [
+            "CAP Accompagnant éducatif petite enfance ou équivalent"
+          ],
+          "examRequired": true,
+          "examLabel": "Concours territorial d'ATSEM",
+          "mandatory": true
+        },
+        {
+          "pathId": "atsem-private",
+          "label": "École privée",
+          "requiredCredentialLabels": [
+            "Diplôme ou condition de recrutement propre à l'établissement"
+          ],
+          "examRequired": false,
+          "mandatory": true
+        }
+      ],
+      "warnings": [
+        "Les dérogations et voies particulières doivent être vérifiées auprès de l'autorité organisatrice."
+      ],
+      "source": "semantic_override_from_official_access_text_v084",
+      "confidence": 0.92
+    }
+  ]
+}

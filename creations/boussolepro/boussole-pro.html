@@ -1698,18 +1698,18 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.8.3-alpha",
-  buildId: "20260811-top5-market-trends-01",
+  appVersion: "v0.8.4-alpha",
+  buildId: "20260811-semantic-classic-freeze-01",
   buildDate: "2026-08-11",
   defaultDatasetVersion: "rome1000-candidate-v0.1",
   runtimeBundleRevision: "rome1000-runtime-v0.1-r2",
   runtimeBundleFingerprintSha256: "f3c2ce2a3a754bf903d93467a600b3bdb20c8d6d9bb6819fafd344aaf3b5848b",
   marketContractRevision: "market-contract-v4.0.0-phase3",
   temporalContractRevision: "market-temporal-contract-v1.0.0",
-  marketPackageFingerprintSha256: "77e2d098f0019564239bc03e7f5e5cfa8c1b19e502ec9c33c991fc6c540e1795",
+  marketPackageFingerprintSha256: "5d43df217eaa0f7688bbea7bd33f99f883a990a6832bf80dbb9cf2f5cbdd6ce7",
   corpusMaturity: "candidate_consolidated",
   validationScope: "validated_for_boussole_pro_v0_8",
-  testProfilesRevision: "integrated-12-v0.8.3",
+  testProfilesRevision: "integrated-12-v0.8.4",
   expectedJobsCount: 1000,
   expectedSkillsEngineCount: 13159,
   expectedAccessSummaryCount: 1000
@@ -1740,7 +1740,7 @@ function fallbackActiveRuntimeDescriptor() {
       marketFapEnrichmentFilename: "market-fap-enrichment.rome1000.json",
       marketTrendsFilename: "market-trends.rome1000.json",
       expectedCounts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
-      ruleVersions: { access: "v0.7.6-alpha", sectors: "v0.7.5-alpha", scoring: "v0.8.3-alpha" },
+      ruleVersions: { access: "v0.8.4-alpha", sectors: "career-directions-v1", scoring: "v0.8.4-alpha" },
       validationScope: BUILD_INFO.validationScope
     },
     market: {
@@ -1966,9 +1966,20 @@ if (typeof window !== "undefined") {
   });
 }
 
-const TOP5_THEME_CONTRACT_REVISION = "top5-functional-themes-v1";
+const SEMANTIC_CONTRACT_REVISION = "boussole-semantic-v1";
+const RESULTS_VIEW_CONTRACT_REVISION = "results-view-v1";
+const TOP5_THEME_CONTRACT_REVISION = "career-directions-v1";
 const TOP5_MIN_SELECTION_SCORE = 60;
 const TOP5_SELECTION_SCORE_WINDOW = 22;
+
+const CAREER_DIRECTIONS_V1 = Object.freeze([{"id":"grandir_transmettre","label":"Grandir et transmettre","description":"Enfance, école, éducation et formation"},{"id":"accompagner_relier","label":"Accompagner et relier","description":"Social, inclusion, médiation et insertion"},{"id":"soigner_soutenir","label":"Soigner et soutenir","description":"Santé, soin, rééducation et bien-être"},{"id":"creer_exprimer","label":"Créer et exprimer","description":"Arts, culture, médias et communication"},{"id":"animer_faire_vivre","label":"Animer et faire vivre","description":"Animation, sport, loisirs, tourisme et événementiel"},{"id":"cultiver_proteger_vivant","label":"Cultiver et protéger le vivant","description":"Agriculture, nature, animaux et environnement"},{"id":"comprendre_concevoir","label":"Comprendre et concevoir","description":"Sciences, recherche, études et ingénierie"},{"id":"construire_numerique","label":"Construire le numérique","description":"Informatique, données, réseaux et systèmes"},{"id":"faconner_fabriquer","label":"Façonner et fabriquer","description":"Artisanat, métiers d'art et fabrication matérielle"},{"id":"produire_maintenir","label":"Produire et maintenir","description":"Industrie, énergie, équipements et maintenance"},{"id":"batir_prendre_soin_lieux","label":"Bâtir et prendre soin des lieux","description":"Bâtiment, architecture, aménagement et propreté"},{"id":"administrer_garantir_droits","label":"Administrer et garantir les droits","description":"Administration, dossiers, droit et service public"},{"id":"gerer_piloter","label":"Gérer et piloter","description":"Finance, assurance, ressources humaines et direction"},{"id":"accueillir_conseiller_vendre","label":"Accueillir, conseiller et vendre","description":"Commerce, accueil, relation client et services"},{"id":"nourrir_recevoir","label":"Nourrir et recevoir","description":"Alimentation, restauration et hôtellerie"},{"id":"transporter_organiser_flux","label":"Transporter et organiser les flux","description":"Transport, mobilité et logistique"},{"id":"proteger_secourir","label":"Protéger et secourir","description":"Sécurité, prévention, secours et défense"}]);
+const CAREER_DIRECTION_LABELS_V1 = Object.freeze(Object.fromEntries(CAREER_DIRECTIONS_V1.map(item => [item.id, item.label])));
+const ROME_PROFESSIONAL_DOMAIN_DIRECTIONS_V1 = Object.freeze({"A11":"cultiver_proteger_vivant","A12":"cultiver_proteger_vivant","A13":"cultiver_proteger_vivant","A14":"cultiver_proteger_vivant","A15":"cultiver_proteger_vivant","B11":"creer_exprimer","B12":"faconner_fabriquer","B13":"faconner_fabriquer","B14":"faconner_fabriquer","B15":"faconner_fabriquer","B16":"faconner_fabriquer","B17":"faconner_fabriquer","B18":"faconner_fabriquer","C11":"gerer_piloter","C12":"gerer_piloter","C13":"gerer_piloter","C14":"gerer_piloter","C15":"gerer_piloter","D11":"nourrir_recevoir","D12":"accueillir_conseiller_vendre","D13":"accueillir_conseiller_vendre","D14":"accueillir_conseiller_vendre","D15":"accueillir_conseiller_vendre","E11":"creer_exprimer","E12":"creer_exprimer","E13":"produire_maintenir","E14":"creer_exprimer","F11":"batir_prendre_soin_lieux","F12":"batir_prendre_soin_lieux","F13":"batir_prendre_soin_lieux","F14":"batir_prendre_soin_lieux","F15":"batir_prendre_soin_lieux","F16":"batir_prendre_soin_lieux","F17":"batir_prendre_soin_lieux","G11":"animer_faire_vivre","G12":"animer_faire_vivre","G13":"accueillir_conseiller_vendre","G14":"gerer_piloter","G15":"nourrir_recevoir","G16":"nourrir_recevoir","G17":"nourrir_recevoir","G18":"nourrir_recevoir","H11":"produire_maintenir","H12":"comprendre_concevoir","H13":"proteger_secourir","H14":"produire_maintenir","H15":"produire_maintenir","H21":"produire_maintenir","H22":"produire_maintenir","H23":"produire_maintenir","H24":"produire_maintenir","H25":"produire_maintenir","H26":"produire_maintenir","H27":"produire_maintenir","H28":"produire_maintenir","H29":"produire_maintenir","H31":"produire_maintenir","H32":"produire_maintenir","H33":"produire_maintenir","H34":"produire_maintenir","I11":"produire_maintenir","I12":"produire_maintenir","I13":"produire_maintenir","I14":"produire_maintenir","I15":"produire_maintenir","I16":"produire_maintenir","J11":"soigner_soutenir","J12":"soigner_soutenir","J13":"soigner_soutenir","J14":"soigner_soutenir","J15":"soigner_soutenir","K11":"soigner_soutenir","K12":"accompagner_relier","K13":"accompagner_relier","K14":"gerer_piloter","K15":"administrer_garantir_droits","K16":"creer_exprimer","K17":"proteger_secourir","K18":"accompagner_relier","K19":"administrer_garantir_droits","K21":"grandir_transmettre","K22":"batir_prendre_soin_lieux","K23":"cultiver_proteger_vivant","K24":"comprendre_concevoir","K25":"proteger_secourir","K26":"accompagner_relier","L11":"creer_exprimer","L12":"creer_exprimer","L13":"creer_exprimer","L14":"animer_faire_vivre","L15":"creer_exprimer","M11":"gerer_piloter","M12":"gerer_piloter","M13":"gerer_piloter","M14":"comprendre_concevoir","M15":"gerer_piloter","M16":"administrer_garantir_droits","M17":"gerer_piloter","M18":"construire_numerique","N11":"transporter_organiser_flux","N12":"transporter_organiser_flux","N13":"transporter_organiser_flux","N21":"transporter_organiser_flux","N22":"transporter_organiser_flux","N31":"transporter_organiser_flux","N32":"transporter_organiser_flux","N41":"transporter_organiser_flux","N42":"transporter_organiser_flux","N43":"transporter_organiser_flux","N44":"transporter_organiser_flux"});
+const ROME_CAREER_DIRECTION_OVERRIDES_V1 = Object.freeze({"K1303":"grandir_transmettre","K1307":"grandir_transmettre","K1308":"grandir_transmettre","K1309":"grandir_transmettre","K1310":"grandir_transmettre","K1313":"grandir_transmettre","K1314":"grandir_transmettre","K1807":"batir_prendre_soin_lieux","K1808":"creer_exprimer","K1811":"batir_prendre_soin_lieux","K1813":"cultiver_proteger_vivant","K1815":"batir_prendre_soin_lieux","K2125":"comprendre_concevoir","K2133":"comprendre_concevoir","K2134":"comprendre_concevoir","K2135":"comprendre_concevoir","K2140":"comprendre_concevoir","K2143":"comprendre_concevoir","M1808":"comprendre_concevoir","M1809":"comprendre_concevoir","M1888":"comprendre_concevoir","M1890":"comprendre_concevoir","M1891":"comprendre_concevoir","M1893":"comprendre_concevoir","M1895":"comprendre_concevoir"});
+const ROME_SECONDARY_DIRECTIONS_V1 = Object.freeze({"G1203":["grandir_transmettre"],"K1206":["gerer_piloter"],"M1609":["soigner_soutenir"],"M1808":["construire_numerique"],"D1102":["faconner_fabriquer"]});
+const ROME_GRAND_DOMAIN_LABELS_V1 = Object.freeze({"A":"Agriculture et Pêche, Espaces naturels et Espaces verts, Soins aux animaux","B":"Arts et Façonnage d'ouvrages d'art","C":"Banque, Assurance, Immobilier","D":"Commerce, Vente et Grande distribution","E":"Communication, Média et Multimédia","F":"Construction, Bâtiment et Travaux publics","G":"Hôtellerie-Restauration, Tourisme, Loisirs et Animation","H":"Industrie","I":"Installation et Maintenance","J":"Santé","K":"Services à la personne et à la collectivité","L":"Spectacle","M":"Support à l'entreprise","N":"Transport et Logistique"});
+const ROME_PROFESSIONAL_DOMAIN_LABELS_V1 = Object.freeze({"A11":"Engins agricoles et forestiers","A12":"Espaces naturels et espaces verts","A13":"Etudes et assistance technique","A14":"Production","A15":"Soins aux animaux","B11":"Arts plastiques","B12":"Céramique","B13":"Décoration","B14":"Fibres et papier","B15":"Instruments de musique","B16":"Métal, verre, bijouterie et horlogerie","B17":"Taxidermie","B18":"Tissu et cuirs","C11":"Assurance","C12":"Banque","C13":"Finance","C14":"Gestion administrative banque et assurances","C15":"Immobilier","D11":"Commerce alimentaire et métiers de bouche","D12":"Commerce non alimentaire et de prestations de confort","D13":"Direction de magasin de détail","D14":"Force de vente","D15":"Grande distribution","E11":"Edition et communication","E12":"Images et sons","E13":"Industries graphiques","E14":"Publicité","F11":"Conception et études","F12":"Conduite et encadrement de chantier - travaux","F13":"Engins de chantier","F14":"Extraction","F15":"Montage de structures","F16":"Second oeuvre","F17":"Travaux et gros oeuvre","G11":"Accueil et promotion touristique","G12":"Animation d'activités de loisirs","G13":"Conception, commercialisation et vente de produits touristiques","G14":"Gestion et direction","G15":"Personnel d'étage en hôtellerie","G16":"Production culinaire","G17":"Accueil en hôtellerie","G18":"Service","H11":"Affaires et support technique client","H12":"Conception, recherche, études et développement","H13":"Hygiène Sécurité Environnement -HSE- industriels","H14":"Méthodes et gestion industrielles","H15":"Qualité et analyses industrielles","H21":"Alimentaire","H22":"Bois","H23":"Chimie et pharmacie","H24":"Cuir et textile","H25":"Direction, encadrement et pilotage de fabrication et production industrielles","H26":"Electronique et électricité","H27":"Energie","H28":"Matériaux de construction, céramique et verre","H29":"Mécanique, travail des métaux et outillage","H31":"Papier et carton","H32":"Plastique, caoutchouc","H33":"Préparation et conditionnement","H34":"Traitements thermiques et traitements de surfaces","I11":"Encadrement","I12":"Entretien technique","I13":"Equipements de production, équipements collectifs","I14":"Equipements domestiques et informatique","I15":"Travaux d'accès difficile","I16":"Véhicules, engins, aéronefs","J11":"Praticiens médicaux","J12":"Praticiens médico-techniques","J13":"Professionnels médico-techniques","J14":"Rééducation et appareillage","J15":"Soins paramédicaux","K11":"Accompagnement de la personne","K12":"Action sociale, socio-éducative et socio-culturelle","K13":"Aide à la vie quotidienne","K14":"Conception et mise en oeuvre des politiques publiques","K15":"Contrôle public","K16":"Culture et gestion documentaire","K17":"Défense, sécurité publique et secours","K18":"Développement territorial et emploi","K19":"Droit","K21":"Formation initiale et continue","K22":"Nettoyage et propreté industriels","K23":"Propreté et environnement urbain","K24":"Recherche","K25":"Sécurité privée","K26":"Services funéraires","L11":"Animation de spectacles","L12":"Artistes - interprètes du spectacle","L13":"Conception et production de spectacles","L14":"Sport professionnel","L15":"Techniciens du spectacle","M11":"Achats","M12":"Comptabilité et gestion","M13":"Direction d'entreprise","M14":"Organisation et études","M15":"Ressources humaines","M16":"Secrétariat et assistance","M17":"Stratégie commerciale, marketing et supervision des ventes","M18":"Systèmes d'information et de télécommunication","N11":"Magasinage, manutention des charges et déménagement","N12":"Organisation de la circulation des marchandises","N13":"Personnel d'encadrement de la logistique","N21":"Personnel navigant du transport aérien","N22":"Personnel sédentaire du transport aérien","N31":"Personnel navigant du transport maritime et fluvial","N32":"Personnel sédentaire du transport maritime et fluvial","N41":"Personnel de conduite du transport routier","N42":"Personnel d'encadrement du transport routier","N43":"Personnel navigant du transport terrestre","N44":"Personnel sédentaire du transport ferroviaire et réseau filo guidé"});
+const ACCESS_SEMANTIC_OVERRIDES_V084 = Object.freeze({"K1308":{"romeCode":"K1308","requirementKind":"multiple_routes_with_mandatory_conditions","specificCredentialRequired":true,"mandatoryQualification":true,"regulated":true,"contradictoryEvidence":false,"requiredCredentialLabels":["CAP Accompagnant éducatif petite enfance ou équivalent selon la voie"],"requiredExams":["Concours territorial d'ATSEM pour la voie publique habituelle"],"competitionRequired":true,"accessPaths":[{"pathId":"atsem-public","label":"École publique - voie territoriale habituelle","requiredCredentialLabels":["CAP Accompagnant éducatif petite enfance ou équivalent"],"examRequired":true,"examLabel":"Concours territorial d'ATSEM","mandatory":true},{"pathId":"atsem-private","label":"École privée","requiredCredentialLabels":["Diplôme ou condition de recrutement propre à l'établissement"],"examRequired":false,"mandatory":true}],"warnings":["Les dérogations et voies particulières doivent être vérifiées auprès de l'autorité organisatrice."],"source":"semantic_override_from_official_access_text_v084","confidence":0.92}});
 
 const DISPLAY_MODE_POLICY = {
   essential: {
@@ -4994,7 +5005,7 @@ function normalizeJob(raw) {
   if (accessConditions && typeof accessConditions === "object") {
     accessConditions.text = normalizeMultilineText(accessConditions.text);
   }
-  return {
+  return enrichJobWithSemanticTaxonomy({
     id,
     canonicalId,
     schemaVersion: raw.schemaVersion || CONFIG.schemaVersion,
@@ -5070,7 +5081,7 @@ function normalizeJob(raw) {
     exclusionHints: toArray(raw.exclusionHints),
     evidenceNotes: toArray(raw.evidenceNotes),
     marketScoreSeed: Number(raw.marketScoreSeed ?? raw.market?.value ?? raw.market?.score ?? raw.market?.tensionScore ?? (typeof raw.market === "number" ? raw.market : null) ?? 0.5)
-  };
+  });
 }
 
 function isGeneratedRomeJob(job = {}) {
@@ -5378,6 +5389,120 @@ function mapUserProfileToCriteria(profile) {
   };
 }
 
+function buildMarketSummaryByTerritory(job = {}, datasets = App.state.dataset) {
+  const stats = job.marketStats || {};
+  const labels = { national: "France entière", regional: "Occitanie", departmental: "Aude" };
+  const opportunityBySignal = { very_high: "very_favorable", high: "favorable", medium: "moderate", low: "limited", zero: "zero", unknown: "unknown" };
+  return Object.fromEntries([
+    ["national", "FR"], ["regional", "REG-76"], ["departmental", "DEP-11"]
+  ].map(([key, territory]) => {
+    const row = stats[key] || {};
+    const available = row.sourceLevel && row.sourceLevel !== "none" && (row.offersFranceTravail12m !== null || row.offers12m !== null);
+    const signal = row.absoluteOfferSignal || "unknown";
+    return [key, {
+      territory,
+      territoryLabel: row.territoryLabel || labels[key],
+      level: opportunityBySignal[signal] || "unknown",
+      value: row.offersFranceTravail12m ?? row.offers12m ?? null,
+      source: row.sourceName || stats.sourceName || null,
+      period: row.latestPeriodLabel || row.latestPeriodCode || null,
+      confidence: Number(row.confidence || 0),
+      availability: available ? "available" : "unavailable",
+      note: available ? null : "Donnée distinctement indisponible pour ce territoire."
+    }];
+  }));
+}
+
+function buildResultJobSummary(result = {}, datasets = App.state.dataset, variantCount = 0) {
+  const job = result.job || {};
+  return {
+    jobId: result.jobId,
+    romeCode: result.romeCode || job.romeCode || "",
+    title: result.title || job.title || "Métier",
+    shortMission: String(job.description || job.officialDescription || "").split(/(?<=[.!?])\s+/)[0].slice(0, 240),
+    primaryDirection: result.primaryDirection || getCareerDirection(job).primaryDirection,
+    primaryDirectionLabel: result.primaryDirectionLabel || getCareerDirection(job).primaryDirectionLabel,
+    secondaryDirections: toArray(result.secondaryDirections),
+    personalFitScore: result.personalFitScore,
+    personalFitLevel: result.personalFitLevel,
+    skillsReadiness: {
+      score: result.skillsReadiness,
+      level: result.skillsReadinessLevel,
+      label: result.skillsReadinessLabel,
+      evidence: toArray(result.skillsReadinessEvidence)
+    },
+    accessSummary: result.accessSummaryV1,
+    marketSummaryByTerritory: buildMarketSummaryByTerritory(job, datasets),
+    dataConfidence: result.dataReliability,
+    variantCount,
+    exclusionReasons: toArray(result.exclusionReasons).map(item => item.message || item.label || item.code).filter(Boolean)
+  };
+}
+
+function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.state.dataset) {
+  const presentationMode = ({ essential: "user", detailed: "companion", diagnostic: "debug" })[App.state.displayMode] || "user";
+  const complete = toArray(resultSet.completeList);
+  const variantsByJob = resultSet.variantsByJob || {};
+  const summaries = complete.map(result => buildResultJobSummary(result, datasets, toArray(variantsByJob[result.jobId]).length));
+  const byId = new Map(summaries.map(item => [item.jobId, item]));
+  const topIds = new Set(toArray(resultSet.top5).map(item => item.jobId));
+  const excluded = complete.filter(item => item.status === "excluded_for_now");
+  const available = complete.filter(item => item.status !== "excluded_for_now");
+  const dream = available.filter(item => item.personalFitScore >= 65 && ["long_path", "current_blocker", "qualification_or_competition"].includes(item.accessStatus));
+  const skillSupported = available.filter(item => item.personalFitScore >= 45 && ["solid_support", "several_supports"].includes(item.skillsReadinessLevel));
+  const dreamIds = new Set(dream.map(item => item.jobId));
+  const skillIds = new Set(skillSupported.map(item => item.jobId));
+  const recommended = available.filter(item => !topIds.has(item.jobId) && !dreamIds.has(item.jobId) && item.personalFitScore >= 60);
+  const exploratory = available.filter(item => !topIds.has(item.jobId) && !dreamIds.has(item.jobId) && !skillIds.has(item.jobId) && item.personalFitScore >= 40);
+  const topDirections = toArray(resultSet.top5).map(result => ({
+    directionId: result.primaryDirection,
+    directionLabel: result.primaryDirectionLabel,
+    representative: byId.get(result.jobId),
+    variants: toArray(variantsByJob[result.jobId]).map(item => byId.get(item.jobId)).filter(Boolean)
+  }));
+  const jobsByPrimaryDirection = Object.fromEntries(CAREER_DIRECTIONS_V1.map(direction => [direction.id, summaries.filter(item => item.primaryDirection === direction.id).map(item => item.jobId)]));
+  const explorationSearchIndex = complete.map(result => ({
+    jobId: result.jobId,
+    romeCode: result.romeCode || "",
+    text: normalizeText([result.romeCode, result.title, ...toArray(result.job?.appellations)].join(" "))
+  }));
+  const jobDetailsById = Object.fromEntries(complete.map(result => [result.jobId, {
+    ...byId.get(result.jobId),
+    description: result.job?.description || result.job?.officialDescription || "",
+    activities: toArray(result.job?.activities),
+    agreementReasons: toArray(result.positiveReasons),
+    dailyReality: result.scoreDetails?.constraints || null,
+    accessRoutes: result.accessSummaryV1,
+    transferableSupports: toArray(result.skillsReadinessEvidence),
+    pointsToVerify: unique([...toArray(result.missingData).map(item => item.message || item.field), ...toArray(result.accessSummaryV1?.accessWarnings)]).filter(Boolean),
+    variants: toArray(variantsByJob[result.jobId]).map(item => item.jobId),
+    sources: toArray(result.sourceRefs)
+  }]));
+  return {
+    contractRevision: RESULTS_VIEW_CONTRACT_REVISION,
+    profilePortrait: { profileId: profile.id, completeness: calculateProfileCompleteness(profile), mode: presentationMode },
+    topDirections,
+    recommendedPaths: recommended.map(item => byId.get(item.jobId)),
+    dreamPaths: dream.map(item => byId.get(item.jobId)),
+    skillsSupportedPaths: skillSupported.map(item => byId.get(item.jobId)),
+    exploratoryPaths: exploratory.map(item => byId.get(item.jobId)),
+    excludedPaths: excluded.map(item => byId.get(item.jobId)),
+    completeList: summaries,
+    jobDetailsById,
+    resultMetadata: {
+      generatedAt: resultSet.generatedAt,
+      semanticContractRevision: SEMANTIC_CONTRACT_REVISION,
+      presentationMode,
+      scoringPolicy: "personal_fit_only",
+      marketRankingWeight: 0,
+      counts: { total: summaries.length, topDirections: topDirections.length, excluded: excluded.length }
+    },
+    explorationCatalog: CAREER_DIRECTIONS_V1.map(direction => ({ ...direction, jobCount: jobsByPrimaryDirection[direction.id].length })),
+    explorationSearchIndex,
+    jobsByPrimaryDirection
+  };
+}
+
 function calculateAllMatches(profile = App.state.profile, datasets = App.state.dataset, options = {}) {
   migrateProfileSkillSelections(profile, datasets);
   const criteria = mapUserProfileToCriteria(profile);
@@ -5431,6 +5556,18 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
       afterTraining: compatible.filter(result => result.status.includes("training")).length
     }
   };
+  if (!options.skipViewModel) {
+    output.resultsViewModel = buildResultsViewModel(profile, output, datasets);
+    output.topDirections = output.resultsViewModel.topDirections;
+    output.recommendedPaths = output.resultsViewModel.recommendedPaths;
+    output.dreamPaths = output.resultsViewModel.dreamPaths;
+    output.skillsSupportedPaths = output.resultsViewModel.skillsSupportedPaths;
+    output.exploratoryPaths = output.resultsViewModel.exploratoryPaths;
+    output.excludedPaths = output.resultsViewModel.excludedPaths;
+    output.explorationCatalog = output.resultsViewModel.explorationCatalog;
+    output.explorationSearchIndex = output.resultsViewModel.explorationSearchIndex;
+    output.jobsByPrimaryDirection = output.resultsViewModel.jobsByPrimaryDirection;
+  }
   output.calibrationAudit = options.skipAudit ? null : buildCalibrationAudit(output);
   return output;
 }
@@ -5448,15 +5585,16 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     const exactExperience = evaluateExactJobExperience(criteria, job);
     const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity, exactExperience });
     const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
+    const constraint = { score: 0, warnings: hardCheck.confirmed.map(item => item.message || item.label || item.code), missingData: [], activeCount: hardCheck.confirmed.length, unknownCount: 0 };
     const scores = { skills: skill.score, training: training.score, constraints: 0, values: value.score, context: context.score, market: market.score };
     const relevanceScore = weightedGlobalScore({ ...scores, constraints: 15 }, weightAdjustment.weights);
     const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market, affinity, core], hardCheck.unknown);
-    const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, affinity, core, exactExperience });
-    const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint: { score: 0, warnings: [], missingData: [] } });
+    const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, constraint, affinity, core, exactExperience });
+    const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint });
     const marketOpportunityLevelValue = marketOpportunityLevel(market);
     const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
     const marketInfluence = calculateSelectionScoreV077(criteria, { personalFitScore, feasibilityScore, marketOpportunityNormalized }, market);
-    const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, hardCheck, exactExperience });
+    const scoreDetails = buildScoreDetails(criteria, job, { skill, training, constraint, value, context, market, hardCheck, exactExperience });
     const result = {
       schemaVersion: CONFIG.schemaVersion,
       id: `match-${criteria.profileId}-${job.id}`,
@@ -5464,18 +5602,18 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       canonicalJobId: job.canonicalId || canonicalJobId(job),
       romeCode: job.romeCode,
       title: job.title,
-      globalScore: 0,
-      scorePertinence: relevanceScore,
-      relevanceWithoutExclusion: relevanceScore,
+      globalScore: personalFitScore,
+      scorePertinence: personalFitScore,
+      relevanceWithoutExclusion: personalFitScore,
       coreProfileMatchScore: core.score,
       coreProfileMatch: core,
       personalFitScore,
       feasibilityScore,
       marketOpportunityLevel: marketOpportunityLevelValue,
       marketOpportunityNormalized,
-      marketInfluence: { ...marketInfluence, selectionScore: 0, effectPoints: 0, excludedFromSelection: true },
+      marketInfluence: { ...marketInfluence, selectionScore: personalFitScore, effectPoints: 0, excludedFromSelection: true },
       legacyCompositeScore: relevanceScore,
-      selectionScore: 0,
+      selectionScore: personalFitScore,
       confidenceScore: confidence,
       dataReliability: reliabilityLabel(confidence),
       status: "excluded_for_now",
@@ -5496,9 +5634,9 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     result.resultInterpretation = buildResultInterpretation(criteria, job, result, { skill, training, value, context, market, affinity, core, exactExperience, hardCheck });
     result.resultFoundation = result.resultInterpretation.resultFoundation;
     if (includeDiagnostic) {
-      result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint: { score: 0, warnings: [], missingData: [] }, value, context, market, affinity, core, exactExperience, weightAdjustment, marketInfluence: result.marketInfluence, scoreCaps: { caps: [] }, hardCheck });
+      result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, exactExperience, weightAdjustment, marketInfluence: result.marketInfluence, scoreCaps: { caps: [] }, hardCheck });
     }
-    return result;
+    return decorateCanonicalResult(result, criteria, job, datasets, { skill, training, constraint, value, context, market });
   }
 
   const skill = calculateSkillScore(criteria, job, datasets);
@@ -5525,7 +5663,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   const confidence = calculateConfidence(criteria, job, [skill, training, constraint, value, context, market, affinity, core], hardCheck.unknown);
   const status = determineFeasibilityStatus(legacyCompositeScore, scores, criteria, job, { training, constraint, affinity, core, scoreCaps, hardCheck });
   const explanation = explainMatch(criteria, job, scores, status, { skill, training, constraint, value, context, market, affinity, scoreCaps, hardCheck });
-  const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, affinity, core, exactExperience });
+  const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, constraint, affinity, core, exactExperience });
   const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint });
   const marketOpportunityLevelValue = marketOpportunityLevel(market);
   const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
@@ -5573,13 +5711,157 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   if (includeDiagnostic) {
     result.diagnostic = buildResultDiagnostic(criteria, job, result, { skill, training, constraint, value, context, market, affinity, core, exactExperience, weightAdjustment, marketInfluence, scoreCaps, hardCheck });
   }
-  return result;
+  return decorateCanonicalResult(result, criteria, job, datasets, { skill, training, constraint, value, context, market });
 }
 
 function reliabilityLabel(score) {
   if (score >= 75) return "high";
   if (score >= 50) return "medium";
   return "low";
+}
+
+function getCareerDirection(job = {}) {
+  const romeCode = String(job.romeCode || "").toUpperCase();
+  const romeProfessionalDomainCode = romeCode.slice(0, 3);
+  const override = ROME_CAREER_DIRECTION_OVERRIDES_V1[romeCode];
+  const primaryDirection = override || ROME_PROFESSIONAL_DOMAIN_DIRECTIONS_V1[romeProfessionalDomainCode] || "unclassified";
+  return {
+    primaryDirection,
+    primaryDirectionLabel: CAREER_DIRECTION_LABELS_V1[primaryDirection] || "Direction non classée",
+    secondaryDirections: toArray(ROME_SECONDARY_DIRECTIONS_V1[romeCode]),
+    classificationSource: override ? "rome_code_override" : primaryDirection === "unclassified" ? "unclassified" : "rome_professional_domain",
+    romeGrandDomainCode: romeCode.slice(0, 1) || null,
+    romeGrandDomainLabel: ROME_GRAND_DOMAIN_LABELS_V1[romeCode.slice(0, 1)] || null,
+    romeProfessionalDomainCode: romeProfessionalDomainCode.length === 3 ? romeProfessionalDomainCode : null,
+    romeProfessionalDomainLabel: ROME_PROFESSIONAL_DOMAIN_LABELS_V1[romeProfessionalDomainCode] || null,
+    familyPrefix: romeProfessionalDomainCode.length === 3 ? romeProfessionalDomainCode : job.familyPrefix || null
+  };
+}
+
+function getSemanticAccessSummary(job = {}) {
+  const base = job.accessSummary || {};
+  const override = ACCESS_SEMANTIC_OVERRIDES_V084[String(job.romeCode || "").toUpperCase()];
+  if (!override) return base;
+  return {
+    ...base,
+    ...override,
+    warnings: unique([...toArray(base.warnings), ...toArray(override.warnings)]),
+    accessPaths: toArray(override.accessPaths).length ? override.accessPaths : toArray(base.accessPaths)
+  };
+}
+
+function enrichJobWithSemanticTaxonomy(job = {}) {
+  const taxonomy = getCareerDirection(job);
+  const accessSummary = getSemanticAccessSummary(job);
+  return { ...job, ...taxonomy, accessSummary, accessPaths: toArray(accessSummary.accessPaths).length ? accessSummary.accessPaths : job.accessPaths };
+}
+
+function personalFitLevel(score = 0) {
+  if (score >= 80) return "very_aligned";
+  if (score >= 65) return "well_matched";
+  if (score >= 45) return "worth_exploring";
+  return "fragile_match";
+}
+
+function personalFitLevelLabel(level) {
+  return ({ very_aligned: "Très aligné", well_matched: "Bien accordé", worth_exploring: "Intéressant à explorer", fragile_match: "Accord fragile" })[level] || "Accord à vérifier";
+}
+
+function calculateAspirationalAlignmentScore(criteria = {}, job = {}) {
+  const sector = getJobSectorProfile(job);
+  const primary = sector.primarySectorId;
+  const secondaries = toArray(sector.secondarySectorIds);
+  const primaryIn = values => toArray(values).includes(primary);
+  const secondaryIn = values => secondaries.some(id => toArray(values).includes(id));
+  const interestMatches = Object.keys(criteria.interests || {}).filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
+  let score = 50;
+  if (primaryIn(criteria.heartSectors)) score += 32;
+  else if (secondaryIn(criteria.heartSectors)) score += 14;
+  if (primaryIn(criteria.secondarySectors)) score += 14;
+  else if (secondaryIn(criteria.secondarySectors)) score += 7;
+  if (primaryIn(criteria.supportSectors)) score += 5;
+  score += Math.min(interestMatches.length, 3) * 6;
+  if (primaryIn(criteria.avoidMainSectors)) score -= 38;
+  if (primaryIn(criteria.excludedSectors)) score = 0;
+  return Math.round(clamp(score, 0, 100));
+}
+
+function buildSkillsReadiness(criteria = {}, skill = {}) {
+  if (!criteria.hasEnoughSkillEvidence) {
+    return { score: null, level: "insufficient_information", label: "Informations insuffisantes", evidence: [], confidence: 0.25 };
+  }
+  const score = Math.round(clamp(Number(skill.score || 0) / 25 * 100, 0, 100));
+  const level = score >= 80 ? "solid_support" : score >= 60 ? "several_supports" : score >= 35 ? "some_supports" : "few_identified_supports";
+  const labels = { solid_support: "Appuis déjà solides", several_supports: "Plusieurs appuis", some_supports: "Quelques appuis", few_identified_supports: "Peu d'appuis identifiés" };
+  return {
+    score,
+    level,
+    label: labels[level],
+    evidence: unique([...toArray(skill.matchedRequiredSkills), ...toArray(skill.matchedOptionalSkills)]),
+    confidence: clamp(Number(skill.confidence || 0.65), 0, 1),
+    wordingPolicy: "Une compétence non déclarée est non identifiée dans la boussole, jamais réputée absente."
+  };
+}
+
+function buildCanonicalAccessSummary(criteria = {}, job = {}, accessFeasibility = null) {
+  const access = accessFeasibility || evaluateAccessFeasibility(criteria, job);
+  const summary = getSemanticAccessSummary(job);
+  const requiredLevel = access.requiredLevel ?? access.minimumDiplomaLevel ?? access.targetLevel ?? null;
+  const userLevel = Number(criteria.education?.highestLevel || 0);
+  const levelGap = requiredLevel === null ? null : requiredLevel - userLevel;
+  const mandatoryCredentials = unique([...toArray(access.requiredCredentialLabels), ...toArray(summary.requiredCredentialLabels)]);
+  const requiredExams = unique([...toArray(access.requiredExams), ...toArray(summary.requiredExams)]);
+  const competitionRequired = Boolean(summary.competitionRequired || requiredExams.length);
+  const contradiction = Boolean(summary.contradictoryEvidence || access.requirementKind === "conflicting");
+  const evidenceAvailable = Boolean(access.evidenceAvailable || summary.source || summary.displayLabel);
+  const regulated = Boolean(summary.regulated);
+  const regulationResolved = !regulated || mandatoryCredentials.length > 0 || requiredExams.length > 0 || summary.noDiplomaPossible;
+  let accessStatus = "unknown";
+  if (!contradiction && evidenceAvailable && (!regulated || regulationResolved)) {
+    if (competitionRequired || access.missingRequiredCertifications?.length || mandatoryCredentials.length) accessStatus = "qualification_or_competition";
+    else if (levelGap !== null && levelGap >= 2) accessStatus = "long_path";
+    else if (levelGap === 1) accessStatus = "one_step";
+    else if (levelGap !== null || summary.noDiplomaPossible) accessStatus = "direct_or_near_direct";
+  }
+  const labels = {
+    direct_or_near_direct: "Accès direct ou proche", one_step: "Une étape",
+    qualification_or_competition: "Qualification ou concours nécessaire", long_path: "Parcours long",
+    current_blocker: "Obstacle actuel identifié", unknown: regulated && !regulationResolved ? "Accès réglementé à vérifier" : "Accès à vérifier"
+  };
+  return {
+    accessStatus,
+    accessStatusLabel: labels[accessStatus],
+    requiredLevel,
+    namedRoutes: toArray(access.accessPaths).map(path => path.label).filter(Boolean),
+    mandatoryCredentials,
+    competitionRequired,
+    regulatedStatus: regulated ? (regulationResolved ? "regulated_requirements_identified" : "regulated_unresolved") : "not_identified_as_regulated",
+    accessEvidence: unique([...toArray(summary.matchedExcerpts), ...toArray(access.reasons)]),
+    accessConfidence: contradiction ? Math.min(0.35, Number(access.confidence || 0)) : Number(access.confidence || 0),
+    accessWarnings: unique([...toArray(summary.warnings), ...toArray(access.cautions), ...(contradiction ? ["Données d'accès contradictoires : statut volontairement inconnu."] : []), ...(regulated && !regulationResolved ? ["Obligation réglementaire non résolue."] : [])])
+  };
+}
+
+function decorateCanonicalResult(result, criteria, job, datasets, details = {}) {
+  const taxonomy = getCareerDirection(job);
+  const skillsReadiness = buildSkillsReadiness(criteria, details.skill || {});
+  const accessSummary = buildCanonicalAccessSummary(criteria, job, details.training?.accessFeasibility);
+  return {
+    ...result,
+    ...taxonomy,
+    personalFitScore: result.personalFitScore,
+    personalFitLevel: personalFitLevel(result.personalFitScore),
+    personalFitLevelLabel: personalFitLevelLabel(personalFitLevel(result.personalFitScore)),
+    skillsReadiness: skillsReadiness.score,
+    skillsReadinessLevel: skillsReadiness.level,
+    skillsReadinessLabel: skillsReadiness.label,
+    skillsReadinessEvidence: skillsReadiness.evidence,
+    skillsReadinessConfidence: skillsReadiness.confidence,
+    accessSummaryV1: accessSummary,
+    accessStatus: accessSummary.accessStatus,
+    accessStatusLabel: accessSummary.accessStatusLabel,
+    semanticContractRevision: SEMANTIC_CONTRACT_REVISION
+  };
 }
 
 function calculateSelectionScore(globalScore, scores = {}, details = {}) {
@@ -5602,15 +5884,12 @@ function calculateSelectionScore(globalScore, scores = {}, details = {}) {
 }
 
 function calculatePersonalFitScore(criteria = {}, job = {}, details = {}) {
-  const exact = details.exactExperience || evaluateExactJobExperience(criteria, job);
-  const experiencePoints = exact.score > 0
-    ? exact.score
-    : Math.min(12, toArray(details.core?.matchedExperienceDomains).length * 6 + (details.affinity?.score || 0) * 0.08);
-  const skillPoints = clamp((details.skill?.score || 0) / 25 * 25, 0, 25);
-  const domainPoints = clamp((details.core?.score || details.affinity?.score || 0) / 100 * 20, 0, 20);
-  const valuePoints = clamp((details.value?.score || 0) / 15 * 15, 0, 15);
-  const contextPoints = clamp((details.context?.score || 0) / 10 * 10, 0, 10);
-  const score = experiencePoints + skillPoints + domainPoints + valuePoints + contextPoints;
+  const finiteOr = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const aspirationPoints = calculateAspirationalAlignmentScore(criteria, job) * 0.35;
+  const valuePoints = clamp(finiteOr(details.value?.score, 7.5) / 15 * 20, 0, 20);
+  const contextPoints = clamp(finiteOr(details.context?.score, 5) / 10 * 20, 0, 20);
+  const constraintPoints = clamp(finiteOr(details.constraint?.score, 12.5) / 25 * 25, 0, 25);
+  const score = aspirationPoints + valuePoints + contextPoints + constraintPoints;
   return Math.round(clamp(score, 0, 100));
 }
 
@@ -5629,43 +5908,21 @@ function marketOpportunityNormalizedScore(market = {}) {
 }
 
 function calculateSelectionScoreV077(criteria = {}, scores = {}, market = {}) {
-  const intent = criteria.engineIntent || "balanced";
   const requestedWeight = normalizeWeights(criteria.criterionWeights || CONFIG.baseWeights).market || 0;
-  const explicitMarketGoal = ["localTension", "quickEmployment"].includes(intent) ||
-    ["quick_employment", "local_tension", "secure_recruitment"].includes(criteria.marketPreference?.goal);
   const reliability = Number(market.marketReliability ?? market.confidence ?? 0);
-  const rankingEligible = Boolean(market.marketDiscriminant) && market.rankingUse === "normal" && reliability >= 0.5;
-  const effectiveWeight = rankingEligible ? Math.min(requestedWeight, explicitMarketGoal ? 15 : 8) : 0;
-  const personalShare = intent === "comfortAndConstraints" || intent === "shortTraining"
-    ? 0.67
-    : intent === "localTension" || intent === "quickEmployment"
-      ? 0.71
-      : 0.78;
-  const scoreWithoutMarket = clamp(
-    Number(scores.personalFitScore || 0) * personalShare +
-    Number(scores.feasibilityScore || 0) * (1 - personalShare),
-    0,
-    100
-  );
-  const selectionScore = clamp(
-    scoreWithoutMarket * (1 - effectiveWeight / 100) +
-    Number(scores.marketOpportunityNormalized ?? 50) * (effectiveWeight / 100),
-    0,
-    100
-  );
+  const scoreWithoutMarket = clamp(Number(scores.personalFitScore || 0), 0, 100);
+  const selectionScore = scoreWithoutMarket;
   return {
-    policyRevision: "market-ranking-policy-v1",
+    policyRevision: "personal-fit-only-v1",
     requestedWeight,
-    effectiveWeight,
-    limited: effectiveWeight < requestedWeight,
-    rankingEligible,
+    effectiveWeight: 0,
+    limited: requestedWeight > 0,
+    rankingEligible: false,
     reliability: Number(reliability.toFixed(2)),
     scoreWithoutMarket: Math.round(scoreWithoutMarket),
     selectionScore: Math.round(selectionScore),
     effectPoints: Math.round(selectionScore) - Math.round(scoreWithoutMarket),
-    reason: rankingEligible
-      ? (effectiveWeight ? "reliable_observed_market_signal_with_capped_weight" : "zero_weight_requested")
-      : "market_unknown_or_not_ranking_eligible"
+    reason: "market_and_access_excluded_from_personal_fit_and_top5"
   };
 }
 
@@ -6416,6 +6673,17 @@ function getJobSourceDomainLabel(job = {}) {
   return domain === family ? domain : `${domain} / ${family}`;
 }
 
+function getJobProfessionalDomainLabel(job = {}) {
+  const code = job.romeProfessionalDomainCode || normalizeRomeCode(job.romeCode).slice(0, 3);
+  const label = job.romeProfessionalDomainLabel || ROME_PROFESSIONAL_DOMAIN_LABELS_V1[code];
+  return code && label ? `${code} - ${label}` : label || "Domaine professionnel ROME à vérifier";
+}
+
+function getJobCareerDirectionLabel(job = {}) {
+  const direction = getCareerDirection(job);
+  return direction?.primaryDirectionLabel || "Direction de carrière à vérifier";
+}
+
 function getJobBoussoleDomainLabel(job = {}) {
   return job.boussoleDomainLabel || applyRomeSectorMappingV2(job)?.domainLabel || sectorLabel(getJobSectorProfile(job).primarySectorId) || "Secteur Boussole à vérifier";
 }
@@ -7125,8 +7393,8 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     ...toArray(criteria.certifications?.held),
     ...toArray(criteria.education?.certificationIds)
   ]).map(normalizeCertificationKey));
-  const access = job.accessSummary || {};
-  const accessPathEvaluation = evaluateAccessPaths(criteria, job.accessPaths || access.accessPaths);
+  const access = getSemanticAccessSummary(job);
+  const accessPathEvaluation = evaluateAccessPaths(criteria, access.accessPaths || job.accessPaths);
   const trainingDuration = resolveAccessTrainingDuration(access, accessPathEvaluation.paths);
   const exactExperience = evaluateExactJobExperience(criteria, job);
   const accessRequiredCredentials = getAccessRequiredCredentialLabels(access);
@@ -8439,6 +8707,19 @@ function determineFeasibilityStatus(globalScore, scores, criteria, job, details 
 }
 
 function inferTop5Theme(job = {}) {
+  const direction = getCareerDirection(job);
+  return {
+    id: direction.primaryDirection,
+    label: direction.primaryDirectionLabel,
+    confidence: direction.primaryDirection === "unclassified" ? 0 : 1,
+    evidence: {
+      method: direction.classificationSource,
+      matched: direction.classificationSource === "rome_code_override" ? `rome:${job.romeCode}` : `rome_domain:${direction.romeProfessionalDomainCode}`,
+      revision: TOP5_THEME_CONTRACT_REVISION
+    }
+  };
+  /* Ancienne taxonomie lexicale conservée provisoirement comme trace de migration,
+     mais rendue inaccessible par le contrat déterministe ci-dessus. */
   const romeCode = String(job.romeCode || "").toUpperCase();
   const title = normalizeText(job.title || "");
   const appellations = normalizeText(toArray(job.appellations).join(" "));
@@ -8504,6 +8785,7 @@ function inferCareerPathway(job = {}) {
 }
 
 function careerPathwayLabel(pathwayId) {
+  if (CAREER_DIRECTION_LABELS_V1[pathwayId]) return CAREER_DIRECTION_LABELS_V1[pathwayId];
   const labels = {
     animation_ateliers: "Animation et ateliers", coordination_pilotage: "Coordination et pilotage",
     socioeducatif_accompagnement: "Socio-éducatif et accompagnement", enfance_ecole: "Enfance et école",
@@ -8744,20 +9026,22 @@ function evaluateCurrentTestProfileExpectations(results = {}) {
 
 function diversifyTopResults(results) {
   const source = toArray(results);
-  const scoreOf = result => Number(result?.selectionScore ?? result?.globalScore ?? 0);
+  const scoreOf = result => {
+    const score = Number(result?.personalFitScore ?? result?.globalScore ?? 0);
+    return Number.isFinite(score) ? score : 0;
+  };
   const compareCandidates = (a, b) =>
     scoreOf(b) - scoreOf(a) ||
     Number(b?.globalScore || 0) - Number(a?.globalScore || 0) ||
     Number(b?.confidenceScore || 0) - Number(a?.confidenceScore || 0) ||
-    Number(b?.feasibilityScore || 0) - Number(a?.feasibilityScore || 0) ||
     String(a?.romeCode || a?.job?.romeCode || a?.jobId || "").localeCompare(String(b?.romeCode || b?.job?.romeCode || b?.jobId || ""), "fr");
   const isContrary = result => Boolean(
     result?.coreProfileMatch?.excludedMatch ||
     result?.coreProfileMatch?.avoidMainMatch ||
     result?.coreProfileMatch?.coreProfileLevel === "avoid_main"
   );
-  const statusAdmissible = result => !["excluded_for_now", "discouraged"].includes(result?.status);
-  const baseCandidates = source.filter(result => statusAdmissible(result) && !isContrary(result) && (result.scores?.constraints || 0) > 6);
+  const statusAdmissible = result => result?.status !== "excluded_for_now";
+  const baseCandidates = source.filter(result => statusAdmissible(result));
   const bestScore = Math.max(0, ...baseCandidates.map(scoreOf));
   const relevanceThreshold = Math.min(bestScore, Math.max(TOP5_MIN_SELECTION_SCORE, bestScore - TOP5_SELECTION_SCORE_WINDOW));
   const admissible = baseCandidates
@@ -8821,7 +9105,7 @@ function diversifyTopResults(results) {
       selectionScore: scoreOf(entry.result)
     }));
   const shortfallReason = selected.length < 5
-    ? `Seulement ${selected.length} direction(s) atteignent le plancher de pertinence ${Math.round(relevanceThreshold)}/100 sans exclusion, découragement ni contradiction avec le profil.`
+    ? `Seulement ${selected.length} direction(s) atteignent le plancher d’accord ${Math.round(relevanceThreshold)}/100 sans exclusion ni contradiction avec le profil.`
     : "";
   return {
     top5: selected,
@@ -9639,7 +9923,7 @@ function renderResults() {
           <select data-display-mode>
             <option value="essential" ${App.state.displayMode === "essential" ? "selected" : ""}>Essentiel</option>
             <option value="detailed" ${App.state.displayMode === "detailed" ? "selected" : ""}>Détaillé</option>
-            <option value="diagnostic" ${App.state.displayMode === "diagnostic" ? "selected" : ""}>Diagnostic</option>
+            <option value="diagnostic" ${App.state.displayMode === "diagnostic" ? "selected" : ""}>Vérification</option>
           </select>
         </label>
         <button class="secondary-button" type="button" data-action="toggle-result-diagnostics">${App.state.resultDiagnosticsEnabled ? "Masquer le diagnostic" : "Activer le diagnostic"}</button>
@@ -10126,7 +10410,7 @@ function renderDetailedJobCard(result, options = {}) {
       <div class="job-head">
         <div>
           <h3 class="job-title">${h(result.title)}</h3>
-          <p class="job-subtitle">${h(job?.domain || "Domaine à vérifier")} · ${h(careerPathwayLabel(inferCareerPathway(job || result)))}</p>
+          <p class="job-subtitle">${h(getJobProfessionalDomainLabel(job))} · ${h(getJobCareerDirectionLabel(job))}</p>
           <div class="badge-row">
             ${renderTop5ThemeBadge(result, options)}
             <span class="badge ${statusBadgeClass(result.status)}">${h(statusLabel(result.status))}</span>
@@ -10223,6 +10507,8 @@ function renderJobDetailsPanelContent(result = {}) {
     <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
     <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
     <p><strong>Domaine / famille ROME :</strong> ${h(getJobSourceDomainLabel(job))}</p>
+    <p><strong>Domaine professionnel ROME :</strong> ${h(getJobProfessionalDomainLabel(job))}</p>
+    <p><strong>Direction de carrière :</strong> ${h(getJobCareerDirectionLabel(job))}</p>
     <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
     <p><strong>Appellations :</strong> ${take(appellations, App.state.displayMode === "essential" ? 5 : 18).map(h).join(", ") || "Non renseignées."}${appellations.length > 18 ? ` <span class="field-help">(${appellations.length - 18} autres en diagnostic/export)</span>` : ""}</p>
     <p><strong>Accès au métier :</strong> <span class="multiline-text">${h(job?.accessConditions?.text || "Information officielle non encore disponible dans le corpus généré.")}</span></p>
@@ -10243,6 +10529,8 @@ function renderEssentialJobDetails(result = {}) {
   return `
     <div data-dialog-job-id="${h(result.jobId)}">
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
+      <p><strong>Domaine professionnel ROME :</strong> ${h(getJobProfessionalDomainLabel(job))}</p>
+      <p><strong>Direction de carrière :</strong> ${h(getJobCareerDirectionLabel(job))}</p>
       <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
       <p><strong>Conditions d’accès :</strong> ${h(getAccessDisplayLabel(job))}</p>
       <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 6).map(h).join(", ") || "à préciser avec votre profil."}</p>
@@ -10255,7 +10543,7 @@ function renderEssentialJobDetails(result = {}) {
       <details><summary>Toutes les compétences</summary><p>${renderAllJobSkillsText(job)}</p></details>
       <details><summary>Toutes les appellations</summary><p>${getJobAppellations(job).map(item => h(item.label)).join(", ") || "Non renseignées."}</p></details>
       <details><summary>Marché détaillé</summary>${renderMarketBox(result.scoreDetails?.market, job)}</details>
-      <details><summary>Données techniques</summary><p class="field-help">Passez en mode Diagnostic pour afficher les données internes complètes.</p></details>
+      <details><summary>Données techniques</summary><p class="field-help">Passez en mode Vérification pour afficher les données internes complètes.</p></details>
       <details><summary>Sources</summary><p>${renderJobSourcesText(job)}</p></details>
     </div>`;
 }
@@ -10269,6 +10557,8 @@ function renderDetailedJobDetails(result = {}) {
       <div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>
       <p><strong>Description :</strong> <span class="multiline-text">${h(job?.description || "Description officielle non encore disponible.")}</span></p>
       <p><strong>Domaine / famille ROME :</strong> ${h(getJobSourceDomainLabel(job))}</p>
+      <p><strong>Domaine professionnel ROME :</strong> ${h(getJobProfessionalDomainLabel(job))}</p>
+      <p><strong>Direction de carrière :</strong> ${h(getJobCareerDirectionLabel(job))}</p>
       <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
       <p><strong>Conditions d’accès :</strong> ${h(access.label)}${access.citedDiplomas.length ? ` · diplômes cités : ${access.citedDiplomas.map(h).join(", ")}` : ""}${access.citedCertifications.length ? ` · certifications : ${access.citedCertifications.map(h).join(", ")}` : ""}</p>
       ${renderAccessPaths(job)}
@@ -10967,7 +11257,7 @@ function renderSettingsPage() {
       <h2>Préférences du moteur</h2>
       <p>Les pondérations restent locales et servent seulement au classement explicable. L’intention propose une base automatique ; les curseurs permettent ensuite de personnaliser.</p>
       <div class="form-grid">
-        ${selectField("Niveau d’information", "displayMode", App.state.displayMode || "essential", [["essential", "Essentiel"], ["detailed", "Détaillé"], ["diagnostic", "Diagnostic"]]).replace('data-field="displayMode"', 'data-display-mode')}
+        ${selectField("Niveau d’information", "displayMode", App.state.displayMode || "essential", [["essential", "Utilisateur"], ["detailed", "Accompagnateur"], ["diagnostic", "Vérification"]]).replace('data-field="displayMode"', 'data-display-mode')}
         ${selectField("Intention de recherche", "engineIntent", App.state.profile.engineIntent || "balanced", Object.entries(ENGINE_INTENTS))}
         ${selectField("Territoire d’analyse", "marketPreference.territory.selected", App.state.profile.marketPreference?.territory?.selected || "DEP-11", TERRITORIES.map(item => [item.id, item.label]))}
         ${selectField("Importance du marché", "marketPreference.priority", App.state.profile.marketPreference?.priority || "medium", [["low", "Peu important"], ["medium", "Équilibré"], ["high", "Priorité forte : je cherche une voie qui recrute"]])}
@@ -11095,7 +11385,7 @@ function runDiagnosticProfiles(testProfiles = []) {
       completedBoussole: true
     });
     Object.entries(test.profile?.constraintSeverities || test.constraintSeverities || {}).forEach(([value, severity]) => setConstraintSeverity(profile, value, severity));
-    const results = calculateAllMatches(profile, App.state.dataset, { skipAudit: true });
+    const results = calculateAllMatches(profile, App.state.dataset, { skipAudit: true, skipViewModel: true });
     const profileEvidence = buildTestProfileEvidence(profile, test, App.state.dataset);
     const anomalies = detectTestBenchAnomalies(results, test, profileEvidence);
     const expectedJobsEvaluation = buildExpectedJobsEvaluation(results, test, profileEvidence);
@@ -11524,10 +11814,10 @@ function renderDataPage() {
         ${metric("Données métier", datasetStatus.jobs)}
         ${metric("Formations", datasetStatus.trainings)}
         ${metric("Qualité", report.status || "à vérifier")}
-        ${metric("Métiers", summary.jobs ?? toArray(dataset.jobs).length)}
+        ${metric("Métiers actifs", summary.jobs ?? toArray(dataset.jobs).length)}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
-        ${metric("Référentiel score", toArray(dataset.skillsEngine).length || "non chargé")}
-        ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
+        ${metric("Liaisons du moteur", toArray(dataset.skillsEngine).length || "non chargé")}
+        ${metric("Compétences directement comparables au profil", generatedSummary.matchableSkillsCount)}
         ${metric("Contextes globaux", generatedSummary.globalContextsCount)}
         ${metric("Contextes liés", generatedSummary.linkedContextsCount)}
         ${metric("Appellations liées", generatedSummary.linkedAppellationsCount)}
@@ -11550,12 +11840,12 @@ function renderDataPage() {
     <section class="results-section print-section">
       <h2>Comptes et couverture</h2>
       <div class="metric-grid">
-        ${metric("Métiers", summary.jobs ?? toArray(dataset.jobs).length)}
-        ${metric(isCurated ? "Compétences locales" : "Compétences brutes ROME", isCurated ? summary.skills : generatedSummary.rawSkillsCount)}
+        ${metric("Métiers actifs", summary.jobs ?? toArray(dataset.jobs).length)}
+        ${metric(isCurated ? "Compétences locales" : "Compétences empaquetées", isCurated ? summary.skills : generatedSummary.rawSkillsCount)}
         ${metric(isCurated ? "Compétences utilisées" : "Compétences filtrées", generatedSummary.filteredSkillsCount)}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
-        ${metric("Référentiel score", toArray(dataset.skillsEngine).length || "non chargé")}
-        ${metric("Compétences matchables", generatedSummary.matchableSkillsCount)}
+        ${metric("Liaisons du moteur", toArray(dataset.skillsEngine).length || "non chargé")}
+        ${metric("Compétences directement comparables au profil", generatedSummary.matchableSkillsCount)}
         ${metric("Savoirs", generatedSummary.knowledgeCount)}
         ${metric("Certification-like", generatedSummary.certificationLikeCount)}
         ${metric("Contextes globaux", generatedSummary.globalContextsCount)}
@@ -11606,9 +11896,9 @@ function renderDataPage() {
         ${metric("Lignes nationales", marketRows.national)}
         ${metric("Lignes régionales", marketRows.occitanie)}
         ${metric("Lignes départementales", marketRows.aude)}
-        ${metric("Métiers niveau national", marketCoverage.jobsWithNationalMarket || 0)}
-        ${metric("Métiers niveau régional", marketCoverage.jobsWithRegionalMarket || 0)}
-        ${metric("Métiers niveau départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
+        ${metric("Métiers couverts au niveau national", marketCoverage.jobsWithNationalMarket || 0)}
+        ${metric("Métiers couverts au niveau régional", marketCoverage.jobsWithRegionalMarket || 0)}
+        ${metric("Métiers couverts au niveau départemental", marketCoverage.jobsWithDepartmentalMarket || 0)}
         ${metric("Zéro offre Aude", marketCoverage.jobsWithZeroDepartmentalOffers || 0)}
         ${metric("Données anciennes", marketCoverage.jobsWithStaleMarketData || 0)}
         ${metric("Métiers avec contexte BMO", marketCoverage.jobsWithBmo || 0)}
@@ -12227,7 +12517,7 @@ function attachGeneratedJobSummaries(jobs = [], generated = {}) {
   const accessById = new Map(toArray(generated.accessSummary).map(row => [row.jobId, row]));
   const constraintsByCode = new Map(toArray(generated.officialConstraintSummary).map(row => [row.romeCode || extractRomeCode(row.jobId), row]));
   const constraintsById = new Map(toArray(generated.officialConstraintSummary).map(row => [row.jobId, row]));
-  return toArray(jobs).map(job => ({
+  return toArray(jobs).map(job => enrichJobWithSemanticTaxonomy({
     ...job,
     accessSummary: job.accessSummary || accessById.get(job.id) || accessByCode.get(job.romeCode) || null,
     officialConstraintSummary: job.officialConstraintSummary || constraintsById.get(job.id) || constraintsByCode.get(job.romeCode) || null
@@ -14078,7 +14368,7 @@ function renderWhyDialogContent(result = {}) {
       <h3>Ce qui peut limiter le classement</h3>
       <ul class="data-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans le corpus actuel.</li>"}</ul>
       ${skillReview}
-      <p class="field-help">Passez en mode Détaillé ou Diagnostic dans Paramètres pour lire les sous-scores complets.</p>`;
+      <p class="field-help">Passez en mode Accompagnateur ou Vérification dans Paramètres pour lire les calculs complets.</p>`;
   }
   const scoreGrid = `<div class="score-grid">${Object.entries(result.scores || {}).map(([key, value]) => `<div class="score-line"><strong>${h(scoreLabel(key))}</strong>${Math.round(value)}</div>`).join("")}</div>`;
   return `

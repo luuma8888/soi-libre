@@ -122,8 +122,8 @@ jobs:
           RUNTIME_MARKET_ENRICHMENT_FILE: market-fap-enrichment.rome800.json
           RUNTIME_BUNDLE_REVISION: rome800-runtime-v0.1-r1
           RUNTIME_RELEASE_ID: 20260810-rome800-data-boundary-01
-          RUNTIME_APP_VERSION: v0.8.3-alpha
-          RUNTIME_BUILD_ID: 20260811-top5-market-trends-01
+          RUNTIME_APP_VERSION: v0.8.4-alpha
+          RUNTIME_BUILD_ID: 20260811-semantic-classic-freeze-01
           RUNTIME_BUILD_DATE: "2026-08-11"
           RUNTIME_VALIDATION_SCOPE: validated_for_boussole_pro_v0_8
       - name: Validate generated ROME800 structure
@@ -177,11 +177,11 @@ jobs:
         env:
           ROME_DELIVERY_EXPECTED_COUNT: "800"
           ROME_DELIVERY_SUBDIR: rome800-candidate
-          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome800
+          ROME_DELIVERY_DIR: tmp/monde-pro/livraison-boussole-pro-v0.8.4-alpha-rome800
       - uses: actions/upload-artifact@v6
         with:
-          name: boussole-pro-v0.8.3-alpha-rome800-data
-          path: tmp/monde-pro/livraison-boussole-pro-v0.8.3-alpha-rome800
+          name: boussole-pro-v0.8.4-alpha-rome800-data
+          path: tmp/monde-pro/livraison-boussole-pro-v0.8.4-alpha-rome800
           if-no-files-found: error
           retention-days: 14
       - name: Commit generated ROME800 package
