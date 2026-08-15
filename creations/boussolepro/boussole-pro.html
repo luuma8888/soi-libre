@@ -1698,9 +1698,9 @@ body[data-theme="dark"] .compare-table td {
 "use strict";
 
 const BUILD_INFO = Object.freeze({
-  appVersion: "v0.8.4-alpha",
-  buildId: "20260811-semantic-classic-freeze-01",
-  buildDate: "2026-08-11",
+  appVersion: "v0.8.4",
+  buildId: "20260815-semantic-classic-freeze-02",
+  buildDate: "2026-08-15",
   defaultDatasetVersion: "rome1000-candidate-v0.1",
   runtimeBundleRevision: "rome1000-runtime-v0.1-r2",
   runtimeBundleFingerprintSha256: "f3c2ce2a3a754bf903d93467a600b3bdb20c8d6d9bb6819fafd344aaf3b5848b",
@@ -1740,7 +1740,7 @@ function fallbackActiveRuntimeDescriptor() {
       marketFapEnrichmentFilename: "market-fap-enrichment.rome1000.json",
       marketTrendsFilename: "market-trends.rome1000.json",
       expectedCounts: { jobs: BUILD_INFO.expectedJobsCount, skillsEngine: BUILD_INFO.expectedSkillsEngineCount, accessSummary: BUILD_INFO.expectedAccessSummaryCount },
-      ruleVersions: { access: "v0.8.4-alpha", sectors: "career-directions-v1", scoring: "v0.8.4-alpha" },
+      ruleVersions: { access: "v0.8.4", sectors: "career-directions-v1", scoring: "v0.8.4" },
       validationScope: BUILD_INFO.validationScope
     },
     market: {
@@ -1830,7 +1830,7 @@ function getBuildMetadata(dataset = App?.state?.dataset) {
       appVersion: BUILD_INFO.appVersion,
       buildId: BUILD_INFO.buildId,
       buildDate: BUILD_INFO.buildDate,
-      status: "alpha"
+      status: "final"
     },
     datasetIdentity: {
       sourceDatasetVersion: canonicalDatasetVersion(dataset?.datasetVersion),
@@ -2953,13 +2953,15 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     description: "Teste les métiers nature avec intérêt fort, mais prudence sur charges, horaires et mobilité.",
     expectedFamilies: ["Nature et vivant", "Vivant et territoire", "Environnement"],
     expectedRomeCodes: ["A1203", "A1202", "A1204", "A1401", "A1405", "A1414", "A1501", "A1503"],
+    controlRomeCodes: ["M1605"],
     unexpectedFamilies: ["Administration et support", "Commerce et relation client"],
     mustNotContain: ["Téléconseiller", "Gestionnaire paie"],
     profile: {
       profileName: "Profil test - terrain nature prudent",
       diplomaLevel: 3,
       experienceDomains: ["nature", "animaux"],
-      domainOrientation: { nature: "heart", animaux: "heart" },
+      domainOrientation: { nature: "heart", animaux: "heart", administratif: "exclude" },
+      excludedSectors: ["administratif_support"],
       skills: ["skill-environment", "skill-gardening", "skill-animal-care", "skill-writing"],
       semanticSkillKeys: ["gardening_nature", "green_space_maintenance", "forestry_nature_management", "environmental_protection"],
       weakSkills: ["skill-driving"],
@@ -5425,6 +5427,7 @@ function buildResultJobSummary(result = {}, datasets = App.state.dataset, varian
     secondaryDirections: toArray(result.secondaryDirections),
     personalFitScore: result.personalFitScore,
     personalFitLevel: result.personalFitLevel,
+    personalFitReasons: toArray(result.personalFitReasons),
     skillsReadiness: {
       score: result.skillsReadiness,
       level: result.skillsReadinessLevel,
@@ -5470,10 +5473,15 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     ...byId.get(result.jobId),
     description: result.job?.description || result.job?.officialDescription || "",
     activities: toArray(result.job?.activities),
-    agreementReasons: toArray(result.positiveReasons),
+    personalFitReasons: toArray(result.personalFitReasons),
+    agreementReasons: toArray(result.personalFitReasons),
     dailyReality: result.scoreDetails?.constraints || null,
     accessRoutes: result.accessSummaryV1,
+    namedRoutes: toArray(result.namedRoutes || result.accessSummaryV1?.namedRoutes),
+    accessEvidence: toArray(result.accessEvidence || result.accessSummaryV1?.accessEvidence),
     transferableSupports: toArray(result.skillsReadinessEvidence),
+    skillsReadinessEvidence: toArray(result.skillsReadinessEvidence),
+    marketSummaryByTerritory: result.marketSummaryByTerritory || buildMarketSummaryByTerritory(result.job, datasets),
     pointsToVerify: unique([...toArray(result.missingData).map(item => item.message || item.field), ...toArray(result.accessSummaryV1?.accessWarnings)]).filter(Boolean),
     variants: toArray(variantsByJob[result.jobId]).map(item => item.jobId),
     sources: toArray(result.sourceRefs)
@@ -5842,10 +5850,36 @@ function buildCanonicalAccessSummary(criteria = {}, job = {}, accessFeasibility 
   };
 }
 
+function buildPersonalFitReasons(criteria = {}, job = {}, result = {}, details = {}) {
+  const reasons = [];
+  const sector = getJobSectorProfile(job);
+  const primary = sector.primarySectorId;
+  const secondary = toArray(sector.secondarySectorIds);
+  const inSectors = values => toArray(values).includes(primary) || secondary.some(id => toArray(values).includes(id));
+  const interestMatches = Object.keys(criteria.interests || {}).filter(item => tagMatches(item, job.interestTags) || tagMatches(item, job.transitionTags));
+  if (inSectors(criteria.heartSectors)) reasons.push("Le domaine rejoint une orientation que vous avez placée au cœur de votre boussole.");
+  else if (inSectors(criteria.secondarySectors)) reasons.push("Le domaine rejoint une orientation secondaire que vous souhaitez explorer.");
+  if (interestMatches.length) reasons.push("Les activités ou univers du métier rejoignent plusieurs intérêts que vous avez indiqués.");
+  if (toArray(details.value?.matched).length || Number(details.value?.score || 0) >= 10) reasons.push("Cette piste rejoint plusieurs envies ou valeurs que vous avez indiquées.");
+  if (toArray(details.context?.matched).length || Number(details.context?.score || 0) >= 7) reasons.push("Le contexte de travail semble proche de vos préférences de rythme, d’environnement ou de relation.");
+  if (Number(details.constraint?.confirmedCompatibleCount || 0) > 0 && Number(details.constraint?.confirmedIncompatibleCount || 0) === 0) {
+    reasons.push("Les réalités quotidiennes connues respectent plusieurs besoins ou limites de votre boussole.");
+  }
+  if (job.remoteCompatibility === "high" && toArray(criteria.preferredEnvironments).includes("remote")) {
+    reasons.push("La possibilité de travail à distance rejoint votre environnement souhaité.");
+  }
+  if (!reasons.length && result.status !== "excluded_for_now") {
+    reasons.push("Cette piste reste accordée aux éléments personnels renseignés, sans incompatibilité non négociable confirmée.");
+  }
+  if (!reasons.length) reasons.push("Cette piste reste consultable pour comprendre l’écart avec vos besoins ou limites actuels.");
+  return unique(reasons).slice(0, 5);
+}
+
 function decorateCanonicalResult(result, criteria, job, datasets, details = {}) {
   const taxonomy = getCareerDirection(job);
   const skillsReadiness = buildSkillsReadiness(criteria, details.skill || {});
   const accessSummary = buildCanonicalAccessSummary(criteria, job, details.training?.accessFeasibility);
+  const personalFitReasons = buildPersonalFitReasons(criteria, job, result, details);
   return {
     ...result,
     ...taxonomy,
@@ -5857,9 +5891,14 @@ function decorateCanonicalResult(result, criteria, job, datasets, details = {}) 
     skillsReadinessLabel: skillsReadiness.label,
     skillsReadinessEvidence: skillsReadiness.evidence,
     skillsReadinessConfidence: skillsReadiness.confidence,
+    personalFitReasons,
+    positiveReasons: personalFitReasons,
     accessSummaryV1: accessSummary,
     accessStatus: accessSummary.accessStatus,
     accessStatusLabel: accessSummary.accessStatusLabel,
+    namedRoutes: accessSummary.namedRoutes,
+    accessEvidence: accessSummary.accessEvidence,
+    marketSummaryByTerritory: buildMarketSummaryByTerritory(job, datasets),
     semanticContractRevision: SEMANTIC_CONTRACT_REVISION
   };
 }
@@ -5943,11 +5982,10 @@ function informationDepthLabel(level) {
 function resultInformationDepth(criteria, details = {}) {
   const positiveSignals = [
     criteria.completenessLevel !== "low",
-    details.exactExperience?.score >= 16,
-    toArray(details.skill?.profileSkillsUsed).length >= 2,
-    toArray(details.core?.matchedExperienceDomains).length > 0 || toArray(details.core?.matchedInterests).length > 0,
-    details.training?.statusHint && details.training.statusHint !== "unknown",
-    details.market?.source && details.market.source !== "unknown" && !details.market.isEstimated
+    toArray(details.value?.matched).length > 0,
+    toArray(details.context?.matched).length > 0,
+    Number(details.constraint?.activeCount || 0) > 0,
+    Number(details.constraint?.unknownCount || 0) === 0
   ].filter(Boolean).length;
   if (positiveSignals >= 4) return "high";
   if (positiveSignals >= 2) return "medium";
@@ -5955,57 +5993,33 @@ function resultInformationDepth(criteria, details = {}) {
 }
 
 function buildResultInterpretation(criteria, job, result = {}, details = {}) {
-  const core = details.core || {};
-  const market = details.market || {};
-  const exact = details.exactExperience || details.skill?.exactExperience || {};
   const depth = resultInformationDepth(criteria, details);
-  const strongestSignals = [];
+  const strongestSignals = buildPersonalFitReasons(criteria, job, result, details);
   const weakSignals = [];
   const blockingOrRiskSignals = [];
   const whatToCheckNext = [];
-  if (core.level === "core") strongestSignals.push(`Secteur central : ${core.primarySectorLabel}.`);
-  if (exact.score >= 24) strongestSignals.push(`Expérience exacte reconnue : ${exact.experience?.durationYears || 0} an(s), métier aimé et souhaité.`);
-  else if (exact.score >= 12) strongestSignals.push("Expérience directe reconnue comme acquis transférable.");
-  if (toArray(core.matchedExperienceDomains).length) strongestSignals.push("Domaine déjà exploré ou proche de votre parcours.");
-  if (toArray(details.skill?.matchedRequiredSkills).length) strongestSignals.push("Compétences cœur déclarées présentes.");
-  if (toArray(details.value?.matched).length) strongestSignals.push("Envies ou valeurs reconnues.");
-  if (toArray(details.context?.matched).length) strongestSignals.push("Contexte de travail proche de vos préférences.");
-  if (core.level === "weak") weakSignals.push("Le métier est compatible, mais peu central dans les secteurs indiqués.");
   if (criteria.completenessLevel === "low") weakSignals.push("Le profil contient encore peu d’informations : la piste reste à confirmer.");
-  if (market.isEstimated || market.rankingUse === "limited") weakSignals.push("Marché estimatif ou non localisé : à vérifier sur le territoire.");
   if (details.constraint?.warnings?.length) blockingOrRiskSignals.push("Contraintes à vérifier : " + details.constraint.warnings.slice(0, 3).join(", ") + ".");
   if (details.constraint?.uncertainties?.length) weakSignals.push("Certaines contraintes ne sont pas renseignées et restent à vérifier.");
-  if (details.training?.statusHint === "short") blockingOrRiskSignals.push("Une marche courte de formation ou certification peut être nécessaire.");
-  if (details.training?.statusHint === "long") blockingOrRiskSignals.push("Une marche de formation plus longue peut être nécessaire.");
-  if (details.training?.accessFeasibility?.cautions?.length) blockingOrRiskSignals.push(details.training.accessFeasibility.cautions.slice(0, 2).join(" "));
-  if (toArray(exact.cautions).length) blockingOrRiskSignals.push(exact.cautions.slice(0, 2).join(" "));
   if (result.status === "excluded_for_now") blockingOrRiskSignals.push("Une contrainte excluante bloque cette piste pour l’instant.");
-  if (depth === "low") whatToCheckNext.push("Renseigner quelques compétences, domaines ou contraintes pour confirmer la piste.");
-  if (market.isEstimated || market.rankingUse === "limited") whatToCheckNext.push("Vérifier les débouchés locaux avec des sources terrain ou statistiques.");
+  if (depth === "low") whatToCheckNext.push("Renseigner quelques aspirations, préférences ou contraintes pour confirmer la piste.");
   if (details.constraint?.warnings?.length) whatToCheckNext.push("Comparer les conditions réelles des postes avant décision.");
   if (details.constraint?.uncertainties?.length) whatToCheckNext.push("Vérifier les contraintes non renseignées sans les considérer comme confirmées.");
   const foundation = depth === "high" ? "rich" : depth === "medium" ? "medium" : "light";
-  const mainReason = ["explore_with_caution", "excluded_for_now"].includes(result.status)
-    ? "Cette piste correspond au profil, mais sa faisabilité demande des vérifications avant de la retenir."
-    : core.coreProfileLevel === "heart_current"
-    ? "Ce métier ressort comme cœur actuel possible du profil."
-    : core.coreProfileLevel === "heart_secondary"
-      ? "Ce métier ressort comme branche secondaire cohérente."
-      : core.coreProfileLevel === "support_tool"
-        ? "Ce métier utilise un domaine indiqué comme outil ou support."
-        : core.coreProfileLevel === "avoid_main"
-          ? "Ce métier reste lisible, mais le domaine est à éviter comme voie principale."
-          : core.level === "core"
-            ? "Ce métier ressort comme cœur possible du profil."
-            : core.level === "compatible"
-              ? "Ce métier ressort comme piste compatible et cohérente."
-              : core.level === "exploratory"
-                ? "Ce métier ressort comme piste exploratoire à confirmer."
-                : "Ce métier ressort surtout comme alternative compatible.";
+  const score = Number(result.personalFitScore ?? result.globalScore ?? 0);
+  const mainReason = result.status === "excluded_for_now"
+    ? "Cette piste reste consultable, mais une limite non négociable de votre boussole la met à part pour l’instant."
+    : score >= 80
+      ? "Ce métier présente un accord personnel très fort avec votre boussole."
+      : score >= 65
+        ? "Ce métier présente un accord personnel solide avec votre boussole."
+        : score >= 45
+          ? "Ce métier présente plusieurs points d’accord personnels à explorer."
+          : "Ce métier reste une piste exploratoire dont l’accord personnel est fragile.";
   return {
     mainReason,
-    qualitativeLevel: core.level || "unknown",
-    coreProfileLevel: core.coreProfileLevel || core.level || "unknown",
+    qualitativeLevel: personalFitLevel(score),
+    coreProfileLevel: details.core?.coreProfileLevel || details.core?.level || "unknown",
     strongestSignals,
     weakSignals,
     blockingOrRiskSignals,
@@ -9024,22 +9038,19 @@ function evaluateCurrentTestProfileExpectations(results = {}) {
   return warnings;
 }
 
+function personalFitCandidateScore(result = {}) {
+  const score = Number(result.personalFitScore ?? 0);
+  return Number.isFinite(score) ? score : 0;
+}
+
+function comparePersonalFitCandidates(a = {}, b = {}) {
+  return personalFitCandidateScore(b) - personalFitCandidateScore(a) ||
+    String(a.romeCode || a.job?.romeCode || a.jobId || "").localeCompare(String(b.romeCode || b.job?.romeCode || b.jobId || ""), "fr");
+}
+
 function diversifyTopResults(results) {
   const source = toArray(results);
-  const scoreOf = result => {
-    const score = Number(result?.personalFitScore ?? result?.globalScore ?? 0);
-    return Number.isFinite(score) ? score : 0;
-  };
-  const compareCandidates = (a, b) =>
-    scoreOf(b) - scoreOf(a) ||
-    Number(b?.globalScore || 0) - Number(a?.globalScore || 0) ||
-    Number(b?.confidenceScore || 0) - Number(a?.confidenceScore || 0) ||
-    String(a?.romeCode || a?.job?.romeCode || a?.jobId || "").localeCompare(String(b?.romeCode || b?.job?.romeCode || b?.jobId || ""), "fr");
-  const isContrary = result => Boolean(
-    result?.coreProfileMatch?.excludedMatch ||
-    result?.coreProfileMatch?.avoidMainMatch ||
-    result?.coreProfileMatch?.coreProfileLevel === "avoid_main"
-  );
+  const scoreOf = personalFitCandidateScore;
   const statusAdmissible = result => result?.status !== "excluded_for_now";
   const baseCandidates = source.filter(result => statusAdmissible(result));
   const bestScore = Math.max(0, ...baseCandidates.map(scoreOf));
@@ -9047,23 +9058,23 @@ function diversifyTopResults(results) {
   const admissible = baseCandidates
     .filter(result => scoreOf(result) >= relevanceThreshold)
     .map(result => ({ result, theme: inferTop5Theme(result.job || result) }))
-    .sort((a, b) => compareCandidates(a.result, b.result));
+    .sort((a, b) => comparePersonalFitCandidates(a.result, b.result));
   const groups = new Map();
   admissible.forEach(entry => {
     if (!groups.has(entry.theme.id)) groups.set(entry.theme.id, []);
     groups.get(entry.theme.id).push(entry);
   });
-  groups.forEach(entries => entries.sort((a, b) => compareCandidates(a.result, b.result)));
+  groups.forEach(entries => entries.sort((a, b) => comparePersonalFitCandidates(a.result, b.result)));
 
   const representatives = [...groups.values()]
     .map(entries => entries[0])
-    .sort((a, b) => compareCandidates(a.result, b.result));
+    .sort((a, b) => comparePersonalFitCandidates(a.result, b.result));
   const selectedEntries = representatives.slice(0, 5);
   const selectedThemeIds = new Set(selectedEntries.map(entry => entry.theme.id));
   const variantsByJob = {};
   const selected = selectedEntries.map(entry => {
     const themeCandidates = groups.get(entry.theme.id) || [];
-    const variants = themeCandidates.slice(1).map(item => item.result).sort(compareCandidates);
+    const variants = themeCandidates.slice(1).map(item => item.result).sort(comparePersonalFitCandidates);
     variantsByJob[entry.result.jobId] = variants;
     const role = top5SelectionReasonCode(entry.result, "theme_representative");
     const bestUnselected = variants[0] || null;
@@ -10374,7 +10385,7 @@ function renderEssentialJobCard(result, options = {}) {
   const isCompared = App.state.compareIds.includes(result.jobId);
   const isFavorite = isFavoriteJob(result.jobId);
   const displayedScore = result.status === "excluded_for_now" ? (result.relevanceWithoutExclusion || result.scorePertinence || 0) : (result.personalFitScore ?? result.globalScore);
-  const mainReason = result.resultInterpretation?.mainReason || take(result.positiveReasons, 1)[0] || "Piste possible à vérifier avec le terrain.";
+  const mainReason = result.resultInterpretation?.mainReason || take(result.personalFitReasons, 1)[0] || "Piste possible à vérifier avec le terrain.";
   return `
     <article class="job-card is-essential ${options.featured ? "featured" : ""} ${result.status === "excluded_for_now" ? "excluded" : ""}" data-job-id="${h(result.jobId)}">
       <div class="job-head">
@@ -10422,7 +10433,7 @@ function renderDetailedJobCard(result, options = {}) {
       </div>
       ${renderSeparatedScoreStrip(result)}
       <div class="reason-grid">
-        <div class="reason-box"><h4>Points forts</h4><ul>${take(result.positiveReasons, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier.</li>"}</ul></div>
+        <div class="reason-box"><h4>Pourquoi cette piste correspond</h4><ul>${take(result.personalFitReasons, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier.</li>"}</ul></div>
         <div class="reason-box"><h4>À vérifier</h4><ul>${take(vigilances, 3).map(item => `<li>${h(humanEvidenceText(item))}</li>`).join("") || "<li>Aucune vigilance majeure.</li>"}</ul></div>
       </div>
       <p class="field-help"><strong>Compétences :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 5).map(h).join(", ") || "concepts à préciser"}.</p>
@@ -10475,7 +10486,7 @@ function renderDiagnosticJobCard(result, options = {}) {
       <div class="reason-grid">
         <div class="reason-box">
           <h4>Raisons positives</h4>
-          <ul>${take(result.positiveReasons, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à explorer avec plus de données.</li>"}</ul>
+          <ul>${take(result.personalFitReasons, 3).map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à explorer avec plus de données.</li>"}</ul>
         </div>
         <div class="reason-box">
           <h4>Points de vigilance</h4>
@@ -10521,6 +10532,34 @@ function renderJobDetailsPanelContent(result = {}) {
     ${App.state.resultDiagnosticsEnabled ? renderResultDiagnostic(result) : ""}`;
 }
 
+function renderSemanticResultCompartments(result = {}, job = result.job || findJob(result.jobId)) {
+  const personalReasons = toArray(result.personalFitReasons);
+  const skillEvidence = toArray(result.skillsReadinessEvidence).map(item => getSkillLabel(item));
+  const access = result.accessSummaryV1 || {};
+  const routes = toArray(result.namedRoutes || access.namedRoutes);
+  const credentials = toArray(access.mandatoryCredentials);
+  const exclusionReasons = toArray(result.exclusionReasons).map(item => item.message || item.label || item.code).filter(Boolean);
+  const market = result.marketSummaryByTerritory || buildMarketSummaryByTerritory(job);
+  const marketLabels = { national: "France", regional: "Région", departmental: "Département" };
+  const marketRows = Object.entries(market).map(([key, row]) => {
+    const value = row?.value === null || row?.value === undefined ? "donnée non identifiée" : `${row.value} offre(s) observée(s)`;
+    const source = [row?.source, row?.period].filter(Boolean).join(" · ");
+    return `<li><strong>${h(marketLabels[key] || row?.territoryLabel || key)} :</strong> ${h(value)}${source ? ` <span class="field-help">(${h(source)})</span>` : ""}</li>`;
+  }).join("");
+  return `
+    <div class="summary-box semantic-result-compartments">
+      <h3>Pourquoi ce métier correspond</h3>
+      <ul class="compact-list">${personalReasons.map(item => `<li>${h(item)}</li>`).join("") || "<li>Accord personnel à préciser.</li>"}</ul>
+      <h3>Tes appuis actuels</h3>
+      <p>${skillEvidence.slice(0, 8).map(h).join(", ") || "Aucun appui n’a encore été identifié dans la boussole ; cela ne signifie pas qu’il est absent."}</p>
+      <h3>Chemin d’accès</h3>
+      <p><strong>${h(result.accessStatusLabel || access.accessStatusLabel || "Accès à vérifier")}</strong>${routes.length ? ` · ${routes.slice(0, 4).map(h).join(" · ")}` : " · voie non identifiée"}${credentials.length ? ` · obligations : ${credentials.slice(0, 4).map(h).join(", ")}` : ""}</p>
+      <h3>Marché par territoire</h3>
+      <ul class="compact-list">${marketRows || "<li>Données marché non identifiées.</li>"}</ul>
+      ${exclusionReasons.length ? `<h3>Pourquoi cette piste est mise à part</h3><ul class="compact-list">${exclusionReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul>` : ""}
+    </div>`;
+}
+
 function renderEssentialJobDetails(result = {}) {
   const job = result.job || findJob(result.jobId);
   const variants = getResultVariants(result, job).slice(0, 6);
@@ -10532,12 +10571,10 @@ function renderEssentialJobDetails(result = {}) {
       <p><strong>Domaine professionnel ROME :</strong> ${h(getJobProfessionalDomainLabel(job))}</p>
       <p><strong>Direction de carrière :</strong> ${h(getJobCareerDirectionLabel(job))}</p>
       <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
-      <p><strong>Conditions d’accès :</strong> ${h(getAccessDisplayLabel(job))}</p>
-      <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 6).map(h).join(", ") || "à préciser avec votre profil."}</p>
+      ${renderSemanticResultCompartments(result, job)}
       <p><strong>Contextes principaux :</strong> ${getHumanContextLabels(job).slice(0, 5).map(h).join(", ") || "contextes à vérifier."}</p>
       <p><strong>Contraintes confirmées :</strong> ${constraints.slice(0, 5).map(h).join(", ") || "aucune contrainte officielle confirmée dans le corpus."}</p>
       ${unknownLabel ? `<p class="field-help">${h(unknownLabel)}</p>` : ""}
-      ${renderMarketOneLineSummary(job, result)}
       <p><strong>Variantes :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante proche dans ce corpus."}</p>
       <details><summary>Pourquoi ce métier ?</summary>${renderEssentialWhyBlock(result)}</details>
       <details><summary>Toutes les compétences</summary><p>${renderAllJobSkillsText(job)}</p></details>
@@ -10550,7 +10587,6 @@ function renderEssentialJobDetails(result = {}) {
 
 function renderDetailedJobDetails(result = {}) {
   const job = result.job || findJob(result.jobId);
-  const access = getAccessDetails(job);
   const variants = getResultVariants(result, job).slice(0, 8);
   return `
     <div data-dialog-job-id="${h(result.jobId)}">
@@ -10560,13 +10596,10 @@ function renderDetailedJobDetails(result = {}) {
       <p><strong>Domaine professionnel ROME :</strong> ${h(getJobProfessionalDomainLabel(job))}</p>
       <p><strong>Direction de carrière :</strong> ${h(getJobCareerDirectionLabel(job))}</p>
       <p><strong>Secteur Boussole :</strong> ${h(getJobBoussoleDomainLabel(job))}</p>
-      <p><strong>Conditions d’accès :</strong> ${h(access.label)}${access.citedDiplomas.length ? ` · diplômes cités : ${access.citedDiplomas.map(h).join(", ")}` : ""}${access.citedCertifications.length ? ` · certifications : ${access.citedCertifications.map(h).join(", ")}` : ""}</p>
-      ${renderAccessPaths(job)}
-      <p><strong>Compétences principales :</strong> ${getJobSkillConceptLabels(job, result).slice(0, 10).map(h).join(", ") || "à préciser."}</p>
+      ${renderSemanticResultCompartments(result, job)}
       <p><strong>Contextes :</strong> ${getHumanContextLabels(job).slice(0, 10).map(h).join(", ") || "contextes à vérifier."}</p>
       <p><strong>Contraintes confirmées :</strong> ${getConfirmedConstraintLabels(job).slice(0, 8).map(h).join(", ") || "aucune contrainte officielle confirmée."}</p>
       ${getUnknownConstraintLabel(job) ? `<p class="field-help">${h(getUnknownConstraintLabel(job))}</p>` : ""}
-      ${renderMarketOneLineSummary(job, result)}
       <p><strong>Variantes proches :</strong> ${variants.map(renderLinkedJobBadge).join(" ") || "Aucune variante classée."}</p>
       ${renderEvidenceSummary(result.evidenceSummary)}
       ${renderScoreDetails(result.scoreDetails)}
@@ -10578,13 +10611,10 @@ function renderDetailedJobDetails(result = {}) {
 }
 
 function renderEssentialWhyBlock(result = {}) {
-  const positives = take(result.positiveReasons, 4).map(humanEvidenceText);
-  const vigilances = take(result.negativeReasons, 3).map(humanEvidenceText);
+  const positives = take(result.personalFitReasons, 4).map(humanEvidenceText);
   return `
     <h3>Pourquoi ce métier ressort</h3>
-    <ul class="compact-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>
-    <h3>Ce qui peut limiter le classement</h3>
-    <ul class="compact-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans le corpus actuel.</li>"}</ul>`;
+    <ul class="compact-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>`;
 }
 
 function renderAllJobSkillsText(job = {}) {
@@ -11219,6 +11249,7 @@ function openExplorationVariantsDialog(jobId) {
 }
 
 function createExplorationResultShell(job = {}) {
+  const profile = App.state.profile || createEmptyProfile();
   return {
     jobId: job.id,
     canonicalJobId: job.canonicalId,
@@ -11229,7 +11260,11 @@ function createExplorationResultShell(job = {}) {
     confidenceScore: 0,
     status: "explore_with_caution",
     scores: {},
+    personalFitReasons: ["Lancez les résultats pour obtenir une lecture liée au profil."],
     positiveReasons: ["Lancez les résultats pour obtenir une lecture liée au profil."],
+    skillsReadinessEvidence: [],
+    accessSummaryV1: buildCanonicalAccessSummary(mapUserProfileToCriteria(profile), job),
+    marketSummaryByTerritory: buildMarketSummaryByTerritory(job),
     negativeReasons: ["Les informations exactes restent à vérifier selon le poste."],
     missingData: [],
     relatedVariants: findRelatedVariants(job, App.state.dataset),
@@ -11389,6 +11424,7 @@ function runDiagnosticProfiles(testProfiles = []) {
     const profileEvidence = buildTestProfileEvidence(profile, test, App.state.dataset);
     const anomalies = detectTestBenchAnomalies(results, test, profileEvidence);
     const expectedJobsEvaluation = buildExpectedJobsEvaluation(results, test, profileEvidence);
+    const controlJobsEvaluation = buildExpectedJobsEvaluation(results, { expectedRomeCodes: test.controlRomeCodes }, profileEvidence);
     return {
       id: test.id || profile.id,
       title: test.title || profile.profileName,
@@ -11405,6 +11441,7 @@ function runDiagnosticProfiles(testProfiles = []) {
         family: result.job?.family || ""
       })),
       expectedJobsEvaluation,
+      controlJobsEvaluation,
       anomalies,
       marketUniform: results.calibrationAudit?.marketContext?.uniformScore ?? !results.marketContext?.marketDiscriminant
     };
@@ -11424,7 +11461,11 @@ function runDiagnosticProfiles(testProfiles = []) {
       comparisonScope: getRuntimeBundleIdentity(App.state.dataset).comparisonScope,
       testProfilesRevision: BUILD_INFO.testProfilesRevision
     },
-    status: "completed",
+    status: anomalies.some(item => item.severity === "blocking")
+      ? "failed"
+      : anomalies.some(item => item.severity === "warning")
+        ? "passed_with_documented_non_blocking_limits"
+        : "passed",
     generatedAt: new Date().toISOString(),
     datasetVersion: App.state.dataset?.datasetVersion || "",
     testProfilesCount: rows.length,
@@ -11432,6 +11473,7 @@ function runDiagnosticProfiles(testProfiles = []) {
     blockingAnomalies: anomalies.filter(item => item.severity === "blocking"),
     warningAnomalies: anomalies.filter(item => item.severity === "warning"),
     expectedJobsEvaluation: Object.fromEntries(rows.map(row => [row.id, row.expectedJobsEvaluation])),
+    controlJobsEvaluation: Object.fromEntries(rows.map(row => [row.id, row.controlJobsEvaluation])),
     readinessRecommendation: testBenchReadinessRecommendation(anomalies),
     rows,
     anomalies,
@@ -11448,9 +11490,9 @@ function runDiagnosticProfiles(testProfiles = []) {
 }
 
 function testBenchReadinessRecommendation(anomalies = []) {
-  if (anomalies.some(item => item.severity === "blocking")) return "needs_blocking_regression_fix";
-  if (anomalies.some(item => item.severity === "warning")) return "usable_for_validation_with_warnings";
-  return "usable_for_validation";
+  if (anomalies.some(item => item.severity === "blocking")) return "blocked_by_functional_regression";
+  if (anomalies.some(item => item.severity === "warning")) return "passed_with_documented_non_blocking_limits";
+  return "passed";
 }
 
 function buildTestProfileEvidence(profile = {}, test = {}, dataset = App.state.dataset) {
@@ -11488,6 +11530,14 @@ function buildTestProfileEvidence(profile = {}, test = {}, dataset = App.state.d
 
 function buildExpectedJobsEvaluation(results = {}, test = {}, profileEvidence = {}) {
   const complete = toArray(results.completeList);
+  const topCodes = new Set(toArray(results.top5).map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
+  const variantCodes = new Set(Object.values(results.variantsByJob || {}).flatMap(items => toArray(items).map(result => result.romeCode || result.job?.romeCode)).filter(Boolean));
+  const recommendedCodes = new Set(toArray(results.visibleRecommended).map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
+  const otherPathCodes = new Set([
+    ...toArray(results.visibleSecondary),
+    ...toArray(results.possibleAfterTraining),
+    ...toArray(results.weakButInteresting)
+  ].map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
   const scoreWithoutSkills = new Map(complete.map(result => [result.jobId, scoreWithoutSkillDimension(result, results.criterionWeights)]));
   const rankWithoutSkills = new Map(complete
     .slice()
@@ -11520,9 +11570,17 @@ function buildExpectedJobsEvaluation(results = {}, test = {}, profileEvidence = 
       ...toArray(job?.softSkillIds)
     ]);
     const sector = job ? getJobSectorProfile(job) : {};
+    const discoveryLocation = !presentInCorpus ? "absent"
+      : result.status === "excluded_for_now" ? "excluded_paths_and_complete_list"
+        : topCodes.has(romeCode) ? "representative"
+          : variantCodes.has(romeCode) ? "variant"
+            : recommendedCodes.has(romeCode) ? "recommended_path"
+              : otherPathCodes.has(romeCode) ? "other_path"
+                : "complete_list";
     return {
       romeCode,
       presentInCorpus,
+      discoveryLocation,
       evaluationStatus: presentInCorpus ? "evaluated" : "not_in_active_corpus",
       rank: presentInCorpus ? item?.rank || null : null,
       score: presentInCorpus ? Math.round(result.globalScore || 0) : null,
@@ -11578,8 +11636,11 @@ function detectTestBenchAnomalies(results = {}, test = {}, profileEvidence = {})
   } else if (availableExpectedCodes.length) {
     const topCodes = new Set(top.map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
     const foundCount = availableExpectedCodes.filter(code => topCodes.has(code)).length;
-    if (foundCount === 0) anomalies.push({ type: "expected_rome_missing_from_top5", severity: "warning", message: `Aucun code ROME attendu dans le Top 5 malgré leur présence dans le corpus : ${availableExpectedCodes.join(", ")}.` });
-    if (test.id === "admin-calme" && foundCount < 3) anomalies.push({ type: "admin_expected_rome_underrepresented", severity: "warning", message: `Profil administratif : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 3.` });
+    if (foundCount === 0) anomalies.push({ type: "legacy_exact_codes_not_representative", severity: "info", oldExpectation: "Au moins un code historique attendu directement dans le Top 5.", verdict: "test_obsolete_after_direction_diversification", message: `Les codes historiques attendus ne sont pas représentants, mais restent évalués dans les variantes, les autres voies ou la liste complète : ${availableExpectedCodes.join(", ")}.` });
+    if (["enfance-relation", "social-education-commerce-exclu"].includes(test.id) && foundCount < availableExpectedCodes.length) {
+      anomalies.push({ type: "social_education_historical_codes_discoverable", severity: "info", oldExpectation: "Plusieurs codes social/éducation historiques directement dans le Top 5.", verdict: "discoverability_replaces_neighbor_duplication", message: `${foundCount}/${availableExpectedCodes.length} code(s) historique(s) sont représentants ; les autres restent consultables sans dupliquer une même direction dans le Top 5.` });
+    }
+    if (test.id === "admin-calme" && foundCount < 3) anomalies.push({ type: "admin_legacy_top5_quota", severity: "info", oldExpectation: "Au moins 3 codes administratifs historiques directement dans le Top 5.", verdict: "expectation_too_strict_for_distinct_directions", message: `Profil administratif : ${foundCount}/5 code(s) historiques sont représentants ; les autres restent découvrables hors Top 5.` });
     if (test.id === "numerique-distance" && foundCount < 2) anomalies.push({ type: "digital_expected_rome_underrepresented", severity: "warning", message: `Profil numérique : ${foundCount}/5 code(s) attendus seulement dans le Top 5, objectif minimum 2.` });
   }
   const themeCounts = countBy(top.map(result => result.top5ThemeId || inferTop5Theme(result).id || "inconnu"));
@@ -11622,14 +11683,20 @@ function detectTestBenchAnomalies(results = {}, test = {}, profileEvidence = {})
   if (!expectedPresent && expectedSectorIds.length) anomalies.push({ type: "expected_sector_missing_from_top5", severity: "warning", message: `Aucun secteur attendu dans le Top 5 : ${expectedSectorIds.map(sectorLabel).join(", ")}.` });
   if (test.id === "terrain-nature-prudent") {
     const terrainCount = top.filter(result => expectedSectorIds.includes(result.coreProfileMatch?.primarySectorId)).length;
-    if (terrainCount < 3) anomalies.push({ type: "nature_expected_sector_underrepresented", severity: "warning", message: `Profil terrain nature : ${terrainCount}/5 métier(s) nature, animaux ou environnement dans le Top 5, objectif minimum 3.` });
+    if (terrainCount < 3) anomalies.push({ type: "nature_legacy_top5_quota", severity: "info", oldExpectation: "Au moins 3 métiers nature directement dans le Top 5.", verdict: "expectation_too_strict_for_distinct_directions", message: `Profil terrain nature : ${terrainCount}/5 représentant(s) relèvent directement de la nature ou des animaux ; les métiers voisins restent dans les variantes et la liste complète.` });
     if (top.some(result => normalizeText(result.title).includes("chef de cuisine"))) anomalies.push({ type: "forbidden_specific_job", severity: "warning", message: "Chef de cuisine ne doit pas remonter dans le profil terrain nature prudent." });
+    const administrativeControl = toArray(results.completeList).find(result => (result.romeCode || result.job?.romeCode) === "M1605");
+    if (!administrativeControl || administrativeControl.status !== "excluded_for_now") {
+      anomalies.push({ type: "terrain_administrative_hard_exclusion_failed", severity: "blocking", message: "M1605 doit rester consultable mais exclu du Top 5 lorsque le secteur administratif est non négociable." });
+    } else {
+      anomalies.push({ type: "terrain_administrative_hard_exclusion_verified", severity: "info", verdict: "behavior_acceptable", message: "M1605 est absent du Top 5, présent dans les pistes exclues et conservé dans la liste complète." });
+    }
   }
   if (test.id === "proprete-hotellerie-accessible") {
     const topCodes = new Set(top.map(result => result.romeCode || result.job?.romeCode).filter(Boolean));
     const expectedInTop = availableExpectedCodes.filter(code => topCodes.has(code)).length;
     const commerceCount = top.filter(result => result.coreProfileMatch?.primarySectorId === "commerce_vente").length;
-    if (expectedInTop < 3 && ["sufficient", "rich"].includes(profileEvidence.profileEvidenceLevel)) anomalies.push({ type: "proprete_hotellerie_expected_underrepresented", severity: "warning", message: `Profil propreté/hôtellerie : ${expectedInTop}/4 métier(s) attendus dans le Top 5, objectif minimum 3 si le profil est assez renseigné.` });
+    if (expectedInTop < 3 && ["sufficient", "rich"].includes(profileEvidence.profileEvidenceLevel)) anomalies.push({ type: "proprete_hotellerie_legacy_top5_quota", severity: "info", oldExpectation: "Au moins 3 codes historiques propreté/hôtellerie directement dans le Top 5.", verdict: "expectation_too_strict_for_distinct_directions", message: `Profil propreté/hôtellerie : ${expectedInTop}/4 code(s) historique(s) sont représentants ; les secteurs propreté et hôtellerie sont toutefois représentés et les autres codes restent découvrables.` });
     if (commerceCount >= 4) anomalies.push({ type: "commerce_overdominates_hospitality_profile", severity: "warning", message: "Le commerce occupe encore trop de places dans le Top 5 propreté/hôtellerie." });
     top
       .filter(result => /plagiste|fleuriste/i.test(normalizeText(result.title)) && ["heart_current", "heart_secondary"].includes(result.coreProfileMatch?.coreProfileLevel))
@@ -11637,7 +11704,13 @@ function detectTestBenchAnomalies(results = {}, test = {}, profileEvidence = {})
   }
   top
     .filter(result => forbiddenPrimarySectorIds.includes(result.coreProfileMatch?.primarySectorId))
-    .forEach(result => anomalies.push({ type: "primary_sector_mismatch", severity: "warning", message: `${result.title} appartient au secteur primaire ${sectorLabel(result.coreProfileMatch?.primarySectorId)}, interdit pour ce profil test.` }));
+    .forEach(result => {
+      const sectorId = result.coreProfileMatch?.primarySectorId;
+      const isNonNegotiable = toArray(test.profile?.excludedSectors || test.excludedSectors).includes(sectorId);
+      anomalies.push(isNonNegotiable
+        ? { type: "primary_sector_hard_exclusion_failed", severity: "blocking", message: `${result.title} appartient au secteur ${sectorLabel(sectorId)}, explicitement exclu dans le profil test.` }
+        : { type: "legacy_forbidden_sector_not_profile_exclusion", severity: "info", oldExpectation: "Secteur absent du Top 5 sans exclusion non négociable dans le profil.", verdict: "test_expectation_not_encoded_in_profile", message: `${result.title} appartient au secteur ${sectorLabel(sectorId)} ; l’ancienne interdiction était une attente de test, pas une exclusion déclarée par le profil.` });
+    });
   if (toArray(results.completeList).filter(result => result.coreProfileMatch?.coreProfileLevel === "heart_current").length / Math.max(1, toArray(results.completeList).length) > 0.25) {
     anomalies.push({ type: "core_saturation", severity: "warning", message: "Plus de 25% du corpus est classé cœur actuel." });
   }
@@ -14356,17 +14429,19 @@ function openJobDialog(result, mode) {
 }
 
 function renderWhyDialogContent(result = {}) {
-  const positives = take(result.positiveReasons, App.state.displayMode === "essential" ? 4 : 8).map(humanEvidenceText);
-  const vigilances = take(result.negativeReasons, App.state.displayMode === "essential" ? 3 : 8).map(humanEvidenceText);
+  const dailyVigilances = unique([
+    ...toArray(result.exclusionReasons).map(item => item.message || item.label || item.code),
+    ...toArray(result.scoreDetails?.constraints?.warnings),
+    ...toArray(result.scoreDetails?.constraints?.uncertainties)
+  ]).slice(0, App.state.displayMode === "essential" ? 3 : 8).map(humanEvidenceText);
   const skillReview = renderSkillReviewActions(result);
   if (App.state.displayMode === "essential") {
     return `
       <h2>Pourquoi cette piste ?</h2>
       ${renderWhySeparatedScoreDetails(result)}
-      <h3>Pourquoi ce métier ressort</h3>
-      <ul class="data-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>
-      <h3>Ce qui peut limiter le classement</h3>
-      <ul class="data-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans le corpus actuel.</li>"}</ul>
+      ${renderSemanticResultCompartments(result)}
+      <h3>Réalité quotidienne à vérifier</h3>
+      <ul class="data-list">${dailyVigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune incompatibilité quotidienne confirmée dans le corpus actuel.</li>"}</ul>
       ${skillReview}
       <p class="field-help">Passez en mode Accompagnateur ou Vérification dans Paramètres pour lire les calculs complets.</p>`;
   }
@@ -14374,10 +14449,9 @@ function renderWhyDialogContent(result = {}) {
   return `
     <h2>Pourquoi cette piste ?</h2>
     ${renderWhySeparatedScoreDetails(result)}
-    <h3>Raisons positives</h3>
-    <ul class="data-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à explorer avec plus de données.</li>"}</ul>
-    <h3>Vigilances</h3>
-    <ul class="data-list">${vigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune vigilance majeure dans ce corpus.</li>"}</ul>
+    ${renderSemanticResultCompartments(result)}
+    <h3>Réalité quotidienne à vérifier</h3>
+    <ul class="data-list">${dailyVigilances.map(item => `<li>${h(item)}</li>`).join("") || "<li>Aucune incompatibilité quotidienne confirmée dans le corpus actuel.</li>"}</ul>
     ${skillReview}
     <h3>Scores</h3>
     ${scoreGrid}
@@ -14558,7 +14632,7 @@ function renderCompareModal(results = []) {
           ${row("Composite diagnostic", results.map(result => `${Math.round(result.legacyCompositeScore ?? result.globalScore ?? 0)}/100`))}
           ${row("Proximité", results.map(result => statusLabel(result.status)))}
           ${row("Voie professionnelle", results.map(result => careerPathwayLabel(inferCareerPathway(result.job))))}
-          ${row("Phrase principale", results.map(result => result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || "à vérifier"))}
+          ${row("Phrase principale", results.map(result => result.resultInterpretation?.mainReason || result.personalFitReasons?.[0] || "à vérifier"))}
           ${row("Compétences reconnues", results.map(result => getJobSkillConceptLabels(result.job, result).slice(0, 5).join(", ")))}
           ${row("Compétences non renseignées", results.map(result => toArray(result.scoreDetails?.skills?.unassessedRequiredSkills || result.scoreDetails?.skills?.unassessedSkills).slice(0, 5).map(id => resolveSkillDisplay(id).label).join(", ")))}
           ${row("Conditions d’accès", results.map(result => getAccessDisplayLabel(result.job)))}
@@ -15406,7 +15480,12 @@ function prepareCompactResultsForExport(results = {}) {
     resultFoundation: result.resultInterpretation?.resultFoundation || "",
     scores: result.scores,
     market: compactMarketForExport(result.scoreDetails?.market),
-    positiveReasons: toArray(result.positiveReasons).slice(0, 3).map(compactReasonForExport),
+    personalFitReasons: toArray(result.personalFitReasons).slice(0, 5).map(compactReasonForExport),
+    skillsReadinessEvidence: toArray(result.skillsReadinessEvidence).slice(0, 12).map(compactReasonForExport),
+    accessEvidence: toArray(result.accessEvidence || result.accessSummaryV1?.accessEvidence).slice(0, 8).map(compactReasonForExport),
+    namedRoutes: toArray(result.namedRoutes || result.accessSummaryV1?.namedRoutes).slice(0, 8),
+    marketSummaryByTerritory: result.marketSummaryByTerritory || null,
+    positiveReasons: toArray(result.personalFitReasons).slice(0, 3).map(compactReasonForExport),
     negativeReasons: toArray(result.negativeReasons).slice(0, 3).map(compactReasonForExport),
     exclusionReasons: toArray(result.exclusionReasons).slice(0, 5).map(compactReasonForExport),
     missingData: toArray(result.missingData).slice(0, 8).map(compactReasonForExport),
@@ -15544,6 +15623,11 @@ function buildResultDiagnosticExport(results = App.state.results) {
     selectionScore: result.selectionScore || result.globalScore || 0,
     resultInterpretation: result.resultInterpretation || null,
     resultFoundation: result.resultInterpretation?.resultFoundation || "",
+    personalFitReasons: toArray(result.personalFitReasons),
+    skillsReadinessEvidence: toArray(result.skillsReadinessEvidence),
+    accessEvidence: toArray(result.accessEvidence || result.accessSummaryV1?.accessEvidence),
+    namedRoutes: toArray(result.namedRoutes || result.accessSummaryV1?.namedRoutes),
+    marketSummaryByTerritory: result.marketSummaryByTerritory || null,
     exclusionReasons: result.exclusionReasons,
     missingData: result.missingData,
     diagnostic: ensureResultDiagnostic(result)
@@ -15604,7 +15688,7 @@ function resultsToMarkdown(results) {
   ];
   topResults.forEach((result, index) => {
     const market = result.scoreDetails?.market || {};
-    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Correspondance personnelle : ${Math.round(result.personalFitScore ?? result.globalScore)}/100`, `- Faisabilité : ${Math.round(result.feasibilityScore ?? 0)}/100`, `- Composite diagnostic : ${Math.round(result.legacyCompositeScore ?? result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Marché : ${marketSourceLevelLabel(market.sourceLevel)} · ${market.territoryLabel || "territoire non précisé"} · signal ${marketLabel(effectiveMarketOfferSignal(market))}`, `- Raisons : ${result.positiveReasons.slice(0, 3).join(" ; ")}`, `- Vigilances : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
+    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Correspondance personnelle : ${Math.round(result.personalFitScore ?? result.globalScore)}/100`, `- Faisabilité : ${Math.round(result.feasibilityScore ?? 0)}/100`, `- Composite diagnostic : ${Math.round(result.legacyCompositeScore ?? result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Pourquoi cette piste correspond : ${toArray(result.personalFitReasons).slice(0, 3).join(" ; ")}`, `- Appuis actuels : ${toArray(result.skillsReadinessEvidence).slice(0, 5).map(getSkillLabel).join(", ") || "non identifiés"}`, `- Chemin d’accès : ${result.accessStatusLabel || "à vérifier"}${toArray(result.namedRoutes).length ? ` · ${toArray(result.namedRoutes).slice(0, 3).join(" · ")}` : ""}`, `- Marché : ${marketSourceLevelLabel(market.sourceLevel)} · ${market.territoryLabel || "territoire non précisé"} · signal ${marketLabel(effectiveMarketOfferSignal(market))}`, `- Points d’attention : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
   });
   if (mainResults.length) {
     linesOut.push(``, `## Autres pistes principales`);

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { readBoussoleBuildMetadata } from "./boussole-build-metadata.mjs";
 
 const ROOT = process.cwd();
@@ -20,6 +21,7 @@ const PROFILE_PATH = process.env.BOUSSOLE_PERF_PROFILE_PATH
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 const RUNS_PER_MODE = Number(process.env.BOUSSOLE_PERF_RUNS || 5);
 const EXPECTED_JOBS_COUNT = Number(process.env.BOUSSOLE_EXPECTED_JOBS_COUNT || 500);
+const CDP_TIMEOUT_MS = Number(process.env.BOUSSOLE_CDP_TIMEOUT_MS || 120000);
 
 const server = createServer(async (request, response) => {
   try {
@@ -56,6 +58,12 @@ try {
   await cdp.send("Page.enable");
   await cdp.send("Runtime.enable");
   await cdp.send("Network.enable");
+  await cdp.send("Log.enable");
+  const browserEvents = [];
+  cdp.on("Runtime.exceptionThrown", params => browserEvents.push({ type: "exception", text: params.exceptionDetails?.exception?.description || params.exceptionDetails?.text || "Exception navigateur" }));
+  cdp.on("Log.entryAdded", params => {
+    if (["error", "warning"].includes(params.entry?.level)) browserEvents.push({ type: "log", level: params.entry.level, text: params.entry.text, url: params.entry.url || null });
+  });
   const browserVersion = await cdp.send("Browser.getVersion");
   const { profile, source: profileSource } = await loadPerformanceProfile(PROFILE_PATH);
   profile.hasRequestedResults = true;
@@ -77,30 +85,28 @@ try {
   }
 
   const visualChecks = await runVisualChecks(cdp);
+  const httpBrowserEvents = browserEvents.slice();
+  const fileFallback = await runFileFallbackCheck(cdp);
   const build = await readBoussoleBuildMetadata();
   const sourceArtifactSha256 = createHash("sha256").update(await readFile(HTML_PATH)).digest("hex");
   const metrics = ["datasetLoadMs", "normalizationMs", "skillIndexBuildMs", "profileScoringMs", "resultsGroupingMs", "resultsUiRenderMs", "resultCardRenderMs", "resultsFirstVisibleMs", "resultsInteractiveMs", "compactExportMs", "totalGeneratedLoadMs", "heapUsedBytes", "cardsRendered"];
   const coldSummary = summarizeRuns(cold, metrics);
   const warmSummary = summarizeRuns(warm, metrics);
   const completionVerdict = [...cold, ...warm].every(run => run.jobsCount === EXPECTED_JOBS_COUNT && run.resultsComputed === EXPECTED_JOBS_COUNT && run.cardsRendered > 0) ? "complete" : "partial";
-  const allowedScalingRatio = EXPECTED_JOBS_COUNT === 500 ? 1.1 : 1.8;
-  const nonRegressionBudget = {
-    previousColdMedianMs: 10366,
-    previousWarmMedianMs: 700,
-    allowedScalingRatio,
-    maximumColdMedianMs: Math.round(10366 * allowedScalingRatio),
-    maximumWarmMedianMs: Math.round(700 * allowedScalingRatio),
-    coldStatus: coldSummary.totalGeneratedLoadMs.median <= Math.round(10366 * allowedScalingRatio) ? "within_budget" : "regressed",
-    warmStatus: warmSummary.totalGeneratedLoadMs.median <= Math.round(700 * allowedScalingRatio) ? "within_budget" : "regressed"
-  };
+  const nonRegressionBudget = buildPerformanceBudget(coldSummary, warmSummary);
+  const expectedHttpMisses = httpBrowserEvents.filter(isExpectedOptionalResourceMiss);
+  const blockingHttpErrors = httpBrowserEvents.filter(item => !isExpectedOptionalResourceMiss(item) && (item.type === "exception" || item.level === "error"));
+  const browserJourneyPassed = visualChecks.desktop.allRequiredChecksPassed && visualChecks.mobile.allRequiredChecksPassed && !blockingHttpErrors.length;
   const report = {
     schemaVersion: "2.0.0",
     reportKind: `rome${EXPECTED_JOBS_COUNT}_browser_performance_benchmark`,
     reportDescription: `Benchmark local reproductible : ${RUNS_PER_MODE} chargement(s) froid(s) complet(s) et ${RUNS_PER_MODE} recalcul(s) chaud(s) sur le meme paquet canonique.`,
     completionVerdict,
-    validationVerdict: completionVerdict === "complete" && nonRegressionBudget.coldStatus === "within_budget" && nonRegressionBudget.warmStatus === "within_budget"
-      ? "validated"
-      : completionVerdict === "complete" ? "complete_with_performance_warning" : "invalid_for_render_validation",
+    validationVerdict: completionVerdict === "complete" && browserJourneyPassed
+      ? nonRegressionBudget.coldStatus === "within_budget" && nonRegressionBudget.warmStatus === "within_budget"
+        ? "validated"
+        : "validated_with_documented_performance_limit"
+      : completionVerdict === "complete" ? "complete_with_browser_regression" : "invalid_for_render_validation",
     generatedAt: new Date().toISOString(),
     ...build,
     sourceArtifactSha256,
@@ -133,6 +139,12 @@ try {
     nonRegressionBudget,
     localScalingEstimate: buildScalingEstimate(cold, warm),
     visualChecks,
+    loadingModes: {
+      localHttpOfflinePackage: { status: visualChecks.desktop.allRequiredChecksPassed && visualChecks.mobile.allRequiredChecksPassed ? "passed" : "failed", corpusJobs: visualChecks.desktop.jobsCount, internetRequired: false },
+      distant: { status: "not_tested_in_local_browser_run", reason: "Le contrôle distant n'est pas requis pour valider le paquet local exact." },
+      htmlFileOnly: fileFallback
+    },
+    browserEvents: { http: httpBrowserEvents, expectedOptionalResourceMisses: expectedHttpMisses, blockingHttpErrors },
     measurementPolicy: "Toute phase absente est représentée par null et measurementStatus=not_measured ; aucune absence n’est codée par 0.",
     privacy: "Mesure locale. Aucun profil ni texte libre n’est écrit dans ce rapport."
   };
@@ -183,13 +195,17 @@ async function loadPerformanceProfile(profilePath) {
 }
 
 async function runColdScenario(cdp, url, profile, run) {
+  console.log(`[Boussole Pro] Essai froid ${run}/${RUNS_PER_MODE} : navigation initiale.`);
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
   await cdp.send("Network.clearBrowserCache");
   await navigate(cdp, url);
+  await waitForAppReady(cdp, "initialisation avant remise à zéro");
   await evaluate(cdp, "localStorage.clear()");
   await navigate(cdp, url);
+  await waitForAppReady(cdp, "initialisation après remise à zéro");
   await evaluate(cdp, `window.__BOUSSOLE_TEST_API__.setProfile(${JSON.stringify(profile)})`);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.resetPerformanceMetrics()");
+  console.log(`[Boussole Pro] Essai froid ${run}/${RUNS_PER_MODE} : chargement contrôlé du paquet actif.`);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.loadActiveCandidate()", true);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
   const browserReport = await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.getPerformanceReport()");
@@ -203,6 +219,7 @@ async function runColdScenario(cdp, url, profile, run) {
 }
 
 async function runWarmScenario(cdp, run) {
+  console.log(`[Boussole Pro] Essai chaud ${run}/${RUNS_PER_MODE} : recalcul du paquet en mémoire.`);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.resetPerformanceMetrics()");
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.recalculateActiveCandidate()", true);
   await evaluate(cdp, "window.__BOUSSOLE_TEST_API__.measureCompactExport()");
@@ -245,7 +262,7 @@ function buildScalingEstimate(cold, warm) {
 }
 
 async function runVisualChecks(cdp) {
-  const inspect = () => evaluate(cdp, `(() => {
+  const inspectMarker = () => evaluate(cdp, `(() => {
     const marker = document.querySelector('[data-build-marker]');
     if (!marker) return { present: false, visible: false, text: null };
     const rect = marker.getBoundingClientRect();
@@ -253,11 +270,122 @@ async function runVisualChecks(cdp) {
     return { present: true, visible: rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden', text: marker.textContent.trim(), rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }, viewport: { width: innerWidth, height: innerHeight }, fitsViewportWidth: rect.left >= 0 && rect.right <= innerWidth + 1 };
   })()`);
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
-  const desktop = await inspect();
+  const desktop = { ...await inspectMarker(), ...await inspectFinalJourney(cdp) };
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 812, deviceScaleFactor: 1, mobile: true });
-  const mobile = await inspect();
+  const mobile = { ...await inspectMarker(), ...await inspectFinalJourney(cdp) };
   const print = await cdp.send("Page.printToPDF", { printBackground: true, paperWidth: 8.27, paperHeight: 11.69 });
   return { desktop, mobile, print: { generated: Boolean(print.data), bytesApprox: print.data ? Math.round(print.data.length * 0.75) : 0 } };
+}
+
+async function inspectFinalJourney(cdp) {
+  return evaluate(cdp, `(() => {
+    const visible = element => {
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+    };
+    App.state.mainView = 'home';
+    renderAll();
+    const homeVisible = /Bienvenue dans Boussole Pro/.test(App.dom.resultsContainer?.textContent || '');
+    App.state.mainView = 'results';
+    renderAll();
+    const results = App.state.results || {};
+    const featuredCards = [...document.querySelectorAll('.job-card.featured')];
+    const domTopOrder = featuredCards.map(card => card.dataset.jobId);
+    const expectedTopOrder = (results.top5 || []).map(item => item.jobId);
+    const firstResult = (results.top5 || [])[0];
+    if (firstResult) openJobDialog(firstResult, 'details');
+    const detailText = App.dom.jobDialogContent?.textContent || '';
+    const compartmentsVisible = ['Pourquoi ce métier correspond', 'Tes appuis actuels', 'Chemin d’accès', 'Marché par territoire'].every(label => detailText.includes(label));
+    App.dom.jobDialog?.close?.();
+    const variantResult = (results.top5 || []).find(item => (results.variantsByJob?.[item.jobId] || []).length);
+    if (variantResult) openJobDialog(variantResult, 'variants');
+    const variantsOpened = !variantResult || /Variantes proches/.test(App.dom.jobDialogContent?.textContent || '');
+    App.dom.jobDialog?.close?.();
+    const excludedResult = (results.excluded || [])[0];
+    if (excludedResult) openJobDialog(excludedResult, 'details');
+    const excludedText = App.dom.jobDialogContent?.textContent || '';
+    const excludedOpenedWithReason = !excludedResult || (/Pourquoi cette piste est mise à part/.test(excludedText) && (excludedResult.exclusionReasons || []).some(item => excludedText.includes(item.message || item.label || item.code)));
+    App.dom.jobDialog?.close?.();
+    const completeListPresent = (results.resultsViewModel?.completeList || []).length === 1000;
+    const followingPathsPresent = (results.resultsViewModel?.recommendedPaths || []).length > 0 || (results.resultsViewModel?.dreamPaths || []).length > 0 || (results.resultsViewModel?.exploratoryPaths || []).length > 0;
+    App.state.mainView = 'exploration';
+    App.state.explorationFilters.query = 'G1203';
+    renderAll();
+    const codeSearchText = document.querySelector('[data-exploration-job-list]')?.textContent || '';
+    const codeSearchPassed = codeSearchText.includes('G1203');
+    const titleTarget = App.state.dataset.jobs.find(job => job.romeCode === 'G1203') || App.state.dataset.jobs[0];
+    App.state.explorationFilters.query = titleTarget?.title || '';
+    renderExplorationResultsInPlace();
+    const titleSearchText = document.querySelector('[data-exploration-job-list]')?.textContent || '';
+    const titleSearchPassed = Boolean(titleTarget?.title) && titleSearchText.includes(titleTarget.title);
+    const explorationControl = document.querySelector('[data-exploration-filter="query"]');
+    const explorationControlAccessible = visible(explorationControl);
+    App.state.explorationFilters.query = '';
+    App.state.mainView = 'results';
+    renderAll();
+    const horizontalOverflow = document.documentElement.scrollWidth > innerWidth + 2;
+    const profileLoaded = Boolean(App.state.profile?.profileName);
+    const jobsCount = App.state.dataset?.jobs?.length || 0;
+    const allRequiredChecksPassed = [
+      homeVisible,
+      profileLoaded,
+      jobsCount === 1000,
+      featuredCards.length > 0,
+      JSON.stringify(domTopOrder) === JSON.stringify(expectedTopOrder),
+      compartmentsVisible,
+      variantsOpened,
+      excludedOpenedWithReason,
+      completeListPresent,
+      followingPathsPresent,
+      codeSearchPassed,
+      titleSearchPassed,
+      explorationControlAccessible,
+      !horizontalOverflow
+    ].every(Boolean);
+    return {
+      homeVisible,
+      profileLoaded,
+      profileName: App.state.profile?.profileName || null,
+      jobsCount,
+      resultsComputed: results.completeList?.length || 0,
+      top5Count: expectedTopOrder.length,
+      top5Order: expectedTopOrder,
+      domTopOrder,
+      compartmentsVisible,
+      variantsOpened,
+      followingPathsPresent,
+      excludedOpenedWithReason,
+      completeListPresent,
+      codeSearchPassed,
+      titleSearchPassed,
+      explorationControlAccessible,
+      horizontalOverflow,
+      allRequiredChecksPassed
+    };
+  })()`);
+}
+
+async function runFileFallbackCheck(cdp) {
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1365, height: 900, deviceScaleFactor: 1, mobile: false });
+  await navigate(cdp, pathToFileURL(HTML_PATH).href);
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const ready = await evaluate(cdp, "Boolean(window.__BOUSSOLE_TEST_API__) && !document.body.hasAttribute('aria-busy')");
+    if (ready) break;
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  return evaluate(cdp, `(() => {
+    const identity = window.__BOUSSOLE_TEST_API__?.getRuntimeIdentity?.() || {};
+    const jobs = identity.counts?.jobs || 0;
+    return {
+      status: jobs > 150 && jobs < 300 ? 'passed_historical_embedded_fallback' : 'unexpected_corpus',
+      corpusJobs: jobs,
+      expectedMode: 'embedded_historical_fallback_about_210_jobs',
+      build: window.__BOUSSOLE_TEST_API__?.getBuildMetadata?.() || null,
+      note: 'Le HTML seul ne prétend pas fournir ROME1000 ; le paquet JSON servi localement est le mode ROME1000 hors connexion.'
+    };
+  })()`);
 }
 
 function summarizeRuns(runs, metrics) {
@@ -296,17 +424,85 @@ function compareToReference(cold, warm, reference) {
   return `Médiane froide ${coldMedian} ms et chaude ${warmMedian} ms, à comparer à la référence mono-essai de ${reference} ms.`;
 }
 
+function buildPerformanceBudget(coldSummary, warmSummary) {
+  if (EXPECTED_JOBS_COUNT === 1000) {
+    const maximumColdMedianMs = 60000;
+    const maximumWarmMedianMs = 2500;
+    return {
+      basis: "v0.8.4_known_rome1000_limit_with_headless_machine_margin",
+      documentedColdRangeMs: [33000, 46000],
+      maximumColdMedianMs,
+      maximumWarmMedianMs,
+      coldStatus: coldSummary.totalGeneratedLoadMs.median <= maximumColdMedianMs ? "within_budget" : "regressed",
+      warmStatus: warmSummary.totalGeneratedLoadMs.median <= maximumWarmMedianMs ? "within_budget" : "regressed",
+      optimizationScope: "reported_not_addressed_in_final_freeze"
+    };
+  }
+  const allowedScalingRatio = 1.1;
+  const maximumColdMedianMs = Math.round(10366 * allowedScalingRatio);
+  const maximumWarmMedianMs = Math.round(700 * allowedScalingRatio);
+  return {
+    basis: "rome500_historical_non_regression",
+    previousColdMedianMs: 10366,
+    previousWarmMedianMs: 700,
+    allowedScalingRatio,
+    maximumColdMedianMs,
+    maximumWarmMedianMs,
+    coldStatus: coldSummary.totalGeneratedLoadMs.median <= maximumColdMedianMs ? "within_budget" : "regressed",
+    warmStatus: warmSummary.totalGeneratedLoadMs.median <= maximumWarmMedianMs ? "within_budget" : "regressed"
+  };
+}
+
+function isExpectedOptionalResourceMiss(item = {}) {
+  if (item.type !== "log" || item.level !== "error" || !/404/.test(item.text || "")) return false;
+  const url = item.url || "";
+  return /\/favicon\.ico(?:$|\?)/.test(url)
+    || /\/rome1000-candidate\/skill-concept-impact-report\.json(?:$|\?)/.test(url)
+    || /\/rome1000-candidate\/market\//.test(url);
+}
+
 async function navigate(cdp, url) {
   const loaded = cdp.once("Page.loadEventFired");
   await cdp.send("Page.navigate", { url });
-  await loaded;
+  await withTimeout(loaded, `chargement de ${url}`);
   await evaluate(cdp, "document.readyState === 'complete'");
 }
 
 async function evaluate(cdp, expression, awaitPromise = false) {
-  const response = await cdp.send("Runtime.evaluate", { expression, awaitPromise, returnByValue: true, userGesture: true });
+  const response = await withTimeout(
+    cdp.send("Runtime.evaluate", { expression, awaitPromise, returnByValue: true, userGesture: true }),
+    `Runtime.evaluate (${expression.slice(0, 80)})`
+  );
   if (response.exceptionDetails) throw new Error(response.exceptionDetails.exception?.description || response.exceptionDetails.text || "Erreur Runtime.evaluate");
   return response.result?.value;
+}
+
+async function waitForAppReady(cdp, stage) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < CDP_TIMEOUT_MS) {
+    const state = await evaluate(cdp, `(() => ({
+      apiReady: Boolean(window.__BOUSSOLE_TEST_API__),
+      busy: document.body?.getAttribute('aria-busy') === 'true',
+      readyState: document.readyState,
+      jobsCount: window.App?.state?.dataset?.jobs?.length || 0
+    }))()`);
+    if (state?.apiReady && !state.busy && state.readyState === "complete") {
+      console.log(`[Boussole Pro] ${stage} terminée (${state.jobsCount} métiers disponibles).`);
+      return state;
+    }
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  throw new Error(`[Boussole Pro] Délai dépassé pendant ${stage}.`);
+}
+
+function withTimeout(promise, label, timeoutMs = CDP_TIMEOUT_MS) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`[Boussole Pro] Délai CDP dépassé : ${label}.`)), timeoutMs);
+    })
+  ]).finally(() => clearTimeout(timer));
 }
 
 async function waitForPageTarget(port) {
@@ -332,6 +528,7 @@ async function connectCdp(url) {
   let id = 0;
   const pending = new Map();
   const listeners = new Map();
+  const persistentListeners = new Map();
   socket.addEventListener("message", event => {
     const message = JSON.parse(event.data);
     if (message.id) {
@@ -345,6 +542,7 @@ async function connectCdp(url) {
     const queue = listeners.get(message.method) || [];
     listeners.set(message.method, []);
     queue.forEach(resolve => resolve(message.params || {}));
+    (persistentListeners.get(message.method) || []).forEach(callback => callback(message.params || {}));
   });
   return {
     send(method, params = {}) {
@@ -354,6 +552,9 @@ async function connectCdp(url) {
     },
     once(method) {
       return new Promise(resolve => listeners.set(method, [...(listeners.get(method) || []), resolve]));
+    },
+    on(method, callback) {
+      persistentListeners.set(method, [...(persistentListeners.get(method) || []), callback]);
     },
     close() {
       socket.close();

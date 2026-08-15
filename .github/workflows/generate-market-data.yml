@@ -142,9 +142,9 @@ jobs:
           RUNTIME_MARKET_TRENDS_FILE: market-trends.rome1000.json
           RUNTIME_BUNDLE_REVISION: rome1000-runtime-v0.1-r2
           RUNTIME_RELEASE_ID: 20260811-rome1000-market-phase3-01
-          RUNTIME_APP_VERSION: v0.8.4-alpha
-          RUNTIME_BUILD_ID: 20260811-semantic-classic-freeze-01
-          RUNTIME_BUILD_DATE: "2026-08-11"
+          RUNTIME_APP_VERSION: v0.8.4
+          RUNTIME_BUILD_ID: 20260815-semantic-classic-freeze-02
+          RUNTIME_BUILD_DATE: "2026-08-15"
       - name: Enforce application source boundary
         run: |
           sha256sum --check "$RUNNER_TEMP/boussole-app-before.sha256"
@@ -152,7 +152,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         if: ${{ steps.mode.outputs.real == 'true' }}
         with:
-          name: boussole-pro-v0.8.4-alpha-market-phase3
+          name: boussole-pro-v0.8.4-market-phase3
           path: |
             creations/boussolepro/data/generated/market/market-package-identity.json
             creations/boussolepro/data/generated/market/market-trends-quality-report.json

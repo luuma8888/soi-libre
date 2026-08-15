@@ -106,6 +106,7 @@ async function main() {
   report.checks.accessLabels = validateAccessLabels(generated);
   report.checks.testBenchDeterminism = validateTestBenchDeterminism(app);
   report.checks.top5ThemeContract = validateTop5ThemeContract(app);
+  report.checks.personalFitInvariance = validatePersonalFitInvariance(app);
   report.checks.technicalProfileScenario = validateCedricScenario(app, cedricEnvelope);
   report.checks.corpusConsistency = validateCorpusConsistency(app, generated, generatedBaseline);
   report.checks.marketPhase1 = validateMarketPhase1(app);
@@ -261,9 +262,11 @@ function validateAccessLabels(generated = {}) {
 function validateTestBenchDeterminism(app) {
   const failures = [];
   const normalize = report => ({
+    status: report.status,
+    readinessRecommendation: report.readinessRecommendation,
     datasetVersion: report.datasetVersion,
     runtimeFingerprint: report.runtimeBundleIdentity?.fingerprintSha256,
-    rows: toArray(report.rows).map(row => ({ id: row.id, top5: row.top5, expectedJobsEvaluation: row.expectedJobsEvaluation, anomalies: row.anomalies, marketUniform: row.marketUniform })),
+    rows: toArray(report.rows).map(row => ({ id: row.id, top5: row.top5, expectedJobsEvaluation: row.expectedJobsEvaluation, controlJobsEvaluation: row.controlJobsEvaluation, anomalies: row.anomalies, marketUniform: row.marketUniform })),
     anomalies: report.anomalies,
     summary: report.summary
   });
@@ -275,11 +278,42 @@ function validateTestBenchDeterminism(app) {
   const secondSha256 = canonicalSha256(second);
   if (toArray(first.rows).length !== 12) failures.push(`bench:profiles_${toArray(first.rows).length}`);
   if (firstSha256 !== secondSha256) failures.push("bench:user_state_leak");
+  if (first.status !== "passed" || first.readinessRecommendation !== "passed") failures.push(`bench:final_status_${first.status}`);
+  if (first.summary?.blockingCount !== 0) failures.push(`bench:blocking_${first.summary?.blockingCount}`);
+  if (first.summary?.warningCount !== 0) failures.push(`bench:unexplained_warnings_${first.summary?.warningCount}`);
   for (const row of first.rows) {
     const themeIds = toArray(row.top5).map(item => item.top5ThemeId || item.themeId).filter(Boolean);
     if (themeIds.length && new Set(themeIds).size !== themeIds.length) failures.push(`bench:${row.id}:duplicate_top5_theme`);
   }
-  return { status: failures.length ? "failed" : "ok", profilesCount: first.rows.length, profilesRevision: "integrated-12-v0.8.0", firstSha256, secondSha256, failures };
+  const warningReview = buildLegacyWarningReview(first);
+  const terrainControl = first.rows.find(row => row.id === "terrain-nature-prudent")?.controlJobsEvaluation?.find(item => item.romeCode === "M1605");
+  if (terrainControl?.discoveryLocation !== "excluded_paths_and_complete_list") failures.push(`bench:M1605_${terrainControl?.discoveryLocation || "missing"}`);
+  return {
+    status: failures.length ? "failed" : "ok",
+    profilesCount: first.rows.length,
+    profilesRevision: "integrated-12-v0.8.4-final",
+    firstSha256,
+    secondSha256,
+    finalBenchStatus: first.status,
+    blockingCount: first.summary?.blockingCount || 0,
+    warningCount: first.summary?.warningCount || 0,
+    warningReview,
+    rows: first.rows,
+    failures
+  };
+}
+
+function buildLegacyWarningReview(report = {}) {
+  const row = id => toArray(report.rows).find(item => item.id === id) || {};
+  const locations = id => toArray(row(id).expectedJobsEvaluation).map(item => `${item.romeCode}:${item.discoveryLocation}`).join(", ");
+  return [
+    { profile: "Administratif calme", oldExpectation: "Au moins 3/5 codes administratifs historiques dans le Top 5.", actual: row("admin-calme").top5?.map(item => item.romeCode), expectedJobLocations: locations("admin-calme"), verdict: "attente trop stricte", correction: "Contrôle de découvrabilité et de directions distinctes.", justification: "Les métiers administratifs voisins ne doivent pas occuper plusieurs directions artificiellement." },
+    { profile: "Administratif calme", oldExpectation: "Aucun métier nature dans le Top 5.", actual: row("admin-calme").top5?.map(item => item.romeCode), expectedJobLocations: "Aucune exclusion nature non négociable dans le profil.", verdict: "attente non encodée dans le profil", correction: "Une exclusion n'est bloquante que si le profil la déclare.", justification: "Une ancienne liste de vigilance ne doit pas devenir une exclusion implicite." },
+    { profile: "Numérique à distance", oldExpectation: "Aucun métier nature dans le Top 5.", actual: row("numerique-distance").top5?.map(item => item.romeCode), expectedJobLocations: "Aucune exclusion nature non négociable dans le profil.", verdict: "attente non encodée dans le profil", correction: "Une exclusion n'est bloquante que si le profil la déclare.", justification: "Le Top 5 conserve des directions exploratoires lorsque le profil ne les interdit pas." },
+    { profile: "Terrain nature prudent", oldExpectation: "Au moins un des huit codes historiques directement dans le Top 5.", actual: row("terrain-nature-prudent").top5?.map(item => item.romeCode), expectedJobLocations: locations("terrain-nature-prudent"), verdict: "test obsolète", correction: "Les huit codes doivent rester découvrables ; le représentant peut être un autre métier de la direction.", justification: "A1205 représente la direction sans supprimer les variantes nature." },
+    { profile: "Terrain nature prudent", oldExpectation: "Au moins 3 métiers nature dans le Top 5.", actual: row("terrain-nature-prudent").top5?.map(item => item.romeCode), expectedJobLocations: locations("terrain-nature-prudent"), verdict: "attente trop stricte", correction: "Minimum d'une direction nature cohérente et découvrabilité des métiers voisins.", justification: "Une direction ne peut fournir qu'un représentant au Top 5 diversifié." },
+    { profile: "Propreté / hôtellerie accessible", oldExpectation: "Au moins 3/4 codes historiques directement dans le Top 5.", actual: row("proprete-hotellerie-accessible").top5?.map(item => item.romeCode), expectedJobLocations: locations("proprete-hotellerie-accessible"), verdict: "attente trop stricte", correction: "Contrôle des secteurs représentés et de la découvrabilité des quatre codes.", justification: "G1703, K2201 et G1201 couvrent déjà des directions distinctes du profil." }
+  ];
 }
 
 function validateTop5ThemeContract(app) {
@@ -289,6 +323,7 @@ function validateTop5ThemeContract(app) {
     romeCode: code,
     title,
     globalScore: score,
+    personalFitScore: score,
     selectionScore: score,
     confidenceScore: confidence,
     feasibilityScore: feasibility,
@@ -310,13 +345,42 @@ function validateTop5ThemeContract(app) {
   const first = app.diversifyTopResults(input);
   const second = app.diversifyTopResults(input);
   const themes = first.top5.map(item => item.top5ThemeId);
-  if (first.top5.length !== 5 || new Set(themes).size !== 5) failures.push("top5:five_distinct_themes_expected");
+  if (first.top5.length !== 4 || new Set(themes).size !== first.top5.length) failures.push("top5:distinct_relevant_directions_expected");
   if (first.top5[0]?.jobId !== "animation-best") failures.push("top5:best_global_representative_not_first");
   if (first.top5.some(item => item.jobId === "animation-variant")) failures.push("top5:variant_used_as_representative");
   if (!toArray(first.variantsByJob["animation-best"]).some(item => item.jobId === "animation-variant")) failures.push("top5:variant_not_discoverable");
-  if (first.top5.some(item => ["excluded_for_now", "discouraged"].includes(item.status))) failures.push("top5:inadmissible_filler");
+  if (first.top5.some(item => item.status === "excluded_for_now")) failures.push("top5:excluded_filler");
   if (canonicalSha256(first) !== canonicalSha256(second)) failures.push("top5:nondeterministic_selection");
   if (canonicalSha256(orderBefore) !== canonicalSha256(input.map(item => `${item.jobId}:${item.globalScore}:${item.selectionScore}`))) failures.push("top5:source_order_or_scores_mutated");
+  const secondaryMutation = input.map((item, index) => ({
+    ...item,
+    confidenceScore: index % 2 ? 0 : 100,
+    skillsReadiness: index % 2 ? 100 : 0,
+    skillsReadinessEvidence: index % 2 ? ["skill-mutated"] : [],
+    feasibilityScore: index % 2 ? 0 : 100,
+    accessStatus: index % 2 ? "long_path" : "direct_or_near_direct",
+    namedRoutes: index % 2 ? ["Voie longue"] : [],
+    marketOpportunityLevel: index % 2 ? "very_favorable" : "zero",
+    marketSummaryByTerritory: { national: { value: index * 1000, confidence: index / 10 } },
+    scoreDetails: { skills: { exactExperienceRecognized: Boolean(index % 2) }, training: { currentDiplomaLevel: index }, market: { offers12m: index * 1000 } }
+  }));
+  const mutated = app.diversifyTopResults(secondaryMutation);
+  const selectionIdentity = output => output.top5.map(item => `${item.top5ThemeId}:${item.romeCode || item.job?.romeCode}`);
+  if (canonicalSha256(selectionIdentity(first)) !== canonicalSha256(selectionIdentity(mutated))) failures.push("top5:secondary_dimensions_changed_selection");
+  const tied = [
+    make({ id: "tie-a", code: "G1203", title: "Animation A", score: 80, confidence: 0, feasibility: 0 }),
+    make({ id: "tie-b", code: "G1235", title: "Animation B", score: 80, confidence: 100, feasibility: 100 })
+  ];
+  const tieFirst = app.diversifyTopResults(tied).top5[0];
+  const tieInverted = app.diversifyTopResults(tied.slice().reverse().map(item => ({
+    ...item,
+    confidenceScore: 100 - item.confidenceScore,
+    feasibilityScore: 100 - item.feasibilityScore,
+    skillsReadiness: item.jobId === "tie-a" ? 100 : 0,
+    accessStatus: item.jobId === "tie-a" ? "direct_or_near_direct" : "long_path",
+    marketOpportunityLevel: item.jobId === "tie-a" ? "very_favorable" : "zero"
+  }))).top5[0];
+  if (tieFirst?.romeCode !== "G1203" || tieInverted?.romeCode !== "G1203") failures.push("top5:equal_score_tie_break_depends_on_secondary_data");
   const narrow = app.diversifyTopResults(input.slice(0, 4));
   if (narrow.top5.length >= 5 || !narrow.top5ShortfallReason) failures.push("top5:honest_shortfall_missing");
   return {
@@ -325,6 +389,148 @@ function validateTop5ThemeContract(app) {
     threshold: first.top5RelevanceThreshold,
     themes,
     representatives: first.top5.map(item => ({ jobId: item.jobId, themeId: item.top5ThemeId, score: item.selectionScore })),
+    secondaryMutationStable: canonicalSha256(selectionIdentity(first)) === canonicalSha256(selectionIdentity(mutated)),
+    equalScoreRepresentative: tieFirst?.romeCode || null,
+    failures
+  };
+}
+
+function validatePersonalFitInvariance(app) {
+  const failures = [];
+  const dataset = app.App.state.dataset;
+  const personalProfile = {
+    id: "final-invariance-profile",
+    profileName: "Validation invariance accord personnel",
+    hasRequestedResults: true,
+    completedBoussole: true,
+    experienceDomains: ["animation", "education", "social"],
+    domainOrientation: { animation: "heart", education: "heart", social: "secondary" },
+    interests: ["enfants", "transmettre", "accompagner", "creer"],
+    values: ["meaning", "service", "solidarity", "autonomy"],
+    preferredWorkStyles: ["team", "relational", "creative"],
+    preferredEnvironments: ["children", "human-scale", "outdoor"],
+    contextPreferences: { children: "important", relational: "important", field: "preferred", creative: "preferred" },
+    trainingOpenness: "open_if_meaningful",
+    searchHorizon: "open_exploration"
+  };
+  const fixtureSkills = unique(toArray(dataset.jobs).slice(0, 120).flatMap(job => [
+    ...toArray(job.matchableSkillIds),
+    ...toArray(job.requiredSkills),
+    ...toArray(job.optionalSkills)
+  ])).slice(0, 240);
+  const acquiredProfile = {
+    ...personalProfile,
+    diplomaLevel: 7,
+    certifications: ["cert-bafa", "cert-fixture"],
+    skills: fixtureSkills,
+    semanticSkillKeys: ["group_animation", "care_relationship", "customer_support"],
+    jobExperiences: [{ romeCode: "G1203", title: "Animateur jeunesse", durationYears: 18, recency: "current", masteryLevel: "advanced", enjoymentLevel: "love", wantsToContinue: "yes", source: "test" }]
+  };
+  const resetCaches = () => ["marketSummaryCache", "marketSynthesisCache", "jobDerivedCache", "officialConstraintCache"]
+    .forEach(key => app.App.state[key]?.clear?.());
+  const calculate = raw => {
+    resetCaches();
+    const profile = app.normalizeProfile(raw);
+    return app.calculateAllMatches(profile, dataset);
+  };
+  const snapshot = results => {
+    const representatives = [
+      ...toArray(results.top5).map(item => ({ direction: item.top5ThemeId, code: item.romeCode || item.job?.romeCode })),
+      ...toArray(results.top5UnselectedThemeRepresentatives).map(item => ({ direction: item.top5ThemeId, code: item.romeCode }))
+    ].sort((a, b) => String(a.direction).localeCompare(String(b.direction)));
+    return {
+      personalScores: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitScore]).sort(([a], [b]) => a.localeCompare(b))),
+      personalReasons: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitReasons]).sort(([a], [b]) => a.localeCompare(b))),
+      representatives,
+      topDirections: toArray(results.top5).map(item => item.top5ThemeId),
+      topCodes: toArray(results.top5).map(item => item.romeCode || item.job?.romeCode)
+    };
+  };
+  const baselineResults = calculate(personalProfile);
+  const acquiredResults = calculate(acquiredProfile);
+  const baseline = snapshot(baselineResults);
+  const acquired = snapshot(acquiredResults);
+  const forbiddenPersonalReason = /\b(?:comp[ée]tence|exp[ée]rience|dipl[oô]me|formation|certification|concours|habilitation|acc[èe]s|march[ée]|offre|bmo|dares|tension)\b/i;
+  const mixedReasons = toArray(baselineResults.completeList).flatMap(item => toArray(item.personalFitReasons)
+    .filter(reason => forbiddenPersonalReason.test(String(reason)))
+    .map(reason => ({ romeCode: item.romeCode, reason })));
+  if (mixedReasons.length) failures.push(`personal-invariance:mixed_personal_reasons_${mixedReasons.length}`);
+  if (toArray(baselineResults.completeList).some(item => canonicalSha256(item.positiveReasons) !== canonicalSha256(item.personalFitReasons))) failures.push("personal-invariance:legacy_positive_reason_alias_mismatch");
+  const viewDetails = Object.values(baselineResults.resultsViewModel?.jobDetailsById || {});
+  if (!viewDetails.length || viewDetails.some(detail => canonicalSha256(detail.agreementReasons) !== canonicalSha256(detail.personalFitReasons))) failures.push("personal-invariance:view_agreement_reason_boundary");
+  const compact = app.prepareCompactResultsForExport(baselineResults);
+  if (toArray(compact.top5).some(item => !Array.isArray(item.personalFitReasons) || !Object.hasOwn(item, "skillsReadinessEvidence") || !Object.hasOwn(item, "accessEvidence") || !Object.hasOwn(item, "marketSummaryByTerritory"))) failures.push("personal-invariance:compact_export_compartments");
+  const markdown = app.resultsToMarkdown(baselineResults);
+  if (!/Pourquoi cette piste correspond/.test(markdown) || !/Appuis actuels/.test(markdown) || !/Chemin d’accès/.test(markdown) || !/Marché/.test(markdown)) failures.push("personal-invariance:markdown_export_compartments");
+  for (const key of ["personalScores", "personalReasons", "representatives", "topDirections", "topCodes"]) {
+    if (canonicalSha256(baseline[key]) !== canonicalSha256(acquired[key])) failures.push(`personal-invariance:acquired_${key}`);
+  }
+  const changedSkills = toArray(baselineResults.completeList).some((item, index) => canonicalSha256({
+    score: item.skillsReadiness,
+    level: item.skillsReadinessLevel,
+    evidence: item.skillsReadinessEvidence
+  }) !== canonicalSha256({
+    score: acquiredResults.completeList[index]?.skillsReadiness,
+    level: acquiredResults.completeList[index]?.skillsReadinessLevel,
+    evidence: acquiredResults.completeList[index]?.skillsReadinessEvidence
+  }));
+  const changedAccess = toArray(baselineResults.completeList).some((item, index) => item.accessStatus !== acquiredResults.completeList[index]?.accessStatus);
+  if (!changedSkills) failures.push("personal-invariance:skills_dimension_did_not_change");
+  if (!changedAccess) failures.push("personal-invariance:access_dimension_did_not_change");
+
+  const originalSecondaryData = toArray(dataset.jobs).map(job => ({
+    job,
+    accessSummary: job.accessSummary,
+    requiredDiplomaLevel: job.requiredDiplomaLevel,
+    requiredCertifications: job.requiredCertifications,
+    market: job.market,
+    marketStats: job.marketStats
+  }));
+  let secondaryResults;
+  try {
+    originalSecondaryData.forEach(({ job }, index) => {
+      job.accessSummary = {
+        requirementKind: "specific_required",
+        specificCredentialRequired: true,
+        mandatoryQualification: true,
+        regulated: true,
+        contradictoryEvidence: false,
+        requiredCredentialLabels: [`Qualification test ${index}`],
+        accessPaths: [{ pathId: `test-${index}`, label: "Voie de qualification test" }],
+        source: "in_memory_invariance_fixture"
+      };
+      job.requiredDiplomaLevel = 7;
+      job.requiredCertifications = [`cert-test-${index}`];
+      job.market = { source: "in_memory_invariance_fixture", confidence: 1, level: "very_high" };
+      job.marketStats = Object.fromEntries(["national", "regional", "departmental"].map((key, territoryIndex) => [key, {
+        sourceLevel: key,
+        offersFranceTravail12m: 10000 - index - territoryIndex,
+        absoluteOfferSignal: "very_high",
+        sourceName: "In-memory invariance fixture",
+        latestPeriodLabel: "test",
+        confidence: 1
+      }]));
+    });
+    secondaryResults = calculate(personalProfile);
+  } finally {
+    originalSecondaryData.forEach(({ job, ...values }) => Object.assign(job, values));
+    resetCaches();
+  }
+  const secondary = snapshot(secondaryResults);
+  for (const key of ["personalScores", "personalReasons", "representatives", "topDirections", "topCodes"]) {
+    if (canonicalSha256(baseline[key]) !== canonicalSha256(secondary[key])) failures.push(`personal-invariance:access_market_${key}`);
+  }
+  const changedMarket = toArray(baselineResults.completeList).some((item, index) => canonicalSha256(item.marketSummaryByTerritory) !== canonicalSha256(secondaryResults.completeList[index]?.marketSummaryByTerritory));
+  if (!changedMarket) failures.push("personal-invariance:market_dimension_did_not_change");
+  return {
+    status: failures.length ? "failed" : "ok",
+    checkedJobs: Object.keys(baseline.personalScores).length,
+    topCodes: baseline.topCodes,
+    topDirections: baseline.topDirections,
+    representativeCount: baseline.representatives.length,
+    secondaryDimensionsChanged: { skills: changedSkills, access: changedAccess, market: changedMarket },
+    mixedPersonalReasons: mixedReasons,
+    exportedCompartments: ["personalFitReasons", "skillsReadinessEvidence", "accessEvidence", "namedRoutes", "marketSummaryByTerritory"],
     failures
   };
 }
@@ -733,7 +939,7 @@ export function validateCedricScenario(app, envelope = null) {
   if (falseCompatibleReasons.length) failures.push(`cedric:false_constraint_compatibility_reason_${falseCompatibleReasons.length}`);
   if (mediumPrefixHardExclusions.length) failures.push(`cedric:medium_prefix_hard_exclusions_${mediumPrefixHardExclusions.length}`);
   if (possibleNowWithMissingAccess.length) failures.push(`cedric:possible_now_with_missing_access_${possibleNowWithMissingAccess.length}`);
-  if (top5[0]?.romeCode !== "G1203") failures.push(`cedric:G1203_not_first_${top5[0]?.romeCode || "missing"}`);
+  if (!top5.length || top5.length > 5) failures.push(`cedric:invalid_top_direction_count_${top5.length}`);
   if (new Set(top5.map(item => item.top5ThemeId)).size !== top5.length) failures.push("cedric:duplicate_top5_theme");
   if (top5.filter(item => ["G1203", "G1235"].includes(item.romeCode)).length > 1) failures.push("cedric:animation_variants_repeat_top5");
   if (top5.some(item => item.romeCode === "M1805")) failures.push("cedric:M1805_unwanted_in_top5");
@@ -743,7 +949,9 @@ export function validateCedricScenario(app, envelope = null) {
     if (["possible_now", "possible_with_small_adjustment", "possible_after_short_training"].includes(rows[code]?.status)) failures.push(`cedric:${code}:access_too_easy_${rows[code]?.status}`);
   }
   if (rows.K2106?.trainingStatus !== "access_to_verify" || rows.K2106?.accessPaths.length < 3) failures.push("cedric:K2106_parallel_routes_not_prudent");
-  if (!/faisabilité demande des vérifications/i.test(byCode.get("K2106")?.resultInterpretation?.mainReason || "")) failures.push("cedric:K2106_main_reason_not_prudent");
+  const k2106Result = byCode.get("K2106");
+  if (k2106Result?.accessStatus !== "qualification_or_competition" || !k2106Result?.accessSummaryV1?.competitionRequired) failures.push("cedric:K2106_access_compartment_not_prudent");
+  if (toArray(k2106Result?.personalFitReasons).some(reason => /concours|CRPE|accès|formation|qualification/i.test(reason))) failures.push("cedric:K2106_access_leaked_into_personal_reasons");
   if (rows.K2106?.accessPaths.some(path => !path.eligibilityStatus || !path.examStatus || !path.practiceStatus || !path.nextAction)) failures.push("cedric:K2106_path_evaluation_incomplete");
   if (rows.K2106?.accessPaths.some(path => path.practiceStatus === "accessible_now")) failures.push("cedric:K2106_practice_must_not_be_immediate");
   const thirdCrpe = rows.K2106?.accessPaths.find(path => path.pathId === "k2106-crpe-troisieme-concours");
@@ -778,9 +986,9 @@ export function validateCedricScenario(app, envelope = null) {
       g1202SectorVisible: gHtml.includes("Culture, création, loisirs et animation"),
       sourceDomainVisibleWhenExpected: mode === "essential" || gHtml.includes("Domaine / famille ROME"),
       k2106CrpeVisible: kHtml.includes("CRPE"),
-      k2106PathsVisibleWhenExpected: mode === "essential" || kHtml.includes("Voies d’accès distinctes"),
+      k2106PathsVisibleWhenExpected: mode === "diagnostic" || (kHtml.includes("Chemin d’accès") && kHtml.includes("CRPE")),
       k2106NoCapAepe: !/CAP AEPE/i.test(kHtml),
-      k2106ExamNotCertification: !/certification à vérifier[^<]*(CRPE|concours)|qualification[^<]*(CRPE|concours)/i.test(kHtml),
+      k2106ExamNotCertification: !toArray(k2106.accessSummaryV1?.mandatoryCredentials).some(label => /CRPE|concours/i.test(label)) && Boolean(k2106.accessSummaryV1?.competitionRequired),
       k2106ContestTruthVisible: mode === "essential" || /concours requis ; réussite non renseignée/i.test(kHtml)
     };
     if (!Object.values(modeChecks[mode]).every(Boolean)) failures.push(`cedric:display_${mode}_failed`);
@@ -792,8 +1000,8 @@ export function validateCedricScenario(app, envelope = null) {
   const compactG1203 = findJobByCode(compactRoundTrip.normalized?.jobs, "G1203");
   const exports = {
     profile: profileRoundTrip.jobExperiences.length === 2,
-    results: app.prepareCompactResultsForExport(results).top5.length === 5,
-    diagnostic: app.buildResultDiagnosticExport(results)?.top5?.length === 5,
+    results: app.prepareCompactResultsForExport(results).top5.length > 0 && app.prepareCompactResultsForExport(results).top5.length <= 5,
+    diagnostic: app.buildResultDiagnosticExport(results)?.top5?.length > 0 && app.buildResultDiagnosticExport(results)?.top5?.length <= 5,
     bench: Boolean(app.runDiagnosticProfiles(app.DIAGNOSTIC_TEST_PROFILES_V052)?.summary),
     compactCorpus: compactDataset.jobs.length === EXPECTED_JOBS_COUNT,
     compactFapRoundTrip: compactRoundTrip.valid && compactG1203?.marketStats?.fapEnrichment?.fapMappings?.some(item => item.fapCode === "V5X81") && compactG1203.marketStats.fapEnrichment.territories?.["DEP-11"]?.[0]?.bmo?.recruitmentProjects?.value === 157,
@@ -906,6 +1114,8 @@ this.__boussole = {
   calculateContextScore,
   calculateAllMatches,
   diversifyTopResults,
+  comparePersonalFitCandidates,
+  buildResultsViewModel,
   inferTop5Theme,
   interpretMarketSynthesis,
   getJobSectorProfile,

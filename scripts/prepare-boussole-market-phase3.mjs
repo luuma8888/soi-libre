@@ -101,6 +101,7 @@ export async function main() {
     generatedAt: NORMALIZED_AT,
     status: "completed_with_official_recent_evolution_and_insufficient_offer_history",
     marketLayerIdentity: nextIdentity,
+    checks: { ...(quality.checks || {}), activeRomeJobs: runtime.jobs.length },
     coverage: { ...(quality.coverage || identity.coverage || {}), jobsWithBmo: 491, jobsWithDaresTension: 482 },
     temporalCoverage: trendsQuality.coverage,
     sourceStatus: {
