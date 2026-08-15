@@ -15,6 +15,9 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const readJson = async relative => JSON.parse(await readFile(path.join(ROOT, relative), "utf8"));
 const jobsPackage = await readJson("creations/boussolepro/data/generated/rome1000-candidate/jobs.rome.json");
 const jobs = jobsPackage.jobs || jobsPackage;
+const packagedSkills = await readJson("creations/boussolepro/data/generated/rome1000-candidate/skills.rome.json");
+const skillsEngine = await readJson("creations/boussolepro/data/generated/rome1000-candidate/skills-engine.rome.json");
+const matchableSkills = await readJson("creations/boussolepro/data/generated/rome1000-candidate/skills-matchable.rome.json");
 const accessPackage = await readJson("creations/boussolepro/data/generated/rome1000-candidate/access-summary.rome1000.json");
 const accessRows = Array.isArray(accessPackage) ? accessPackage : accessPackage.items || accessPackage.rows || accessPackage.accessSummaries || [];
 const officialDomains = await readJson("creations/boussolepro/data/local/rome-professional-domain-labels.2026-06.json");
@@ -99,16 +102,26 @@ check(/appVersion: "v0\.8\.4"/.test(html), "app:version_v084");
 check(html.includes('policyRevision: "personal-fit-only-v1"'), "separation:selection_policy_personal_only");
 const comparatorSource = html.match(/function comparePersonalFitCandidates\([\s\S]*?\n\}/)?.[0] || "";
 const candidateScoreSource = html.match(/function personalFitCandidateScore\([\s\S]*?\n\}/)?.[0] || "";
+const fineScoreSource = html.match(/function personalFitCandidateTieBreakScore\([\s\S]*?\n\}/)?.[0] || "";
+const vectorSource = html.match(/function comparePersonalFitVectors\([\s\S]*?\n\}/)?.[0] || "";
 check(comparatorSource.includes("personalFitCandidateScore") && comparatorSource.includes("romeCode"), "top5:pure_comparator_present");
-check(!/(confidence|globalScore|skills|experience|diploma|access|market|training|title)/i.test(comparatorSource), "top5:pure_comparator_has_no_secondary_dimension", comparatorSource);
+check(comparatorSource.includes("personalFitCandidateTieBreakScore") && comparatorSource.includes("comparePersonalFitVectors"), "top5:semantic_tie_break_present", comparatorSource);
+check(!/(confidence|globalScore|skills|experience|diploma|access|market|training|title)/i.test(`${comparatorSource}\n${fineScoreSource}\n${vectorSource}`), "top5:pure_comparator_has_no_secondary_dimension", comparatorSource);
 check(candidateScoreSource.includes("personalFitScore") && !candidateScoreSource.includes("globalScore"), "top5:score_source_is_personal_fit_only", candidateScoreSource);
+check(html.includes("personalFitTieBreakScore") && html.includes("personalFitTieBreakVector") && html.includes("personalFitComponents"), "top5:fine_personal_diagnostic_exposed");
 check(html.includes("personalFitReasons") && html.includes("skillsReadinessEvidence") && html.includes("accessEvidence") && html.includes("marketSummaryByTerritory"), "separation:result_compartments_present");
+check(html.includes("Appuis identifiés, sans effet sur le rang") && html.includes("Chemin d’accès, sans effet sur le rang") && html.includes("Marché, sans effet sur le rang") && html.includes("Ancien composite, conservé pour comparaison"), "separation:diagnostic_labels_explicit");
 check(html.includes('const RESULTS_VIEW_CONTRACT_REVISION = "results-view-v1"'), "view:stable_contract");
 check(html.includes("explorationSearchIndex") && html.includes("jobsByPrimaryDirection"), "view:exploration_indexes");
 check(html.includes("dreamPaths: dream.map") && html.includes("personalFitScore >= 65"), "view:aligned_long_paths_remain_discoverable");
 check(html.includes("excludedPaths: excluded.map") && html.includes("completeList: summaries"), "view:excluded_remain_in_complete_list");
 check(activeRuntime.market?.coverage?.activeRomeJobs === 1000, "counters:active_jobs_1000", activeRuntime.market?.coverage?.activeRomeJobs);
 check(marketQuality.checks?.activeRomeJobs === 1000, "counters:market_quality_active_jobs_1000", marketQuality.checks?.activeRomeJobs);
+check(packagedSkills.length === 8682, "counters:packaged_skills_8682", packagedSkills.length);
+check(new Set(packagedSkills.map(item => item.id)).size === packagedSkills.length, "counters:packaged_skills_unique", new Set(packagedSkills.map(item => item.id)).size);
+check(activeRuntime.runtime?.expectedCounts?.skills === packagedSkills.length, "counters:manifest_skills_matches_package", { manifest: activeRuntime.runtime?.expectedCounts?.skills, package: packagedSkills.length });
+check(skillsEngine.length === 13159, "counters:skills_engine_13159", skillsEngine.length);
+check(matchableSkills.length === 2578, "counters:matchable_skills_2578", matchableSkills.length);
 check(activeRuntime.market?.counts?.offerNational === 894, "market:national_894", activeRuntime.market?.counts?.offerNational);
 check(activeRuntime.market?.counts?.offerRegional === 883, "market:regional_883", activeRuntime.market?.counts?.offerRegional);
 check(activeRuntime.market?.counts?.offerDepartmental === 785, "market:departmental_785", activeRuntime.market?.counts?.offerDepartmental);
@@ -127,6 +140,15 @@ const report = {
     activeJobs: jobs.length,
     unclassifiedActiveJobs: unclassified.length,
     accessContradictions: contradictions.length,
+    skills: {
+      packaged: packagedSkills.length,
+      activeAfterNormalizationExpected: activeRuntime.runtime?.skillCounts?.activeAfterNormalization ?? packagedSkills.length,
+      uniqueIds: new Set(packagedSkills.map(item => item.id)).size,
+      engineLinks: skillsEngine.length,
+      directlyComparable: matchableSkills.length,
+      formerReportedGap: 56,
+      resolution: "Le paquet actif et le manifeste contiennent 8 682 compétences uniques ; le compteur 8 626 provenait d’un ancien résumé, sans transformation active ajoutant 56 entrées."
+    },
     rawRegulatedStillRequiringRuntimeRule: unresolvedRegulated.map(row => row.romeCode),
     market: activeRuntime.market?.counts
   },

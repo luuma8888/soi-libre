@@ -1,13 +1,16 @@
 import { createHash } from "node:crypto";
 import { cp, mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
 import path from "node:path";
+import { promisify } from "node:util";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const APP_ROOT = path.join(ROOT, "creations/boussolepro");
 const OUTPUT = path.resolve(process.argv[2] || path.join(ROOT, "tmp/monde-pro/livraison-boussole-pro-v0.8.4-classic-frozen"));
-const AUDIT_DIR = path.join(ROOT, "tmp/monde-pro/audit-v0.8.4-final");
-const FINAL_REPORT = path.join(ROOT, "tmp/monde-pro/AUDIT_BOUSSOLE_PRO_V0_8_4_FINAL_CORRECTIONS.md");
+const AUDIT_DIR = path.resolve(process.env.BOUSSOLE_PROOF_DIR || path.join(ROOT, "tmp/monde-pro/audit-v0.8.4-closure-final"));
+const FINAL_REPORT = path.resolve(process.env.BOUSSOLE_FINAL_REPORT || path.join(ROOT, "tmp/monde-pro/AUDIT_BOUSSOLE_PRO_CLOTURE_DEFINITIVE_V0_8_4.md"));
 const MARKET_DIR = path.join(APP_ROOT, "data/generated/market");
+const run = promisify(execFile);
 const MARKET_ARCHIVE_EXCLUSIONS = new Set([
   "sync-error.json",
   "market-etape-lasuite.zip",
@@ -29,7 +32,16 @@ const requiredSources = [
   [path.join(APP_ROOT, "data/generated/market"), "app/data/generated/market"],
   [path.join(APP_ROOT, "data/local"), "app/data/local"],
   [AUDIT_DIR, "reports"],
-  [FINAL_REPORT, "reports/AUDIT_BOUSSOLE_PRO_V0_8_4_FINAL_CORRECTIONS.md"]
+  [FINAL_REPORT, "reports/AUDIT_BOUSSOLE_PRO_CLOTURE_DEFINITIVE_V0_8_4.md"],
+  [path.join(ROOT, "scripts/boussole-build-metadata.mjs"), "scripts/boussole-build-metadata.mjs"],
+  [path.join(ROOT, "scripts/boussole-runtime-identity.mjs"), "scripts/boussole-runtime-identity.mjs"],
+  [path.join(ROOT, "scripts/boussole-semantic-v084-core.mjs"), "scripts/boussole-semantic-v084-core.mjs"],
+  [path.join(ROOT, "scripts/validate-boussole-semantic-v084.mjs"), "scripts/validate-boussole-semantic-v084.mjs"],
+  [path.join(ROOT, "scripts/validate-boussole-v073.mjs"), "scripts/validate-boussole-v073.mjs"],
+  [path.join(ROOT, "scripts/test-boussole-compact-roundtrip.mjs"), "scripts/test-boussole-compact-roundtrip.mjs"],
+  [path.join(ROOT, "scripts/measure-boussole-rome500-browser.mjs"), "scripts/measure-boussole-rome500-browser.mjs"],
+  [path.join(ROOT, "scripts/build-boussole-v084-closure-proofs.mjs"), "scripts/build-boussole-v084-closure-proofs.mjs"],
+  [path.join(ROOT, "scripts/archive-boussole-classic-v084.mjs"), "scripts/archive-boussole-classic-v084.mjs"]
 ];
 
 for (const [source, relativeTarget] of requiredSources) {
@@ -43,14 +55,22 @@ for (const [source, relativeTarget] of requiredSources) {
 }
 
 const activeRuntime = JSON.parse(await readFile(path.join(APP_ROOT, "data/generated/active-runtime.json"), "utf8"));
+const sourceCommit = process.env.BOUSSOLE_SOURCE_COMMIT || "";
+const sourceTag = process.env.BOUSSOLE_SOURCE_TAG || "";
+if (!/^[0-9a-f]{40}$/.test(sourceCommit)) throw new Error("BOUSSOLE_SOURCE_COMMIT doit contenir le SHA Git complet figé.");
+if (!sourceTag) throw new Error("BOUSSOLE_SOURCE_TAG doit contenir le tag final réellement utilisé.");
+const currentCommit = (await run("git", ["rev-parse", "HEAD"], { cwd: ROOT })).stdout.trim();
+const taggedCommit = (await run("git", ["rev-list", "-n", "1", sourceTag], { cwd: ROOT })).stdout.trim();
+if (currentCommit !== sourceCommit || taggedCommit !== sourceCommit) {
+  throw new Error(`Source non figée : HEAD=${currentCommit}, tag=${taggedCommit}, attendu=${sourceCommit}.`);
+}
 const metadata = {
   schemaVersion: "1.0.0",
   deliveryKind: "boussole_pro_classic_frozen",
   version: activeRuntime.appSource?.appVersion || "v0.8.4",
-  proposedGitTag: "v0.8.4-classic-frozen",
-  proposedArchiveBranch: "archive/boussole-pro-v0.8.4-classic-frozen",
-  sourceBranch: "soi-libre-codex",
-  sourceCommit: process.env.BOUSSOLE_SOURCE_COMMIT || "pending_commit",
+  gitTag: sourceTag,
+  sourceBranch: process.env.BOUSSOLE_SOURCE_BRANCH || "soi-libre-codex",
+  sourceCommit,
   generatedAt: new Date().toISOString(),
   applicationSource: activeRuntime.appSource,
   runtime: {
@@ -66,7 +86,8 @@ const metadata = {
   notes: [
     "Photographie autonome de la dernière interface classique avant refonte.",
     "Le HTML contient son repli embarqué hors ligne et les paquets JSON exacts sont inclus dans app/data.",
-    "Le tag et la branche d'archive restent à créer après le commit fonctionnel validé."
+    "L’archive a été générée depuis le commit exact désigné par gitTag et sourceCommit.",
+    "Les rapports not_measured antérieurs ne font pas partie du paquet de preuves final."
   ],
   excludedHistoricalArtifacts: [...MARKET_ARCHIVE_EXCLUSIONS].sort()
 };

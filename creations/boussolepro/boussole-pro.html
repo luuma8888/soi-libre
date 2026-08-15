@@ -1699,7 +1699,7 @@ body[data-theme="dark"] .compare-table td {
 
 const BUILD_INFO = Object.freeze({
   appVersion: "v0.8.4",
-  buildId: "20260815-semantic-classic-freeze-02",
+  buildId: "20260815-classic-final-freeze-03",
   buildDate: "2026-08-15",
   defaultDatasetVersion: "rome1000-candidate-v0.1",
   runtimeBundleRevision: "rome1000-runtime-v0.1-r2",
@@ -4510,7 +4510,7 @@ function exportProfile() {
     criterionWeights: getEffectiveCriterionWeights(profile),
     baseWeights: clone(CONFIG.baseWeights),
     exportedWithProfile: true,
-    note: "Ces pondérations font partie du profil : elles peuvent changer le classement des métiers."
+    note: "Ces pondérations historiques font partie du profil pour les indicateurs secondaires et l’ancien composite ; elles ne changent pas le Top 5 classé par accord personnel."
   };
   const envelope = {
     app: "boussole-pro-profile",
@@ -5516,7 +5516,7 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
   const criteria = mapUserProfileToCriteria(profile);
   criteria.marketContext = assessMarketContext(datasets, criteria);
   const results = (datasets.jobs || []).map(job => calculateMatch(criteria, job, datasets));
-  const sorted = results.slice().sort((a, b) => b.globalScore - a.globalScore);
+  const sorted = results.slice().sort(comparePersonalFitCandidates);
   const compatible = sorted.filter(result => result.status !== "excluded_for_now");
   const excluded = sorted.filter(result => result.status === "excluded_for_now");
   const diversified = diversifyTopResults(compatible);
@@ -5597,7 +5597,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     const scores = { skills: skill.score, training: training.score, constraints: 0, values: value.score, context: context.score, market: market.score };
     const relevanceScore = weightedGlobalScore({ ...scores, constraints: 15 }, weightAdjustment.weights);
     const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market, affinity, core], hardCheck.unknown);
-    const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, constraint, affinity, core, exactExperience });
+    const personalFit = calculatePersonalFitMetrics(criteria, job, { value, context, constraint });
+    const personalFitScore = personalFit.score;
     const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint });
     const marketOpportunityLevelValue = marketOpportunityLevel(market);
     const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
@@ -5616,6 +5617,9 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       coreProfileMatchScore: core.score,
       coreProfileMatch: core,
       personalFitScore,
+      personalFitTieBreakScore: personalFit.tieBreakScore,
+      personalFitTieBreakVector: personalFit.tieBreakVector,
+      personalFitComponents: personalFit.components,
       feasibilityScore,
       marketOpportunityLevel: marketOpportunityLevelValue,
       marketOpportunityNormalized,
@@ -5671,7 +5675,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
   const confidence = calculateConfidence(criteria, job, [skill, training, constraint, value, context, market, affinity, core], hardCheck.unknown);
   const status = determineFeasibilityStatus(legacyCompositeScore, scores, criteria, job, { training, constraint, affinity, core, scoreCaps, hardCheck });
   const explanation = explainMatch(criteria, job, scores, status, { skill, training, constraint, value, context, market, affinity, scoreCaps, hardCheck });
-  const personalFitScore = calculatePersonalFitScore(criteria, job, { skill, value, context, constraint, affinity, core, exactExperience });
+  const personalFit = calculatePersonalFitMetrics(criteria, job, { value, context, constraint });
+  const personalFitScore = personalFit.score;
   const feasibilityScore = calculateFeasibilityScore(criteria, job, { training, constraint });
   const marketOpportunityLevelValue = marketOpportunityLevel(market);
   const marketOpportunityNormalized = marketOpportunityNormalizedScore({ ...market, marketOpportunityLevel: marketOpportunityLevelValue });
@@ -5692,6 +5697,9 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     coreProfileMatchScore: core.score,
     coreProfileMatch: core,
     personalFitScore,
+    personalFitTieBreakScore: personalFit.tieBreakScore,
+    personalFitTieBreakVector: personalFit.tieBreakVector,
+    personalFitComponents: personalFit.components,
     feasibilityScore,
     marketOpportunityLevel: marketOpportunityLevelValue,
     marketOpportunityNormalized,
@@ -5922,14 +5930,33 @@ function calculateSelectionScore(globalScore, scores = {}, details = {}) {
   return Math.round(clamp(score, 0, 100));
 }
 
-function calculatePersonalFitScore(criteria = {}, job = {}, details = {}) {
+function calculatePersonalFitMetrics(criteria = {}, job = {}, details = {}) {
   const finiteOr = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
-  const aspirationPoints = calculateAspirationalAlignmentScore(criteria, job) * 0.35;
-  const valuePoints = clamp(finiteOr(details.value?.score, 7.5) / 15 * 20, 0, 20);
-  const contextPoints = clamp(finiteOr(details.context?.score, 5) / 10 * 20, 0, 20);
-  const constraintPoints = clamp(finiteOr(details.constraint?.score, 12.5) / 25 * 25, 0, 25);
+  const aspiration = calculateAspirationalAlignmentScore(criteria, job);
+  const values = clamp(finiteOr(details.value?.score, 7.5) / 15 * 100, 0, 100);
+  const context = clamp(finiteOr(details.context?.score, 5) / 10 * 100, 0, 100);
+  const dailyReality = clamp(finiteOr(details.constraint?.score, 12.5) / 25 * 100, 0, 100);
+  const aspirationPoints = aspiration * 0.35;
+  const valuePoints = values * 0.20;
+  const contextPoints = context * 0.20;
+  const constraintPoints = dailyReality * 0.25;
   const score = aspirationPoints + valuePoints + contextPoints + constraintPoints;
-  return Math.round(clamp(score, 0, 100));
+  const tieBreakVector = [aspiration, values, context, dailyReality].map(value => Number(value.toFixed(6)));
+  return {
+    score: Math.round(clamp(score, 0, 100)),
+    tieBreakScore: Number(clamp(score, 0, 100).toFixed(6)),
+    tieBreakVector,
+    components: {
+      aspiration: tieBreakVector[0],
+      values: tieBreakVector[1],
+      context: tieBreakVector[2],
+      dailyReality: tieBreakVector[3]
+    }
+  };
+}
+
+function calculatePersonalFitScore(criteria = {}, job = {}, details = {}) {
+  return calculatePersonalFitMetrics(criteria, job, details).score;
 }
 
 function calculateFeasibilityScore(criteria = {}, job = {}, details = {}) {
@@ -6189,6 +6216,9 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     globalScore: result.globalScore,
     rawGlobalScore: result.rawGlobalScore ?? result.globalScore,
     personalFitScore: result.personalFitScore ?? null,
+    personalFitTieBreakScore: result.personalFitTieBreakScore ?? result.personalFitScore ?? null,
+    personalFitTieBreakVector: toArray(result.personalFitTieBreakVector),
+    personalFitComponents: result.personalFitComponents || null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
     marketInfluence: result.marketInfluence || null,
@@ -6301,6 +6331,7 @@ function buildResultDiagnostic(criteria, job, result = {}, details = {}) {
     missingNonPenalizingSkills,
     whyItRanks: buildWhyItRanks(result, details),
     rankingLimits: buildRankingLimits(result, details),
+    separateAssessmentNotes: buildRankingLimits(result, details),
     changeLevers: buildChangeLevers(result, details),
     exclusionControl,
     calibrationFlags: [
@@ -6371,7 +6402,7 @@ function subScoreExplanation(key, state, detail = {}, job = {}, result = {}) {
   if (key === "training" && detail.statusHint === "short") return "Une marche de formation courte pourrait changer la faisabilité.";
   if (key === "training" && detail.statusHint === "long") return "L’accès semble demander une marche de formation plus longue.";
   if (key === "skills" && toArray(detail.weakSkills).length) return "Certaines compétences utiles ont été signalées comme faibles.";
-  if (key === "market" && detail.isEstimated) return "Le marché est estimatif ou à confirmer : il éclaire la piste mais pèse peu dans le classement.";
+  if (key === "market" && detail.isEstimated) return "Le marché est estimatif ou à confirmer : il éclaire la piste sans effet sur le rang.";
   return `${scoreLabel(key)} : niveau ${diagnosticStateLabel(state)} dans l'analyse actuelle.`;
 }
 
@@ -6406,18 +6437,12 @@ function subScoreLimits(key, detail = {}, job = {}) {
 }
 
 function buildWhyItRanks(result = {}, details = {}) {
-  const reasons = [];
-  if (details.core?.level === "core") reasons.push(`le secteur ${details.core.primarySectorLabel} est au cœur du profil`);
-  if (details.core?.level === "compatible") reasons.push(`le secteur ${details.core.primarySectorLabel} est compatible avec plusieurs signaux`);
-  if ((result.scores?.skills || 0) >= 15) reasons.push("les compétences déclarées créent un signal favorable");
-  if ((result.scores?.constraints || 0) >= 18 && details.constraint?.confirmedCompatibleCount > 0 && details.constraint?.unknownCount <= details.constraint?.confirmedCompatibleCount) reasons.push("des données explicites confirment plusieurs compatibilités de contraintes");
-  if ((result.scores?.training || 0) >= 15) reasons.push("l’accès formation semble proche du profil actuel");
-  if ((result.scores?.values || 0) >= 10) reasons.push("les envies ou valeurs rejoignent cette direction");
-  if ((result.scores?.context || 0) >= 7) reasons.push("le cadre de travail correspond à plusieurs préférences");
-  if (details.market?.marketDiscriminant && ["top_local", "strong_local", "high"].includes(effectiveMarketOfferSignal(details.market))) reasons.push("le volume observé ou la présence territoriale est élevé");
-  if (!reasons.length && result.status !== "excluded_for_now") reasons.push("aucune incompatibilité forte n’a été confirmée");
-  if (details.skill?.unlinkedOfficialSkills) reasons.push("le score compétences reste volontairement neutre car les liens métier-compétence manquent");
-  return unique(reasons).slice(0, 6);
+  const reasons = toArray(result.personalFitReasons).length
+    ? result.personalFitReasons
+    : result.resultInterpretation?.strongestSignals;
+  return unique(toArray(reasons)).slice(0, 6).concat(
+    reasons?.length ? [] : ["L’accord personnel repose sur les aspirations, les valeurs, le contexte souhaité et les réalités quotidiennes renseignées."]
+  ).slice(0, 6);
 }
 
 function buildRankingLimits(result = {}, details = {}) {
@@ -9043,8 +9068,25 @@ function personalFitCandidateScore(result = {}) {
   return Number.isFinite(score) ? score : 0;
 }
 
+function personalFitCandidateTieBreakScore(result = {}) {
+  const score = Number(result.personalFitTieBreakScore ?? result.personalFitScore ?? 0);
+  return Number.isFinite(score) ? score : 0;
+}
+
+function comparePersonalFitVectors(a = {}, b = {}) {
+  const left = toArray(a.personalFitTieBreakVector);
+  const right = toArray(b.personalFitTieBreakVector);
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const difference = Number(right[index] || 0) - Number(left[index] || 0);
+    if (difference) return difference;
+  }
+  return 0;
+}
+
 function comparePersonalFitCandidates(a = {}, b = {}) {
   return personalFitCandidateScore(b) - personalFitCandidateScore(a) ||
+    personalFitCandidateTieBreakScore(b) - personalFitCandidateTieBreakScore(a) ||
+    comparePersonalFitVectors(a, b) ||
     String(a.romeCode || a.job?.romeCode || a.jobId || "").localeCompare(String(b.romeCode || b.job?.romeCode || b.jobId || ""), "fr");
 }
 
@@ -9093,7 +9135,9 @@ function diversifyTopResults(results) {
         jobId: bestUnselected.jobId,
         romeCode: bestUnselected.romeCode || bestUnselected.job?.romeCode || "",
         title: bestUnselected.title,
-        selectionScore: scoreOf(bestUnselected)
+        selectionScore: scoreOf(bestUnselected),
+        personalFitTieBreakScore: personalFitCandidateTieBreakScore(bestUnselected),
+        tieBreakReason: comparePersonalFitVectors(entry.result, bestUnselected) ? "semantic_personal_fit_components" : "deterministic_rome_code"
       } : null,
       qualitativeRole: role,
       diagnostic: entry.result.diagnostic ? {
@@ -9113,7 +9157,8 @@ function diversifyTopResults(results) {
       jobId: entry.result.jobId,
       romeCode: entry.result.romeCode || entry.result.job?.romeCode || "",
       title: entry.result.title,
-      selectionScore: scoreOf(entry.result)
+      selectionScore: scoreOf(entry.result),
+      personalFitTieBreakScore: personalFitCandidateTieBreakScore(entry.result)
     }));
   const shortfallReason = selected.length < 5
     ? `Seulement ${selected.length} direction(s) atteignent le plancher d’accord ${Math.round(relevanceThreshold)}/100 sans exclusion ni contradiction avec le profil.`
@@ -10550,11 +10595,11 @@ function renderSemanticResultCompartments(result = {}, job = result.job || findJ
     <div class="summary-box semantic-result-compartments">
       <h3>Pourquoi ce métier correspond</h3>
       <ul class="compact-list">${personalReasons.map(item => `<li>${h(item)}</li>`).join("") || "<li>Accord personnel à préciser.</li>"}</ul>
-      <h3>Tes appuis actuels</h3>
+      <h3>Tes appuis actuels, sans effet sur le rang</h3>
       <p>${skillEvidence.slice(0, 8).map(h).join(", ") || "Aucun appui n’a encore été identifié dans la boussole ; cela ne signifie pas qu’il est absent."}</p>
-      <h3>Chemin d’accès</h3>
+      <h3>Chemin d’accès, sans effet sur le rang</h3>
       <p><strong>${h(result.accessStatusLabel || access.accessStatusLabel || "Accès à vérifier")}</strong>${routes.length ? ` · ${routes.slice(0, 4).map(h).join(" · ")}` : " · voie non identifiée"}${credentials.length ? ` · obligations : ${credentials.slice(0, 4).map(h).join(", ")}` : ""}</p>
-      <h3>Marché par territoire</h3>
+      <h3>Marché par territoire, sans effet sur le rang</h3>
       <ul class="compact-list">${marketRows || "<li>Données marché non identifiées.</li>"}</ul>
       ${exclusionReasons.length ? `<h3>Pourquoi cette piste est mise à part</h3><ul class="compact-list">${exclusionReasons.map(item => `<li>${h(item)}</li>`).join("")}</ul>` : ""}
     </div>`;
@@ -10613,7 +10658,7 @@ function renderDetailedJobDetails(result = {}) {
 function renderEssentialWhyBlock(result = {}) {
   const positives = take(result.personalFitReasons, 4).map(humanEvidenceText);
   return `
-    <h3>Pourquoi ce métier ressort</h3>
+    <h3>Raisons du classement par accord personnel</h3>
     <ul class="compact-list">${positives.map(item => `<li>${h(item)}</li>`).join("") || "<li>Piste à vérifier avec le terrain.</li>"}</ul>`;
 }
 
@@ -10758,7 +10803,8 @@ function renderResultDiagnostic(result = {}) {
   return `
     <div class="summary-box">
       <h3>Diagnostic du résultat</h3>
-      <p class="field-help">Intention : ${h(diagnostic.engineIntentLabel || ENGINE_INTENTS.balanced)} · Pondération : ${h(diagnostic.weightMode === "custom" ? "personnalisée" : "automatique")} · Origine : ${h(engineWeightsOriginText(diagnostic.weightOrigin))}.</p>
+      <p class="field-help">Accord personnel : ${h(diagnostic.personalFitScore ?? "?")}/100 · score fin interne ${h(diagnostic.personalFitTieBreakScore ?? "?")} · départage fondé uniquement sur aspiration, valeurs, contexte souhaité et réalités quotidiennes.</p>
+      <p class="field-help">Les autres indicateurs techniques ci-dessous décrivent les appuis, l’accès, le Marché ou l’ancien composite ; ils ne sont pas des causes du rang actuel.</p>
       <div class="score-grid">
         ${subScores.map(item => `<div class="score-line"><strong>${h(item.label)}</strong>${h(item.score)}/${h(item.max)} · ${h(item.stateLabel)}</div>`).join("")}
       </div>
@@ -10770,12 +10816,20 @@ function renderResultDiagnostic(result = {}) {
       <ul class="compact-list">
         ${subScores.map(item => `<li><strong>${h(item.label)} :</strong> ${h(item.explanation)}${toArray(item.positiveSignals).length ? ` Signal(s) positif(s) : ${toArray(item.positiveSignals).slice(0, 3).map(h).join(", ")}.` : ""}${toArray(item.limits).length ? ` Limite(s) : ${toArray(item.limits).slice(0, 3).map(h).join(", ")}.` : ""}</li>`).join("")}
       </ul>
-      <h3>Pourquoi ce métier ressort</h3>
+      <h3>Raisons du classement par accord personnel</h3>
       <ul class="compact-list">${list(diagnostic.whyItRanks)}</ul>
-      <h3>Ce qui l’empêche d’être mieux classé</h3>
-      <ul class="compact-list">${list(diagnostic.rankingLimits)}</ul>
-      <h3>Ce qui pourrait changer le résultat</h3>
+      <h3>Appuis identifiés, sans effet sur le rang</h3>
+      <ul class="compact-list">${list(toArray(diagnostic.skillStates?.strong))}</ul>
+      <h3>Chemin d’accès, sans effet sur le rang</h3>
+      <ul class="compact-list">${list(toArray(diagnostic.trainingFeasibility?.accessPaths).map(item => item.label || item.pathLabel || item))}</ul>
+      <h3>Marché, sans effet sur le rang</h3>
+      <p class="field-help">${h(diagnostic.marketReliability?.marketInterpretationLabel || "Contexte marché à vérifier")} · ${h(diagnostic.marketReliability?.territoryLabel || "territoire non précisé")}.</p>
+      <h3>Points d’attention séparés, sans effet sur le rang</h3>
+      <ul class="compact-list">${list(diagnostic.separateAssessmentNotes || diagnostic.rankingLimits)}</ul>
+      <h3>Actions pouvant améliorer les appuis ou la faisabilité, sans modifier l’accord personnel</h3>
       <ul class="compact-list">${list(diagnostic.changeLevers)}</ul>
+      <h3>Ancien composite, conservé pour comparaison</h3>
+      <p class="field-help">${h(Math.round(diagnostic.legacyCompositeScore ?? 0))}/100 · indicateur historique sans effet sur le Top 5 actuel.</p>
       <h3>Compétences manquantes non pénalisantes</h3>
       <ul class="compact-list">${list(diagnostic.missingNonPenalizingSkills)}</ul>
       <h3>États des compétences</h3>
@@ -11290,7 +11344,7 @@ function renderSettingsPage() {
     </section>
     <section class="results-section print-section">
       <h2>Préférences du moteur</h2>
-      <p>Les pondérations restent locales et servent seulement au classement explicable. L’intention propose une base automatique ; les curseurs permettent ensuite de personnaliser.</p>
+      <p>Ces réglages historiques alimentent les indicateurs secondaires et l’ancien composite de diagnostic. Le Top 5 actuel reste classé uniquement par accord personnel ; compétences acquises, formation et Marché sont affichés séparément, sans effet sur le rang.</p>
       <div class="form-grid">
         ${selectField("Niveau d’information", "displayMode", App.state.displayMode || "essential", [["essential", "Utilisateur"], ["detailed", "Accompagnateur"], ["diagnostic", "Vérification"]]).replace('data-field="displayMode"', 'data-display-mode')}
         ${selectField("Intention de recherche", "engineIntent", App.state.profile.engineIntent || "balanced", Object.entries(ENGINE_INTENTS))}
@@ -11299,7 +11353,7 @@ function renderSettingsPage() {
         ${selectField("Objectif marché", "marketPreference.goal", App.state.profile.marketPreference?.goal || "balanced", Object.entries(MARKET_GOAL_LABELS))}
         <div class="summary-box">
           <strong>Mode actuel : ${h(engineWeightsOriginLabel(App.state.profile))}</strong>
-          <p class="field-help">Total actuel : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Le marché peut compter davantage si vous le demandez, mais son poids réel est limité quand les statistiques territoriales sont absentes ou seulement estimatives.</p>
+          <p class="field-help">Total historique : ${Object.values(getEffectiveCriterionWeights(App.state.profile)).reduce((sum, value) => sum + value, 0)}. Ces valeurs permettent une comparaison diagnostique ; elles ne modifient ni le représentant d’une direction ni l’ordre du Top 5.</p>
         </div>
       </div>
       <div class="form-grid">
@@ -11914,8 +11968,9 @@ function renderDataPage() {
       <h2>Comptes et couverture</h2>
       <div class="metric-grid">
         ${metric("Métiers actifs", summary.jobs ?? toArray(dataset.jobs).length)}
-        ${metric(isCurated ? "Compétences locales" : "Compétences empaquetées", isCurated ? summary.skills : generatedSummary.rawSkillsCount)}
-        ${metric(isCurated ? "Compétences utilisées" : "Compétences filtrées", generatedSummary.filteredSkillsCount)}
+        ${metric(isCurated ? "Compétences locales" : "Compétences empaquetées", isCurated ? summary.skills : generatedSummary.packagedSkillsCount)}
+        ${metric(isCurated ? "Compétences utilisées" : "Compétences actives après normalisation", generatedSummary.activeSkillsCount)}
+        ${!isCurated ? metric("Entrées brutes avant filtrage", generatedSummary.rawSkillsCount) : ""}
         ${metric("Compétences liées", generatedSummary.linkedSkillsCount)}
         ${metric("Liaisons du moteur", toArray(dataset.skillsEngine).length || "non chargé")}
         ${metric("Compétences directement comparables au profil", generatedSummary.matchableSkillsCount)}
@@ -11945,8 +12000,9 @@ function renderDataPage() {
         <li>Domaines ROME représentés : ${h(generatedSummary.domainLabel)}</li>
         <li>Formations : ${h(generatedSummary.trainingsLabel)}</li>
         <li>Certifications : ${h(generatedSummary.certificationsLabel)}</li>
-        <li>${isCurated ? "Compétences locales" : "Compétences brutes ROME"} : ${h(isCurated ? summary.skills : generatedSummary.rawSkillsCount)}${!isCurated && !generatedSummary.rawSkillsLoadedInActiveApp ? " (rapport de génération, non chargé dans le corpus compact actif)" : ""}</li>
-        <li>${isCurated ? "Compétences utilisées" : "Compétences filtrées"} : ${h(generatedSummary.filteredSkillsCount)}</li>
+        <li>${isCurated ? "Compétences locales" : "Compétences empaquetées"} : ${h(isCurated ? summary.skills : generatedSummary.packagedSkillsCount)}</li>
+        <li>${isCurated ? "Compétences utilisées" : "Compétences actives après normalisation"} : ${h(generatedSummary.activeSkillsCount)}</li>
+        ${!isCurated ? `<li>Entrées brutes avant filtrage : ${h(generatedSummary.rawSkillsCount)} (rapport de génération, non chargées comme compétences actives).</li>` : ""}
         <li>Compétences liées aux métiers : ${h(generatedSummary.linkedSkillsCount)}</li>
         <li>Compétences matchables profil : ${h(generatedSummary.matchableSkillsCount)}</li>
         <li>Contextes globaux : ${h(generatedSummary.globalContextsCount)}</li>
@@ -12066,6 +12122,8 @@ function getGeneratedRomeSummary(dataset, report = {}, manifest = {}) {
     rawSkillsLoadedInActiveApp,
     rawSkillsCountInGenerationReport,
     rawSkillsCount: rawSkillsLoadedInActiveApp ? toArray(dataset.rawSkills).length : rawSkillsCountInGenerationReport,
+    packagedSkillsCount: Number(App.state.activeRuntimeDescriptor?.runtime?.expectedCounts?.skills ?? toArray(dataset.skills).length),
+    activeSkillsCount: toArray(dataset.skills).length,
     filteredSkillsCount: summary.filteredSkills ?? completeness.skills?.filteredCount ?? (legacyHugeSkillCount ? 0 : (summary.skills || 0)),
     linkedSkillsCount: summary.linkedSkills ?? completeness.skills?.linkedCount ?? linkedFromJobs,
     matchableSkillsCount: summary.matchableSkills ?? completeness.skills?.matchableCount ?? toArray(dataset.matchableSkills).length,
@@ -14342,7 +14400,7 @@ function calculateIntentComparison(intent, currentResults = App.state.results) {
   const comparedRank = new Map(comparedTop.map((item, index) => [item.jobId, index + 1]));
   const rising = comparedTop.filter(item => !currentRank.has(item.jobId) || comparedRank.get(item.jobId) < currentRank.get(item.jobId)).slice(0, 4);
   const falling = currentTop.filter(item => !comparedRank.has(item.jobId) || comparedRank.get(item.jobId) > currentRank.get(item.jobId)).slice(0, 4);
-  const marketNote = ["quickEmployment", "localTension"].includes(intent) ? " Le marché pèse davantage, mais reste indiqué comme estimatif si les données locales ne départagent pas les métiers." : "";
+  const marketNote = ["quickEmployment", "localTension"].includes(intent) ? " Le Marché est davantage détaillé dans les indicateurs secondaires, sans effet sur le rang actuel." : "";
   const value = {
     currentTop,
     comparedTop,
@@ -14496,12 +14554,12 @@ function renderSkillReviewActions(result = {}) {
   if (!skills.length) return "";
   const selected = new Set(toArray(App.state.profile?.skills));
   const rows = skills.slice(0, 10).map(skill => {
-    return checkboxTag("skills", skill.id, skill.label, "compétence qui peut limiter le classement", selected.has(skill.id));
+    return checkboxTag("skills", skill.id, skill.label, "appui à reconnaître, sans effet sur le rang d’accord personnel", selected.has(skill.id));
   }).join("");
   return `
     <div class="summary-box">
-      <h3>Compétences qui peuvent changer ce résultat</h3>
-      <p class="field-help">Ces compétences viennent de la limite affichée plus haut. Cochez seulement celles que vous savez réellement faire ou que vous reconnaissez dans votre expérience.</p>
+      <h3>Appuis à préciser, sans effet sur le rang</h3>
+      <p class="field-help">Cochez seulement les compétences que vous savez réellement mobiliser. Elles précisent vos appuis actuels sans modifier l’accord personnel.</p>
       <div class="tag-grid skill-family-grid">${rows}</div>
     </div>`;
 }
@@ -15459,6 +15517,9 @@ function prepareCompactResultsForExport(results = {}) {
     title: result.title,
     globalScore: result.globalScore,
     personalFitScore: result.personalFitScore ?? null,
+    personalFitTieBreakScore: result.personalFitTieBreakScore ?? result.personalFitScore ?? null,
+    personalFitTieBreakVector: toArray(result.personalFitTieBreakVector),
+    personalFitComponents: result.personalFitComponents || null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
     marketInfluence: result.marketInfluence || null,
@@ -15599,6 +15660,9 @@ function buildResultDiagnosticExport(results = App.state.results) {
     globalScore: result.globalScore,
     rawGlobalScore: result.rawGlobalScore,
     personalFitScore: result.personalFitScore ?? null,
+    personalFitTieBreakScore: result.personalFitTieBreakScore ?? result.personalFitScore ?? null,
+    personalFitTieBreakVector: toArray(result.personalFitTieBreakVector),
+    personalFitComponents: result.personalFitComponents || null,
     feasibilityScore: result.feasibilityScore ?? null,
     marketOpportunityLevel: result.marketOpportunityLevel || "unknown",
     marketInfluence: result.marketInfluence || null,
@@ -15688,7 +15752,7 @@ function resultsToMarkdown(results) {
   ];
   topResults.forEach((result, index) => {
     const market = result.scoreDetails?.market || {};
-    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Correspondance personnelle : ${Math.round(result.personalFitScore ?? result.globalScore)}/100`, `- Faisabilité : ${Math.round(result.feasibilityScore ?? 0)}/100`, `- Composite diagnostic : ${Math.round(result.legacyCompositeScore ?? result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance : ${result.dataReliability || "à vérifier"}`, `- Pourquoi cette piste correspond : ${toArray(result.personalFitReasons).slice(0, 3).join(" ; ")}`, `- Appuis actuels : ${toArray(result.skillsReadinessEvidence).slice(0, 5).map(getSkillLabel).join(", ") || "non identifiés"}`, `- Chemin d’accès : ${result.accessStatusLabel || "à vérifier"}${toArray(result.namedRoutes).length ? ` · ${toArray(result.namedRoutes).slice(0, 3).join(" · ")}` : ""}`, `- Marché : ${marketSourceLevelLabel(market.sourceLevel)} · ${market.territoryLabel || "territoire non précisé"} · signal ${marketLabel(effectiveMarketOfferSignal(market))}`, `- Points d’attention : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
+    linesOut.push(``, `### ${index + 1}. ${result.title}`, `- Code : ${result.romeCode || "n/a"}`, `- Correspondance personnelle : ${Math.round(result.personalFitScore ?? result.globalScore)}/100`, `- Score fin de départage personnel : ${result.personalFitTieBreakScore ?? result.personalFitScore ?? result.globalScore}`, `- Raisons du classement par accord personnel : ${toArray(result.personalFitReasons).slice(0, 3).join(" ; ")}`, `- Appuis actuels, sans effet sur le rang : ${toArray(result.skillsReadinessEvidence).slice(0, 5).map(getSkillLabel).join(", ") || "non identifiés"}`, `- Chemin d’accès, sans effet sur le rang : ${result.accessStatusLabel || "à vérifier"}${toArray(result.namedRoutes).length ? ` · ${toArray(result.namedRoutes).slice(0, 3).join(" · ")}` : ""}`, `- Marché, sans effet sur le rang : ${marketSourceLevelLabel(market.sourceLevel)} · ${market.territoryLabel || "territoire non précisé"} · signal ${marketLabel(effectiveMarketOfferSignal(market))}`, `- Ancien composite, conservé pour comparaison : ${Math.round(result.legacyCompositeScore ?? result.globalScore)}/100`, `- Statut : ${statusLabel(result.status)}`, `- Confiance des données : ${result.dataReliability || "à vérifier"}`, `- Points d’attention séparés : ${result.negativeReasons.slice(0, 3).join(" ; ")}`);
   });
   if (mainResults.length) {
     linesOut.push(``, `## Autres pistes principales`);

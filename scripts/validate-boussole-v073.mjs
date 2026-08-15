@@ -318,12 +318,14 @@ function buildLegacyWarningReview(report = {}) {
 
 function validateTop5ThemeContract(app) {
   const failures = [];
-  const make = ({ id, code, title, score, status = "possible_now", confidence = 80, feasibility = 80 }) => ({
+  const make = ({ id, code, title, score, fineScore = score, tieBreakVector = [score, score, score, score], status = "possible_now", confidence = 80, feasibility = 80 }) => ({
     jobId: id,
     romeCode: code,
     title,
     globalScore: score,
     personalFitScore: score,
+    personalFitTieBreakScore: fineScore,
+    personalFitTieBreakVector: tieBreakVector,
     selectionScore: score,
     confidenceScore: confidence,
     feasibilityScore: feasibility,
@@ -368,8 +370,8 @@ function validateTop5ThemeContract(app) {
   const selectionIdentity = output => output.top5.map(item => `${item.top5ThemeId}:${item.romeCode || item.job?.romeCode}`);
   if (canonicalSha256(selectionIdentity(first)) !== canonicalSha256(selectionIdentity(mutated))) failures.push("top5:secondary_dimensions_changed_selection");
   const tied = [
-    make({ id: "tie-a", code: "G1203", title: "Animation A", score: 80, confidence: 0, feasibility: 0 }),
-    make({ id: "tie-b", code: "G1235", title: "Animation B", score: 80, confidence: 100, feasibility: 100 })
+    make({ id: "tie-a", code: "G1203", title: "Animation A", score: 80, fineScore: 80.1, tieBreakVector: [80, 70, 70, 70], confidence: 0, feasibility: 0 }),
+    make({ id: "tie-b", code: "G1235", title: "Animation B", score: 80, fineScore: 80.4, tieBreakVector: [80, 75, 70, 70], confidence: 100, feasibility: 100 })
   ];
   const tieFirst = app.diversifyTopResults(tied).top5[0];
   const tieInverted = app.diversifyTopResults(tied.slice().reverse().map(item => ({
@@ -380,7 +382,10 @@ function validateTop5ThemeContract(app) {
     accessStatus: item.jobId === "tie-a" ? "direct_or_near_direct" : "long_path",
     marketOpportunityLevel: item.jobId === "tie-a" ? "very_favorable" : "zero"
   }))).top5[0];
-  if (tieFirst?.romeCode !== "G1203" || tieInverted?.romeCode !== "G1203") failures.push("top5:equal_score_tie_break_depends_on_secondary_data");
+  if (tieFirst?.romeCode !== "G1235" || tieInverted?.romeCode !== "G1235") failures.push("top5:semantic_fine_tie_break_depends_on_secondary_data");
+  const exactTie = tied.map(item => ({ ...item, personalFitTieBreakScore: 80, personalFitTieBreakVector: [80, 70, 70, 70] }));
+  const exactTieRepresentative = app.diversifyTopResults(exactTie.slice().reverse()).top5[0];
+  if (exactTieRepresentative?.romeCode !== "G1203") failures.push("top5:exact_semantic_tie_not_resolved_by_rome_code");
   const narrow = app.diversifyTopResults(input.slice(0, 4));
   if (narrow.top5.length >= 5 || !narrow.top5ShortfallReason) failures.push("top5:honest_shortfall_missing");
   return {
@@ -390,7 +395,9 @@ function validateTop5ThemeContract(app) {
     themes,
     representatives: first.top5.map(item => ({ jobId: item.jobId, themeId: item.top5ThemeId, score: item.selectionScore })),
     secondaryMutationStable: canonicalSha256(selectionIdentity(first)) === canonicalSha256(selectionIdentity(mutated)),
-    equalScoreRepresentative: tieFirst?.romeCode || null,
+    semanticTieRepresentative: tieFirst?.romeCode || null,
+    exactSemanticTieRepresentative: exactTieRepresentative?.romeCode || null,
+    tieBreakEvidence: tied.map(item => ({ romeCode: item.romeCode, displayedScore: item.personalFitScore, fineScore: item.personalFitTieBreakScore, vector: item.personalFitTieBreakVector })),
     failures
   };
 }
@@ -440,6 +447,8 @@ function validatePersonalFitInvariance(app) {
     ].sort((a, b) => String(a.direction).localeCompare(String(b.direction)));
     return {
       personalScores: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitScore]).sort(([a], [b]) => a.localeCompare(b))),
+      personalFineScores: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitTieBreakScore]).sort(([a], [b]) => a.localeCompare(b))),
+      personalTieBreakVectors: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitTieBreakVector]).sort(([a], [b]) => a.localeCompare(b))),
       personalReasons: Object.fromEntries(toArray(results.completeList).map(item => [item.romeCode || item.job?.romeCode, item.personalFitReasons]).sort(([a], [b]) => a.localeCompare(b))),
       representatives,
       topDirections: toArray(results.top5).map(item => item.top5ThemeId),
@@ -461,8 +470,10 @@ function validatePersonalFitInvariance(app) {
   const compact = app.prepareCompactResultsForExport(baselineResults);
   if (toArray(compact.top5).some(item => !Array.isArray(item.personalFitReasons) || !Object.hasOwn(item, "skillsReadinessEvidence") || !Object.hasOwn(item, "accessEvidence") || !Object.hasOwn(item, "marketSummaryByTerritory"))) failures.push("personal-invariance:compact_export_compartments");
   const markdown = app.resultsToMarkdown(baselineResults);
-  if (!/Pourquoi cette piste correspond/.test(markdown) || !/Appuis actuels/.test(markdown) || !/Chemin d’accès/.test(markdown) || !/Marché/.test(markdown)) failures.push("personal-invariance:markdown_export_compartments");
-  for (const key of ["personalScores", "personalReasons", "representatives", "topDirections", "topCodes"]) {
+  if (!/Raisons du classement par accord personnel/.test(markdown) || !/Appuis actuels, sans effet sur le rang/.test(markdown) || !/Chemin d’accès, sans effet sur le rang/.test(markdown) || !/Marché, sans effet sur le rang/.test(markdown)) failures.push("personal-invariance:markdown_export_compartments");
+  const markdownRankingReasons = markdown.split("\n").filter(line => line.startsWith("- Raisons du classement par accord personnel :"));
+  if (!markdownRankingReasons.length || markdownRankingReasons.some(line => forbiddenPersonalReason.test(line))) failures.push("personal-invariance:markdown_ranking_reason_boundary");
+  for (const key of ["personalScores", "personalFineScores", "personalTieBreakVectors", "personalReasons", "representatives", "topDirections", "topCodes"]) {
     if (canonicalSha256(baseline[key]) !== canonicalSha256(acquired[key])) failures.push(`personal-invariance:acquired_${key}`);
   }
   const changedSkills = toArray(baselineResults.completeList).some((item, index) => canonicalSha256({
@@ -517,7 +528,7 @@ function validatePersonalFitInvariance(app) {
     resetCaches();
   }
   const secondary = snapshot(secondaryResults);
-  for (const key of ["personalScores", "personalReasons", "representatives", "topDirections", "topCodes"]) {
+  for (const key of ["personalScores", "personalFineScores", "personalTieBreakVectors", "personalReasons", "representatives", "topDirections", "topCodes"]) {
     if (canonicalSha256(baseline[key]) !== canonicalSha256(secondary[key])) failures.push(`personal-invariance:access_market_${key}`);
   }
   const changedMarket = toArray(baselineResults.completeList).some((item, index) => canonicalSha256(item.marketSummaryByTerritory) !== canonicalSha256(secondaryResults.completeList[index]?.marketSummaryByTerritory));
@@ -916,7 +927,18 @@ export function validateCedricScenario(app, envelope = null) {
       accessPaths: result.scoreDetails?.training?.accessFeasibility?.accessPaths || []
     } : null];
   }));
-  const top5 = results.top5.map(result => ({ romeCode: result.job?.romeCode || result.romeCode, title: result.title, score: result.globalScore, status: result.status, top5ThemeId: result.top5ThemeId, top5ThemeLabel: result.top5ThemeLabel, mainReason: result.resultInterpretation?.mainReason || result.positiveReasons?.[0] || null }));
+  const top5 = results.top5.map(result => ({
+    romeCode: result.job?.romeCode || result.romeCode,
+    title: result.title,
+    displayedScore: result.personalFitScore,
+    fineScore: result.personalFitTieBreakScore,
+    tieBreakVector: result.personalFitTieBreakVector,
+    status: result.status,
+    top5ThemeId: result.top5ThemeId,
+    top5ThemeLabel: result.top5ThemeLabel,
+    mainSemanticReason: result.personalFitReasons?.[0] || null,
+    bestUnselectedSameDirection: result.top5BestUnselectedCandidate || null
+  }));
   const constraintUnknownAsStrong = results.completeList.filter(result => {
     const detail = result.scoreDetails?.constraints || {};
     return detail.activeCount > 0 && detail.unknownCount === detail.activeCount && result.scores?.constraints >= 14;
