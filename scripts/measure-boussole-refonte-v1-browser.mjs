@@ -66,6 +66,49 @@ try {
   const noProfileSearch = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.search("G1202")`);
   assert("exploration_without_profile", noProfileSearch.includes("G1202"), noProfileSearch);
 
+  const importPolicy = await evaluate(cdp, `(() => {
+    const legacy = {
+      profileName: "Profil ancien",
+      ageRange: "36_45",
+      diplomaLevel: 5,
+      trainingOpenness: "short",
+      trainingFamilies: ["animation", "famille-invisible"],
+      interests: ["creer", "interet-invisible"],
+      values: ["service", "valeur-invisible"],
+      preferredWorkStyles: ["creative", "style-invisible"],
+      preferredEnvironments: ["quiet", "cadre-invisible"],
+      customSkills: ["Animation d'atelier"],
+      skills: ["skill-hidden-sentinel"],
+      skillSignals: [{ id: "hidden-signal" }],
+      needForMeaning: "high",
+      contextPreferences: { hidden: "important" },
+      criterionWeights: { skills: 99, training: 0, constraints: 0, values: 0, context: 0, market: 1 },
+      futureHiddenField: { sentinel: true },
+      jobExperiences: [{ id: "legacy-exp", jobId: "rome-G1202", romeCode: "G1202", title: "Animateur / Animatrice d'atelier artistique ou ludique", durationYears: 3, isCurrent: false, recency: "old", masteryLevel: "expert", enjoymentLevel: "love", wantsToContinue: "yes" }]
+    };
+    const profile = window.__BOUSSOLE_REFONTE_TEST_API__.importProfileData(legacy);
+    const state = window.__BOUSSOLE_REFONTE_TEST_API__.getState();
+    return { profile, state };
+  })()`);
+  assert("legacy_visible_fields_imported", importPolicy.profile.profileName === "Profil ancien" && importPolicy.profile.interests.includes("creer") && importPolicy.profile.customSkills.includes("Animation d'atelier"), importPolicy.profile);
+  assert("legacy_hidden_fields_ignored", importPolicy.profile.skills.length === 0 && importPolicy.profile.skillSignals.length === 0 && importPolicy.profile.needForMeaning === "not_specified" && !importPolicy.profile.futureHiddenField && !importPolicy.profile.interests.includes("interet-invisible") && importPolicy.profile.jobExperiences[0]?.masteryLevel === "autonomous" && importPolicy.profile.jobExperiences[0]?.enjoymentLevel === "neutral" && importPolicy.profile.jobExperiences[0]?.wantsToContinue === "maybe", importPolicy.profile);
+  assert("legacy_snapshot_separate_from_active_profile", importPolicy.state.importedSnapshot === true, importPolicy.state);
+
+  const clearedProfile = await evaluate(cdp, `(() => {
+    localStorage.setItem("boussole_pro_profile_v1", JSON.stringify({ app: "boussole-pro-profile", data: { profileName: "Profil classique rémanent", skills: ["skill-must-not-return"], interests: ["proteger"] } }));
+    window.confirm = () => true;
+    RefonteApp.clearLocalData();
+    return { state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(), stored: JSON.parse(localStorage.getItem("luuma_boussole_pro_refonte_v1") || "null") };
+  })()`);
+  assert("clear_removes_active_and_imported_profile", clearedProfile.state.profileExists === false && clearedProfile.state.importedSnapshot === false && clearedProfile.stored?.profile === null && clearedProfile.stored?.importedSnapshot === null, clearedProfile);
+  assert("clear_records_legacy_import_dismissal", clearedProfile.state.legacyImportDismissed === true && clearedProfile.stored?.legacyImportDismissed === true, clearedProfile);
+  await navigate(cdp, httpUrl);
+  await waitForApi(cdp);
+  const afterReload = await evaluate(cdp, `(() => ({ state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(), profile: window.__BOUSSOLE_REFONTE_TEST_API__.getProfile() }))()`);
+  assert("cleared_profile_not_reimported_from_classic", afterReload.state.profileExists === false && afterReload.state.importedSnapshot === false && afterReload.profile.skills.length === 0, afterReload);
+  const newProfile = await evaluate(cdp, `(() => ({ profile: window.__BOUSSOLE_REFONTE_TEST_API__.startNewProfile(), state: window.__BOUSSOLE_REFONTE_TEST_API__.getState() }))()`);
+  assert("new_profile_starts_without_legacy_data", newProfile.state.profileExists === true && newProfile.state.importedSnapshot === false && newProfile.profile.skills.length === 0 && newProfile.profile.skillSignals.length === 0 && newProfile.profile.needForMeaning === "not_specified", newProfile);
+
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.loadDemoProfile()`);
   await waitForSelector(cdp, ".top-list li");
   const calculation = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.calculate()`);

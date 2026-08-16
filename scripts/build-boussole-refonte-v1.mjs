@@ -61,8 +61,8 @@ const manifest = buildManifest({
 
 const payload = {
   schemaVersion: "1.0.0",
-  appVersion: "1.0.0-prototype",
-  buildId: "20260816-interface-refonte-v1-01",
+  appVersion: "1.0.0-prototype.1",
+  buildId: "20260816-interface-refonte-v1-02",
   generatedAt: manifest.generatedAt,
   classicReference: manifest.classicReference,
   dataset: prototypeDataset,

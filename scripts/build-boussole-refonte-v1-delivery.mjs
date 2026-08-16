@@ -28,21 +28,21 @@ const profileInventory = {
   reportKind: "boussole_refonte_v1_profile_field_inventory",
   generatedAt,
   sourceProfileVersion: manifest.profile,
-  policy: "Les champs utilises par le moteur sont normalises. Tout instantane classique importe est conserve integralement dans migration.legacyProfileSnapshot lors de l'export.",
+  policy: "Seuls les champs visibles et editables dans la refonte alimentent le profil actif. L'instantane classique complet est conserve separement dans migration.legacyProfileSnapshot et ne participe pas aux calculs.",
   steps: {
     "Départ": ["profileName", "ageRange", "searchHorizon"],
-    "Formation": ["diplomaLevel", "diplomas", "certifications", "trainingOpenness", "trainingBudget", "trainingFamilies", "desiredTrainingFamilies", "driverLicenses"],
-    "Contraintes": ["constraints", "excludedDomains", "mobility", "availability"],
-    "Compétences": ["skills", "skillSignals", "softSkills", "customSkills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "jobExperiences"],
-    "Envies": ["interests", "values", "needForMeaning", "needForSecurity", "needForAutonomy"],
-    "Environnements": ["preferredWorkStyles", "preferredEnvironments", "contextPreferences", "preferredSchedule"],
+    "Formation": ["diplomaLevel", "trainingOpenness", "trainingFamilies"],
+    "Contraintes": ["constraints visibles", "mobility.radiusKm"],
+    "Compétences": ["customSkills", "jobExperiences : métier, durée et poste actuel"],
+    "Envies": ["interests", "values"],
+    "Environnements": ["preferredWorkStyles", "preferredEnvironments"],
     "Validation": ["profile summary and versioned export"],
     "Première lecture": ["calculated portrait and results entry"]
   },
   handling: {
     directlyEditableInPrototype: ["profileName", "ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingFamilies", "constraints", "mobility.radiusKm", "customSkills", "jobExperiences", "interests", "values", "preferredWorkStyles", "preferredEnvironments"],
-    consumedAndPreservedFromClassic: ["diplomas", "certifications", "trainingBudget", "desiredTrainingFamilies", "driverLicenses", "excludedDomains", "availability", "skills", "skillSignals", "softSkills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "needForMeaning", "needForSecurity", "needForAutonomy", "contextPreferences", "preferredSchedule", "marketPreference"],
-    unknownFields: "preserved_in_legacy_profile_snapshot"
+    preservedButExcludedFromActiveProfile: ["diplomas", "certifications", "trainingBudget", "desiredTrainingFamilies", "driverLicenses", "excludedDomains", "availability", "skills", "skillSignals", "softSkills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "needForMeaning", "needForSecurity", "needForAutonomy", "contextPreferences", "preferredSchedule", "marketPreference", "custom criterionWeights", "hidden job experience preferences"],
+    unknownFields: "preserved_in_legacy_profile_snapshot_only"
   }
 };
 
@@ -53,7 +53,10 @@ const migrationReport = {
   tests: {
     classicEnvelopeAccepted: true,
     normalizedByClassicAdapter: true,
-    unknownFieldsPreserved: engineReport.profileMigration.unknownTopLevelFieldsPreserved,
+    unknownFieldsPreservedInSeparateSnapshot: browserReport.assertions.some(row => row.name === "legacy_snapshot_separate_from_active_profile" && row.status === "passed"),
+    hiddenFieldsExcludedFromActiveProfile: browserReport.assertions.some(row => row.name === "legacy_hidden_fields_ignored" && row.status === "passed"),
+    clearedProfileDoesNotReimportClassicData: browserReport.assertions.some(row => row.name === "cleared_profile_not_reimported_from_classic" && row.status === "passed"),
+    newProfileStartsWithoutLegacyData: browserReport.assertions.some(row => row.name === "new_profile_starts_without_legacy_data" && row.status === "passed"),
     rawSnapshotPreservedForExport: true,
     localAutosave: browserReport.assertions.some(row => row.name === "local_storage_saved" && row.status === "passed"),
     inputFocusPreserved: browserReport.assertions.some(row => row.name === "experience_years_keep_focus" && row.status === "passed"),
@@ -118,7 +121,7 @@ Le prototype fonctionnel est livré sur 100 métiers ROME réels stratifiés. La
 | Exploration | OK | sans profil, 17 directions, recherche code/intitulé/appellation, filtres repliés et pagination |
 | Ma liste et fiche | OK | persistance, comparaison de 2 métiers, export, dialogue plein écran, focus initial et restauré |
 | Invariants moteur | OK | 25 assertions : déterminisme et invariance aux compétences, diplôme et Marché |
-| Accessibilité | OK dans le périmètre automatisé | 33 scénarios Chromium ; noms accessibles, focus, cibles, repères, SVG alternatif, mouvement réduit ; réception lecteur d'écran conseillée |
+| Accessibilité et parcours | OK dans le périmètre automatisé | ${browserReport.assertions.length} assertions Chromium ; import filtré, effacement durable, noms accessibles, focus, cibles, repères, SVG alternatif, mouvement réduit ; réception lecteur d'écran conseillée |
 | Bureau et mobile | OK | 1440x1000 et 390x844, aucun débordement horizontal, 10 captures |
 | Hors ligne | OK | démarrage \`file://\` avec 100 métiers embarqués et réseau Chromium désactivé |
 | Git | branche \`${branch}\`, base \`${head}\`, commit de refonte non créé | Conformément à AGENTS.md, aucun commit automatique ; les fichiers fonctionnels sont prêts à être relus et commités séparément des rapports |
@@ -130,7 +133,7 @@ Le prototype fonctionnel est livré sur 100 métiers ROME réels stratifiés. La
 - Le passage à 1 000 métiers et le constructeur de données allégées ne font pas partie de cette mission.
 - Les données d'accès et de Marché inconnues restent affichées comme telles.
 - Les contrôles RGAA/WCAG automatisés ne remplacent pas une réception humaine avec lecteur d'écran.
-- Certains champs classiques sont préservés et consommés par le moteur mais ne sont pas encore directement éditables dans le prototype ; l'inventaire les distingue explicitement.
+- Les champs classiques non gérés par l'interface sont conservés uniquement dans l'instantané d'archive de l'export. Ils ne sont ni injectés dans le profil actif ni pris en compte par le moteur de la refonte.
 `;
 await writeFile(auditPath, audit);
 
