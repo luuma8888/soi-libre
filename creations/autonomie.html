@@ -3,628 +3,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Joyeuse Autonomie Collective — Préparation matérielle, provisions & paix</title>
+  <meta name="application-name" content="Joyeuse Autonomie Collective" />
+  <meta name="version" content="v0.2.alpha" />
+  <meta name="description" content="Outil local de planification collective pour l’eau, les provisions, le matériel, les actions et la paix du lieu." />
+  <title>Joyeuse Autonomie Collective v0.2.alpha — Préparation matérielle, provisions & paix</title>
   <style>
-    /*
-      Joyeuse Autonomie Collective — application web autonome.
-      Architecture simple et maintenable :
-      - CSS : thème, responsive, impression
-      - JS : état applicatif, modèle de données, calculs, rendu, stockage local
-      - Aucun CDN, aucune ressource externe, utilisable hors-ligne.
-    */
-    :root {
-      --bg: #f8f5ec;
-      --surface: #ffffff;
-      --surface-2: #fffaf0;
-      --text: #26332f;
-      --muted: #66746f;
-      --line: #ded8c6;
-      --primary: #6fae9a;
-      --primary-2: #d9f0e7;
-      --accent: #f3c987;
-      --accent-2: #fff1d6;
-      --danger: #c8665a;
-      --ok: #659c68;
-      --shadow: 0 14px 36px rgba(55, 70, 58, 0.11);
-      --radius: 22px;
-      --radius-sm: 14px;
-      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    [data-theme="dark"] {
-      --bg: #121a19;
-      --surface: #1b2826;
-      --surface-2: #22322f;
-      --text: #eef7f2;
-      --muted: #b8c8c2;
-      --line: #344743;
-      --primary: #91d8c5;
-      --primary-2: #1f443d;
-      --accent: #f2cf92;
-      --accent-2: #42351f;
-      --danger: #ef9b8d;
-      --ok: #a7d9a1;
-      --shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: var(--font);
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(111,174,154,0.24), transparent 32rem),
-        radial-gradient(circle at 88% 10%, rgba(243,201,135,0.22), transparent 27rem),
-        var(--bg);
-      line-height: 1.5;
-    }
-
-    button, input, select, textarea { font: inherit; }
-
-    button {
-      border: 0;
-      border-radius: 999px;
-      padding: 0.72rem 1rem;
-      cursor: pointer;
-      background: var(--primary-2);
-      color: var(--text);
-      transition: transform .15s ease, opacity .15s ease, background .15s ease;
-    }
-
-    button:hover { transform: translateY(-1px); opacity: .94; }
-    button.primary { background: var(--primary); color: #0f211c; font-weight: 800; }
-    button.accent { background: var(--accent); color: #24180c; font-weight: 800; }
-    button.ghost { background: transparent; border: 1px solid var(--line); }
-    button.danger { background: rgba(200,102,90,.16); color: var(--danger); border: 1px solid rgba(200,102,90,.32); }
-
-    .button-like {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: .45rem;
-      border-radius: 999px;
-      padding: .72rem 1rem;
-      cursor: pointer;
-      background: var(--primary-2);
-      color: var(--text);
-      font-weight: 800;
-      border: 1px solid var(--line);
-    }
-    .button-like input {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface);
-      color: var(--text);
-      padding: .76rem .82rem;
-      outline: none;
-    }
-
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(111,174,154,.18); }
-    textarea { min-height: 100px; resize: vertical; }
-
-    .app-shell { max-width: 1240px; margin: 0 auto; padding: 1rem; }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 1rem;
-      align-items: stretch;
-      margin: .8rem 0 1rem;
-    }
-
-    .hero-card, .panel, .metric, .item-card, .action-card {
-      background: rgba(255,255,255,.76);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    [data-theme="dark"] .hero-card,
-    [data-theme="dark"] .panel,
-    [data-theme="dark"] .metric,
-    [data-theme="dark"] .item-card,
-    [data-theme="dark"] .action-card {
-      background: rgba(27,40,38,.86);
-    }
-
-    .hero-card { padding: 1.4rem; position: relative; overflow: hidden; }
-    .hero-card:after {
-      content: "";
-      position: absolute;
-      inset: auto -5rem -6rem auto;
-      width: 18rem;
-      height: 18rem;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(243,201,135,.35), transparent 70%);
-      pointer-events: none;
-    }
-
-    .kicker {
-      display: inline-flex;
-      gap: .45rem;
-      align-items: center;
-      font-size: .86rem;
-      color: var(--muted);
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      padding: .38rem .68rem;
-      border-radius: 999px;
-    }
-
-    h1 { margin: .8rem 0 .6rem; font-size: clamp(2rem, 5vw, 4.2rem); line-height: .96; letter-spacing: -.05em; }
-    h2 { margin: 0 0 .9rem; font-size: 1.35rem; letter-spacing: -.02em; }
-    h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
-    p { margin: .45rem 0; }
-    small, .muted { color: var(--muted); }
-
-    .hero-actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
-
-    .quick-form {
-      display: grid;
-      gap: .8rem;
-      padding: 1rem;
-    }
-
-    .field { display: grid; gap: .35rem; }
-    .field label { color: var(--muted); font-size: .9rem; font-weight: 700; }
-    .field .hint { font-size: .78rem; color: var(--muted); }
-    .range-field {
-      display: grid;
-      gap: .45rem;
-      padding: .78rem;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
-      background: var(--surface);
-    }
-    .range-head { display: flex; justify-content: space-between; gap: .75rem; align-items: baseline; }
-    .range-head label { color: var(--muted); font-size: .9rem; font-weight: 800; }
-    .range-value { font-weight: 900; white-space: nowrap; }
-    input[type="range"] {
-      padding: 0;
-      border: 0;
-      background: transparent;
-      accent-color: var(--primary);
-    }
-
-    .grid { display: grid; gap: 1rem; }
-    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .grid.auto { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-
-    .panel { padding: 1rem; margin-bottom: 1rem; }
-    .metric { padding: 1rem; }
-    .metric strong { display: block; font-size: 1.7rem; letter-spacing: -.04em; }
-    .metric span { display: block; color: var(--muted); font-size: .9rem; }
-
-    .tabs {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      display: flex;
-      gap: .45rem;
-      overflow-x: auto;
-      padding: .7rem 0;
-      background: linear-gradient(to bottom, var(--bg), rgba(248,245,236,.86));
-      backdrop-filter: blur(12px);
-      scrollbar-width: thin;
-    }
-
-    [data-theme="dark"] .tabs { background: linear-gradient(to bottom, var(--bg), rgba(18,26,25,.86)); }
-
-    .tab-btn { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); color: var(--muted); }
-    .tab-btn.active { background: var(--primary); color: #0d211b; border-color: transparent; font-weight: 900; }
-
-    .tab { display: none; animation: rise .22s ease-out; }
-    .tab.active { display: block; }
-
-    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-    .progress-wrap { display: grid; gap: .5rem; }
-    .progress-bar { height: 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: inherit; transition: width .25s ease; }
-
-    .priority-pill, .category-pill, .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: .25rem;
-      border-radius: 999px;
-      padding: .18rem .52rem;
-      font-size: .78rem;
-      font-weight: 800;
-      border: 1px solid var(--line);
-      white-space: nowrap;
-    }
-
-    .priority-1 { background: rgba(200,102,90,.15); color: var(--danger); }
-    .priority-2 { background: var(--accent-2); color: #835b18; }
-    .priority-3 { background: var(--primary-2); color: var(--text); }
-    .priority-4 { background: rgba(140,140,180,.14); color: var(--muted); }
-
-    .controls { display: grid; grid-template-columns: 1.5fr .85fr .85fr .85fr; gap: .7rem; margin: .7rem 0 1rem; }
-
-    .item-list, .action-list { display: grid; gap: .72rem; }
-    .item-card { padding: .85rem; display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: start; }
-    .item-card input[type="checkbox"], .action-card input[type="checkbox"] { width: 1.2rem; height: 1.2rem; margin-top: .2rem; accent-color: var(--primary); }
-    .check-label { display: inline-flex; align-items: flex-start; }
-    .item-title { font-weight: 900; margin-bottom: .22rem; }
-    .item-meta { display: flex; flex-wrap: wrap; gap: .35rem; margin: .35rem 0; }
-    .qty { font-weight: 900; font-size: 1.05rem; text-align: right; }
-
-    .action-card { padding: .9rem; display: grid; grid-template-columns: auto 1fr; gap: .75rem; }
-    .action-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem; }
-    .notes { margin-top: .45rem; font-size: .9rem; color: var(--muted); }
-
-    .stepper { display: grid; gap: .9rem; }
-    .step {
-      display: grid;
-      grid-template-columns: 3.1rem 1fr;
-      gap: .75rem;
-      align-items: start;
-      padding: .95rem;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--line);
-      background: var(--surface);
-    }
-    .step-num { width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 50%; background: var(--primary-2); font-weight: 1000; }
-    .step.done .step-num { background: var(--primary); color: #10251f; }
-    .step ul { margin: .4rem 0 0; padding-left: 1.2rem; }
-
-    .table-wrap { overflow: auto; border-radius: var(--radius-sm); border: 1px solid var(--line); }
-    table { width: 100%; border-collapse: collapse; background: var(--surface); min-width: 760px; }
-    th, td { padding: .72rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-    th { background: var(--surface-2); font-size: .84rem; color: var(--muted); }
-    tr:last-child td { border-bottom: 0; }
-
-    .peace-card {
-      border-radius: var(--radius);
-      background:
-        linear-gradient(135deg, rgba(111,174,154,.22), rgba(243,201,135,.24)),
-        var(--surface);
-      border: 1px solid var(--line);
-      padding: 1rem;
-      min-height: 100%;
-    }
-
-    .quote {
-      font-size: 1.18rem;
-      line-height: 1.35;
-      font-weight: 850;
-      letter-spacing: -.02em;
-    }
-
-    .tag-cloud { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .7rem; }
-    .tag { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: .35rem .65rem; font-size: .86rem; }
-
-    .footer-note { color: var(--muted); font-size: .86rem; padding: 1.2rem 0 2rem; }
-
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 1rem;
-      transform: translateX(-50%) translateY(1rem);
-      background: var(--text);
-      color: var(--bg);
-      padding: .75rem 1rem;
-      border-radius: 999px;
-      opacity: 0;
-      pointer-events: none;
-      transition: all .2s ease;
-      z-index: 100;
-      box-shadow: var(--shadow);
-    }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    .hidden { display: none !important; }
-
-    @media (max-width: 860px) {
-      .hero, .grid.two, .grid.three, .grid.four { grid-template-columns: 1fr; }
-      .controls { grid-template-columns: 1fr; }
-      .item-card { grid-template-columns: auto 1fr; }
-      .qty { grid-column: 2; text-align: left; }
-      .app-shell { padding: .75rem; }
-    }
-
-    @media print {
-      :root { --bg: #ffffff; --surface: #ffffff; --text: #111111; --muted: #444444; --line: #cccccc; --shadow: none; }
-      @page { margin: 10mm; }
-      body { background: #ffffff !important; color: #111111; font-size: 8.8pt; line-height: 1.22; }
-      .tabs, .hero-actions, .controls, button, .no-print, input[type="file"] { display: none !important; }
-      .hero { display: block; margin: 0 0 4mm; }
-      .hero-card, .panel, .metric, .item-card, .action-card, .step, .peace-card {
-        box-shadow: none !important;
-        break-inside: avoid;
-        page-break-inside: avoid;
-        border-color: #cccccc;
-        border-radius: 4px;
-      }
-      body.print-all .tab {
-        display: block !important;
-        visibility: visible !important;
-        animation: none !important;
-        break-before: auto;
-        page-break-before: auto;
-      }
-      body.print-all .tab:first-of-type {
-        break-before: auto;
-        page-break-before: auto;
-      }
-      body.print-current .tab { display: none !important; }
-      body.print-current .tab.active {
-        display: block !important;
-        visibility: visible !important;
-        animation: none !important;
-      }
-      .app-shell { max-width: none; padding: 0; }
-      h1 { font-size: 20pt; margin: 0 0 2mm; line-height: 1; letter-spacing: 0; }
-      h2 { font-size: 11pt; margin: 0 0 2mm; }
-      h3 { font-size: 9.5pt; margin: 0 0 1mm; }
-      p { margin: 1mm 0; }
-      .hero-card, .panel, .metric, .item-card, .action-card, .step, .peace-card { padding: 2.2mm; margin-bottom: 2.2mm; }
-      .hero-card:after, .kicker, .toast, .footer-note { display: none !important; }
-      .grid.two, .grid.three, .grid.four, .grid.auto, #metrics, #foodNotes, #peaceSpaces {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 2mm !important;
-      }
-      #metrics { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-      .metric strong { font-size: 12pt; letter-spacing: 0; }
-      .metric span { font-size: 7.8pt; }
-      .progress-bar { height: 7px; }
-      .priority-pill, .category-pill, .status-pill, .tag { padding: .5mm 1.4mm; font-size: 7.2pt; border-radius: 3px; }
-      .tag-cloud { gap: 1mm; margin-top: 1mm; }
-      .item-list, .action-list, .stepper { gap: 1.6mm; }
-      .item-card { grid-template-columns: 4mm 1fr 34mm; gap: 2mm; }
-      .action-card, .step { grid-template-columns: 4mm 1fr; gap: 2mm; }
-      .item-card input[type="checkbox"], .action-card input[type="checkbox"] { width: 3mm; height: 3mm; margin-top: .4mm; }
-      .item-title { margin-bottom: .5mm; }
-      .item-meta { gap: 1mm; margin: 1mm 0; }
-      .qty { font-size: 8.5pt; text-align: right; }
-      .notes, .muted { font-size: 8pt; }
-      .step-num { width: 5mm; height: 5mm; font-size: 8pt; }
-      .step ul { margin: 1mm 0 0; padding-left: 4mm; }
-      .quote { font-size: 10pt; line-height: 1.2; letter-spacing: 0; }
-      table { min-width: 0; font-size: 8pt; }
-      th, td { padding: 1.4mm; }
-      a { color: #111111; text-decoration: none; }
-    }
-  </style>
+:root{
+  color-scheme:light;
+  --bg:#f4f7f2;--surface:#fff;--soft:#f8faf7;--soft2:#edf5ef;--text:#20312b;--strong:#13221e;--muted:#66746e;
+  --line:#dbe4dc;--line2:#cad7cd;--green:#285f4f;--green2:#3f7768;--mint:#dcefe5;--amber:#d79b42;--amber2:#f8ead2;
+  --rose:#984b47;--rose2:#f5e2df;--violet:#5d607f;--violet2:#e9e8f1;--ok:#33715d;
+  --shadow:0 14px 38px rgba(34,64,53,.08);--shadow-sm:0 2px 8px rgba(34,64,53,.05);
+  --r:20px;--rs:14px;--sidebar:248px;--font:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+[data-theme="dark"]{
+  color-scheme:dark;--bg:#111815;--surface:#19241f;--soft:#1e2b26;--soft2:#21382f;--text:#e7efeb;--strong:#f5faf7;--muted:#aab7b1;
+  --line:#31453c;--line2:#40594e;--green:#8fc7b1;--green2:#a7d5c2;--mint:#203d32;--amber:#e0b56c;--amber2:#44361e;
+  --rose:#e19c97;--rose2:#422c2a;--violet:#bbb9d7;--violet2:#303045;--ok:#87cbb2;--shadow:0 18px 42px rgba(0,0,0,.22)
+}
+[data-theme="dark"] .btn.primary,[data-theme="dark"] .brand-mark{color:#10261e}[data-theme="dark"] .priority-2,[data-theme="dark"] .orb{color:var(--amber)}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;min-width:320px;background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.5}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 8% 0%,rgba(170,215,192,.25),transparent 29rem),radial-gradient(circle at 96% 12%,rgba(248,234,210,.42),transparent 25rem)}
+button,input,select,textarea{font:inherit}button{color:inherit}svg{display:block}.icon{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.skip{position:fixed;left:1rem;top:-4rem;z-index:1000;padding:.7rem 1rem;background:var(--strong);color:var(--surface);border-radius:10px}.skip:focus{top:1rem}
+.topbar{position:sticky;top:0;z-index:40;height:64px;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 clamp(1rem,3vw,2rem);border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:.72rem;min-width:0}.brand-mark{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:var(--green);color:#fff}.brand-copy{display:grid;min-width:0}.brand-copy strong{font-size:.95rem;line-height:1.1;color:var(--strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand-copy span{font-size:.72rem;color:var(--muted)}
+.top-actions,.actions{display:flex;align-items:center;flex-wrap:wrap;gap:.48rem}.offline{display:inline-flex;align-items:center;gap:.35rem;color:var(--ok);font-size:.72rem;font-weight:850}.offline:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.btn,.button-like{min-height:42px;border:1px solid var(--line);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:.48rem;padding:.62rem .85rem;cursor:pointer;background:var(--surface);box-shadow:var(--shadow-sm);font-weight:740}.btn:hover,.button-like:hover{border-color:var(--line2);transform:translateY(-1px)}.btn.primary{background:var(--green);border-color:var(--green);color:#fff;box-shadow:none}.btn.secondary{background:var(--mint);border-color:transparent;color:var(--green);box-shadow:none}.btn.ghost{background:transparent;box-shadow:none}.btn.danger{background:var(--rose2);border-color:color-mix(in srgb,var(--rose) 20%,var(--line));color:var(--rose);box-shadow:none}.button-like{position:relative}.button-like input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,.button-like:focus-within{outline:3px solid color-mix(in srgb,var(--green) 35%,transparent);outline-offset:2px}
+.shell{width:min(100%,1480px);margin:0 auto;padding:1.25rem clamp(.8rem,2vw,1.5rem) 2.4rem;display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);gap:1.35rem}.sidebar{position:sticky;top:82px;align-self:start;display:grid;gap:1rem}
+.scenario-mini,.nav,.panel,.peace-card{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow-sm)}.scenario-mini{padding:1rem}.scenario-mini-head{display:flex;align-items:center;gap:.65rem}.orb{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--amber2);color:#a46b22}.scenario-mini p{margin:.18rem 0;color:var(--muted);font-size:.82rem}
+.progress{height:8px;overflow:hidden;border:1px solid var(--line);border-radius:999px;background:var(--soft)}.progress>span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--green),var(--amber));transition:width .2s ease}.progress-caption{display:flex;justify-content:space-between;gap:.5rem;margin-top:.4rem;color:var(--muted);font-size:.74rem}
+.nav{display:grid;gap:.28rem;padding:.42rem}.nav-btn{min-height:44px;width:100%;display:flex;align-items:center;gap:.7rem;padding:.63rem .72rem;border:0;border-radius:12px;background:transparent;color:var(--muted);font-weight:760;text-align:left;cursor:pointer}.nav-btn:hover{background:var(--soft);color:var(--text)}.nav-btn.active{background:var(--mint);color:var(--green)}.nav-dot{width:6px;height:6px;margin-left:auto;border-radius:50%;background:currentColor;opacity:0}.nav-btn.active .nav-dot{opacity:1}.sidebar-note{padding:0 .35rem;color:var(--muted);font-size:.75rem}
+.main{min-width:0}.scenario-bar{margin-bottom:1.15rem;border:1px solid var(--line);border-radius:28px;background:var(--surface);box-shadow:var(--shadow);overflow:hidden}.scenario-primary{display:grid;grid-template-columns:1.05fr 1fr 1.25fr auto;gap:.72rem;align-items:end;padding:1rem}.scenario-more{border-top:1px solid var(--line)}.scenario-more summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:1rem;padding:.72rem 1rem;color:var(--muted);font-size:.84rem;font-weight:760}.scenario-more summary::-webkit-details-marker{display:none}.scenario-more[open] summary{background:var(--soft);color:var(--text)}.scenario-secondary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.72rem;padding:1rem;background:var(--soft)}
+.field{display:grid;gap:.34rem;min-width:0}.field label{font-size:.78rem;font-weight:820;color:var(--muted)}.hint{font-size:.72rem;color:var(--muted)}input,select,textarea{width:100%;min-height:44px;padding:.65rem .74rem;border:1px solid var(--line2);border-radius:12px;background:var(--surface);color:var(--text);outline:none}input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 14%,transparent)}textarea{min-height:130px;resize:vertical}
+.tab{display:none;animation:rise .18s ease both}.tab.active{display:block}@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.page-head{display:flex;justify-content:space-between;gap:1.2rem;align-items:flex-start;margin-bottom:1.05rem}.eyebrow{margin:0 0 .35rem;color:var(--green);font-size:.76rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}h1,h2,h3,p{overflow-wrap:anywhere}h1{margin:0;color:var(--strong);font-size:clamp(1.8rem,4vw,3rem);line-height:1.03;letter-spacing:-.045em}h2{margin:0;color:var(--strong);font-size:1.18rem;letter-spacing:-.02em}h3{margin:0;color:var(--strong);font-size:1rem}p{margin:.45rem 0}.lede{max-width:72ch;color:var(--muted);font-size:.96rem}.page-actions{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+.grid{display:grid;gap:1rem}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.four{grid-template-columns:repeat(4,minmax(0,1fr))}.panel{padding:1rem}.panel-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.78rem}.panel-head p{margin:.22rem 0 0;color:var(--muted);font-size:.84rem}
+.dashboard-top{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:1rem;margin-bottom:1rem}.readiness{min-height:255px;display:grid;grid-template-columns:minmax(0,1fr) 178px;gap:1rem;align-items:center;padding:1.2rem;overflow:hidden;position:relative}.readiness:after{content:"";position:absolute;width:270px;height:270px;border-radius:50%;right:-120px;bottom:-150px;background:var(--mint);opacity:.72}.readiness-copy{position:relative;z-index:1}.readiness-copy .signal{display:inline-flex;align-items:center;gap:.4rem;color:var(--green);font-size:.78rem;font-weight:850}.readiness-copy h2{font-size:clamp(1.4rem,2.4vw,1.95rem);margin:.42rem 0}.ring-wrap{position:relative;width:165px;height:165px;z-index:1}.ring{width:100%;height:100%;transform:rotate(-90deg)}.ring-bg,.ring-val{fill:none;stroke-width:10}.ring-bg{stroke:var(--soft)}.ring-val{stroke:var(--green);stroke-linecap:round;transition:stroke-dashoffset .25s ease}.ring-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}.ring-center strong{display:block;font-size:1.9rem;color:var(--strong);letter-spacing:-.05em}.ring-center span{font-size:.72rem;color:var(--muted)}.next-card{display:grid;gap:.75rem;align-content:start}.next-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--amber2);color:#a46b22}.next-title{font-weight:850;color:var(--strong);font-size:1.08rem}.next-card p{color:var(--muted);font-size:.86rem}
+.metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.72rem;margin-bottom:1rem}.metric{min-height:118px;padding:.85rem;border:1px solid var(--line);border-radius:var(--rs);background:var(--surface);display:grid;grid-template-columns:auto 1fr;gap:.68rem;align-content:start}.metric-icon{width:35px;height:35px;border-radius:11px;display:grid;place-items:center;background:var(--soft2);color:var(--green)}.metric-body span{display:block;color:var(--muted);font-size:.73rem;font-weight:760}.metric-body strong{display:block;margin:.14rem 0;color:var(--strong);font-size:1.25rem;line-height:1.1}.metric-body small{display:block;color:var(--muted);font-size:.71rem}
+.vital-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.58rem}.vital{padding:.7rem;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.vital-top,.priority-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.45rem}.vital-name{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:820}.vital-pct{color:var(--muted);font-size:.73rem;font-weight:850}.priority-list{display:grid;gap:.68rem}.priority-row{display:grid;gap:.38rem}.pill,.tag{display:inline-flex;align-items:center;width:max-content;max-width:100%;border:1px solid var(--line);border-radius:999px;font-size:.7rem;font-weight:830}.pill{padding:.2rem .5rem}.tag{padding:.27rem .55rem;color:var(--muted);background:var(--soft)}.priority-1{background:var(--rose2);color:var(--rose)}.priority-2{background:var(--amber2);color:#835211}.priority-3{background:var(--mint);color:var(--green)}.priority-4{background:var(--violet2);color:var(--violet)}.category-pill{background:var(--soft);color:var(--muted)}.tag-cloud{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.65rem}
+.controls{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(3,minmax(140px,.7fr));gap:.58rem;margin:.8rem 0}.controls.action-controls{grid-template-columns:minmax(220px,1.5fr) repeat(2,minmax(140px,.7fr)) auto}.list-meta{display:flex;justify-content:space-between;gap:.8rem;margin:.55rem 0;color:var(--muted);font-size:.77rem}.item-list,.action-list{display:grid;gap:.55rem}.item-card,.action-card{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:.77rem}.item-card{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(125px,auto);gap:.72rem;align-items:start}.action-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.72rem;align-items:start}.item-card.done,.action-card.done{background:color-mix(in srgb,var(--mint) 35%,var(--surface))}.check input{width:20px;height:20px;min-height:0;margin:2px 0 0;accent-color:var(--green)}.item-title{font-weight:850;color:var(--strong)}.item-meta{display:flex;flex-wrap:wrap;gap:.34rem;margin:.3rem 0}.notes{color:var(--muted);font-size:.82rem}.qty{align-self:center;max-width:220px;padding:.5rem .62rem;border-radius:10px;background:var(--soft);font-size:.86rem;font-weight:850;text-align:right;color:var(--strong)}.item-actions{display:flex;gap:.35rem;margin-top:.45rem}.mini{min-height:32px;padding:.35rem .5rem;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--muted);font-size:.71rem;font-weight:800;cursor:pointer}.mini:hover{background:var(--soft);color:var(--text)}.empty{padding:1.8rem 1rem;border:1px dashed var(--line2);border-radius:14px;background:var(--soft);color:var(--muted);text-align:center}
+.stepper{position:relative;display:grid;gap:.68rem}.stepper:before{content:"";position:absolute;left:22px;top:28px;bottom:28px;width:2px;background:var(--line)}.step{position:relative;display:grid;grid-template-columns:46px minmax(0,1fr);gap:.72rem;padding:.8rem;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.step-num{position:relative;z-index:1;width:34px;height:34px;margin:1px auto 0;display:grid;place-items:center;border-radius:50%;border:2px solid var(--line2);background:var(--surface);color:var(--muted);font-weight:900}.step.done .step-num{background:var(--green);border-color:var(--green);color:#fff}.step.current{background:color-mix(in srgb,var(--amber2) 28%,var(--surface));border-color:color-mix(in srgb,var(--amber) 42%,var(--line))}.step ul{margin:.4rem 0 0;padding-left:1.08rem;color:var(--muted);font-size:.81rem}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}table{width:100%;border-collapse:collapse}th,td{padding:.72rem;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.81rem}th{background:var(--soft);color:var(--muted);font-size:.71rem}tr:last-child td{border-bottom:0}.food-summary{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;margin-bottom:.9rem}.food-bars{display:flex;align-items:flex-end;gap:5px;height:70px;min-width:170px}.food-bar{flex:1;min-width:10px;border-radius:5px 5px 2px 2px;background:var(--green);opacity:.82}
+.peace-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem;margin-bottom:1rem}.peace-card{padding:1.05rem}.peace-card.accent{background:linear-gradient(135deg,color-mix(in srgb,var(--mint) 68%,var(--surface)),var(--surface))}.quote{margin:.7rem 0;color:var(--strong);font-size:1.1rem;font-weight:790;line-height:1.4}.role-cloud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.42rem;margin-top:.65rem}.role{display:flex;align-items:center;gap:.42rem;padding:.5rem;border-radius:10px;background:var(--soft);color:var(--muted);font-size:.75rem;font-weight:730}
+.details{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}.details>summary{list-style:none;cursor:pointer;padding:1rem;display:flex;justify-content:space-between;gap:1rem;color:var(--strong);font-weight:850}.details>summary::-webkit-details-marker{display:none}.details[open]>summary{border-bottom:1px solid var(--line);background:var(--soft)}.details-body{padding:1rem}.range-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.62rem}.range-field{display:grid;gap:.4rem;padding:.72rem;border:1px solid var(--line);border-radius:12px;background:var(--soft)}.range-head{display:flex;justify-content:space-between;gap:.65rem;align-items:baseline}.range-head label{color:var(--muted);font-size:.75rem;font-weight:820}.range-value{color:var(--strong);font-size:.77rem;font-weight:900;white-space:nowrap}input[type=range]{min-height:20px;padding:0;border:0;background:transparent;box-shadow:none;accent-color:var(--green)}
+.settings-stack{display:grid;gap:1rem}.print-context{display:none}.print-context-title{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}.print-context-title strong{color:var(--strong);font-size:1rem}.print-context-title span{color:var(--muted);font-size:.74rem;font-weight:760}.print-context-scenario{margin-top:.28rem;color:var(--muted);font-size:.76rem}.toast{position:fixed;left:50%;bottom:1rem;z-index:100;transform:translate(-50%,20px);opacity:0;pointer-events:none;padding:.65rem .9rem;border-radius:11px;background:var(--strong);color:var(--surface);box-shadow:var(--shadow);font-size:.8rem;font-weight:760;transition:.18s ease}.toast.show{opacity:1;transform:translate(-50%,0)}.footer{margin-top:1.1rem;padding:1rem 0;color:var(--muted);font-size:.73rem;border-top:1px solid var(--line)}.hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+@media(max-width:1100px){:root{--sidebar:210px}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-top{grid-template-columns:1fr}.controls,.controls.action-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.topbar{height:58px;padding:0 .8rem}.brand-copy span,.top-actions .btn span{display:none}.shell{display:block;padding:.8rem .72rem 5.6rem}.sidebar{position:static}.scenario-mini,.sidebar-note{display:none}.nav{position:fixed;z-index:50;left:.5rem;right:.5rem;bottom:.5rem;grid-template-columns:repeat(7,1fr);gap:.1rem;padding:.35rem;border-radius:17px;box-shadow:0 14px 38px rgba(22,42,35,.22)}.nav-btn{min-height:50px;justify-content:center;flex-direction:column;gap:.15rem;padding:.3rem .1rem;font-size:.6rem}.nav-btn .icon{width:18px;height:18px}.nav-dot{display:none}.main{margin-top:.75rem}.scenario-primary{grid-template-columns:repeat(3,minmax(0,1fr))}.scenario-save{grid-column:1/-1}.page-head{display:block}.page-actions{justify-content:flex-start;margin-top:.7rem}.three,.four,.peace-hero{grid-template-columns:repeat(2,minmax(0,1fr))}.range-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.top-actions .btn:not(.primary){display:none}.brand-copy strong{max-width:190px}.scenario-primary{grid-template-columns:1fr 1fr}.scenario-primary .field:nth-child(3){grid-column:1/-1}.scenario-secondary{grid-template-columns:1fr 1fr}.scenario-secondary .field:first-child{grid-column:1/-1}.readiness{grid-template-columns:1fr;min-height:0}.ring-wrap{width:145px;height:145px}.metric-grid,.two,.three,.four,.peace-hero,.vital-grid{grid-template-columns:1fr}.controls,.controls.action-controls{grid-template-columns:1fr}.item-card{grid-template-columns:auto minmax(0,1fr)}.qty{grid-column:2;max-width:none;text-align:left}.action-card{grid-template-columns:auto minmax(0,1fr)}.action-card>.pill{grid-column:2}.food-summary{grid-template-columns:1fr}.table-wrap{overflow:visible;border:0;background:transparent}table,thead,tbody,tr,th,td{display:block;width:100%}thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}tbody{display:grid;gap:.5rem}tr{padding:.68rem;border:1px solid var(--line);border-radius:13px;background:var(--surface)}td{display:grid;grid-template-columns:110px minmax(0,1fr);gap:.5rem;padding:.27rem 0;border:0}td:before{content:attr(data-label);color:var(--muted);font-size:.69rem;font-weight:850}.role-cloud{grid-template-columns:1fr}.nav-btn span{display:none}}
+@media(max-width:390px){.scenario-primary,.scenario-secondary{grid-template-columns:1fr}.scenario-primary .field:nth-child(3),.scenario-secondary .field:first-child{grid-column:auto}.page-actions{display:grid;grid-template-columns:1fr}.page-actions .btn{width:100%}td{grid-template-columns:92px minmax(0,1fr)}}
+@media print{:root{--bg:#fff;--surface:#fff;--soft:#fff;--text:#111;--strong:#111;--muted:#444;--line:#ccc;--shadow:none}@page{margin:10mm}body{background:#fff!important;font-size:8.8pt}.topbar,.sidebar,.scenario-bar,.page-actions,.controls,.actions,.toast,.footer,button,.button-like,input[type=file]{display:none!important}.shell{display:block;width:auto;max-width:none;padding:0}.print-context{display:block!important;margin:0 0 4mm;padding:0 0 3mm;border-bottom:1px solid #bbb}.print-context-title strong{font-size:12pt}.print-context-title span,.print-context-scenario{font-size:8pt}.tab{animation:none!important}body.print-all .tab{display:block!important;margin-bottom:5mm}body.print-current .tab{display:none!important}body.print-current .tab.active{display:block!important}details.details:not([open])>.details-body{display:block!important}.details>summary{border-bottom:1px solid #ccc!important;background:#fff!important}.metric-grid{grid-template-columns:repeat(4,1fr)!important;gap:2mm}.dashboard-top,.two,.three,.four,.peace-hero{grid-template-columns:repeat(2,1fr)!important;gap:2mm}.readiness{grid-template-columns:1fr auto!important;min-height:0}.ring-wrap{width:90px;height:90px}.panel,.metric,.item-card,.action-card,.step,.peace-card,.details{box-shadow:none!important;break-inside:avoid;border-radius:4px}.item-card{grid-template-columns:4mm 1fr 35mm}.action-card{grid-template-columns:4mm 1fr auto}.table-wrap{overflow:visible}th,td{padding:1.4mm}}
+</style>
 </head>
+
 <body data-theme="light" class="print-current">
-  <div class="app-shell">
-    <header class="hero no-print-hero">
-      <section class="hero-card">
-        <div class="kicker">✦ Préparation collective, sobre, joyeuse et concrète</div>
-        <h1>Joyeuse Autonomie Collective</h1>
-        <p>Une application hors-ligne pour préparer le matériel, les provisions, les actions et l’harmonie d’un groupe vivant en autonomie temporaire.</p>
-        <p class="muted">Elle calcule des ordres de grandeur selon le nombre d’êtres, la durée d’autonomie et le niveau de préparation. Les quantités restent indicatives : elles servent à planifier, comparer, prioriser et ne pas oublier les fondations vitales.</p>
-        <div class="hero-actions">
-          <button class="primary" id="saveBtn">Sauvegarder</button>
-          <button class="accent" id="exportBtn">Exporter JSON</button>
-          <button class="ghost" id="printCurrentBtn">Imprimer l’onglet</button>
-          <button class="ghost" id="printAllBtn">Imprimer tout</button>
+<a class="skip" href="#mainContent">Aller au contenu</a>
+
+<svg class="sr-only" aria-hidden="true" width="0" height="0"><defs>
+<symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 4C12 4 5 8 5 15c0 3 2 5 5 5 7 0 10-8 10-16Z"/><path d="M4 21c3-6 7-10 13-13"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h3a3 3 0 0 0 3-3v-6a3 3 0 0 1 3-3"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="m4 7 8-4 8 4-8 4-8-4Z"/><path d="m4 7 8 4 8-4v10l-8 4-8-4V7Z"/><path d="M12 11v10"/></symbol>
+<symbol id="i-food" viewBox="0 0 24 24"><path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10"/><path d="M16 3v18M16 3c3 1 4 4 4 7h-4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 15a2 2 0 0 0 .4 2l.1.1-2.4 2.4-.1-.1a2 2 0 0 0-2-.4 2 2 0 0 0-1.2 1.8V21h-3.6v-.2A2 2 0 0 0 9 19a2 2 0 0 0-2 .4l-.1.1-2.4-2.4.1-.1A2 2 0 0 0 5 15a2 2 0 0 0-1.8-1.2H3v-3.6h.2A2 2 0 0 0 5 9a2 2 0 0 0-.4-2l-.1-.1 2.4-2.4.1.1A2 2 0 0 0 9 5a2 2 0 0 0 1.2-1.8V3h3.6v.2A2 2 0 0 0 15 5a2 2 0 0 0 2-.4l.1-.1 2.4 2.4-.1.1A2 2 0 0 0 19 9a2 2 0 0 0 1.8 1.2h.2v3.6h-.2A2 2 0 0 0 19 15Z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h12l2 2v16H5Z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"/></symbol>
+<symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2"/><path d="M6 14h12v7H6Z"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><path d="M4 5h16v16H4Z"/><path d="M8 3v4M16 3v4M4 10h16"/></symbol>
+<symbol id="i-water" viewBox="0 0 24 24"><path d="M12 3s6 6 6 11a6 6 0 0 1-12 0c0-5 6-11 6-11Z"/></symbol>
+<symbol id="i-shelter" viewBox="0 0 24 24"><path d="m3 12 9-8 9 8"/><path d="M6 10v10h12V10"/></symbol>
+<symbol id="i-health" viewBox="0 0 24 24"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7Z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></div><div class="brand-copy"><strong>Joyeuse Autonomie Collective</strong><span>Préparer la vie, sans perdre la joie · v0.2.alpha</span></div></div>
+    <div class="top-actions"><span class="offline">Hors ligne</span><button class="btn ghost" id="printCurrentBtn" type="button" aria-label="Imprimer la section courante" title="Imprimer la section courante"><svg class="icon" aria-hidden="true"><use href="#i-print"></use></svg><span>Imprimer</span></button><button class="btn primary" id="saveBtn" type="button" aria-label="Sauvegarder localement" title="Sauvegarder localement"><svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg><span>Sauvegarder</span></button></div>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Navigation de l’application">
+      <section class="scenario-mini"><div class="scenario-mini-head"><div class="orb"><svg class="icon" aria-hidden="true"><use href="#i-users"></use></svg></div><div><strong>Votre scénario</strong><p id="scenarioMiniText"></p></div></div><div style="margin-top:.8rem"><div class="progress"><span id="globalProgressMini"></span></div><div class="progress-caption"><span>Préparation visible</span><strong id="globalProgressMiniText">0%</strong></div></div></section>
+      <nav class="nav" role="tablist" aria-label="Sections principales"><button class="nav-btn tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="dashboard" aria-label="Vue d’ensemble" title="Vue d’ensemble" data-tab="dashboard" type="button"><svg class="icon" aria-hidden="true"><use href="#i-home"></use></svg><span>Vue d’ensemble</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-steps" role="tab" aria-selected="false" aria-controls="steps" aria-label="Chemin guidé" title="Chemin guidé" data-tab="steps" type="button"><svg class="icon" aria-hidden="true"><use href="#i-route"></use></svg><span>Chemin</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-materials" role="tab" aria-selected="false" aria-controls="materials" aria-label="Matériel" title="Matériel" data-tab="materials" type="button"><svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg><span>Matériel</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-food" role="tab" aria-selected="false" aria-controls="food" aria-label="Provisions" title="Provisions" data-tab="food" type="button"><svg class="icon" aria-hidden="true"><use href="#i-food"></use></svg><span>Provisions</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-actions" role="tab" aria-selected="false" aria-controls="actions" aria-label="Actions" title="Actions" data-tab="actions" type="button"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg><span>Actions</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-peace" role="tab" aria-selected="false" aria-controls="peace" aria-label="Joie et paix" title="Joie et paix" data-tab="peace" type="button"><svg class="icon" aria-hidden="true"><use href="#i-heart"></use></svg><span>Joie & paix</span><i class="nav-dot" aria-hidden="true"></i></button>
+<button class="nav-btn tab-btn" id="tab-settings" role="tab" aria-selected="false" aria-controls="settings" aria-label="Réglages" title="Réglages" data-tab="settings" type="button"><svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg><span>Réglages</span><i class="nav-dot" aria-hidden="true"></i></button></nav>
+      <div class="sidebar-note">Tout reste sur cet appareil. Aucun compte, aucun serveur, aucun appel réseau.</div>
+    </aside>
+    <main class="main" id="mainContent">
+      <section class="scenario-bar" aria-label="Contexte de préparation">
+        <div class="scenario-primary">
+          <div class="field"><label for="humans">Nombre d’êtres</label><input id="humans" type="number" min="1" max="2000" step="1"></div>
+          <div class="field"><label for="days">Durée d’autonomie</label><input id="days" type="number" min="1" max="1095" step="1"><span class="hint">6 mois ≈ 183 j · 1 an ≈ 365 j</span></div>
+          <div class="field"><label for="mode">Niveau de préparation</label><select id="mode"><option value="low">Petit budget</option><option value="balanced">Compromis réaliste</option><option value="ideal">Idéal robuste</option><option value="custom">Personnalisé</option></select></div>
+          <div class="scenario-save"><button class="btn secondary" id="saveScenarioBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>Enregistrer</button></div>
         </div>
+        <details class="scenario-more"><summary><span>Affiner : saison, enfants, fragilités</span><span aria-hidden="true">＋</span></summary><div class="scenario-secondary">
+          <div class="field"><label for="climate">Saison dominante</label><select id="climate"><option value="mixed">Mixte / inconnue</option><option value="cold">Froide / humide</option><option value="hot">Chaude / sèche</option></select></div>
+          <div class="field"><label for="children">Enfants</label><input id="children" type="number" min="0" max="1000" step="1"></div>
+          <div class="field"><label for="fragile">Anciens / fragilités</label><input id="fragile" type="number" min="0" max="1000" step="1"></div>
+        </div></details>
       </section>
 
-      <aside class="panel quick-form">
-        <h2>Paramètres rapides</h2>
-        <div class="grid two">
-          <div class="field">
-            <label for="humans">Nombre d’êtres</label>
-            <input id="humans" type="number" min="1" max="2000" step="1" />
-          </div>
-          <div class="field">
-            <label for="days">Durée d’autonomie</label>
-            <input id="days" type="number" min="1" max="1095" step="1" />
-            <div class="hint">En jours. 6 mois ≈ 183 jours, 1 an ≈ 365 jours.</div>
-          </div>
-        </div>
-        <div class="grid two">
-          <div class="field">
-            <label for="mode">Niveau de préparation</label>
-            <select id="mode">
-              <option value="low">Petit budget</option>
-              <option value="balanced">Compromis réaliste</option>
-              <option value="ideal">Idéal robuste</option>
-              <option value="custom">Personnalisé</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="climate">Saison dominante</label>
-            <select id="climate">
-              <option value="mixed">Mixte / inconnue</option>
-              <option value="cold">Froide / humide</option>
-              <option value="hot">Chaude / sèche</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid two">
-          <div class="field">
-            <label for="children">Enfants</label>
-            <input id="children" type="number" min="0" max="1000" step="1" />
-          </div>
-          <div class="field">
-            <label for="fragile">Anciens / fragilités</label>
-            <input id="fragile" type="number" min="0" max="1000" step="1" />
-          </div>
-        </div>
-      </aside>
-    </header>
-
-    <nav class="tabs" aria-label="Navigation principale">
-      <button class="tab-btn active" data-tab="dashboard">Tableau de bord</button>
-      <button class="tab-btn" data-tab="steps">Étapes guidées</button>
-      <button class="tab-btn" data-tab="materials">Matériel</button>
-      <button class="tab-btn" data-tab="food">Provisions</button>
-      <button class="tab-btn" data-tab="actions">Actions</button>
-      <button class="tab-btn" data-tab="peace">Joie & paix</button>
-      <button class="tab-btn" data-tab="settings">Paramètres</button>
-    </nav>
-
-    <main>
-      <section id="dashboard" class="tab active">
-        <div class="grid four" id="metrics"></div>
-        <div class="panel">
-          <h2>Avancement global</h2>
-          <div class="progress-wrap">
-            <div class="progress-bar"><div class="progress-fill" id="globalProgress"></div></div>
-            <p id="progressText" class="muted"></p>
-          </div>
-        </div>
-        <div class="grid two">
-          <div class="panel">
-            <h2>Priorités vitales</h2>
-            <div id="prioritySummary"></div>
-          </div>
-          <div class="panel">
-            <h2>Lecture rapide</h2>
-            <p id="quickReading"></p>
-            <div class="tag-cloud" id="warningTags"></div>
-          </div>
-        </div>
+      <section class="print-context" aria-hidden="true">
+        <div class="print-context-title"><strong>Joyeuse Autonomie Collective</strong><span id="printContextSection">Vue d’ensemble</span></div>
+        <div class="print-context-scenario" id="printContextScenario">Scénario de préparation</div>
       </section>
 
-      <section id="steps" class="tab">
-        <div class="panel">
-          <h2>Chemin d’installation prioritaire</h2>
-          <p class="muted">Cette séquence évite l’erreur classique : vouloir tout acheter avant d’avoir sécurisé l’eau, les toilettes, la cuisine et la paix collective.</p>
-          <div class="stepper" id="stepper"></div>
+      <section id="dashboard" class="tab active" role="tabpanel" aria-labelledby="tab-dashboard" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Vue d’ensemble</p><h1>Voir l’essentiel avant le détail</h1><p class="lede">Les besoins vitaux, l’avancement réel et la prochaine priorité dans une lecture claire. Les quantités restent des ordres de grandeur de planification.</p></div><div class="page-actions"><button class="btn secondary" type="button" data-jump="steps"><svg class="icon" aria-hidden="true"><use href="#i-route"></use></svg>Suivre le chemin</button><button class="btn ghost" type="button" data-jump="materials"><svg class="icon" aria-hidden="true"><use href="#i-box"></use></svg>Voir le matériel</button></div></header>
+        <div class="dashboard-top">
+          <article class="panel readiness"><div class="readiness-copy"><span class="signal"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg>Préparation visible</span><h2 id="readinessHeadline">Commencer par les fondations</h2><p id="quickReading" class="lede"></p><div class="tag-cloud" id="warningTags"></div></div><div class="ring-wrap"><svg class="ring" viewBox="0 0 110 110" aria-hidden="true"><circle class="ring-bg" cx="55" cy="55" r="46"/><circle class="ring-val" id="readinessRing" cx="55" cy="55" r="46"/></svg><div class="ring-center"><div><strong id="readinessPct">0%</strong><span id="readinessCount">0 / 0</span></div></div></div></article>
+          <article class="panel next-card"><div class="next-icon"><svg class="icon" aria-hidden="true"><use href="#i-route"></use></svg></div><div><p class="eyebrow">Prochaine marche</p><div class="next-title" id="nextStepTitle">Sécuriser l’eau</div><p id="nextStepText">Le chemin prioritaire commence par les fondations vitales.</p></div><button class="btn secondary" type="button" data-jump="steps">Ouvrir le chemin guidé</button></article>
         </div>
+        <div class="metric-grid" id="metrics"></div>
+        <div class="grid two"><section class="panel"><div class="panel-head"><div><h2>Les 6 piliers vitaux</h2><p>Progression des éléments matériels par domaine.</p></div></div><div class="vital-grid" id="vitalMap"></div></section><section class="panel"><div class="panel-head"><div><h2>Priorités matérielles</h2><p>Ce qui est acquis et ce qui reste à sécuriser.</p></div></div><div class="priority-list" id="prioritySummary"></div></section></div>
       </section>
 
-      <section id="materials" class="tab">
-        <div class="panel">
-          <h2>Liste matérielle calculée</h2>
-          <p class="muted">Coche ce qui est déjà acquis. Filtre par priorité ou catégorie pour avancer sans te perdre dans la forêt des “il faudrait aussi…”</p>
-          <div class="controls">
-            <input id="materialSearch" type="search" placeholder="Rechercher : eau, bâche, filtres…" />
-            <select id="materialPriority"><option value="all">Toutes priorités</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select>
-            <select id="materialCategory"><option value="all">Toutes catégories</option></select>
-            <select id="materialStatus"><option value="all">Tous statuts</option><option value="missing">À acquérir</option><option value="done">Acquis</option></select>
-          </div>
-          <div class="item-list" id="materialList"></div>
-        </div>
+      <section id="steps" class="tab" role="tabpanel" aria-labelledby="tab-steps" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Chemin d’installation</p><h1>Avancer dans le bon ordre</h1><p class="lede">Une séquence simple pour sécuriser d’abord l’eau, l’assainissement, le couchage, la nourriture et les soins.</p></div></header>
+        <section class="panel"><div class="panel-head"><div><h2>Les 9 étapes</h2><p id="stepProgressText"></p></div></div><div class="stepper" id="stepper"></div></section>
       </section>
 
-      <section id="food" class="tab">
-        <div class="panel">
-          <h2>Provisions indicatives</h2>
-          <p class="muted">Les volumes ci-dessous sont des bases de planification. Adapte selon l’âge, le climat, l’activité physique, les choix alimentaires et les productions du lieu.</p>
-          <div class="table-wrap"><table id="foodTable"></table></div>
-        </div>
-        <div class="panel">
-          <h2>Répartition pratique</h2>
-          <div id="foodNotes" class="grid three"></div>
-        </div>
+      <section id="materials" class="tab" role="tabpanel" aria-labelledby="tab-materials" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Matériel</p><h1>La liste calculée, sans la forêt des “il faudrait”</h1><p class="lede">Les quantités évoluent avec votre scénario. Cochez l’acquis, filtrez ce qui reste et ajoutez les besoins propres au lieu.</p></div><div class="page-actions"><button class="btn secondary" type="button" data-jump="settings" data-focus="customName"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg>Ajouter un besoin</button></div></header>
+        <section class="panel"><div class="controls">
+          <div class="field"><label for="materialSearch">Rechercher</label><input id="materialSearch" type="search" placeholder="Eau, bâche, filtres…"></div>
+          <div class="field"><label for="materialPriority">Priorité</label><select id="materialPriority"><option value="all">Toutes</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select></div>
+          <div class="field"><label for="materialCategory">Catégorie</label><select id="materialCategory"><option value="all">Toutes</option></select></div>
+          <div class="field"><label for="materialStatus">État</label><select id="materialStatus"><option value="all">Tous</option><option value="missing">À acquérir</option><option value="done">Acquis</option></select></div>
+        </div><div class="list-meta"><span id="materialCount"></span><span>Quantités indicatives</span></div><div class="item-list" id="materialList"></div></section>
       </section>
 
-      <section id="actions" class="tab">
-        <div class="panel">
-          <h2>Actions étape par étape</h2>
-          <p class="muted">Coche les actions accomplies. Le but : transformer l’angoisse vague en petits pas visibles.</p>
-          <div class="controls">
-            <input id="actionSearch" type="search" placeholder="Rechercher une action…" />
-            <select id="actionPriority"><option value="all">Toutes priorités</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select>
-            <select id="actionStatus"><option value="all">Tous statuts</option><option value="todo">À faire</option><option value="done">Fait</option></select>
-            <button id="resetChecksBtn" class="danger">Réinitialiser coches</button>
-          </div>
-          <div class="action-list" id="actionList"></div>
-        </div>
+      <section id="food" class="tab" role="tabpanel" aria-labelledby="tab-food" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Provisions</p><h1>Transformer la durée en volumes concrets</h1><p class="lede">Une base à adapter selon l’âge, le climat, l’activité physique, les régimes, allergies et productions du lieu.</p></div></header>
+        <section class="panel"><div class="food-summary"><div><h2>Réserve alimentaire indicative</h2><p class="lede" id="foodSummaryText"></p></div><div class="food-bars" id="foodStack" aria-hidden="true"></div></div><div class="table-wrap"><table id="foodTable"></table></div></section>
+        <section class="panel" style="margin-top:1rem"><div class="panel-head"><div><h2>Répartition pratique</h2><p>Les détails qui évitent qu’un stock théorique devienne impraticable.</p></div></div><div id="foodNotes" class="grid three"></div></section>
       </section>
 
-      <section id="peace" class="tab">
-        <div class="grid two">
-          <div class="peace-card">
-            <h2>Rituel quotidien de paix</h2>
-            <p class="quote" id="peacePrompt">Chaque matin : “Qu’est-ce qui protège la vie aujourd’hui, et qu’est-ce qui nourrit la joie ?”</p>
-            <p class="muted">Un groupe tient mieux quand la clarté matérielle et la paix relationnelle avancent ensemble.</p>
-            <button class="accent" id="newPeacePromptBtn">Nouvelle phrase d’alignement</button>
-          </div>
-          <div class="peace-card">
-            <h2>Gardiens du lieu</h2>
-            <p>Répartis les rôles comme des responsabilités vivantes, pas comme des titres rigides.</p>
-            <div class="tag-cloud" id="rolesCloud"></div>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>Charte simple de vie commune</h2>
-          <textarea id="charter"></textarea>
-          <div class="hero-actions"><button class="primary" id="saveCharterBtn">Sauvegarder la charte</button></div>
-        </div>
-        <div class="panel">
-          <h2>Espaces à ne pas oublier</h2>
-          <div class="grid three" id="peaceSpaces"></div>
-        </div>
+      <section id="actions" class="tab" role="tabpanel" aria-labelledby="tab-actions" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Actions</p><h1>Passer du stock à l’organisation vivante</h1><p class="lede">Protocoles, zones, rôles, formation, production et paix collective.</p></div></header>
+        <section class="panel"><div class="controls action-controls">
+          <div class="field"><label for="actionSearch">Rechercher</label><input id="actionSearch" type="search" placeholder="Eau, enfants, jardin…"></div>
+          <div class="field"><label for="actionPriority">Priorité</label><select id="actionPriority"><option value="all">Toutes</option><option value="1">Priorité 1</option><option value="2">Priorité 2</option><option value="3">Priorité 3</option><option value="4">Priorité 4</option></select></div>
+          <div class="field"><label for="actionStatus">État</label><select id="actionStatus"><option value="all">Tous</option><option value="todo">À faire</option><option value="done">Fait</option></select></div>
+          <button id="resetChecksBtn" class="btn danger" type="button"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>Réinitialiser les coches</button>
+        </div><div class="list-meta"><span id="actionCount"></span><span>Une étape concrète vaut mieux qu’une inquiétude vague.</span></div><div class="action-list" id="actionList"></div></section>
       </section>
 
-      <section id="settings" class="tab">
-        <div class="grid two">
-          <div class="panel">
-            <h2>Sauvegarde locale</h2>
-            <p class="muted">Les données sont conservées dans le navigateur de cet appareil via localStorage.</p>
-            <div class="hero-actions">
-              <button class="primary" id="saveBtn2">Sauvegarder maintenant</button>
-              <button class="accent" id="exportBtn2">Exporter JSON</button>
-              <label class="button-like" for="importFile"><input id="importFile" type="file" accept="application/json" />Importer JSON</label>
-              <button class="danger" id="resetAllBtn">Tout réinitialiser</button>
-            </div>
-          </div>
-          <div class="panel">
-            <h2>Thème</h2>
-            <div class="field">
-              <label for="themeSelect">Ambiance visuelle</label>
-              <select id="themeSelect"><option value="light">Jour clair</option><option value="dark">Nuit douce</option></select>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>Paramètres de calcul</h2>
-          <p class="muted">Les niveaux de préparation remplissent ces valeurs automatiquement. Si tu ajustes un curseur, le niveau passe en “Personnalisé”.</p>
-          <div class="grid two" id="calculationControls"></div>
-          <div class="hero-actions">
-            <button class="ghost" id="resetCalcBtn">Remettre selon le niveau choisi</button>
-          </div>
-        </div>
-        <div class="panel">
-          <h2>Ajouter une ligne personnalisée</h2>
-          <div class="grid four">
-            <div class="field"><label for="customName">Nom</label><input id="customName" /></div>
-            <div class="field"><label for="customCategory">Catégorie</label><input id="customCategory" placeholder="Ex : Spiritualité pratique" /></div>
-            <div class="field"><label for="customQty">Quantité</label><input id="customQty" placeholder="Ex : 3 coffres" /></div>
-            <div class="field"><label for="customPriority">Priorité</label><select id="customPriority"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></div>
-          </div>
-          <div class="field" style="margin-top:.7rem;"><label for="customNotes">Notes</label><textarea id="customNotes" placeholder="Pourquoi cet élément est utile, où l’acheter, variante petit budget…"></textarea></div>
-          <div class="hero-actions"><button class="primary" id="addCustomBtn">Ajouter au matériel</button></div>
-        </div>
-        <div class="panel">
-          <h2>Notes libres de préparation</h2>
-          <textarea id="freeNotes"></textarea>
+      <section id="peace" class="tab" role="tabpanel" aria-labelledby="tab-peace" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Joie & paix</p><h1>La qualité du lien fait partie des infrastructures</h1><p class="lede">Le soin des relations, des enfants, du silence et de la beauté avance avec l’eau et la nourriture.</p></div></header>
+        <div class="peace-hero"><article class="peace-card accent"><h2>Phrase d’alignement</h2><p class="quote" id="peacePrompt">Chaque matin : “Qu’est-ce qui protège la vie aujourd’hui, et qu’est-ce qui nourrit la joie ?”</p><button class="btn secondary" id="newPeacePromptBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg>Nouvelle phrase</button></article><article class="peace-card"><h2>Gardiens du lieu</h2><p class="lede">Des responsabilités vivantes, pas des titres rigides.</p><div class="role-cloud" id="rolesCloud"></div></article></div>
+        <section class="panel"><div class="panel-head"><div><h2>Charte simple de vie commune</h2><p>Entièrement modifiable et sauvegardée sur cet appareil.</p></div></div><label class="sr-only" for="charter">Charte de vie commune</label><textarea id="charter"></textarea><div class="actions" style="margin-top:.65rem"><button class="btn primary" id="saveCharterBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>Sauvegarder la charte</button></div></section>
+        <section class="panel" style="margin-top:1rem"><div class="panel-head"><div><h2>Espaces à ne pas oublier</h2><p>Des lieux simples qui protègent la respiration du collectif.</p></div></div><div class="grid three" id="peaceSpaces"></div></section>
+      </section>
+
+      <section id="settings" class="tab" role="tabpanel" aria-labelledby="tab-settings" tabindex="0">
+        <header class="page-head"><div><p class="eyebrow">Réglages & données</p><h1>L’utile, sans encombrer le parcours</h1><p class="lede">Sauvegarde, import/export, réglages avancés, besoins personnalisés et notes sont regroupés ici.</p></div></header>
+        <div class="settings-stack">
+          <section class="panel"><div class="panel-head"><div><h2>Données locales</h2><p>Les anciennes sauvegardes restent compatibles avec cette version.</p></div><span class="offline">Autonome</span></div><div class="actions"><button class="btn primary" id="saveBtn2" type="button"><svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg>Sauvegarder</button><button class="btn secondary" id="exportBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg>Exporter JSON</button><button id="exportBtn2" type="button" hidden>Exporter JSON</button><label class="button-like" for="importFile"><svg class="icon" aria-hidden="true"><use href="#i-upload"></use></svg>Importer JSON<input id="importFile" type="file" accept="application/json,.json"></label><button class="btn danger" id="resetAllBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-trash"></use></svg>Tout réinitialiser</button></div></section>
+          <div class="grid two"><section class="panel"><h2>Ambiance visuelle</h2><div class="field" style="margin-top:.7rem"><label for="themeSelect">Thème</label><select id="themeSelect"><option value="light">Jour clair</option><option value="dark">Nuit douce</option></select></div></section><section class="panel"><h2>Impression</h2><div class="field" style="margin-top:.7rem"><label for="printMode">Périmètre</label><select id="printMode"><option value="current">Section courante</option><option value="all">Toutes les sections</option></select></div><div class="actions" style="margin-top:.65rem"><button class="btn ghost" id="printAllBtn" type="button"><svg class="icon" aria-hidden="true"><use href="#i-print"></use></svg>Imprimer</button></div></section></div>
+          <details class="details"><summary><span>Paramètres de calcul avancés</span><span aria-hidden="true">＋</span></summary><div class="details-body"><p class="lede">Un ajustement fait passer le niveau en “Personnalisé”.</p><div class="range-grid" id="calculationControls"></div><div class="actions" style="margin-top:.7rem"><button class="btn ghost" id="resetCalcBtn" type="button">Revenir au niveau choisi</button></div></div></details>
+          <section class="panel" id="customMaterialPanel"><div class="panel-head"><div><h2 id="customFormTitle">Ajouter un besoin personnalisé</h2><p>Pour ce qui appartient à votre lieu sans fermer les possibilités.</p></div></div><div class="grid four">
+            <div class="field"><label for="customName">Nom</label><input id="customName"></div><div class="field"><label for="customCategory">Catégorie</label><input id="customCategory" placeholder="Ex. Spiritualité pratique"></div><div class="field"><label for="customQty">Quantité</label><input id="customQty" placeholder="Ex. 3 coffres"></div><div class="field"><label for="customPriority">Priorité</label><select id="customPriority"><option value="1">1 — vitale</option><option value="2">2 — importante</option><option value="3">3 — utile</option><option value="4">4 — confort</option></select></div>
+          </div><div class="field" style="margin-top:.7rem"><label for="customNotes">Notes</label><textarea id="customNotes" placeholder="Pourquoi c’est utile, variante petit budget, emplacement…"></textarea></div><div class="actions" style="margin-top:.65rem"><button class="btn primary" id="addCustomBtn" type="button">Ajouter au matériel</button><button class="btn ghost hidden" id="cancelCustomEditBtn" type="button">Annuler la modification</button></div></section>
+          <section class="panel"><h2>Notes libres de préparation</h2><label class="sr-only" for="freeNotes">Notes libres</label><textarea id="freeNotes" style="margin-top:.7rem" placeholder="Observations du lieu, questions, fournisseurs, décisions du groupe…"></textarea></section>
         </div>
       </section>
+      <footer class="footer">Application de planification autonome · v0.2.alpha · Les quantités sont indicatives et servent à organiser, comparer et prioriser. Elle ne remplace pas les conseils de professionnels de l’eau, de l’assainissement, de la santé, du bâtiment ou de l’agriculture ; les contraintes réelles du lieu restent déterminantes.</footer>
     </main>
-
-    <p class="footer-note">Application de planification · v0.1.alpha. Elle ne remplace pas les conseils de professionnels de l’eau, de l’assainissement, de la santé, du bâtiment ou de l’agriculture. Elle sert à organiser la préparation, prioriser et protéger la vie avec discernement.</p>
   </div>
-  <div class="toast" id="toast">Sauvegardé</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">Sauvegardé</div>
+<script>
 
-  <script>
     /*
       MODÈLE — données durables.
       Les formules sont volontairement lisibles : un développeur humain peut les adapter facilement.
     */
     const APP_ID = "joyeuse-autonomie-collective";
-    const APP_VERSION = "0.1.alpha";
+    const APP_VERSION = "0.2.alpha";
+    const SCHEMA_VERSION = 1;
     const STORAGE_KEY = "joyeuseAutonomieCollective.v1";
 
     const DEFAULT_STATE = {
@@ -814,6 +384,7 @@
     ];
 
     let state = loadState();
+    let editingCustomId = null;
 
     /* CONTRÔLEUR — événements utilisateur. */
     document.addEventListener("DOMContentLoaded", init);
@@ -823,59 +394,92 @@
       bindTabs();
       bindButtons();
       syncInputsFromState();
-      renderAll();
+      activateTab(location.hash.replace("#", "") || "dashboard", false);
+      renderAll(false);
     }
 
     function bindInputs() {
-      ["humans", "days", "mode", "climate", "children", "fragile", "themeSelect", "printMode", "charter", "freeNotes"].forEach(id => {
+      ["humans","days","mode","climate","children","fragile","themeSelect","printMode","charter","freeNotes"].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         el.addEventListener("input", () => {
           updateStateFromInputs();
           saveState(false);
-          renderAll();
+          renderAll(true);
         });
       });
-
-      ["materialSearch", "materialPriority", "materialCategory", "materialStatus", "actionSearch", "actionPriority", "actionStatus"].forEach(id => {
+      ["materialSearch","materialPriority","materialCategory","materialStatus","actionSearch","actionPriority","actionStatus"].forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.addEventListener("input", renderAll);
+        if (el) el.addEventListener("input", () => renderAll(true));
       });
-
       document.getElementById("calculationControls").addEventListener("input", e => {
         const input = e.target.closest("[data-factor]");
         if (!input) return;
         updateCustomFactor(input.dataset.factor, Number(input.value));
         saveState(false);
-        renderAll();
+        renderAll(true);
       });
     }
 
     function bindTabs() {
       document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-          document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-          btn.classList.add("active");
-          document.getElementById(btn.dataset.tab).classList.add("active");
+        btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+        btn.addEventListener("keydown", e => {
+          if (!["ArrowDown","ArrowUp","ArrowLeft","ArrowRight","Home","End"].includes(e.key)) return;
+          e.preventDefault();
+          const tabs = [...document.querySelectorAll(".tab-btn")];
+          const i = tabs.indexOf(btn);
+          const delta = (e.key === "ArrowDown" || e.key === "ArrowRight") ? 1 : -1;
+          const nextIndex = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + delta + tabs.length) % tabs.length;
+          tabs[nextIndex].focus();
+          activateTab(tabs[nextIndex].dataset.tab);
         });
       });
+      window.addEventListener("hashchange", () => activateTab(location.hash.replace("#", "") || "dashboard", false));
+    }
+
+    function activateTab(tabId, updateHash=true) {
+      if (!document.getElementById(tabId)) tabId = "dashboard";
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        const active = btn.dataset.tab === tabId;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-selected", String(active));
+        btn.tabIndex = active ? 0 : -1;
+      });
+      document.querySelectorAll(".tab").forEach(tab => tab.classList.toggle("active", tab.id === tabId));
+      if (updateHash && location.hash !== `#${tabId}`) history.replaceState(null, "", `#${tabId}`);
     }
 
     function bindButtons() {
-      ["saveBtn", "saveBtn2", "saveCharterBtn"].forEach(id => document.getElementById(id).addEventListener("click", () => saveState(true)));
-      ["exportBtn", "exportBtn2"].forEach(id => document.getElementById(id).addEventListener("click", exportState));
+      ["saveBtn","saveBtn2","saveCharterBtn","saveScenarioBtn"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", () => saveState(true));
+      });
+      ["exportBtn","exportBtn2"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", exportState);
+      });
       document.getElementById("importFile").addEventListener("change", importState);
       document.getElementById("resetAllBtn").addEventListener("click", resetAll);
       document.getElementById("resetChecksBtn").addEventListener("click", resetChecks);
       document.getElementById("resetCalcBtn").addEventListener("click", resetCalculationFactors);
       document.getElementById("addCustomBtn").addEventListener("click", addCustomMaterial);
+      document.getElementById("cancelCustomEditBtn").addEventListener("click", cancelCustomEdit);
       document.getElementById("newPeacePromptBtn").addEventListener("click", () => {
         const pick = PEACE_PROMPTS[Math.floor(Math.random() * PEACE_PROMPTS.length)];
         document.getElementById("peacePrompt").textContent = pick;
       });
       document.getElementById("printCurrentBtn").addEventListener("click", () => printWithMode("current"));
-      document.getElementById("printAllBtn").addEventListener("click", () => printWithMode("all"));
+      document.getElementById("printAllBtn").addEventListener("click", () => printWithMode(document.getElementById("printMode").value || "current"));
+      document.addEventListener("click", e => {
+        const jump = e.target.closest("[data-jump]");
+        if (!jump) return;
+        activateTab(jump.dataset.jump);
+        requestAnimationFrame(() => {
+          const target = jump.dataset.focus ? document.getElementById(jump.dataset.focus) : document.getElementById(jump.dataset.jump);
+          if (target) target.focus({preventScroll:true});
+        });
+      });
     }
 
     /* CALCULS — ordres de grandeur. */
@@ -922,7 +526,28 @@
     }
 
     /* VUE — rendu HTML. */
-    function renderAll() {
+    function captureFocus() {
+      const el = document.activeElement;
+      if (!el || !el.id) return null;
+      return { id: el.id, start: typeof el.selectionStart === "number" ? el.selectionStart : null, end: typeof el.selectionEnd === "number" ? el.selectionEnd : null };
+    }
+
+    function restoreFocus(snapshot) {
+      if (!snapshot) return;
+      const el = document.getElementById(snapshot.id);
+      if (!el) return;
+      el.focus({ preventScroll:true });
+      if (snapshot.start !== null && typeof el.setSelectionRange === "function") {
+        try { el.setSelectionRange(snapshot.start, snapshot.end); } catch (_) {}
+      }
+    }
+
+    function iconUse(id) {
+      return `<svg class="icon" aria-hidden="true"><use href="#${id}"></use></svg>`;
+    }
+
+    function renderAll(preserveFocus=false) {
+      const focus = preserveFocus ? captureFocus() : null;
       document.body.dataset.theme = state.theme;
       applyPrintClass();
       renderMetrics();
@@ -934,38 +559,56 @@
       renderSteps();
       renderPeace();
       renderCalculationControls();
+      renderContextSummary();
+      if (focus) requestAnimationFrame(() => restoreFocus(focus));
     }
 
     function renderMetrics() {
       const c = calc(state);
       const metrics = [
-        ["Journées-personnes", formatLarge(c.personDays), "Base de tous les calculs"],
-        ["Eau/jour", `${formatLarge(c.dailyWaterL)} L`, `${c.m.waterL} L / être / jour`],
-        ["Stockage eau tampon", `${round(c.waterStorageL/1000,1)} m³`, `${c.m.waterBufferDays} jours de marge`],
-        ["Nourriture de base", `${round(c.foodTotalKg/1000,2)} t`, "Stock indicatif total"],
-        ["Toilettes sèches", `${c.toilets}`, `Ratio niveau ${c.m.label}`],
-        ["Surface couverte", `${Math.ceil(c.shelterTotal)} m²`, "Dormir + vivre + stocker"],
-        ["Calories totales", formatLarge(c.totalKcal), `${c.m.kcal} kcal / être / jour`],
-        ["Mode", c.m.label, "Niveau de robustesse choisi"]
+        ["i-calendar","Journées-personnes", formatLarge(c.personDays), "Base de tous les calculs"],
+        ["i-water","Eau / jour", `${formatLarge(c.dailyWaterL)} L`, `${c.m.waterL} L / être / jour`],
+        ["i-water","Stockage eau tampon", `${round(c.waterStorageL/1000,1)} m³`, `${c.m.waterBufferDays} jours de marge`],
+        ["i-food","Nourriture de base", `${round(c.foodTotalKg/1000,2)} t`, "Stock indicatif total"],
+        ["i-info","Toilettes sèches", `${c.toilets}`, `Ratio niveau ${c.m.label}`],
+        ["i-shelter","Surface couverte", `${Math.ceil(c.shelterTotal)} m²`, "Dormir + vivre + stocker"],
+        ["i-spark","Calories totales", formatLarge(c.totalKcal), `${c.m.kcal} kcal / être / jour`],
+        ["i-settings","Mode", c.m.label, "Niveau de robustesse choisi"]
       ];
-      document.getElementById("metrics").innerHTML = metrics.map(m => `<div class="metric"><span>${m[0]}</span><strong>${m[1]}</strong><span>${m[2]}</span></div>`).join("");
+      document.getElementById("metrics").innerHTML = metrics.map(m => `<article class="metric"><div class="metric-icon">${iconUse(m[0])}</div><div class="metric-body"><span>${escapeHtml(m[1])}</span><strong>${escapeHtml(m[2])}</strong><small>${escapeHtml(m[3])}</small></div></article>`).join("");
 
       const totalChecks = allMaterials().length + ACTIONS.length;
       const doneChecks = allMaterials().filter(x => state.checkedMaterials[x.id]).length + ACTIONS.filter(x => state.checkedActions[x.id]).length;
       const pct = totalChecks ? Math.round(doneChecks / totalChecks * 100) : 0;
-      document.getElementById("globalProgress").style.width = pct + "%";
-      document.getElementById("progressText").textContent = `${doneChecks} éléments cochés sur ${totalChecks} — ${pct}% d’avancement visible.`;
+      document.getElementById("readinessPct").textContent = `${pct}%`;
+      document.getElementById("readinessCount").textContent = `${doneChecks} / ${totalChecks}`;
+      document.getElementById("globalProgressMini").style.width = `${pct}%`;
+      document.getElementById("globalProgressMiniText").textContent = `${pct}%`;
+      const circumference = 2 * Math.PI * 46;
+      const ring = document.getElementById("readinessRing");
+      ring.style.strokeDasharray = circumference;
+      ring.style.strokeDashoffset = circumference * (1 - pct / 100);
+      document.getElementById("readinessHeadline").textContent = pct >= 80 ? "Une base très avancée" : pct >= 45 ? "Les fondations prennent forme" : pct > 0 ? "Le mouvement est lancé" : "Commencer par les fondations";
 
-      const quick = `Pour ${state.humans} êtres pendant ${state.days} jours, la base actuelle demande environ ${round(c.foodTotalKg/1000,2)} tonnes de provisions indicatives, ${formatLarge(c.dailyWaterL)} L d’eau par jour, ${c.toilets} toilettes sèches et environ ${Math.ceil(c.shelterTotal)} m² de surface couverte utile.`;
-      document.getElementById("quickReading").textContent = quick;
-
+      document.getElementById("quickReading").textContent = `Pour ${state.humans} êtres pendant ${state.days} jours, la base actuelle demande environ ${round(c.foodTotalKg/1000,2)} tonnes de provisions indicatives, ${formatLarge(c.dailyWaterL)} L d’eau par jour, ${c.toilets} toilettes sèches et environ ${Math.ceil(c.shelterTotal)} m² de surface couverte utile.`;
       const tags = [];
       if (c.dailyWaterL > 1000) tags.push("Eau collective lourde");
       if (state.days >= 180) tags.push("Autonomie longue");
       if (state.children > 0) tags.push("Protection enfants");
       if (state.climate !== "hot") tags.push("Froid / humidité à anticiper");
       if (state.mode === "low") tags.push("Redondance limitée");
-      document.getElementById("warningTags").innerHTML = tags.map(t => `<span class="tag">${t}</span>`).join("");
+      document.getElementById("warningTags").innerHTML = tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("");
+
+      const pillars = [
+        ["Eau","i-water",["Eau"]], ["Hygiène","i-info",["Assainissement"]], ["Abris","i-shelter",["Abris & chaleur"]],
+        ["Nourrir","i-food",["Nourriture","Cuisine"]], ["Santé","i-health",["Santé"]], ["Paix","i-heart",["Joie & paix"]]
+      ];
+      document.getElementById("vitalMap").innerHTML = pillars.map(([name,icon,cats]) => {
+        const items = allMaterials().filter(x => cats.includes(x.category));
+        const done = items.filter(x => state.checkedMaterials[x.id]).length;
+        const p = items.length ? Math.round(done/items.length*100) : 0;
+        return `<div class="vital"><div class="vital-top"><span class="vital-name">${iconUse(icon)}${escapeHtml(name)}</span><span class="vital-pct">${p}%</span></div><div class="progress"><span style="width:${p}%"></span></div></div>`;
+      }).join("");
     }
 
     function renderPrioritySummary() {
@@ -976,15 +619,21 @@
       });
       document.getElementById("prioritySummary").innerHTML = grouped.map(g => {
         const pct = g.total ? Math.round(g.done/g.total*100) : 0;
-        return `<div style="margin:.75rem 0"><div class="action-top"><span class="priority-pill priority-${g.p}">Priorité ${g.p}</span><strong>${g.done}/${g.total}</strong></div><div class="progress-bar" style="margin-top:.35rem"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+        return `<div class="priority-row"><div class="priority-head"><span class="pill priority-${g.p}">Priorité ${g.p}</span><strong>${g.done}/${g.total}</strong></div><div class="progress"><span style="width:${pct}%"></span></div></div>`;
       }).join("");
     }
 
     function renderMaterialFilters() {
       const select = document.getElementById("materialCategory");
       const current = select.value || "all";
-      const cats = [...new Set(allMaterials().map(x => x.category))].sort((a,b) => CATEGORIES.indexOf(a) - CATEGORIES.indexOf(b));
-      select.innerHTML = `<option value="all">Toutes catégories</option>` + cats.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join("");
+      const cats = [...new Set(allMaterials().map(x => x.category))].sort((a,b) => {
+        const ai = CATEGORIES.indexOf(a), bi = CATEGORIES.indexOf(b);
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
+      select.innerHTML = `<option value="all">Toutes</option>` + cats.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join("");
       select.value = cats.includes(current) ? current : "all";
     }
 
@@ -1001,42 +650,46 @@
           && (!q || normalize(item.name + " " + item.category + " " + item.note).includes(q));
       });
       items.sort((a,b) => a.priority - b.priority || CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category) || a.name.localeCompare(b.name));
-      document.getElementById("materialList").innerHTML = items.map(item => itemCard(item)).join("") || `<p class="muted">Aucun élément ne correspond au filtre.</p>`;
-      document.querySelectorAll("[data-material-check]").forEach(cb => {
-        cb.addEventListener("change", () => {
-          state.checkedMaterials[cb.dataset.materialCheck] = cb.checked;
-          saveState(false); renderAll();
-        });
-      });
+      document.getElementById("materialCount").textContent = `${items.length} élément${items.length > 1 ? "s" : ""} affiché${items.length > 1 ? "s" : ""} sur ${allMaterials().length}`;
+      document.getElementById("materialList").innerHTML = items.map(item => itemCard(item)).join("") || `<div class="empty">Aucun élément ne correspond à ces filtres.</div>`;
+      document.querySelectorAll("[data-material-check]").forEach(cb => cb.addEventListener("change", () => {
+        state.checkedMaterials[cb.dataset.materialCheck] = cb.checked;
+        saveState(false);
+        renderAll(true);
+      }));
+      document.querySelectorAll("[data-custom-edit]").forEach(btn => btn.addEventListener("click", () => beginEditCustomMaterial(btn.dataset.customEdit)));
+      document.querySelectorAll("[data-custom-delete]").forEach(btn => btn.addEventListener("click", () => deleteCustomMaterial(btn.dataset.customDelete)));
     }
 
     function itemCard(item) {
       const checked = !!state.checkedMaterials[item.id];
       const qty = typeof item.qty === "function" ? item.qty(state) : item.qty;
-      return `<article class="item-card">
-        <label class="check-label"><input type="checkbox" data-material-check="${escapeAttr(item.id)}" aria-label="Marquer comme acquis : ${escapeAttr(item.name)}" ${checked ? "checked" : ""} /></label>
-        <div>
-          <div class="item-title">${escapeHtml(item.name)}</div>
-          <div class="item-meta"><span class="priority-pill priority-${item.priority}">Priorité ${item.priority}</span><span class="category-pill">${escapeHtml(item.category)}</span></div>
-          <div class="muted">${escapeHtml(item.note || "")}</div>
-        </div>
+      const custom = state.customMaterials.some(x => x.id === item.id);
+      return `<article class="item-card ${checked ? "done" : ""}">
+        <label class="check"><span class="sr-only">Marquer comme acquis : ${escapeHtml(item.name)}</span><input type="checkbox" data-material-check="${escapeAttr(item.id)}" ${checked ? "checked" : ""}></label>
+        <div><div class="item-title">${escapeHtml(item.name)}</div><div class="item-meta"><span class="pill priority-${item.priority}">Priorité ${item.priority}</span><span class="pill category-pill">${escapeHtml(item.category)}</span></div><div class="notes">${escapeHtml(item.note || "")}</div>
+        ${custom ? `<div class="item-actions"><button class="mini" type="button" data-custom-edit="${escapeAttr(item.id)}">Modifier</button><button class="mini" type="button" data-custom-delete="${escapeAttr(item.id)}">Supprimer</button></div>` : ""}</div>
         <div class="qty">${escapeHtml(qty)}</div>
       </article>`;
     }
 
     function renderFood() {
       const rows = foodRows(state);
-      document.getElementById("foodTable").innerHTML = `<thead><tr><th>Famille</th><th>Quantité indicative</th><th>Exemples</th><th>Rôle</th></tr></thead><tbody>${rows.map(r => `<tr><td><strong>${escapeHtml(r[0])}</strong></td><td>${escapeHtml(r[1])}</td><td>${escapeHtml(r[2])}</td><td>${escapeHtml(r[3])}</td></tr>`).join("")}</tbody>`;
+      document.getElementById("foodTable").innerHTML = `<thead><tr><th>Famille</th><th>Quantité indicative</th><th>Exemples</th><th>Rôle</th></tr></thead><tbody>${rows.map(r => `<tr><td data-label="Famille"><strong>${escapeHtml(r[0])}</strong></td><td data-label="Quantité">${escapeHtml(r[1])}</td><td data-label="Exemples">${escapeHtml(r[2])}</td><td data-label="Rôle">${escapeHtml(r[3])}</td></tr>`).join("")}</tbody>`;
       const c = calc(state);
+      document.getElementById("foodSummaryText").textContent = `Environ ${round(c.foodTotalKg/1000,2)} tonnes de base pour ${formatLarge(c.personDays)} journées-personnes, avant adaptation au terrain et aux besoins réels.`;
+      const vals = [c.food.cerealsKg,c.food.legumesKg,c.food.oilL*.92,c.food.saltKg,c.food.sugarKg,c.food.cannedKg,c.food.extrasKg];
+      const max = Math.max(...vals,1);
+      document.getElementById("foodStack").innerHTML = vals.map(v => `<span class="food-bar" style="height:${Math.max(8,Math.round(v/max*100))}%"></span>`).join("");
       const notes = [
         ["Rotation", "Date les sacs, utilise d’abord ce qui vieillit, garde le sec au sec et loin des rongeurs."],
         ["Moral", "Prévois quelques aliments de joie. Le chocolat n’est pas un système politique, mais il peut sauver une réunion."],
         ["Production", "Lance graines germées, potager et conserves dès le début : le stock achète du temps, il ne remplace pas la vie."],
         ["Eau de cuisson", `${formatLarge(c.dailyWaterL)} L/jour est une base globale ; les légumineuses demandent trempage et cuisson.`],
         ["Enfants", "Prévoir aliments familiers, goûters simples, lait infantile si nécessaire, moments calmes."],
-        ["Fragilités", "Adapter textures, médicaments, régimes, allergies, dents, digestion et suivi médical."],
+        ["Fragilités", "Adapter textures, médicaments, régimes, allergies, dents, digestion et suivi médical."]
       ];
-      document.getElementById("foodNotes").innerHTML = notes.map(n => `<div class="metric"><span>${escapeHtml(n[0])}</span><p>${escapeHtml(n[1])}</p></div>`).join("");
+      document.getElementById("foodNotes").innerHTML = notes.map(n => `<article class="metric"><div class="metric-icon">${iconUse("i-food")}</div><div class="metric-body"><strong style="font-size:.95rem">${escapeHtml(n[0])}</strong><small>${escapeHtml(n[1])}</small></div></article>`).join("");
     }
 
     function renderActions() {
@@ -1049,26 +702,29 @@
           && (st === "all" || (st === "done" ? checked : !checked))
           && (!q || normalize(a.title + " " + a.detail).includes(q));
       }).sort((a,b) => a.priority - b.priority || a.title.localeCompare(b.title));
-      document.getElementById("actionList").innerHTML = actions.map(a => `<article class="action-card">
-        <label class="check-label"><input type="checkbox" data-action-check="${escapeAttr(a.id)}" aria-label="Marquer comme fait : ${escapeAttr(a.title)}" ${state.checkedActions[a.id] ? "checked" : ""} /></label>
-        <div>
-          <div class="action-top"><h3>${escapeHtml(a.title)}</h3><span class="priority-pill priority-${a.priority}">Priorité ${a.priority}</span></div>
-          <p class="notes">${escapeHtml(a.detail)}</p>
-        </div>
-      </article>`).join("") || `<p class="muted">Aucune action ne correspond au filtre.</p>`;
-      document.querySelectorAll("[data-action-check]").forEach(cb => {
-        cb.addEventListener("change", () => {
-          state.checkedActions[cb.dataset.actionCheck] = cb.checked;
-          saveState(false); renderAll();
-        });
-      });
+      document.getElementById("actionCount").textContent = `${actions.length} action${actions.length > 1 ? "s" : ""} affichée${actions.length > 1 ? "s" : ""} sur ${ACTIONS.length}`;
+      document.getElementById("actionList").innerHTML = actions.map(a => `<article class="action-card ${state.checkedActions[a.id] ? "done" : ""}">
+        <label class="check"><span class="sr-only">Marquer comme fait : ${escapeHtml(a.title)}</span><input type="checkbox" data-action-check="${escapeAttr(a.id)}" ${state.checkedActions[a.id] ? "checked" : ""}></label>
+        <div><h3>${escapeHtml(a.title)}</h3><p class="notes">${escapeHtml(a.detail)}</p></div><span class="pill priority-${a.priority}">Priorité ${a.priority}</span>
+      </article>`).join("") || `<div class="empty">Aucune action ne correspond à ces filtres.</div>`;
+      document.querySelectorAll("[data-action-check]").forEach(cb => cb.addEventListener("change", () => {
+        state.checkedActions[cb.dataset.actionCheck] = cb.checked;
+        saveState(false);
+        renderAll(true);
+      }));
     }
 
     function renderSteps() {
+      const doneCount = completedStepCount();
+      document.getElementById("stepProgressText").textContent = `${doneCount} étape${doneCount > 1 ? "s" : ""} considérée${doneCount > 1 ? "s" : ""} comme franchie${doneCount > 1 ? "s" : ""} à partir des priorités 1 cochées.`;
       document.getElementById("stepper").innerHTML = STEPS.map((s, idx) => {
-        const stepDone = idx < completedStepCount();
-        return `<section class="step ${stepDone ? "done" : ""}"><div class="step-num">${idx+1}</div><div><div class="action-top"><h3>${escapeHtml(s.title)}</h3><span class="priority-pill priority-${s.priority}">Priorité ${s.priority}</span></div><ul>${s.items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul></div></section>`;
+        const done = idx < doneCount;
+        const current = idx === doneCount && doneCount < STEPS.length;
+        return `<section class="step ${done ? "done" : ""} ${current ? "current" : ""}"><div class="step-num">${done ? iconUse("i-check") : idx + 1}</div><div><div class="priority-head"><h3>${escapeHtml(s.title)}</h3><span class="pill priority-${s.priority}">Priorité ${s.priority}</span></div><ul>${s.items.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ul></div></section>`;
       }).join("");
+      const next = STEPS[Math.min(doneCount, STEPS.length - 1)];
+      document.getElementById("nextStepTitle").textContent = doneCount >= STEPS.length ? "Entretenir ce qui fonctionne" : next.title;
+      document.getElementById("nextStepText").textContent = doneCount >= STEPS.length ? "La robustesse vient maintenant de la maintenance et de la transmission des compétences." : next.items.slice(0,3).join(" · ");
     }
 
     function completedStepCount() {
@@ -1085,8 +741,8 @@
     }
 
     function renderPeace() {
-      document.getElementById("rolesCloud").innerHTML = ROLES.map(r => `<span class="tag">${escapeHtml(r)}</span>`).join("");
-      document.getElementById("peaceSpaces").innerHTML = PEACE_SPACES.map(s => `<div class="metric"><span>${escapeHtml(s.title)}</span><p>${escapeHtml(s.text)}</p></div>`).join("");
+      document.getElementById("rolesCloud").innerHTML = ROLES.map(r => `<span class="role">${iconUse("i-heart")}<span>${escapeHtml(r)}</span></span>`).join("");
+      document.getElementById("peaceSpaces").innerHTML = PEACE_SPACES.map(s => `<article class="metric"><div class="metric-icon">${iconUse("i-heart")}</div><div class="metric-body"><strong style="font-size:.95rem">${escapeHtml(s.title)}</strong><small>${escapeHtml(s.text)}</small></div></article>`).join("");
     }
 
     function renderCalculationControls() {
@@ -1094,15 +750,24 @@
       document.getElementById("calculationControls").innerHTML = FACTOR_CONTROLS.map(control => {
         const value = getFactorValue(factors, control);
         const note = control.inverse ? "Plus la valeur est basse, plus le niveau est robuste." : "";
-        return `<div class="range-field">
-          <div class="range-head">
-            <label for="factor-${escapeAttr(control.key)}">${escapeHtml(control.label)}</label>
-            <span class="range-value">${formatFactor(value, control)}</span>
-          </div>
-          <input id="factor-${escapeAttr(control.key)}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${escapeAttr(value)}" data-factor="${escapeAttr(control.key)}" />
-          ${note ? `<div class="hint">${escapeHtml(note)}</div>` : ""}
-        </div>`;
+        return `<div class="range-field"><div class="range-head"><label for="factor-${escapeAttr(control.key)}">${escapeHtml(control.label)}</label><span class="range-value">${formatFactor(value, control)}</span></div><input id="factor-${escapeAttr(control.key)}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${escapeAttr(value)}" data-factor="${escapeAttr(control.key)}">${note ? `<div class="hint">${escapeHtml(note)}</div>` : ""}</div>`;
       }).join("");
+    }
+
+    function renderContextSummary() {
+      const m = modeFor(state);
+      document.getElementById("scenarioMiniText").textContent = `${state.humans} êtres · ${state.days} jours · ${m.label}`;
+      const climateLabels = { mixed:"saison mixte / inconnue", cold:"saison froide / humide", hot:"saison chaude / sèche" };
+      const activeTab = document.querySelector(".tab.active");
+      const activeButton = activeTab ? document.querySelector(`.tab-btn[data-tab="${activeTab.id}"]`) : null;
+      const sectionLabel = state.printMode === "all" ? "Toutes les sections" : (activeButton ? activeButton.textContent.trim() : "Vue d’ensemble");
+      const printSection = document.getElementById("printContextSection");
+      const printScenario = document.getElementById("printContextScenario");
+      if (printSection) printSection.textContent = sectionLabel;
+      if (printScenario) printScenario.textContent = `${state.humans} êtres · ${state.days} jours · ${m.label} · ${climateLabels[state.climate] || climateLabels.mixed} · ${state.children} enfant${state.children > 1 ? "s" : ""} · ${state.fragile} ancien${state.fragile > 1 ? "s" : ""} / fragilité${state.fragile > 1 ? "s" : ""}`;
+      document.getElementById("customFormTitle").textContent = editingCustomId ? "Modifier le besoin personnalisé" : "Ajouter un besoin personnalisé";
+      document.getElementById("addCustomBtn").textContent = editingCustomId ? "Enregistrer la modification" : "Ajouter au matériel";
+      document.getElementById("cancelCustomEditBtn").classList.toggle("hidden", !editingCustomId);
     }
 
     /* PERSISTENCE — localStorage + import/export JSON. */
@@ -1136,6 +801,7 @@
       const payload = {
         app: APP_ID,
         version: APP_VERSION,
+        schemaVersion: SCHEMA_VERSION,
         updatedAt: new Date().toISOString(),
         settings: {
           theme: state.theme,
@@ -1168,7 +834,7 @@
           renderAll();
           toast("Import réussi");
         } catch (err) {
-          alert("Fichier JSON invalide.");
+          alert("Import impossible : le fichier JSON est invalide ou ne correspond pas à une sauvegarde Joyeuse Autonomie Collective.");
         }
         e.target.value = "";
       };
@@ -1213,12 +879,59 @@
       const qty = document.getElementById("customQty").value.trim() || "À définir";
       const priority = Number(document.getElementById("customPriority").value || 3);
       const note = document.getElementById("customNotes").value.trim();
-      if (!name) { alert("Indique au moins un nom."); return; }
-      state.customMaterials.push({ id:"custom-" + Date.now(), name, category, qty, priority, note });
-      ["customName", "customCategory", "customQty", "customNotes"].forEach(id => document.getElementById(id).value = "");
+      if (!name) { alert("Indique au moins un nom."); document.getElementById("customName").focus(); return; }
+      if (editingCustomId) {
+        const item = state.customMaterials.find(x => x.id === editingCustomId);
+        if (item) Object.assign(item, { name, category, qty, priority, note });
+      } else {
+        state.customMaterials.push({ id:"custom-" + Date.now(), name, category, qty, priority, note });
+      }
+      const message = editingCustomId ? "Élément modifié" : "Élément ajouté";
+      editingCustomId = null;
+      clearCustomForm();
       saveState(false);
       renderAll();
-      toast("Élément ajouté");
+      toast(message);
+    }
+
+    function beginEditCustomMaterial(id) {
+      const item = state.customMaterials.find(x => x.id === id);
+      if (!item) return;
+      editingCustomId = id;
+      document.getElementById("customName").value = item.name;
+      document.getElementById("customCategory").value = item.category;
+      document.getElementById("customQty").value = item.qty;
+      document.getElementById("customPriority").value = item.priority;
+      document.getElementById("customNotes").value = item.note || "";
+      activateTab("settings");
+      renderContextSummary();
+      requestAnimationFrame(() => {
+        document.getElementById("customMaterialPanel").scrollIntoView({ behavior:"smooth", block:"start" });
+        document.getElementById("customName").focus();
+      });
+    }
+
+    function clearCustomForm() {
+      ["customName","customCategory","customQty","customNotes"].forEach(id => document.getElementById(id).value = "");
+      document.getElementById("customPriority").value = "3";
+    }
+
+    function cancelCustomEdit() {
+      editingCustomId = null;
+      clearCustomForm();
+      renderContextSummary();
+    }
+
+    function deleteCustomMaterial(id) {
+      const item = state.customMaterials.find(x => x.id === id);
+      if (!item) return;
+      if (!confirm(`Supprimer « ${item.name} » de la liste personnalisée ?`)) return;
+      state.customMaterials = state.customMaterials.filter(x => x.id !== id);
+      delete state.checkedMaterials[id];
+      if (editingCustomId === id) cancelCustomEdit();
+      saveState(false);
+      renderAll();
+      toast("Élément supprimé");
     }
 
     /* UTILITAIRES */
@@ -1382,6 +1095,8 @@
     }
     function printWithMode(mode) {
       state.printMode = mode;
+      const printSelect = document.getElementById("printMode");
+      if (printSelect) printSelect.value = mode;
       saveState(false);
       renderAll();
       applyPrintClass();
@@ -1389,6 +1104,7 @@
         setTimeout(() => window.print(), 60);
       });
     }
-  </script>
+
+</script>
 </body>
 </html>
