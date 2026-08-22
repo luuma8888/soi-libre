@@ -15,7 +15,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Souveraineté Intérieure — Self-Clearing System</title>
+  <meta name="application-name" content="Souveraineté Intérieure - Soi-Libre">
+  <meta name="version" content="v0.2.alpha">
+  <title>Souveraineté Intérieure v0.2.alpha — Self-Clearing System</title>
+  <meta name="description" content="Espace local de pratique, clarification, révocation, réaffirmation et déclaration de souveraineté intérieure.">
+  <meta name="color-scheme" content="light dark">
   <style>
     /* ═══════════════════════════════════════════════════════
        DESIGN TOKENS — Variables CSS pour cohérence visuelle
@@ -1302,6 +1306,7 @@
       padding: 2rem;
     }
     #meditation-overlay.active { display: flex; }
+    body.meditation-open { overflow: hidden; }
     #meditation-overlay .med-text {
       font-family: var(--font-display); font-style: italic;
       color: #F0EBF8; font-size: clamp(1.2rem, 3vw, 1.8rem);
@@ -1367,33 +1372,531 @@
       .affirmation-card { background: #f9f7f0 !important; border: 1pt solid #ccc; }
       a { color: black; text-decoration: none; }
     }
+
+
+    /* ═══════════════════════════════════════════════════════
+       V0.2.1 — CONSOLIDATION DE LA REFONTE PREMIUM ADAPTATIVE
+       Direction : sanctuaire éditorial de clarté intérieure
+       ═══════════════════════════════════════════════════════ */
+    :root {
+      --bg-main: #f7f4ed;
+      --bg-card: #fffdf8;
+      --bg-nav: #f0ece4;
+      --bg-accent: #eee9df;
+      --bg-input: #fbf8f2;
+      --text-primary: #292432;
+      --text-secondary: #665e70;
+      --text-muted: #938a9b;
+      --gold: #b98a3d;
+      --gold-light: #f1e5ca;
+      --gold-dark: #7d5d29;
+      --violet: #6e5894;
+      --violet-light: #e9e2f2;
+      --violet-dark: #51406f;
+      --sage: #648b72;
+      --sage-light: #dfebe2;
+      --rose: #b7677a;
+      --rose-light: #f3e0e5;
+      --indigo: #5772ad;
+      --indigo-light: #e1e7f3;
+      --amber: #b76e3f;
+      --amber-light: #f3e2d5;
+      --border: 1px solid rgba(48, 40, 59, .10);
+      --border-accent: 1px solid rgba(185, 138, 61, .26);
+      --shadow-xs: 0 1px 2px rgba(44, 37, 53, .035);
+      --shadow-sm: 0 8px 24px rgba(44, 37, 53, .055);
+      --shadow-md: 0 18px 48px rgba(44, 37, 53, .085);
+      --shadow-lg: 0 30px 80px rgba(30, 24, 39, .13);
+      --radius-sm: 9px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --radius-xl: 30px;
+      --shell-rail: 248px;
+      --header-h: 76px;
+    }
+    [data-theme="dark"] {
+      --bg-main: #17141d;
+      --bg-card: #211d29;
+      --bg-nav: #1d1924;
+      --bg-accent: #2a2532;
+      --bg-input: #25202d;
+      --text-primary: #f2edf5;
+      --text-secondary: #c6bbce;
+      --text-muted: #91869a;
+      --gold: #d7ac65;
+      --gold-light: #3c301f;
+      --gold-dark: #efcf91;
+      --violet: #a28bc7;
+      --violet-light: #322841;
+      --violet-dark: #d1bcea;
+      --sage: #8ab199;
+      --sage-light: #24362b;
+      --rose: #d28b9b;
+      --rose-light: #3c252e;
+      --indigo: #8ea7d8;
+      --indigo-light: #232d45;
+      --amber: #d99b73;
+      --amber-light: #3b2b21;
+      --border: 1px solid rgba(242, 237, 245, .09);
+      --border-accent: 1px solid rgba(215, 172, 101, .24);
+      --shadow-xs: 0 1px 2px rgba(0,0,0,.20);
+      --shadow-sm: 0 8px 24px rgba(0,0,0,.24);
+      --shadow-md: 0 18px 48px rgba(0,0,0,.30);
+      --shadow-lg: 0 30px 80px rgba(0,0,0,.38);
+    }
+
+    html { scroll-padding-top: 96px; }
+    body {
+      background:
+        radial-gradient(circle at 78% -10%, color-mix(in srgb, var(--violet-light) 60%, transparent) 0, transparent 34rem),
+        radial-gradient(circle at 36% 105%, color-mix(in srgb, var(--gold-light) 42%, transparent) 0, transparent 38rem),
+        var(--bg-main);
+      background-attachment: fixed;
+      background-color: var(--bg-main);
+      font-family: var(--font-body);
+      letter-spacing: .002em;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .24;
+      background-image: radial-gradient(circle, color-mix(in srgb, var(--text-muted) 24%, transparent) .55px, transparent .7px);
+      background-size: 18px 18px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.35), transparent 45%);
+      z-index: -1;
+    }
+    .skip-link {
+      position: fixed; left: 1rem; top: .75rem; z-index: 1000;
+      transform: translateY(-160%); padding: .6rem .9rem; border-radius: 8px;
+      background: var(--text-primary); color: var(--bg-card); font-family: var(--font-ui); font-size: .82rem;
+    }
+    .skip-link:focus { transform: none; }
+
+    #app { min-height: 100vh; }
+    #header {
+      height: var(--header-h);
+      padding: 0 1.25rem 0 1.1rem;
+      background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+      backdrop-filter: blur(18px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+      border-bottom: var(--border);
+      box-shadow: none;
+    }
+    .header-brand { gap: .8rem; min-width: 0; }
+    .brand-sigil {
+      width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center;
+      border: 1px solid color-mix(in srgb, var(--gold) 35%, transparent);
+      border-radius: 50%; background: color-mix(in srgb, var(--gold-light) 58%, var(--bg-card));
+      box-shadow: inset 0 0 0 5px color-mix(in srgb, var(--bg-card) 70%, transparent);
+    }
+    .brand-sigil svg { width: 27px; height: 27px; fill: none; stroke: var(--gold); stroke-width: 1.4; }
+    .brand-sigil svg path { fill: color-mix(in srgb, var(--gold) 14%, transparent); }
+    .brand-copy { display: grid; line-height: 1.05; min-width: 0; }
+    .brand-kicker { font: 600 .62rem/1.2 var(--font-ui); text-transform: uppercase; letter-spacing: .16em; color: var(--text-muted); margin-bottom: .28rem; }
+    .header-brand .brand-name { font-size: 1.08rem; white-space: nowrap; }
+    .header-actions { gap: .65rem; }
+    .local-status {
+      display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .65rem; border-radius: 999px;
+      border: var(--border); background: color-mix(in srgb, var(--bg-input) 90%, transparent);
+      color: var(--text-secondary); font: 600 .72rem/1 var(--font-ui);
+    }
+    .status-orb { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sage) 14%, transparent); }
+    #save-indicator { min-width: 0; font-size: .72rem; padding: .35rem .45rem; border-radius: 7px; }
+    #save-indicator.saved { color: var(--sage); }
+    #theme-toggle.theme-control {
+      width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border-radius: 50%;
+      background: var(--bg-input); border: var(--border); box-shadow: none;
+    }
+
+    .section-header {
+      position: relative; margin: 0 0 1.6rem; padding: .2rem 1.15rem;
+      border-left: 2px solid color-mix(in srgb, var(--gold) 72%, transparent);
+    }
+    .section-kicker {
+      display: block; margin-bottom: .28rem; font: 700 .68rem/1.2 var(--font-ui); color: var(--gold-dark);
+      text-transform: uppercase; letter-spacing: .12em;
+    }
+    .section-header h2 { display: block; font-size: clamp(1.65rem, 2.7vw, 2.25rem); letter-spacing: -.025em; }
+    .section-header p { max-width: 760px; font-size: .97rem; line-height: 1.65; margin-top: .45rem; }
+    .section-icon { display: none !important; }
+
+    #main-content { max-width: 1120px; padding: 2.25rem clamp(1rem, 2.5vw, 2.4rem) 3.25rem; }
+    #main-content.workspace-wide { max-width: min(1740px, calc(100vw - var(--shell-rail) - 1rem)); }
+    .tab-section { animation: refinedIn .28s ease both; }
+    @keyframes refinedIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+    .card, .journal-entry, .engagement-item, .source-card, .subject-choice-card, .subject-block, .declaration-library-item {
+      border-color: color-mix(in srgb, var(--text-primary) 10%, transparent);
+      box-shadow: var(--shadow-xs);
+    }
+    .card { padding: clamp(1rem, 1.6vw, 1.45rem); background: color-mix(in srgb, var(--bg-card) 97%, transparent); }
+    .card-title {
+      color: var(--text-muted); font-weight: 700; font-size: .69rem; letter-spacing: .11em;
+      margin-bottom: .85rem;
+    }
+    .card + .card { margin-top: 1rem; }
+    .next-step-card {
+      position: relative; overflow: hidden;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--bg-card) 91%, var(--sage-light)), color-mix(in srgb, var(--bg-card) 88%, var(--indigo-light)));
+      border: 1px solid color-mix(in srgb, var(--sage) 26%, transparent);
+    }
+    .next-step-card::after {
+      content: ''; position: absolute; width: 180px; height: 180px; border-radius: 50%; right: -74px; top: -88px;
+      border: 1px solid color-mix(in srgb, var(--sage) 20%, transparent); box-shadow: 0 0 0 24px color-mix(in srgb, var(--sage) 4%, transparent), 0 0 0 48px color-mix(in srgb, var(--sage) 3%, transparent);
+      pointer-events: none;
+    }
+    .affirmation-card {
+      text-align: left; padding: clamp(1.4rem, 3vw, 2.6rem) clamp(1.3rem, 3.2vw, 3rem);
+      background: linear-gradient(115deg, color-mix(in srgb, var(--violet-light) 82%, var(--bg-card)), color-mix(in srgb, var(--gold-light) 72%, var(--bg-card)));
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+    }
+    .affirmation-card::before { top: .7rem; left: 1.15rem; font-size: 3.7rem; opacity: .11; }
+    .affirmation-card .affirmation-text { max-width: 820px; font-size: clamp(1.15rem, 2vw, 1.5rem); line-height: 1.62; }
+    .affirmation-card .affirmation-cat { text-align: left; margin-top: 1.15rem; }
+    .summary-metrics { gap: .55rem; }
+    .metric { text-align: left; padding: .8rem .85rem; background: color-mix(in srgb, var(--bg-card) 88%, transparent); }
+    .metric strong { font-size: 1.45rem; }
+    .metric span { font-size: .68rem; }
+    .streak-box { text-align: left; padding: 1.35rem; background: linear-gradient(145deg, color-mix(in srgb, var(--gold-light) 76%, var(--bg-card)), color-mix(in srgb, var(--violet-light) 58%, var(--bg-card))); }
+    .streak-number { font-size: 3.1rem; }
+
+    .btn {
+      min-height: 38px; border-radius: 9px; font-weight: 650; letter-spacing: .005em;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .btn-primary { box-shadow: 0 5px 14px color-mix(in srgb, var(--violet) 18%, transparent); }
+    .btn-secondary { background: color-mix(in srgb, var(--bg-accent) 75%, var(--bg-card)); border-color: color-mix(in srgb, var(--text-primary) 11%, transparent); }
+    .btn-gold { box-shadow: 0 5px 14px color-mix(in srgb, var(--gold) 18%, transparent); }
+    .btn-sage { box-shadow: 0 5px 14px color-mix(in srgb, var(--sage) 18%, transparent); }
+    input, textarea, select {
+      border-color: color-mix(in srgb, var(--text-primary) 12%, transparent); background: color-mix(in srgb, var(--bg-input) 94%, transparent);
+      min-height: 42px; line-height: 1.55;
+    }
+    textarea { padding-top: .75rem; }
+    label { font-weight: 620; font-size: .79rem; letter-spacing: .015em; }
+    input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 14%, transparent); }
+
+    .mantra-list { display: grid; gap: .55rem; }
+    .mantra-item { margin: 0; padding: .85rem .9rem; border-radius: 11px; box-shadow: none; }
+    .mantra-item:hover { background: color-mix(in srgb, var(--violet-light) 24%, var(--bg-card)); }
+    .mantra-item.favorite { background: color-mix(in srgb, var(--violet-light) 66%, var(--bg-card)); }
+    .engagement-item { padding: .85rem .95rem; border-left: 3px solid color-mix(in srgb, var(--gold) 55%, transparent); }
+    .journal-entry { padding: 1.1rem 1.25rem; border-left: 3px solid color-mix(in srgb, var(--violet) 48%, transparent); }
+    .declaration-text { background: color-mix(in srgb, var(--bg-accent) 72%, var(--bg-card)); border-color: color-mix(in srgb, var(--gold) 19%, transparent); }
+
+    .stepper { gap: .25rem; padding: .3rem 0 .6rem; scrollbar-width: thin; }
+    .step-dot { width: 32px; height: 32px; background: var(--bg-card); border-color: color-mix(in srgb, var(--text-muted) 24%, transparent); }
+    .step::after { background: color-mix(in srgb, var(--text-muted) 17%, transparent); }
+    .step-label { font-size: .67rem; }
+
+    .sub-tabs {
+      width: fit-content; max-width: 100%; padding: .3rem; gap: .25rem; border: var(--border); border-radius: 11px;
+      background: color-mix(in srgb, var(--bg-accent) 72%, var(--bg-card)); overflow-x: auto; flex-wrap: nowrap;
+    }
+    .sub-tabs .btn { border: 0; background: transparent; box-shadow: none; }
+    .sub-tabs .btn.active-filter { background: var(--bg-card); color: var(--violet-dark); box-shadow: var(--shadow-xs); }
+
+    .mode-card-grid { gap: .6rem; }
+    .mode-card { min-height: 106px; background: color-mix(in srgb, var(--bg-input) 94%, transparent); }
+    .mode-card.active { background: color-mix(in srgb, var(--violet-light) 70%, var(--bg-card)); }
+    .declaration-workflow { gap: .4rem; }
+    .workflow-step { min-height: 48px; background: color-mix(in srgb, var(--bg-input) 92%, transparent); }
+    .studio-command-bar { background: color-mix(in srgb, var(--bg-card) 92%, var(--gold-light)); backdrop-filter: blur(10px); }
+    .studio-sidebar, .studio-preview { top: calc(var(--header-h) + 18px); background: color-mix(in srgb, var(--bg-input) 93%, transparent); }
+    .studio-main { box-shadow: var(--shadow-sm); }
+    .studio-step-button { transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+    .studio-step-button:hover { transform: translateX(2px); }
+
+    .data-table { border-collapse: separate; border-spacing: 0; }
+    .data-table th { background: color-mix(in srgb, var(--bg-accent) 62%, transparent); }
+    .data-table th:first-child { border-radius: 9px 0 0 9px; }
+    .data-table th:last-child { border-radius: 0 9px 9px 0; }
+
+    #meditation-overlay {
+      background:
+        radial-gradient(circle at 50% 45%, rgba(119,91,168,.20), transparent 28rem),
+        radial-gradient(circle at 50% 100%, rgba(196,145,58,.13), transparent 34rem),
+        rgba(18,15,25,.985);
+    }
+    #meditation-overlay::before {
+      content: ''; width: min(46vw, 360px); aspect-ratio: 1; border-radius: 50%; position: absolute;
+      border: 1px solid rgba(232,180,90,.10); box-shadow: 0 0 0 36px rgba(232,180,90,.025), 0 0 0 72px rgba(168,130,220,.022);
+    }
+    #meditation-overlay .med-text { position: relative; z-index: 1; }
+
+    #toast { bottom: 1.4rem; right: 1.4rem; border-radius: 11px; box-shadow: var(--shadow-md); }
+
+    @media (min-width: 981px) {
+      #app { display: grid; grid-template-columns: var(--shell-rail) minmax(0, 1fr); grid-template-rows: var(--header-h) minmax(0, 1fr) auto; }
+      #header { grid-column: 1 / -1; grid-row: 1; position: sticky; top: 0; z-index: 120; }
+      #nav-tabs {
+        grid-column: 1; grid-row: 2 / 4; position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
+        align-self: start; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden;
+        padding: 1.15rem .8rem 1rem; gap: .2rem; border-right: var(--border); border-bottom: 0;
+        background: color-mix(in srgb, var(--bg-nav) 88%, transparent); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      }
+      #main-content { grid-column: 2; grid-row: 2; margin: 0 auto; width: 100%; }
+      #footer { grid-column: 2; grid-row: 3; }
+      .nav-rail-head { padding: .3rem .65rem 1rem; margin-bottom: .35rem; border-bottom: var(--border); }
+      .nav-rail-kicker { display: block; font: 700 .61rem/1.2 var(--font-ui); letter-spacing: .13em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: .25rem; }
+      .nav-rail-head strong { font: 500 .8rem/1.4 var(--font-ui); color: var(--text-secondary); }
+      .nav-group-label { padding: .85rem .7rem .28rem; font: 700 .61rem/1 var(--font-ui); letter-spacing: .13em; text-transform: uppercase; color: var(--text-muted); }
+      .nav-tab {
+        width: 100%; min-height: 49px; padding: .58rem .65rem; border: 1px solid transparent; border-radius: 11px;
+        display: grid; grid-template-columns: 31px minmax(0,1fr); align-items: center; gap: .58rem; text-align: left;
+        color: var(--text-secondary); transition: background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+      }
+      .nav-tab:hover { background: color-mix(in srgb, var(--bg-card) 58%, transparent); transform: translateX(2px); }
+      .nav-tab.active { border-bottom-color: transparent; border-color: color-mix(in srgb, var(--gold) 22%, transparent); background: color-mix(in srgb, var(--bg-card) 86%, var(--gold-light)); color: var(--text-primary); box-shadow: var(--shadow-xs); }
+      .nav-tab .tab-icon { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 9px; background: color-mix(in srgb, var(--bg-accent) 75%, transparent); }
+      .nav-tab.active .tab-icon { background: color-mix(in srgb, var(--gold-light) 78%, var(--bg-card)); color: var(--gold-dark); }
+      .tab-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .nav-copy { min-width: 0; display: grid; gap: .06rem; }
+      .nav-copy strong { font: 650 .8rem/1.15 var(--font-ui); color: currentColor; }
+      .nav-copy small { font: 400 .67rem/1.2 var(--font-ui); color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .nav-spacer { flex: 1 1 auto; min-height: .5rem; }
+      .nav-tab-system { margin-top: .35rem; border-top: var(--border); border-radius: 0 0 11px 11px; padding-top: .8rem; }
+      .nav-privacy { display: flex; gap: .55rem; align-items: flex-start; padding: .8rem .7rem .2rem; font: 500 .64rem/1.45 var(--font-ui); color: var(--text-muted); }
+      .nav-privacy > span:first-child { color: var(--sage); font-size: .92rem; line-height: 1; }
+    }
+
+    @media (max-width: 980px) {
+      :root { --header-h: 66px; }
+      #app { display: flex; flex-direction: column; }
+      #header { height: var(--header-h); padding: 0 .9rem; }
+      .brand-sigil { width: 38px; height: 38px; flex-basis: 38px; }
+      .brand-sigil svg { width: 23px; height: 23px; }
+      .brand-kicker { display: none; }
+      .header-brand .brand-name { font-size: .98rem; }
+      .local-status { display: none; }
+      #nav-tabs {
+        position: sticky; top: var(--header-h); z-index: 90; display: flex; flex-direction: row; overflow-x: auto; overflow-y: hidden;
+        gap: .2rem; padding: .45rem .75rem; background: color-mix(in srgb, var(--bg-nav) 92%, transparent);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: var(--border); scroll-snap-type: x proximity;
+      }
+      .nav-rail-head, .nav-group-label, .nav-spacer, .nav-privacy { display: none; }
+      .nav-tab { flex: 0 0 auto; min-height: 42px; padding: .44rem .62rem; border: 1px solid transparent; border-radius: 10px; gap: .38rem; scroll-snap-align: center; }
+      .nav-tab.active { border-bottom-color: transparent; background: var(--bg-card); border-color: color-mix(in srgb, var(--gold) 22%, transparent); box-shadow: var(--shadow-xs); }
+      .tab-icon { display: inline-grid; place-items: center; vertical-align: middle; }
+      .tab-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .nav-copy { display: inline; }
+      .nav-copy strong { font: 650 .74rem/1 var(--font-ui); }
+      .nav-copy small { display: none; }
+      .nav-tab-system { margin-left: .4rem; }
+      #main-content, #main-content.workspace-wide { max-width: 100%; padding-top: 1.7rem; }
+      .studio-sidebar, .studio-preview { top: calc(var(--header-h) + 60px); }
+    }
+
+    @media (max-width: 680px) {
+      #main-content { padding: 1.35rem .85rem 2.3rem; }
+      .section-header { padding-left: .85rem; padding-right: 3.1rem; margin-bottom: 1.2rem; }
+      .section-header h2 { font-size: 1.65rem; }
+      .section-header p { font-size: .9rem; line-height: 1.55; }
+      .affirmation-card { padding: 1.35rem 1.15rem 1.3rem; border-radius: 16px; }
+      .affirmation-card .affirmation-text { font-size: 1.08rem; }
+      .card { border-radius: 12px; }
+      .summary-metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .declaration-workflow { grid-template-columns: repeat(5, minmax(98px,1fr)); overflow-x: auto; padding-bottom: .4rem; }
+      .workflow-step { min-width: 98px; }
+      .sub-tabs { width: 100%; }
+      .sub-tabs .btn { flex: 0 0 auto; }
+      #toast { left: .75rem; right: .75rem; bottom: .75rem; text-align: center; }
+    }
+
+    @media (max-width: 520px) {
+      .header-actions { gap: .35rem; }
+      #save-indicator { max-width: 92px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .header-brand .brand-name { font-size: .9rem; }
+      .brand-sigil { width: 34px; height: 34px; flex-basis: 34px; }
+      #nav-tabs { padding-left: .55rem; padding-right: .55rem; }
+      .actions-row .btn { justify-content: center; }
+      .declaration-text { padding: 1rem; }
+      .studio-main { padding: .85rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+
+    @media print {
+      body::before { display: none !important; }
+      #app { display: block !important; }
+      #main-content, #main-content.workspace-wide { max-width: 100% !important; }
+    }
+
+
+    /* ═══════════════════════════════════════════════════════
+       V0.3 — OUTILS VISUELS DE DISCERNEMENT & D'INTÉGRATION
+       ═══════════════════════════════════════════════════════ */
+    .insight-toolbar { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; margin:1rem 0; }
+    .insight-toolbar .mode-switch { margin:0; }
+    .visual-panel { border:var(--border); border-radius:var(--radius-lg); background:var(--bg-card); box-shadow:var(--shadow-xs); padding:1rem; }
+    .visual-panel + .visual-panel { margin-top:1rem; }
+    .visual-head { display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; margin-bottom:.8rem; }
+    .visual-head h3 { font-size:1rem; font-weight:normal; margin:0; }
+    .visual-head p { margin:.2rem 0 0; font-family:var(--font-ui); font-size:.78rem; color:var(--text-muted); max-width:68ch; }
+    .visual-legend { display:flex; gap:.4rem; flex-wrap:wrap; font-family:var(--font-ui); font-size:.72rem; color:var(--text-secondary); }
+    .visual-legend span { display:inline-flex; align-items:center; gap:.25rem; border:var(--border); border-radius:999px; padding:.18rem .48rem; background:var(--bg-input); }
+    .visual-surface { position:relative; border:var(--border); border-radius:var(--radius-md); background:linear-gradient(180deg, color-mix(in srgb,var(--bg-card) 96%,var(--violet-light)), var(--bg-input)); overflow:hidden; min-height:340px; }
+    .living-map-svg, .validity-rose-svg, .values-compass-svg, .mirror-svg { display:block; width:100%; height:auto; }
+    .living-map-svg .axis-ring { fill:none; stroke:var(--text-muted); stroke-opacity:.14; }
+    .living-map-svg .plan-label { fill:var(--text-muted); font:600 11px var(--font-ui); }
+    .living-map-svg .link { stroke:var(--text-muted); stroke-width:1.3; stroke-opacity:.36; }
+    .living-map-svg .link.semi { stroke-dasharray:7 5; }
+    .living-map-svg .link.inconscient { stroke-dasharray:3 5; }
+    .living-map-svg .link.force { stroke-width:2.4; stroke-dasharray:2 4; }
+    .living-map-svg .node { cursor:pointer; outline:none; }
+    .living-map-svg .node:focus .node-shape { stroke:var(--gold); stroke-width:4; }
+    .living-map-svg .node-shape { stroke:var(--bg-card); stroke-width:3; filter:drop-shadow(0 3px 5px rgba(0,0,0,.13)); }
+    .living-map-svg .node-label { fill:var(--text-primary); font:600 11px var(--font-ui); pointer-events:none; }
+    .living-map-svg .node-symbol { fill:#fff; font:700 11px var(--font-ui); pointer-events:none; text-anchor:middle; dominant-baseline:middle; }
+    .map-text-summary { margin-top:.7rem; font-family:var(--font-ui); font-size:.78rem; color:var(--text-secondary); }
+    .map-empty { min-height:300px; display:grid; place-items:center; text-align:center; color:var(--text-muted); font-family:var(--font-ui); padding:2rem; }
+
+    .values-layout { display:grid; grid-template-columns:minmax(260px,.9fr) minmax(0,1.4fr); gap:1rem; align-items:start; }
+    .values-compass-wrap { border:var(--border); border-radius:var(--radius-md); background:var(--bg-input); padding:.6rem; }
+    .value-palette { display:flex; flex-wrap:wrap; gap:.45rem; }
+    .value-chip { border:var(--border); border-radius:999px; background:var(--bg-input); color:var(--text-secondary); padding:.38rem .65rem; font-family:var(--font-ui); font-size:.78rem; transition:all var(--ease); }
+    .value-chip:hover, .value-chip:focus-visible { border-color:var(--violet); color:var(--violet); }
+    .value-chip.active { background:var(--violet-light); border-color:var(--violet); color:var(--violet-dark); font-weight:700; }
+    .value-chip.support.active { background:var(--sage-light); border-color:var(--sage); color:var(--text-primary); }
+    .value-chip.tension.active { background:var(--rose-light); border-color:var(--rose); color:var(--text-primary); }
+    .value-chip.historical { border-style:dashed; opacity:.9; }
+    .historical-value-wrap { display:inline-flex; align-items:center; gap:.25rem; flex-wrap:wrap; }
+    .historical-value-wrap .reactivate-value { border:0; background:transparent; color:var(--text-muted); font:600 .72rem var(--font-ui); padding:.2rem .25rem; cursor:pointer; }
+    .historical-value-wrap .reactivate-value:hover, .historical-value-wrap .reactivate-value:focus-visible { color:var(--violet); text-decoration:underline; }
+    .action-simplify-note { margin-top:.55rem; padding:.6rem .75rem; border-left:3px solid var(--gold); background:var(--gold-light); border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+    .value-limit { margin-top:.55rem; font-family:var(--font-ui); font-size:.72rem; color:var(--text-muted); }
+    .value-linker { margin:.75rem 0 0; padding:.75rem; border:var(--border); border-radius:var(--radius-sm); background:var(--bg-input); }
+    .value-linker h4 { font-family:var(--font-ui); font-size:.78rem; margin-bottom:.45rem; color:var(--text-primary); }
+
+    .validity-visual-grid { display:grid; grid-template-columns:minmax(250px,.9fr) minmax(0,1.2fr); gap:1rem; align-items:center; margin-top:1rem; }
+    .validity-rose-wrap { border:var(--border); border-radius:var(--radius-md); background:var(--bg-input); padding:.5rem; }
+    .validity-rose-svg .grid { fill:none; stroke:var(--text-muted); stroke-opacity:.2; }
+    .validity-rose-svg .axis { stroke:var(--text-muted); stroke-opacity:.28; }
+    .validity-rose-svg .data { fill:color-mix(in srgb,var(--violet) 24%, transparent); stroke:var(--violet); stroke-width:2.2; }
+    .validity-rose-svg .point { fill:var(--gold); stroke:var(--bg-card); stroke-width:2; }
+    .validity-rose-svg text { fill:var(--text-secondary); font:600 10px var(--font-ui); }
+    .validity-text-list { display:grid; gap:.4rem; font-family:var(--font-ui); font-size:.78rem; color:var(--text-secondary); }
+    .validity-text-list span { display:flex; justify-content:space-between; gap:.6rem; padding:.42rem .55rem; border-radius:var(--radius-sm); background:var(--bg-input); border:var(--border); }
+
+    .action-workshop { border:var(--border-accent); background:linear-gradient(145deg,var(--bg-card),color-mix(in srgb,var(--sage-light) 34%,var(--bg-card))); }
+    .action-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.55rem; margin:.8rem 0 1rem; }
+    .action-flow-step { border:var(--border); border-radius:var(--radius-sm); background:var(--bg-input); padding:.65rem; font-family:var(--font-ui); font-size:.75rem; color:var(--text-secondary); }
+    .action-flow-step strong { display:block; color:var(--text-primary); margin-bottom:.2rem; }
+    .confidence-wrap { display:grid; grid-template-columns:1fr auto; gap:.75rem; align-items:center; }
+    .confidence-wrap input[type="range"] { width:100%; }
+    .confidence-value { width:2.6rem; height:2.6rem; border-radius:50%; display:grid; place-items:center; background:var(--violet-light); color:var(--violet); font:700 1rem var(--font-ui); border:var(--border); }
+    .confidence-hint { margin-top:.35rem; font: .75rem var(--font-ui); color:var(--text-muted); }
+    .confidence-hint.low { color:var(--amber); font-weight:600; }
+    .integration-item.enriched { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:.65rem; align-items:start; }
+    .integration-details { margin-top:.45rem; display:grid; gap:.25rem; font-family:var(--font-ui); font-size:.75rem; color:var(--text-secondary); }
+    .integration-details .ifthen { padding:.45rem .6rem; border-left:3px solid var(--violet); background:var(--violet-light); border-radius:0 var(--radius-sm) var(--radius-sm) 0; color:var(--text-primary); }
+    .integration-reflection { margin-top:.55rem; padding:.55rem; border:var(--border); border-radius:var(--radius-sm); background:var(--bg-input); }
+    .integration-reflection textarea { min-height:72px; }
+
+    .timeline { position:relative; padding-left:1.6rem; margin-top:.6rem; }
+    .timeline::before { content:""; position:absolute; left:.48rem; top:.35rem; bottom:.35rem; width:2px; background:linear-gradient(var(--violet),var(--sage)); opacity:.28; }
+    .timeline-item { position:relative; padding:0 0 .85rem .55rem; }
+    .timeline-dot { position:absolute; left:-1.46rem; top:.18rem; width:.85rem; height:.85rem; border-radius:50%; background:var(--bg-card); border:3px solid var(--violet); }
+    .timeline-item.action .timeline-dot { border-color:var(--sage); }
+    .timeline-item.revocation .timeline-dot { border-color:var(--rose); }
+    .timeline-item.journal .timeline-dot { border-color:var(--gold); }
+    .timeline-item strong { font-family:var(--font-ui); font-size:.82rem; }
+    .timeline-meta { font-family:var(--font-ui); font-size:.7rem; color:var(--text-muted); }
+    .timeline-text { font-size:.84rem; color:var(--text-secondary); margin-top:.12rem; }
+
+    .mirror-card { margin-bottom:1rem; border:var(--border-accent); background:linear-gradient(135deg,color-mix(in srgb,var(--violet-light) 42%,var(--bg-card)),var(--bg-card)); }
+    .mirror-top { display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start; flex-wrap:wrap; }
+    .mirror-metrics { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:.55rem; margin:.8rem 0; }
+    .mirror-metric { border:var(--border); border-radius:var(--radius-sm); background:var(--bg-card); padding:.65rem; text-align:center; }
+    .mirror-metric strong { display:block; font:normal 1.35rem var(--font-display); color:var(--violet); }
+    .mirror-metric span { font: .68rem var(--font-ui); color:var(--text-muted); }
+    .practice-rhythm { display:grid; grid-template-columns:repeat(7,1fr); gap:.35rem; margin-top:.65rem; }
+    .practice-day { min-height:44px; border:var(--border); border-radius:var(--radius-sm); display:grid; place-items:center; background:var(--bg-input); font-family:var(--font-ui); font-size:.68rem; color:var(--text-muted); position:relative; }
+    .practice-day.done { background:var(--sage-light); border-color:var(--sage); color:var(--text-primary); }
+    .practice-day.today { outline:2px solid var(--gold); outline-offset:2px; }
+    .practice-day .mark { font-size:.9rem; }
+    .practice-month-note { margin-top:.55rem; font:.75rem var(--font-ui); color:var(--text-muted); }
+
+    .journal-mode-bar { margin-bottom:.75rem; }
+    .journal-guide { border:var(--border); border-radius:var(--radius-md); background:var(--bg-input); padding:.75rem; margin-bottom:.75rem; }
+    .journal-guide strong { display:block; font-family:var(--font-ui); font-size:.8rem; margin-bottom:.35rem; }
+    .journal-prompts { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .journal-prompt-pill { border:var(--border); border-radius:999px; background:var(--bg-card); color:var(--text-secondary); padding:.3rem .55rem; font: .72rem var(--font-ui); }
+    .journal-link-grid { display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-top:.65rem; }
+
+    .med-controls { width:min(720px,calc(100vw - 2rem)); display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem; margin-top:1.5rem; }
+    .med-controls button, .med-controls select { width:auto; min-height:40px; }
+    .med-control-group { display:flex; align-items:center; gap:.4rem; padding:.35rem .5rem; border:1px solid rgba(255,255,255,.22); border-radius:999px; background:rgba(0,0,0,.12); }
+    .med-control-group label { color:inherit; margin:0; font-size:.72rem; }
+    .med-note { width:min(640px,calc(100vw - 2rem)); margin-top:1rem; display:flex; gap:.5rem; }
+    .med-note input { background:rgba(255,255,255,.12); color:inherit; border-color:rgba(255,255,255,.24); }
+    .med-note input::placeholder { color:rgba(255,255,255,.66); }
+    .med-close { margin-top:1rem; }
+
+    @media (max-width: 860px) {
+      .values-layout, .validity-visual-grid { grid-template-columns:1fr; }
+      .action-flow { grid-template-columns:1fr 1fr; }
+      .mirror-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    }
+    @media (max-width: 540px) {
+      .action-flow, .journal-link-grid { grid-template-columns:1fr; }
+      .mirror-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .visual-head { flex-direction:column; }
+      .med-controls { align-items:stretch; flex-direction:column; }
+      .med-control-group { justify-content:space-between; border-radius:var(--radius-sm); }
+      .med-note { flex-direction:column; }
+    }
+    [data-theme="dark"] body { background-color:#17141d !important; }
+    [data-theme="light"] body { background-color:#f7f4ed !important; }
+
+    @media print {
+      .insight-toolbar, .med-controls, .med-note, .value-palette, .action-workshop button, .journal-mode-bar { display:none !important; }
+      .visual-surface { min-height:0; }
+    }
+
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Aller directement au contenu</a>
 <div id="app">
 
   <!-- ════════════════ EN-TÊTE ════════════════ -->
   <header id="header">
-    <div class="header-brand">
-      <span class="logo-icon">✦</span>
-      <span class="brand-name">Souveraineté <span>Intérieure</span></span>
+    <div class="header-brand" aria-label="Souveraineté Intérieure">
+      <span class="brand-sigil" aria-hidden="true">
+        <svg viewBox="0 0 48 48" focusable="false"><circle cx="24" cy="24" r="18"></circle><path d="M24 8c2.8 8.1 7.9 13.2 16 16-8.1 2.8-13.2 7.9-16 16-2.8-8.1-7.9-13.2-16-16 8.1-2.8 13.2-7.9 16-16Z"></path><circle cx="24" cy="24" r="3.2"></circle></svg>
+      </span>
+      <span class="brand-copy"><span class="brand-kicker">Self-Clearing System</span><span class="brand-name">Souveraineté <span>Intérieure</span></span></span>
     </div>
     <div class="header-actions">
-      <span id="save-indicator">✓ Sauvegardé</span>
-      <button id="theme-toggle" title="Basculer jour/nuit" aria-label="Basculer entre le mode jour et le mode nuit" onclick="Controller.toggleTheme()">☀️</button>
+      <span class="local-status" title="Application autonome, sans connexion requise"><span class="status-orb" aria-hidden="true"></span><span class="local-status-text">Local &amp; privé</span></span>
+      <span id="save-indicator" role="status" aria-live="polite">✓ Sauvegardé</span>
+      <button id="theme-toggle" class="theme-control" title="Basculer jour/nuit" aria-label="Basculer entre le mode jour et le mode nuit" onclick="Controller.toggleTheme()"><span aria-hidden="true">☀️</span></button>
     </div>
   </header>
 
-  <!-- ════════════════ NAVIGATION ════════════════ -->
-  <nav id="nav-tabs">
-    <button class="nav-tab active" data-tab="accueil"       onclick="Controller.setTab('accueil')"><span class="tab-icon">🌟</span>Accueil</button>
-    <button class="nav-tab"        data-tab="affirmations"  onclick="Controller.setTab('affirmations')"><span class="tab-icon">✨</span>Affirmations</button>
-    <button class="nav-tab"        data-tab="cartographie"  onclick="Controller.setTab('cartographie')"><span class="tab-icon">🗺</span>Cartographie</button>
-    <button class="nav-tab"        data-tab="revocation"    onclick="Controller.setTab('revocation')"><span class="tab-icon">🔓</span>Révocation</button>
-    <button class="nav-tab"        data-tab="reaffirmation" onclick="Controller.setTab('reaffirmation')"><span class="tab-icon">🌱</span>Réaffirmation</button>
-    <button class="nav-tab"        data-tab="declarations"  onclick="Controller.setTab('declarations')"><span class="tab-icon">📜</span>Déclarations</button>
-    <button class="nav-tab"        data-tab="journal"       onclick="Controller.setTab('journal')"><span class="tab-icon">📔</span>Journal</button>
-    <button class="nav-tab"        data-tab="parametres"    onclick="Controller.setTab('parametres')"><span class="tab-icon">⚙</span>Paramètres</button>
+  <!-- ════════════════ NAVIGATION ADAPTATIVE ════════════════ -->
+  <nav id="nav-tabs" aria-label="Espaces de pratique">
+    <div class="nav-rail-head"><span class="nav-rail-kicker">Parcours intérieur</span><strong>Clarté → choix → ancrage</strong></div>
+    <div class="nav-group-label">Observer</div>
+    <button class="nav-tab active" data-tab="accueil" onclick="Controller.setTab('accueil')" aria-current="page"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"></path></svg></span><span class="nav-copy"><strong>Accueil</strong><small>Vue d’ensemble</small></span></button>
+    <button class="nav-tab" data-tab="affirmations" onclick="Controller.setTab('affirmations')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"></path><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"></path></svg></span><span class="nav-copy"><strong>Affirmations</strong><small>Nourrir l’axe</small></span></button>
+    <div class="nav-group-label">Clarifier</div>
+    <button class="nav-tab" data-tab="cartographie" onclick="Controller.setTab('cartographie')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6.5l5-2 8 3 5-2v12l-5 2-8-3-5 2v-12Z"></path><path d="M8 4.5v12M16 7.5v12"></path></svg></span><span class="nav-copy"><strong>Cartographie</strong><small>Voir les engagements</small></span></button>
+    <button class="nav-tab" data-tab="revocation" onclick="Controller.setTab('revocation')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M9 10V7a4 4 0 0 1 7-2.6"></path></svg></span><span class="nav-copy"><strong>Révocation</strong><small>Clarifier &amp; libérer</small></span></button>
+    <button class="nav-tab" data-tab="reaffirmation" onclick="Controller.setTab('reaffirmation')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21V10"></path><path d="M12 13c-4.5 0-7-2.5-7-6 4.5 0 7 2.5 7 6ZM12 10c0-4.5 2.5-7 6-7 0 4.5-2.5 7-6 7Z"></path></svg></span><span class="nav-copy"><strong>Réaffirmation</strong><small>Choisir &amp; intégrer</small></span></button>
+    <div class="nav-group-label">Ancrer</div>
+    <button class="nav-tab" data-tab="declarations" onclick="Controller.setTab('declarations')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6V3Z"></path><path d="M15 3v4h4M9 11h6M9 15h6"></path></svg></span><span class="nav-copy"><strong>Déclarations</strong><small>Formaliser</small></span></button>
+    <button class="nav-tab" data-tab="journal" onclick="Controller.setTab('journal')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2V3Z"></path><path d="M9 7h6M9 11h6M9 15h4"></path></svg></span><span class="nav-copy"><strong>Journal</strong><small>Observer &amp; ancrer</small></span></button>
+    <div class="nav-spacer"></div>
+    <button class="nav-tab nav-tab-system" data-tab="parametres" onclick="Controller.setTab('parametres')"><span class="tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.09A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3v-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.09A1.7 1.7 0 0 0 15.4 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.15.37.36.7.6 1 .28.32.65.49 1.1.5H21v4h-.09c-.44.01-.81.18-1.1.5-.24.3-.45.63-.6 1Z"></path></svg></span><span class="nav-copy"><strong>Paramètres</strong><small>Données &amp; autonomie</small></span></button>
+    <div class="nav-privacy"><span aria-hidden="true">◌</span><span>Autonome · hors ligne<br>Données sur cet appareil</span></div>
   </nav>
 
   <!-- ════════════════ CONTENU PRINCIPAL ════════════════ -->
@@ -1401,10 +1904,7 @@
 
     <!-- ════ ONGLET 1 : ACCUEIL ════ -->
     <section id="tab-accueil" class="tab-section active">
-      <div class="section-header">
-        <h2><span class="section-icon">🌟</span>Tableau de Bord</h2>
-        <p>Votre espace de pratique quotidienne — Self-Clearing System, niveau expert.</p>
-      </div>
+      <div class="section-header"><span class="section-kicker">Vue d’ensemble</span><h2>Votre espace intérieur</h2><p>Une lecture calme de ce qui est actif, de ce qui demande de la clarté et de la prochaine marche disponible.</p></div>
 
       <!-- Affirmation du jour -->
       <div id="affirmation-du-jour" class="affirmation-card" style="margin-bottom:1.25rem;">
@@ -1438,11 +1938,30 @@
         <p class="muted-small" id="summary-updated-at" style="margin-top:0.8rem;"></p>
       </div>
 
+      <div class="card mirror-card" id="practice-mirror-card">
+        <div class="mirror-top">
+          <div>
+            <div class="card-title">Miroir de pratique</div>
+            <h3 style="font-weight:normal;font-size:1.05rem;">Ce qui devient visible dans la durée</h3>
+            <p class="muted-small">Un reflet factuel de vos propres données : aucune interprétation automatique.</p>
+          </div>
+          <div class="mode-switch" aria-label="Période du miroir">
+            <button class="btn btn-sm active" id="mirror-7-btn" aria-pressed="true" onclick="Controller.setMirrorRange(7)">7 jours</button>
+            <button class="btn btn-sm" id="mirror-30-btn" aria-pressed="false" onclick="Controller.setMirrorRange(30)">30 jours</button>
+          </div>
+        </div>
+        <div class="mirror-metrics" id="mirror-metrics"></div>
+        <div id="mirror-chart" aria-label="Visualisation de l'activité récente"></div>
+        <p class="muted-small" id="mirror-summary-text"></p>
+      </div>
+
       <div class="grid-2" style="margin-bottom:1rem;">
         <!-- Streak -->
         <div class="streak-box">
           <div class="streak-number" id="streak-number">0</div>
-          <div class="streak-label">jours de pratique consécutifs</div>
+          <div class="streak-label">jours consécutifs · le rythme compte plus que la perfection</div>
+          <div class="practice-rhythm" id="practice-rhythm" aria-label="Rythme des sept derniers jours"></div>
+          <div class="practice-month-note" id="practice-month-note"></div>
           <button class="btn btn-gold btn-sm" style="margin-top:0.75rem;" onclick="Controller.markPractice()">✓ Marquer la journée</button>
         </div>
         <!-- Progression modules -->
@@ -1491,10 +2010,7 @@
 
     <!-- ════ ONGLET 2 : AFFIRMATIONS ════ -->
     <section id="tab-affirmations" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">✨</span>Affirmations &amp; Mantras</h2>
-        <p>Bibliothèque de mantras de souveraineté — personnalisable, filtrable, avec mode méditation.</p>
-      </div>
+      <div class="section-header"><span class="section-kicker">Nourrir l’axe</span><h2>Affirmations &amp; mantras</h2><p>Bibliothèque personnalisable et filtrable : retrouvez une phrase juste, marquez vos favorites ou laissez-les habiter l’espace en mode méditation.</p></div>
 
       <!-- Filtres -->
       <div class="card" style="margin-bottom:1rem;">
@@ -1528,13 +2044,49 @@
 
     <!-- ════ ONGLET 3 : CARTOGRAPHIE ════ -->
     <section id="tab-cartographie" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">🗺</span>Cartographie des Engagements</h2>
+      <div class="section-header"><span class="section-kicker">Rendre visible</span><h2>Cartographie des engagements</h2>
         <p><strong>Module 1</strong> — Identifier tout ce qui crée un lien actif. <em>« À quoi suis-je relié(e), volontairement ou non ? »</em></p>
       </div>
 
       <div class="alert alert-info">
         Listez vos engagements sans jugement. L'objectif est de <strong>voir clairement</strong>, pas de tout révoquer. Cette carte est votre outil de discernement.
+      </div>
+
+      <div class="insight-toolbar">
+        <div>
+          <strong style="font-family:var(--font-ui);font-size:.85rem;">Voir mes liens</strong>
+          <div class="muted-small">La vue visuelle et la liste montrent exactement les mêmes données.</div>
+        </div>
+        <div class="mode-switch" aria-label="Vue de la cartographie">
+          <button class="btn btn-sm active" id="cart-view-map" aria-pressed="true" onclick="Controller.setCartographyView('map')">◉ Carte vivante</button>
+          <button class="btn btn-sm" id="cart-view-list" aria-pressed="false" onclick="Controller.setCartographyView('list')">☷ Liste détaillée</button>
+        </div>
+      </div>
+
+      <div id="cartography-map-panel">
+        <div class="visual-panel">
+          <div class="visual-head">
+            <div><h3>Carte vivante des liens</h3><p>Le centre représente votre axe. La position indique le plan concerné ; la forme du lien rappelle le consentement et le symbole du nœud indique l’effet que vous avez renseigné.</p></div>
+            <div class="visual-legend"><span>✓ positif</span><span>• neutre</span><span>! contraignant</span><span>— libre</span><span>·· imposé</span></div>
+          </div>
+          <div id="living-map" class="visual-surface"></div>
+          <div id="living-map-summary" class="map-text-summary" aria-live="polite"></div>
+        </div>
+
+        <div class="visual-panel" id="values-compass-panel">
+          <div class="visual-head"><div><h3>Boussole de valeurs vivantes</h3><p>Choisissez jusqu’à cinq repères qui comptent réellement pour vous. Rien n’est présélectionné : cette boussole appartient à l’utilisateur, pas à l’application.</p></div></div>
+          <div class="values-layout">
+            <div class="values-compass-wrap"><div id="values-compass"></div></div>
+            <div>
+              <div id="value-palette" class="value-palette" aria-label="Valeurs proposées"></div>
+              <div class="value-limit" id="value-limit-text">0 / 5 valeurs choisies</div>
+              <div class="form-row" style="margin-top:.75rem;">
+                <div class="form-group"><label for="custom-value-input">Ajouter un repère personnel</label><input id="custom-value-input" type="text" placeholder="Ex : simplicité, joie, souveraineté créatrice…"></div>
+                <div class="form-group" style="align-self:end;"><button class="btn btn-secondary" onclick="Controller.addCustomValue()">+ Ajouter</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Formulaire d'ajout -->
@@ -1603,6 +2155,14 @@
             <option value="spirituel">Spirituel</option>
           </select>
         </div>
+        <div class="value-linker">
+          <h4>Relation à mes valeurs (optionnel)</h4>
+          <p class="muted-small">Reliez cet engagement uniquement aux valeurs que vous avez choisies dans la boussole.</p>
+          <div class="grid-2" style="margin-top:.55rem;">
+            <div><span class="muted-small">Ce lien nourrit…</span><div id="eng-values-support" class="value-palette" style="margin-top:.35rem;"></div></div>
+            <div><span class="muted-small">Ce lien met en tension…</span><div id="eng-values-tension" class="value-palette" style="margin-top:.35rem;"></div></div>
+          </div>
+        </div>
         <div class="actions-row compact">
           <button class="btn btn-primary" id="eng-save-btn" onclick="Controller.saveEngagement()">+ Ajouter à la carte</button>
           <button class="btn btn-secondary" id="eng-cancel-edit" style="display:none;" onclick="Controller.resetEngagementForm()">Annuler l'édition</button>
@@ -1639,8 +2199,7 @@
 
     <!-- ════ ONGLET 4 : RÉVOCATION ════ -->
     <section id="tab-revocation" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">🔓</span>Révocation &amp; Libération</h2>
+      <div class="section-header"><span class="section-kicker">Discerner avant d’agir</span><h2>Révocation &amp; libération</h2>
         <p><strong>Modules 2-4</strong> — Analyser la validité, choisir l'action, retirer le consentement.</p>
       </div>
 
@@ -1721,7 +2280,14 @@
             </select>
           </div>
         </div>
-        <div id="validity-result" style="margin-top:1rem; display:none;"></div>
+        <div class="validity-visual-grid">
+          <div class="validity-rose-wrap"><div id="validity-rose" aria-label="Rose des cinq critères de discernement"></div></div>
+          <div>
+            <div class="card-title">Lecture visuelle</div>
+            <div id="validity-text-list" class="validity-text-list"></div>
+            <div id="validity-result" style="margin-top:.75rem; display:none;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Décision -->
@@ -1792,8 +2358,7 @@
 
     <!-- ════ ONGLET 5 : RÉAFFIRMATION ════ -->
     <section id="tab-reaffirmation" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">🌱</span>Restitution &amp; Réaffirmation</h2>
+      <div class="section-header"><span class="section-kicker">Choisir après avoir libéré</span><h2>Restitution &amp; réaffirmation</h2>
         <p><strong>Modules 5-6-7</strong> — Rendre ce qui ne nous appartient pas, créer un nouveau cadre, stabiliser.</p>
       </div>
 
@@ -1854,14 +2419,43 @@
           <button class="btn btn-primary" onclick="Controller.addIntegration()">+ Ajouter</button>
         </div>
       </div>
+
+      <div class="card action-workshop" style="margin-top:1rem;">
+        <div class="card-title">Atelier du prochain acte</div>
+        <p class="muted-small">Transformez une intention en plan concret : résultat souhaité → obstacle → déclencheur → acte faisable. La confiance sert uniquement à ajuster la taille du pas.</p>
+        <div class="action-flow" aria-hidden="true">
+          <div class="action-flow-step"><strong>1 · Souhait</strong>Ce que je veux rendre réel</div>
+          <div class="action-flow-step"><strong>2 · Obstacle</strong>Ce qui risque de m’arrêter</div>
+          <div class="action-flow-step"><strong>3 · Déclencheur</strong>Quand / dans quelle situation</div>
+          <div class="action-flow-step"><strong>4 · Petit acte</strong>Ce que je ferai réellement</div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="action-outcome">Résultat souhaité</label><input id="action-outcome" type="text" placeholder="Ex : garder une limite calme et claire"></div>
+          <div class="form-group"><label for="action-obstacle">Obstacle réel</label><input id="action-obstacle" type="text" placeholder="Ex : je réponds trop vite sous pression"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="action-trigger">Quand / si…</label><input id="action-trigger" type="text" placeholder="Ex : si l’on insiste après mon premier non"></div>
+          <div class="form-group"><label for="action-behavior">Alors je…</label><input id="action-behavior" type="text" placeholder="Ex : je répète ma limite une fois, puis je quitte l’échange"></div>
+        </div>
+        <div class="form-group">
+          <label for="action-confidence">Confiance à pouvoir le faire</label>
+          <div class="confidence-wrap"><input id="action-confidence" type="range" min="0" max="10" value="7" oninput="View.updateActionConfidence(this.value)"><div class="confidence-value" id="action-confidence-value">7</div></div>
+          <div class="confidence-hint" id="action-confidence-hint">À 7/10 ou plus, le pas est généralement assez concret pour être tenté.</div>
+        </div>
+        <div class="form-group"><label>Valeurs incarnées par cet acte</label><div id="action-values-chips" class="value-palette"></div></div>
+        <div class="actions-row compact"><button class="btn btn-primary" onclick="Controller.createActionPlan()">Créer ce plan d’action</button><button class="btn btn-secondary" onclick="Controller.simplifyActionPlan()">Rendre le pas plus petit</button></div>
+        <div class="action-simplify-note muted-small" id="action-simplify-note" hidden>Pour simplifier : réduisez la durée, le nombre d’étapes ou le contexte nécessaire. Puis réévaluez vous-même votre confiance avec le curseur — l’application ne la modifiera pas à votre place.</div>
+      </div>
+
+      <div class="visual-panel" style="margin-top:1rem;">
+        <div class="visual-head"><div><h3>Chronologie de transformation</h3><p>Une lecture factuelle des engagements, décisions, actions et notes qui jalonnent votre pratique.</p></div></div>
+        <div id="transformation-timeline"></div>
+      </div>
     </section>
 
     <!-- ════ ONGLET 6 : DÉCLARATIONS ════ -->
     <section id="tab-declarations" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">📜</span>Déclarations de Souveraineté</h2>
-        <p>Textes de libération collective — à lire, réciter et s'aligner avec intention.</p>
-      </div>
+      <div class="section-header"><span class="section-kicker">Mettre en forme la parole</span><h2>Déclarations de souveraineté</h2><p>Lisez les textes de référence ou construisez une déclaration individuelle, du discernement initial jusqu’à l’export.</p></div>
 
       <div class="sub-tabs" role="tablist" aria-label="Sections des déclarations">
         <button class="btn btn-secondary btn-sm active-filter" id="decl-tab-lecture" onclick="Controller.setDeclarationSubtab('lecture')" aria-pressed="true">Lire les déclarations</button>
@@ -2178,15 +2772,20 @@
 
     <!-- ════ ONGLET 7 : JOURNAL ════ -->
     <section id="tab-journal" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">📔</span>Journal d'Introspection</h2>
-        <p>Espace de réflexion quotidienne — ancrer, observer, intégrer.</p>
-      </div>
+      <div class="section-header"><span class="section-kicker">Observer dans la durée</span><h2>Journal d’introspection</h2><p>Déposez ce qui a bougé, retrouvez vos entrées par recherche ou tags, et observez les actes qui rendent vos choix concrets.</p></div>
 
       <!-- Nouvelle entrée -->
       <div class="card" style="margin-bottom:1rem;">
         <div class="card-title">Entrée du <span id="today-date"></span></div>
         <input type="hidden" id="journal-edit-id">
+        <div class="journal-mode-bar mode-switch" aria-label="Profondeur du journal">
+          <button class="btn btn-sm active" id="journal-mode-free" aria-pressed="true" onclick="Controller.setJournalMode('free')">Écriture libre</button>
+          <button class="btn btn-sm" id="journal-mode-quick" aria-pressed="false" onclick="Controller.setJournalMode('quick')">Point 2 minutes</button>
+          <button class="btn btn-sm" id="journal-mode-review" aria-pressed="false" onclick="Controller.setJournalMode('review')">Relire une expérience</button>
+        </div>
+        <div class="journal-guide" id="journal-mode-guide">
+          <strong>Écriture libre</strong><span class="muted-small">Écrivez sans structure imposée. Une question guide reste disponible si vous en avez envie.</span>
+        </div>
         <div class="form-group" style="margin-top:0.5rem;">
           <label for="journal-prompt-select">Prompt d'introspection</label>
           <div class="actions-row compact no-wrap" style="margin-bottom:0.5rem;">
@@ -2211,6 +2810,10 @@
           <label for="journal-tags" class="sr-only">Tags du journal</label>
           <input type="text" id="journal-tags" placeholder="Tags (séparés par virgule)" style="flex:1; max-width:260px;">
         </div>
+        <div class="journal-link-grid">
+          <div class="form-group"><label for="journal-link-engagement">Relier à un engagement (optionnel)</label><select id="journal-link-engagement"><option value="">— Aucun lien —</option></select></div>
+          <div class="form-group"><label for="journal-link-action">Relier à une action (optionnel)</label><select id="journal-link-action"><option value="">— Aucune action —</option></select></div>
+        </div>
       </div>
 
       <!-- Historique -->
@@ -2222,13 +2825,18 @@
 
     <!-- ════ ONGLET 8 : PARAMÈTRES ════ -->
     <section id="tab-parametres" class="tab-section">
-      <div class="section-header">
-        <h2><span class="section-icon">⚙</span>Paramètres</h2>
-        <p>Gestion des données, thème, impression et réinitialisation.</p>
-      </div>
+      <div class="section-header"><span class="section-kicker">Autonomie de l’outil</span><h2>Données &amp; paramètres</h2><p>Sauvegarde, confidentialité locale, import, export, impression et réinitialisation.</p></div>
 
       <div id="storage-warning" class="alert alert-warn" style="display:none;">
         La sauvegarde locale n'est pas disponible dans ce navigateur. Les données peuvent être perdues au rechargement : privilégiez l'export JSON manuel.
+      </div>
+
+      <div id="recovery-warning" class="alert alert-warn" style="display:none;">
+        <strong>Une sauvegarde locale illisible a été détectée.</strong> L’application a démarré avec un état neuf sans supprimer la copie brute de secours.
+        <div class="actions-row compact" style="margin-top:0.75rem;">
+          <button class="btn btn-secondary btn-sm" type="button" onclick="Model.exportRecoveryData()">⬇ Télécharger le secours brut</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="Model.clearRecoveryData()">Ignorer ce secours</button>
+        </div>
       </div>
 
       <div id="no-save-warning" class="alert alert-info" style="display:none;">
@@ -2296,15 +2904,23 @@
 
   <!-- ════════════════ PIED DE PAGE ════════════════ -->
   <footer id="footer">
-    Souveraineté Intérieure — Self-Clearing System · <span id="footer-version-label">v0.1.alpha</span> · Application locale &amp; hors-ligne · Toutes données stockées sur votre appareil
+    Souveraineté Intérieure — Self-Clearing System · <span id="footer-version-label">v0.2.alpha</span> · Application locale &amp; hors-ligne · Toutes données stockées sur votre appareil
   </footer>
 </div>
 
 <!-- Mode Méditation (overlay) -->
-<div id="meditation-overlay">
+<div id="meditation-overlay" role="dialog" aria-modal="true" aria-labelledby="meditation-title" aria-describedby="med-mantra-text" aria-hidden="true" tabindex="-1">
+  <h2 id="meditation-title" class="sr-only">Mode méditation</h2>
   <div class="med-text" id="med-mantra-text"></div>
-  <div class="med-counter" id="med-counter"></div>
-  <button class="med-close" onclick="Controller.closeMeditation()">✕ Fermer</button>
+  <div class="med-counter" id="med-counter" aria-live="polite"></div>
+  <div class="med-controls" aria-label="Contrôles du mode méditation">
+    <div class="med-control-group"><button class="btn btn-secondary btn-sm" onclick="Controller.previousMeditationMantra()" aria-label="Mantra précédent">←</button><button class="btn btn-secondary btn-sm" id="med-play-toggle" onclick="Controller.toggleMeditationPlayback()">Pause</button><button class="btn btn-secondary btn-sm" onclick="Controller.nextMeditationMantra()" aria-label="Mantra suivant">→</button></div>
+    <div class="med-control-group"><label for="med-source">Source</label><select id="med-source" onchange="Controller.updateMeditationSettings()"><option value="favorites">Favoris si disponibles</option><option value="all">Tous les mantras</option><option value="custom">Mes mantras (sinon tous)</option></select></div>
+    <div class="med-control-group"><label for="med-interval">Rythme</label><select id="med-interval" onchange="Controller.updateMeditationSettings()"><option value="8">8 s</option><option value="12">12 s</option><option value="20">20 s</option><option value="30">30 s</option></select></div>
+    <div class="med-control-group"><label for="med-duration">Durée</label><select id="med-duration" onchange="Controller.updateMeditationSettings()"><option value="0">Libre</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option></select></div>
+  </div>
+  <div class="med-note"><label for="med-exit-note" class="sr-only">Note à garder après la méditation</label><input id="med-exit-note" type="text" aria-label="Note à garder après la méditation" placeholder="Une phrase à garder après cette pratique (facultatif)"><button class="btn btn-secondary btn-sm" onclick="Controller.saveMeditationNote()">Garder au journal</button></div>
+  <button class="med-close" type="button" onclick="Controller.closeMeditation()">✕ Fermer</button>
 </div>
 
 <!-- Toast notification -->
@@ -2570,14 +3186,16 @@ Ainsi est révoqué. Ainsi suis-je libre. Ainsi est accompli.`
    CONFIG — Identité et version des données
    ═════════════════════════════════════════════════════════ */
 const APP_ID = 'souverainete-interieure';
-const APP_VERSION = 'v0.1.alpha';
+const APP_VERSION = 'v0.2.alpha';
 
 /* ═════════════════════════════════════════════════════════
    MODEL — Données, localStorage, Export/Import
    ═════════════════════════════════════════════════════════ */
 const Model = {
   STORAGE_KEY: 'souverainete-scs-v1',
+  RECOVERY_KEY: 'souverainete-scs-v1-recovery',
   storageAvailable: true,
+  recoveryData: null,
 
   // Structure de données par défaut
   defaultData() {
@@ -2637,14 +3255,34 @@ const Model = {
 
   load() {
     this.storageAvailable = this.checkStorage();
-    try {
-      const raw = this.storageAvailable ? localStorage.getItem(this.STORAGE_KEY) : null;
-      if (raw) {
-        this.data = this.normalizeData(JSON.parse(raw));
-      } else {
-        this.data = this.defaultData();
+    this.recoveryData = null;
+    if (this.storageAvailable) {
+      try {
+        const storedRecovery = localStorage.getItem(this.RECOVERY_KEY);
+        if (storedRecovery) this.recoveryData = JSON.parse(storedRecovery);
+      } catch (_) {
+        this.recoveryData = null;
       }
+    }
+    const raw = this.storageAvailable ? localStorage.getItem(this.STORAGE_KEY) : null;
+    if (!raw) {
+      this.data = this.defaultData();
+      return;
+    }
+    try {
+      this.data = this.normalizeData(JSON.parse(raw));
     } catch(e) {
+      if (this.storageAvailable) {
+        const recovery = {
+          capturedAt: new Date().toISOString(),
+          error: String(e?.message || e || 'Données locales illisibles'),
+          raw
+        };
+        try {
+          localStorage.setItem(this.RECOVERY_KEY, JSON.stringify(recovery));
+          this.recoveryData = recovery;
+        } catch (_) {}
+      }
       this.data = this.defaultData();
     }
   },
@@ -2675,6 +3313,30 @@ const Model = {
       View.showToast('⚠ Erreur de sauvegarde.', 'error');
       return false;
     }
+  },
+
+  exportRecoveryData() {
+    if (!this.recoveryData?.raw) {
+      View.showToast('Aucune donnée de secours disponible.');
+      return;
+    }
+    const blob = new Blob([this.recoveryData.raw], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'souverainete-scs-secours-brut-' + new Date().toISOString().slice(0,10) + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    View.showToast('⬇ Copie brute de secours exportée.');
+  },
+
+  clearRecoveryData() {
+    if (!this.recoveryData) return;
+    if (!confirm('Supprimer uniquement la copie brute de secours ? Les données actuellement affichées ne seront pas effacées.')) return;
+    try { localStorage.removeItem(this.RECOVERY_KEY); } catch (_) {}
+    this.recoveryData = null;
+    View.renderStorageWarning();
+    View.showToast('Copie de secours supprimée.');
   },
 
   checkStorage() {
@@ -2738,10 +3400,23 @@ const Model = {
     if (payload.app && payload.app !== APP_ID) {
       throw new Error('⚠ Ce fichier ne correspond pas à cette application.');
     }
-    const source = payload.app === APP_ID && payload.data && typeof payload.data === 'object' ? payload.data : payload;
+    const wrappedExport = payload.app === APP_ID && payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data);
     if (strictAppCheck && payload.data && !payload.app) {
       throw new Error('⚠ Format d’export incomplet.');
     }
+    if (strictAppCheck && !wrappedExport) {
+      const legacyFingerprintKeys = [
+        'customMantras','favoriteMantras','engagements','revocations','reaffirmations',
+        'integrations','journalEntries','moduleProgress','declarations','declarationIndividuelle',
+        'declarationsPersonnalisees'
+      ];
+      const fingerprintCount = legacyFingerprintKeys.filter(key => Object.prototype.hasOwnProperty.call(payload, key)).length;
+      const recognizableLegacy = fingerprintCount >= 2 || (fingerprintCount >= 1 && typeof payload.version === 'string');
+      if (!recognizableLegacy) {
+        throw new Error('⚠ Ce fichier ne ressemble pas à une sauvegarde de Souveraineté Intérieure.');
+      }
+    }
+    const source = wrappedExport ? payload.data : payload;
     const defaults = this.defaultData();
     const data = { ...defaults, ...source };
 
@@ -3016,11 +3691,14 @@ const Model = {
       return null;
     }
     const values = Array.isArray(validity.values) ? validity.values : [];
+    const normalizedValues = values.map(item => ({
+      label: typeof item.label === 'string' ? item.label : '',
+      value: allowedValues.includes(item.value) ? item.value : ''
+    }));
+    const answered = normalizedValues.filter(item => item.value);
     return {
-      values: values.map(item => ({
-        label: typeof item.label === 'string' ? item.label : '',
-        value: allowedValues.includes(item.value) ? item.value : ''
-      })),
+      empty: typeof validity.empty === 'boolean' ? validity.empty : !answered.length,
+      values: normalizedValues,
       score: Number.isFinite(Number(validity.score)) ? Number(validity.score) : 0,
       max: Number.isFinite(Number(validity.max)) ? Number(validity.max) : 0,
       level: typeof validity.level === 'string' ? validity.level : 'incomplet',
@@ -3631,7 +4309,7 @@ const View = {
   renderActiveDeclarationSubject() {
     const container = document.getElementById('decl-subject-editor');
     if (!container) return;
-    const step = Controller.getActiveDeclarationStep();
+    const step = Controller.getActiveDeclarationStep(false);
     const subjectId = step?.subjectId;
     if (!subjectId) {
       container.innerHTML = '<p class="muted-small">Choisissez un sujet dans le rail de gauche.</p>';
@@ -3709,7 +4387,7 @@ const View = {
     const nav = document.getElementById('decl-studio-steps');
     if (!nav) return;
     const steps = Controller.getDeclarationStudioSteps();
-    const statuses = Controller.ensureDeclarationStudioState();
+    const statuses = Controller.ensureDeclarationStudioState(false);
     const statusLabels = {
       todo: 'À faire',
       active: 'En cours',
@@ -3759,7 +4437,7 @@ const View = {
     let html = '';
     [...entries].reverse().forEach(e => {
       html += `<div class="journal-entry">
-        <div class="entry-date">📔 ${e.date}${e.tags ? ' · ' + e.tags : ''}</div>
+        <div class="entry-date">📔 ${this.esc(e.date)}${e.tags ? ' · ' + this.esc(e.tags) : ''}</div>
         <div class="entry-content">${this.esc(e.texte).replace(/\n/g,'<br>')}</div>
         <button class="btn-icon" onclick="Controller.editJournalEntry('${e.id}')" style="float:right;margin-top:0.25rem;" title="Modifier" aria-label="Modifier cette entrée de journal">✏</button>
         <button class="btn-icon" onclick="Controller.deleteJournalEntry('${e.id}')" style="float:right;margin-top:0.25rem;" title="Supprimer" aria-label="Supprimer cette entrée de journal">🗑</button>
@@ -3785,6 +4463,8 @@ const View = {
   renderStorageWarning() {
     const warning = document.getElementById('storage-warning');
     if (warning) warning.style.display = Model.storageAvailable ? 'none' : 'block';
+    const recoveryWarning = document.getElementById('recovery-warning');
+    if (recoveryWarning) recoveryWarning.style.display = Model.recoveryData?.raw ? 'block' : 'none';
     const noSaveWarning = document.getElementById('no-save-warning');
     if (noSaveWarning) noSaveWarning.style.display = Model.data?.settings?.noSave ? 'block' : 'none';
   },
@@ -4081,7 +4761,12 @@ const Controller = {
     this._medPool     = pool;
     this._medIndex    = 0;
     this._showMedMantra();
-    document.getElementById('meditation-overlay').classList.add('active');
+    const overlay = document.getElementById('meditation-overlay');
+    this._medPreviousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('meditation-open');
+    requestAnimationFrame(() => overlay.querySelector('.med-close')?.focus());
     // Auto-avancement toutes les 12 secondes
     this._medInterval = setInterval(() => {
       this._medIndex = (this._medIndex + 1) % this._medPool.length;
@@ -4102,7 +4787,12 @@ const Controller = {
   closeMeditation() {
     clearInterval(this._medInterval);
     this._medInterval = null;
-    document.getElementById('meditation-overlay').classList.remove('active');
+    const overlay = document.getElementById('meditation-overlay');
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('meditation-open');
+    if (this._medPreviousFocus?.isConnected) this._medPreviousFocus.focus();
+    this._medPreviousFocus = null;
   },
 
   /* ── Engagements ── */
@@ -4241,6 +4931,7 @@ const Controller = {
         empty: true,
         values,
         score: 0,
+        max: 0,
         level: 'incomplet',
         title: 'Analyse à compléter',
         message: 'Évaluez les critères pour obtenir une piste de discernement.'
@@ -4456,7 +5147,7 @@ Ainsi est posé.`;
   addIntegration() {
     const texte = document.getElementById('new-integration').value.trim();
     if (!texte) { View.showToast('⚠ Saisissez une action.'); return; }
-    Model.data.integrations.push({ id: Model.generateId(), texte, done: false, date: new Date().toLocaleDateString('fr-FR') });
+    Model.data.integrations.push({ id: Model.generateId(), texte, done: false, date: new Date().toLocaleDateString('fr-FR'), revocationId: '' });
     Model.save();
     document.getElementById('new-integration').value = '';
     View.renderIntegrations();
@@ -4515,36 +5206,37 @@ Ainsi est posé.`;
     ];
   },
 
-  getActiveDeclarationStep() {
+  getActiveDeclarationStep(createIfMissing = true) {
     const steps = this.getDeclarationStudioSteps();
-    const statuses = this.ensureDeclarationStudioState();
+    const statuses = this.ensureDeclarationStudioState(createIfMissing);
     const activeIndex = statuses.findIndex(item => item.status === 'active');
     return steps[Math.max(0, activeIndex)] || steps[0];
   },
 
-  getActivePersonalDeclarationRecord() {
+  getActivePersonalDeclarationRecord(createIfMissing = true) {
     let record = Model.data.declarationsPersonnalisees.find(item => item.id === Model.data.activeDeclarationId);
-    if (!record) {
+    if (!record && createIfMissing) {
       record = this.syncActiveDeclarationRecord();
     }
-    return record;
+    return record || null;
   },
 
-  ensureDeclarationStudioState() {
-    const record = this.getActivePersonalDeclarationRecord();
+  ensureDeclarationStudioState(createIfMissing = true) {
+    const record = this.getActivePersonalDeclarationRecord(createIfMissing);
     const steps = this.getDeclarationStudioSteps();
     const allowed = ['todo','active','done','skipped','blocked'];
-    const existing = Array.isArray(record.steps) ? record.steps : [];
-    record.steps = steps.map((step, index) => {
+    const existing = record && Array.isArray(record.steps) ? record.steps : [];
+    const statuses = steps.map((step, index) => {
       const found = existing.find(item => item && item.id === step.id) || existing[index] || {};
       const status = allowed.includes(found.status) ? found.status : (index === 0 ? 'active' : 'todo');
       return { id: step.id, status };
     });
-    if (!record.steps.some(item => item.status === 'active')) {
-      const nextIndex = record.steps.findIndex(item => item.status === 'todo');
-      record.steps[nextIndex >= 0 ? nextIndex : 0].status = 'active';
+    if (!statuses.some(item => item.status === 'active') && statuses.length) {
+      const nextIndex = statuses.findIndex(item => item.status === 'todo');
+      statuses[nextIndex >= 0 ? nextIndex : 0].status = 'active';
     }
-    return record.steps;
+    if (record) record.steps = statuses;
+    return statuses;
   },
 
   setDeclarationStudioStep(index) {
@@ -5525,6 +6217,7 @@ Ainsi est posé.`;
     .meta { color: #6b5e7a; margin-bottom: 2rem; }
     p { margin: 0 0 1rem; }
     @media print { body { margin: 0; max-width: none; background: #fff; color: #111; } }
+
   </style>
 </head>
 <body>
@@ -5653,5 +6346,443 @@ document.addEventListener('DOMContentLoaded', () => {
   Controller.init();
 });
 </script>
+
+
+<script>
+/* V0.3 — couche évolutive : visualisation, valeurs, plans d'action, rythme et réflexion. */
+const VALUE_CATALOG_V03 = [
+  ['liberte','Liberté'], ['verite','Vérité'], ['consentement','Consentement'], ['paix','Paix'], ['protection','Protection'],
+  ['responsabilite','Responsabilité'], ['dignite','Dignité'], ['coherence','Cohérence'], ['discernement','Discernement'], ['joie','Joie'],
+  ['amour','Amour'], ['justice','Justice'], ['simplicite','Simplicité'], ['creativite','Créativité'], ['nature','Respect du vivant'],
+  ['courage','Courage'], ['autonomie','Autonomie'], ['cooperation','Coopération']
+].map(([id,label]) => ({id,label}));
+
+(() => {
+  const originalDefaultData = Model.defaultData.bind(Model);
+  Model.defaultData = function() {
+    const data = originalDefaultData();
+    data.practiceDays = [];
+    data.valueCompass = { selected: [], custom: [] };
+    data.meditationSettings = { source:'favorites', interval:12, duration:0 };
+    return data;
+  };
+
+  const originalNormalizeData = Model.normalizeData.bind(Model);
+  Model.normalizeData = function(payload, strictAppCheck) {
+    const source = payload?.app === APP_ID && payload?.data && typeof payload.data === 'object' ? payload.data : payload;
+    const data = originalNormalizeData(payload, strictAppCheck);
+    const text = value => typeof value === 'string' ? value : '';
+    const strings = value => Array.isArray(value) ? [...new Set(value.map(v => String(v || '').trim()).filter(Boolean))] : [];
+    const safeValueId = value => /^[a-z0-9_-]+$/i.test(String(value || '')) ? String(value) : '';
+    const valueIds = value => strings(value).map(safeValueId).filter(Boolean);
+    const clamp = (n,min,max) => Math.min(max,Math.max(min,Number(n)||0));
+    const byId = (items, id) => Array.isArray(items) ? items.find(item => String(item?.id || '') === String(id || '')) : null;
+
+    data.practiceDays = strings(source?.practiceDays);
+    const legacyPractice = this._dateKeyFromAny?.(source?.lastPracticeDate);
+    if (legacyPractice && !data.practiceDays.includes(legacyPractice)) data.practiceDays.push(legacyPractice);
+    data.practiceDays.sort();
+
+    const custom = Array.isArray(source?.valueCompass?.custom)
+      ? source.valueCompass.custom.filter(v => v && typeof v === 'object').map(v => ({id:safeValueId(v.id), label:text(v.label).slice(0,80)})).filter(v => v.id && v.label)
+      : [];
+    const knownValueIds = new Set([...VALUE_CATALOG_V03.map(v => v.id), ...custom.map(v => v.id)]);
+    const selected = valueIds(source?.valueCompass?.selected).filter(id => knownValueIds.has(id)).slice(0,5);
+    data.valueCompass = { selected, custom };
+    const med = source?.meditationSettings && typeof source.meditationSettings === 'object' ? source.meditationSettings : {};
+    data.meditationSettings = {
+      source: ['favorites','all','custom'].includes(med.source) ? med.source : 'favorites',
+      interval: [8,12,20,30].includes(Number(med.interval)) ? Number(med.interval) : 12,
+      duration: [0,3,5,10].includes(Number(med.duration)) ? Number(med.duration) : 0
+    };
+
+    data.engagements = data.engagements.map(item => {
+      const raw = byId(source?.engagements, item.id) || {};
+      return { ...item, createdAt:text(raw.createdAt), valuesSupport:valueIds(raw.valuesSupport), valuesTension:valueIds(raw.valuesTension) };
+    });
+    data.revocations = data.revocations.map(item => {
+      const raw = byId(source?.revocations, item.id) || {};
+      return { ...item, createdAt:text(raw.createdAt) };
+    });
+    data.integrations = data.integrations.map(item => {
+      const raw = byId(source?.integrations, item.id) || {};
+      return {
+        ...item,
+        createdAt:text(raw.createdAt), completedAt:text(raw.completedAt), outcome:text(raw.outcome), obstacle:text(raw.obstacle),
+        trigger:text(raw.trigger), behavior:text(raw.behavior), confidence:clamp(raw.confidence ?? 0,0,10),
+        values:valueIds(raw.values), reflection:text(raw.reflection)
+      };
+    });
+    data.journalEntries = data.journalEntries.map(item => {
+      const raw = byId(source?.journalEntries, item.id) || {};
+      return { ...item, createdAt:text(raw.createdAt), mode:['free','quick','review'].includes(raw.mode) ? raw.mode : 'free', linkedEngagementId:text(raw.linkedEngagementId), linkedIntegrationId:text(raw.linkedIntegrationId), linkedEngagementLabel:text(raw.linkedEngagementLabel), linkedIntegrationLabel:text(raw.linkedIntegrationLabel) };
+    });
+    return data;
+  };
+
+  Model._dateKeyFromAny = function(value) {
+    if (!value) return '';
+    const str = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0,10);
+    const fr = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (fr) return `${fr[3]}-${fr[2].padStart(2,'0')}-${fr[1].padStart(2,'0')}`;
+    const months = {janvier:1,'février':2,fevrier:2,mars:3,avril:4,mai:5,juin:6,juillet:7,'août':8,aout:8,septembre:9,octobre:10,novembre:11,'décembre':12,decembre:12};
+    const lower = str.toLowerCase();
+    const m = lower.match(/(?:lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)?\s*(\d{1,2})\s+([a-zéûôîàèùç]+)\s+(\d{4})/i);
+    if (m && months[m[2]]) return `${m[3]}-${String(months[m[2]]).padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    const d = new Date(str);
+    if (!Number.isNaN(d.getTime())) return Controller.localDateKey ? Controller.localDateKey(d) : d.toISOString().slice(0,10);
+    return '';
+  };
+
+  Model._timestampFromAny = function(value) {
+    if (!value) return 0;
+    const str = String(value).trim();
+    if (/^\d{4}-\d{2}-\d{2}T/.test(str)) {
+      const t = Date.parse(str);
+      if (Number.isFinite(t)) return t;
+    }
+    const key = this._dateKeyFromAny(str);
+    if (!key) return 0;
+    const d = new Date(key + 'T12:00:00');
+    return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+
+  const originalRenderAll = View.renderAll.bind(View);
+  View.renderAll = function() {
+    originalRenderAll();
+    this.renderV03All();
+  };
+
+  View.renderV03All = function() {
+    this.renderLivingMap();
+    this.renderValueCompass();
+    this.renderValueLinkers();
+    this.renderValidityRose(Controller.getValidityAnalysis());
+    this.renderActionValueChips();
+    this.renderTransformationTimeline();
+    this.renderPracticeMirror();
+    this.renderJournalLinks();
+    this.renderJournalMode();
+    this.renderMeditationSettings();
+  };
+
+  View.valueCatalog = function() {
+    const custom = Model.data?.valueCompass?.custom || [];
+    return [...VALUE_CATALOG_V03, ...custom];
+  };
+  View.valueLabel = function(id) { return this.valueCatalog().find(v => v.id === id)?.label || id; };
+
+  View.renderValueCompass = function() {
+    const selected = Model.data?.valueCompass?.selected || [];
+    const palette = document.getElementById('value-palette');
+    if (palette) palette.innerHTML = this.valueCatalog().map(v => `<button class="value-chip ${selected.includes(v.id)?'active':''}" aria-pressed="${selected.includes(v.id)}" onclick="Controller.toggleCompassValue('${this.esc(v.id)}')">${this.esc(v.label)}</button>`).join('');
+    const limit = document.getElementById('value-limit-text');
+    if (limit) limit.textContent = `${selected.length} / 5 valeurs choisies${selected.length === 5 ? ' · boussole complète' : ''}`;
+    const holder = document.getElementById('values-compass');
+    if (!holder) return;
+    const W=360,H=320,cx=180,cy=160,r=105;
+    const petals = selected.map((id,i) => {
+      const angle=-Math.PI/2 + i*(Math.PI*2/Math.max(5,selected.length));
+      const x=cx+Math.cos(angle)*r, y=cy+Math.sin(angle)*r;
+      const label=this.valueLabel(id);
+      return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--violet)" stroke-opacity=".28" stroke-width="2"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="34" fill="var(--violet-light)" stroke="var(--violet)"/><text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" fill="var(--text-primary)" style="font:600 10px var(--font-ui)">${this.esc(label.length>15?label.slice(0,14)+'…':label)}</text>`;
+    }).join('');
+    holder.innerHTML = `<svg class="values-compass-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Boussole : ${this.esc(selected.map(id=>this.valueLabel(id)).join(', ') || 'aucune valeur choisie')}"><circle cx="${cx}" cy="${cy}" r="50" fill="var(--bg-card)" stroke="var(--gold)" stroke-width="2"/><text x="${cx}" y="${cy-3}" text-anchor="middle" fill="var(--text-primary)" style="font:600 12px var(--font-ui)">Mon axe</text><text x="${cx}" y="${cy+14}" text-anchor="middle" fill="var(--text-muted)" style="font:10px var(--font-ui)">${selected.length?selected.length+' repères':'à choisir'}</text>${petals}</svg>`;
+    this.ensureButtonTypes();
+  };
+
+  View.renderValueLinkers = function() {
+    const selected = Model.data?.valueCompass?.selected || [];
+    const make = (id, type, active=[]) => {
+      const el=document.getElementById(id); if(!el) return;
+      const historical = active.filter(value => !selected.includes(value));
+      const current = selected.map(value => `<button class="value-chip ${type} ${active.includes(value)?'active':''}" aria-pressed="${active.includes(value)}" data-value="${this.esc(value)}" onclick="Controller.toggleFormValue('${id}','${this.esc(value)}')">${this.esc(this.valueLabel(value))}</button>`).join('');
+      const old = historical.map(value => `<span class="historical-value-wrap"><button class="value-chip ${type} historical active" aria-pressed="true" title="Repère associé mais actuellement hors boussole — cliquer pour retirer ce lien" onclick="Controller.toggleFormValue('${id}','${this.esc(value)}')">${this.esc(this.valueLabel(value))} · hors boussole</button><button class="reactivate-value" title="Réactiver ce repère dans la boussole" aria-label="Réactiver ${this.esc(this.valueLabel(value))} dans la boussole" onclick="Controller.reactivateCompassValue('${this.esc(value)}')">↺ Boussole</button></span>`).join('');
+      el.innerHTML = current + old || '<span class="muted-small">Choisissez d’abord des repères dans la boussole.</span>';
+    };
+    make('eng-values-support','support',Controller._engValuesSupport || []);
+    make('eng-values-tension','tension',Controller._engValuesTension || []);
+    this.ensureButtonTypes();
+  };
+
+  View.renderActionValueChips = function() {
+    const selected=Model.data?.valueCompass?.selected || [];
+    const el=document.getElementById('action-values-chips'); if(!el) return;
+    const active=Controller._actionValues || [];
+    el.innerHTML=selected.length ? selected.map(v=>`<button class="value-chip ${active.includes(v)?'active':''}" data-value="${this.esc(v)}" aria-pressed="${active.includes(v)}" onclick="Controller.toggleActionValue('${this.esc(v)}')">${this.esc(this.valueLabel(v))}</button>`).join('') : '<span class="muted-small">Aucune valeur choisie dans la boussole — ce lien reste facultatif.</span>';
+  };
+
+  View.renderLivingMap = function() {
+    const holder=document.getElementById('living-map'); if(!holder) return;
+    const engs=Model.data.engagements || [];
+    const summary=document.getElementById('living-map-summary');
+    if(!engs.length){ holder.innerHTML='<div class="map-empty">Ajoutez un premier engagement pour faire apparaître la carte vivante.</div>'; if(summary) summary.textContent='Aucun lien cartographié pour le moment.'; return; }
+    const plans=['matiere','corps','emotionnel','pensee','parole','acte','relationnel','energetique','subtil','spirituel'];
+    const labels={matiere:'Matière',corps:'Corps',emotionnel:'Émotion',pensee:'Pensée',parole:'Parole',acte:'Acte',relationnel:'Relation',energetique:'Énergie',subtil:'Subtil',spirituel:'Spirituel'};
+    const W=840,H=520,cx=420,cy=260;
+    const groups = Object.fromEntries(plans.map(plan => [plan, []]));
+    engs.forEach(e => (groups[e.plan] || groups.pensee).push(e));
+    const axis=plans.map((plan,i)=>{const a=-Math.PI/2+i*2*Math.PI/plans.length;const x=cx+Math.cos(a)*228,y=cy+Math.sin(a)*228;const count=groups[plan].length;return `<text class="plan-label" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle">${labels[plan]}${count?' · '+count:''}</text>`}).join('');
+    const nodes=[];
+    plans.forEach((plan,pi)=>{
+      const items=groups[plan];
+      const count=items.length;
+      const perRing=count>20?6:count>10?5:4;
+      const ringCount=Math.max(1,Math.ceil(count/perRing));
+      const minR=count>12?112:138;
+      const maxR=208;
+      const nodeR=count>20?10:count>10?13:18;
+      items.forEach((e,k)=>{
+        const ring=Math.floor(k/perRing);
+        const inRing=k%perRing;
+        const ringItems=Math.min(perRing,count-ring*perRing);
+        const base=-Math.PI/2+pi*2*Math.PI/plans.length;
+        const spread=count>20?.52:count>10?.44:.30;
+        const offset=ringItems===1?0:(inRing/(ringItems-1)-.5)*spread;
+        const radius=ringCount===1?168:minR+(maxR-minR)*(ring/Math.max(1,ringCount-1));
+        const angle=base+offset;
+        const x=cx+Math.cos(angle)*radius, y=cy+Math.sin(angle)*radius;
+        const cls=e.consentement||'semi'; const symbol=e.effet==='positif'?'✓':e.effet==='negatif'?'!':'•';
+        const fill=e.effet==='positif'?'var(--sage)':e.effet==='negatif'?'var(--rose)':'var(--gold)';
+        const shape=e.effet==='negatif'?`<rect class="node-shape" x="${(x-nodeR).toFixed(1)}" y="${(y-nodeR).toFixed(1)}" width="${nodeR*2}" height="${nodeR*2}" rx="${Math.max(5,nodeR/2)}" fill="${fill}"/>`:`<circle class="node-shape" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${nodeR}" fill="${fill}"/>`;
+        const name=e.nom||'Lien'; const short=name.length>18?name.slice(0,17)+'…':name;
+        const label=count<=8?`<text class="node-label" x="${x.toFixed(1)}" y="${(y+nodeR+15).toFixed(1)}" text-anchor="middle">${this.esc(short)}</text>`:'';
+        nodes.push(`<line class="link ${cls}" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/><g class="node" role="button" tabindex="0" aria-label="${this.esc(name)}. Effet ${this.esc(e.effet)}. Consentement ${this.esc(e.consentement)}." onclick="Controller.focusEngagement('${e.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();Controller.focusEngagement('${e.id}')}">${shape}<text class="node-symbol" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${symbol}</text>${label}</g>`);
+      });
+    });
+    holder.innerHTML=`<svg class="living-map-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Carte de ${engs.length} engagements"><circle class="axis-ring" cx="${cx}" cy="${cy}" r="120"/><circle class="axis-ring" cx="${cx}" cy="${cy}" r="178"/><circle cx="${cx}" cy="${cy}" r="52" fill="var(--bg-card)" stroke="var(--gold)" stroke-width="2"/><text x="${cx}" y="${cy-4}" text-anchor="middle" fill="var(--text-primary)" style="font:600 13px var(--font-ui)">Mon axe</text><text x="${cx}" y="${cy+14}" text-anchor="middle" fill="var(--text-muted)" style="font:10px var(--font-ui)">observer sans juger</text>${axis}${nodes.join('')}</svg>`;
+    const neg=engs.filter(e=>e.effet==='negatif').length, forced=engs.filter(e=>['force','inconscient'].includes(e.consentement)).length;
+    const dense=Object.entries(groups).filter(([,items])=>items.length>8).map(([plan,items])=>`${labels[plan]} : ${items.length}`);
+    if(summary) summary.textContent=`${engs.length} lien(s) visibles · ${neg} marqué(s) comme contraignants · ${forced} avec consentement imposé ou inconscient.${dense.length?' Plans denses : '+dense.join(', ')+' ; les libellés détaillés restent disponibles dans la liste.':''} Ces chiffres reprennent uniquement vos saisies.`;
+  };
+
+  View.renderValidityRose = function(analysis) {
+    const holder=document.getElementById('validity-rose'); const list=document.getElementById('validity-text-list'); if(!holder||!list) return;
+    const labels=['Consentement','Compréhension','Réversibilité','Proportionnalité','Sert la vie'];
+    const values=(analysis?.values||[]).map(v=>v.value);
+    while(values.length<5) values.push('');
+    const score=v=>v==='oui'?1:v==='partiel'?.55:v==='non'?.12:0;
+    const W=330,H=300,cx=165,cy=150,r=100;
+    const point=(i,ratio)=>{const a=-Math.PI/2+i*2*Math.PI/5;return [cx+Math.cos(a)*r*ratio,cy+Math.sin(a)*r*ratio]};
+    const rings=[.25,.5,.75,1].map(rr=>`<polygon class="grid" points="${[0,1,2,3,4].map(i=>point(i,rr).map(n=>n.toFixed(1)).join(',')).join(' ')}"/>`).join('');
+    const axes=[0,1,2,3,4].map(i=>{const [x,y]=point(i,1); const [tx,ty]=point(i,1.22);return `<line class="axis" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/><text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle">${labels[i]}</text>`}).join('');
+    const pts=values.map((v,i)=>point(i,score(v))); const data=`<polygon class="data" points="${pts.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ')}"/>${pts.map(p=>`<circle class="point" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4"/>`).join('')}`;
+    holder.innerHTML=`<svg class="validity-rose-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Rose de discernement : ${this.esc(values.map((v,i)=>labels[i]+' '+(v||'non renseigné')).join(', '))}">${rings}${axes}${data}</svg>`;
+    const valueLabels={oui:'Oui',partiel:'Partiel',non:'Non','':'Non renseigné'};
+    list.innerHTML=labels.map((label,i)=>`<span><b>${label}</b><em>${valueLabels[values[i]]}</em></span>`).join('');
+  };
+
+  const oldValidity=View.renderValidityResult.bind(View);
+  View.renderValidityResult=function(analysis){ oldValidity(analysis); this.renderValidityRose(analysis); };
+
+  View.updateActionConfidence=function(value){
+    const n=Number(value); const out=document.getElementById('action-confidence-value'); if(out) out.textContent=n;
+    const hint=document.getElementById('action-confidence-hint'); if(hint){ hint.classList.toggle('low',n<7); hint.textContent=n<7?'Ce pas semble encore difficile. Vous pouvez le réduire jusqu’à ce qu’il paraisse réellement faisable.':'Le pas paraît suffisamment faisable pour être tenté. Vous pourrez l’ajuster après expérience.'; }
+  };
+
+  const originalRenderIntegrations=View.renderIntegrations.bind(View);
+  View.renderIntegrations=function(){
+    const container=document.getElementById('integration-list'); if(!container) return originalRenderIntegrations();
+    const items=Model.data.integrations || [];
+    if(!items.length){ container.innerHTML='<p style="color:var(--text-muted);font-size:0.875rem;font-family:var(--font-ui);">Aucune action. Ajoutez-en une ci-dessous.</p>'; this.renderTransformationTimeline(); return; }
+    container.innerHTML=items.map(a=>{
+      const vals=(a.values||[]).map(v=>this.valueLabel(v)).join(' · ');
+      const ifthen=a.trigger&&a.behavior?`<div class="ifthen"><strong>Quand / si</strong> ${this.esc(a.trigger)} → <strong>alors</strong> ${this.esc(a.behavior)}</div>`:'';
+      const details=[a.outcome?`Souhait : ${this.esc(a.outcome)}`:'',a.obstacle?`Obstacle : ${this.esc(a.obstacle)}`:'',Number.isFinite(Number(a.confidence))&&a.confidence!==''&&a.confidence!==null&&a.confidence!==undefined?`Confiance initiale : ${a.confidence}/10`:'',vals?`Valeurs : ${this.esc(vals)}`:''].filter(Boolean).map(x=>`<div>${x}</div>`).join('');
+      return `<div class="integration-item enriched ${a.done?'done':''}"><button class="btn-icon" onclick="Controller.toggleIntegration('${a.id}')" aria-label="${a.done?'Marquer cette action comme à faire':'Marquer cette action comme faite'}">${a.done?'✅':'⭕'}</button><div><strong>${this.esc(a.texte)}</strong>${details||ifthen?`<div class="integration-details">${ifthen}${details}</div>`:''}${a.done?`<div class="integration-reflection"><label for="reflection-${a.id}">Ce que cet acte a changé (facultatif)</label><textarea id="reflection-${a.id}" placeholder="Une observation courte…">${this.esc(a.reflection||'')}</textarea><button class="btn btn-secondary btn-sm" onclick="Controller.saveIntegrationReflection('${a.id}')">Garder cette observation</button></div>`:''}</div><button class="btn-icon" onclick="Controller.deleteIntegration('${a.id}')" aria-label="Supprimer cette action">🗑</button></div>`;
+    }).join('');
+    this.ensureButtonTypes(); this.renderTransformationTimeline();
+  };
+
+  View.renderTransformationTimeline=function(){
+    const holder=document.getElementById('transformation-timeline'); if(!holder) return;
+    const events=[];
+    const add=(type,sortDate,title,text,displayDate)=>{const key=Model._dateKeyFromAny(sortDate);events.push({type,sortDate,key,timestamp:Model._timestampFromAny(sortDate),title,text,displayDate:displayDate||key||sortDate||'date non disponible'});};
+    (Model.data.engagements||[]).forEach(e=>add('engagement',e.createdAt||e.date,'Engagement cartographié',e.nom));
+    (Model.data.revocations||[]).forEach(r=>add('revocation',r.createdAt||r.date,`Décision : ${r.decision||'révocation'}`,r.engagement||r.texte));
+    (Model.data.integrations||[]).forEach(a=>{
+      if(a.done && !a.completedAt) add('action',a.createdAt||a.date,'Acte accompli · date exacte inconnue',a.texte,`Suivi détaillé indisponible · créé ${Model._dateKeyFromAny(a.createdAt||a.date)||'à une date inconnue'}`);
+      else add('action',a.done?(a.completedAt||a.createdAt||a.date):(a.createdAt||a.date),a.done?'Acte accompli':'Acte à poser',a.texte);
+    });
+    (Model.data.journalEntries||[]).slice(-12).forEach(j=>add('journal',j.createdAt||j.date,'Trace au journal',j.texte.slice(0,120)));
+    events.sort((a,b)=>(b.timestamp-a.timestamp)||String(b.key||'').localeCompare(String(a.key||'')));
+    if(!events.length){holder.innerHTML='<p class="muted-small">La chronologie apparaîtra à mesure que vous cartographiez, décidez, agissez et écrivez.</p>';return;}
+    holder.innerHTML=`<div class="timeline">${events.slice(0,20).map(e=>`<div class="timeline-item ${e.type}"><span class="timeline-dot"></span><strong>${this.esc(e.title)}</strong><div class="timeline-meta">${this.esc(e.displayDate)}</div><div class="timeline-text">${this.esc(e.text||'')}</div></div>`).join('')}</div>`;
+  };
+
+  View.renderPracticeMirror=function(){
+    const days=Controller.mirrorRange||7;
+    const start=new Date(); start.setHours(0,0,0,0); start.setDate(start.getDate()-(days-1));
+    const end=new Date(); end.setHours(23,59,59,999);
+    const inRangeDate=value=>{const key=Model._dateKeyFromAny(value);if(!key)return false;const d=new Date(key+'T12:00:00');return d>=start&&d<=end;};
+    const inRange=record=>inRangeDate(record?.createdAt||record?.date);
+    const completedInRange=a=>Boolean(a?.done&&a.completedAt&&inRangeDate(a.completedAt));
+    const legacyDone=(Model.data.integrations||[]).filter(a=>a.done&&!a.completedAt).length;
+    const metrics=[
+      ['Pratiques',(Model.data.practiceDays||[]).filter(inRangeDate).length],
+      ['Liens ajoutés',(Model.data.engagements||[]).filter(inRange).length],
+      ['Décisions',(Model.data.revocations||[]).filter(inRange).length],
+      ['Actes accomplis',(Model.data.integrations||[]).filter(completedInRange).length],
+      ['Journal',(Model.data.journalEntries||[]).filter(inRange).length]
+    ];
+    const box=document.getElementById('mirror-metrics'); if(box) box.innerHTML=metrics.map(([l,v])=>`<div class="mirror-metric"><strong>${v}</strong><span>${l}</span></div>`).join('');
+    const chart=document.getElementById('mirror-chart');
+    if(chart){ const max=Math.max(1,...metrics.map(x=>x[1])); const W=640,H=150; chart.innerHTML=`<svg class="mirror-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Activité sur ${days} jours">${metrics.map(([l,v],i)=>{const w=80,h=90*v/max,x=35+i*120,y=112-h;return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="var(--violet-light)" stroke="var(--violet)"/><text x="${x+w/2}" y="${y-7}" text-anchor="middle" fill="var(--text-primary)" style="font:700 11px var(--font-ui)">${v}</text><text x="${x+w/2}" y="135" text-anchor="middle" fill="var(--text-muted)" style="font:9px var(--font-ui)">${this.esc(l.length>14?l.slice(0,13)+'…':l)}</text>`}).join('')}</svg>`; }
+    const summary=document.getElementById('mirror-summary-text'); if(summary) summary.textContent=`Sur ${days} jours : ${metrics.map(([l,v])=>`${l.toLowerCase()} ${v}`).join(' · ')}.${legacyDone?` ${legacyDone} ancien(s) acte(s) sont déjà marqués accomplis, mais leur date d’accomplissement est inconnue et n’est pas attribuée à cette période.`:''} Les éléments sans date exploitable ou datés dans le futur ne sont pas attribués à cette période.`;
+    ['mirror-7-btn','mirror-30-btn'].forEach(id=>{const el=document.getElementById(id);const active=id===`mirror-${days}-btn`;el?.classList.toggle('active',active);el?.setAttribute('aria-pressed',String(active));});
+  };
+
+  const oldStreak=View.renderStreak.bind(View);
+  View.renderStreak=function(){ oldStreak(); const holder=document.getElementById('practice-rhythm'); if(!holder)return; const done=new Set(Model.data.practiceDays||[]); const today=new Date(); const cells=[]; for(let i=6;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);const key=Controller.localDateKey(d);cells.push(`<div class="practice-day ${done.has(key)?'done':''} ${i===0?'today':''}" title="${this.formatDate(d)}"><span>${d.toLocaleDateString('fr-FR',{weekday:'short'}).replace('.','')}</span><span class="mark">${done.has(key)?'✓':'·'}</span></div>`)} holder.innerHTML=cells.join(''); const month=document.getElementById('practice-month-note'); if(month){const since=new Date();since.setHours(0,0,0,0);since.setDate(since.getDate()-29);const until=new Date();until.setHours(23,59,59,999);const n=[...done].filter(k=>{const d=new Date(k+'T12:00:00');return d>=since&&d<=until;}).length;month.textContent=`${n} jour(s) de pratique sur les 30 derniers — une journée manquée n’annule pas le chemin.`;} this.renderPracticeMirror(); };
+
+  View.renderJournalLinks=function(){
+    const eng=document.getElementById('journal-link-engagement'), act=document.getElementById('journal-link-action'); if(!eng||!act)return;
+    const ev=eng.value,av=act.value; eng.innerHTML='<option value="">— Aucun lien —</option>'+Model.data.engagements.map(e=>`<option value="${this.esc(e.id)}">${this.esc(e.nom)}</option>`).join(''); act.innerHTML='<option value="">— Aucune action —</option>'+Model.data.integrations.map(a=>`<option value="${this.esc(a.id)}">${this.esc(a.texte)}</option>`).join(''); if([...eng.options].some(o=>o.value===ev))eng.value=ev;if([...act.options].some(o=>o.value===av))act.value=av;
+  };
+
+  View.renderJournalMode=function(){ const mode=Controller.journalMode||'free'; const guide=document.getElementById('journal-mode-guide'); if(!guide)return; const configs={free:['Écriture libre','Écrivez sans structure imposée. Une question guide reste disponible si vous en avez envie.',[]],quick:['Point 2 minutes','Quelques repères courts pour saisir l’essentiel sans transformer le journal en formulaire.',['Ce qui a bougé…','Ce qui compte maintenant…','Le prochain petit geste…']],review:['Relire une expérience','Un débrief simple : faits → perception → sens → choix.',['Que s’est-il passé ?','Qu’ai-je observé en moi ?','Qu’est-ce que cela m’apprend ?','Qu’est-ce que je choisis maintenant ?']]}; const [title,desc,prompts]=configs[mode]; guide.innerHTML=`<strong>${title}</strong><span class="muted-small">${desc}</span>${prompts.length?`<div class="journal-prompts" style="margin-top:.55rem;">${prompts.map(p=>`<button class="journal-prompt-pill" onclick="Controller.appendJournalPrompt('${this.esc(p).replace(/'/g,'&#39;')}')">+ ${this.esc(p)}</button>`).join('')}</div>`:''}`; ['free','quick','review'].forEach(m=>{const el=document.getElementById(`journal-mode-${m}`);const active=m===mode;el?.classList.toggle('active',active);el?.setAttribute('aria-pressed',String(active));}); this.ensureButtonTypes(); };
+
+  View.renderMeditationSettings=function(){ const s=Model.data?.meditationSettings||{}; const source=document.getElementById('med-source'), interval=document.getElementById('med-interval'),duration=document.getElementById('med-duration'); if(source)source.value=s.source||'favorites';if(interval)interval.value=String(s.interval||12);if(duration)duration.value=String(s.duration||0); };
+
+  const oldJournal=View.renderJournal.bind(View);
+  View.renderJournal=function(){
+    oldJournal();
+    const search=(document.getElementById('journal-search')?.value||'').trim().toLowerCase();
+    const visible=(Model.data.journalEntries||[]).filter(e=>!search||[e.date,e.texte,e.tags].join(' ').toLowerCase().includes(search)).slice().reverse();
+    [...document.querySelectorAll('#journal-history .journal-entry')].forEach((node,i)=>{
+      const e=visible[i];if(!e)return;
+      const eng=Model.data.engagements.find(x=>x.id===e.linkedEngagementId),act=Model.data.integrations.find(x=>x.id===e.linkedIntegrationId);
+      const labels={free:'Libre',quick:'2 minutes',review:'Relecture'};
+      const engText=eng?`Lien : ${eng.nom}`:(e.linkedEngagementLabel?`Ancien lien : ${e.linkedEngagementLabel}`:'');
+      const actText=act?`Action : ${act.texte}`:(e.linkedIntegrationLabel?`Ancienne action : ${e.linkedIntegrationLabel}`:'');
+      if(engText||actText||e.mode!=='free'){
+        const meta=document.createElement('div');meta.className='muted-small';meta.style.marginTop='.45rem';
+        meta.textContent=[`Mode : ${labels[e.mode]||labels.free}`,engText,actText].filter(Boolean).join(' · ');
+        node.querySelector('.entry-content')?.after(meta);
+      }
+    });
+    this.renderJournalLinks(); this.renderTransformationTimeline(); this.renderPracticeMirror();
+  };
+
+  const oldEngagements=View.renderEngagements.bind(View);
+  View.renderEngagements=function(){ oldEngagements(); const search=(document.getElementById('eng-search')?.value||'').trim().toLowerCase(),effet=document.getElementById('eng-filter-effet')?.value||'',consentement=document.getElementById('eng-filter-consentement')?.value||''; const visible=(Model.data.engagements||[]).filter(e=>{const hay=[e.nom,e.cat,e.plan,e.source,e.consentement,e.effet,e.note].join(' ').toLowerCase();return(!search||hay.includes(search))&&(!effet||e.effet===effet)&&(!consentement||e.consentement===consentement)}); [...document.querySelectorAll('#engagement-list .engagement-item')].forEach((node,i)=>{const e=visible[i],meta=node.querySelector('.eng-meta');if(!e||!meta)return;const support=(e.valuesSupport||[]).map(v=>this.valueLabel(v)),tension=(e.valuesTension||[]).map(v=>this.valueLabel(v));if(support.length||tension.length){const line=document.createElement('div');line.className='muted-small';line.style.marginTop='.3rem';line.textContent=[support.length?'Nourrit : '+support.join(', '):'',tension.length?'Tension : '+tension.join(', '):''].filter(Boolean).join(' · ');meta.appendChild(line);}}); this.renderLivingMap(); this.renderJournalLinks(); this.renderTransformationTimeline(); this.renderPracticeMirror(); };
+
+  const oldDashboard=View.renderDashboardSummary.bind(View);
+  View.renderDashboardSummary=function(){ oldDashboard(); this.renderPracticeMirror(); this.renderTransformationTimeline(); };
+
+  Controller.mirrorRange=7; Controller.journalMode='free'; Controller.cartographyView='map'; Controller._engValuesSupport=[]; Controller._engValuesTension=[]; Controller._actionValues=[];
+
+  Controller.setMirrorRange=function(days){this.mirrorRange=days===30?30:7;View.renderPracticeMirror();};
+  Controller.setCartographyView=function(view){this.cartographyView=view==='list'?'list':'map';const map=document.getElementById('cartography-map-panel'),list=document.getElementById('engagement-list-wrapper');if(map)map.hidden=this.cartographyView!=='map';if(list)list.hidden=this.cartographyView!=='list';[['cart-view-map','map'],['cart-view-list','list']].forEach(([id,value])=>{const el=document.getElementById(id);const active=this.cartographyView===value;el?.classList.toggle('active',active);el?.setAttribute('aria-pressed',String(active));});};
+  Controller.reactivateCompassValue=function(id){const selected=Model.data.valueCompass.selected||[];if(selected.includes(id)){View.renderValueLinkers();return;}if(selected.length>=5){View.showToast('La boussole contient déjà cinq repères. Retirez-en un avant de réactiver celui-ci.');return;}if(!View.valueCatalog().some(v=>v.id===id)){View.showToast('Ce repère historique n’est plus disponible dans le catalogue.');return;}selected.push(id);Model.save();View.renderValueCompass();View.renderValueLinkers();View.renderActionValueChips();View.renderEngagements();View.showToast('↺ Repère réactivé dans la boussole.');};
+  Controller.toggleCompassValue=function(id){const arr=Model.data.valueCompass.selected||[];const i=arr.indexOf(id);if(i>=0)arr.splice(i,1);else if(arr.length<5)arr.push(id);else{View.showToast('Choisissez au maximum cinq valeurs pour garder une vraie boussole.');return;}Model.save();View.renderValueCompass();View.renderValueLinkers();View.renderActionValueChips();View.renderEngagements();};
+  Controller.addCustomValue=function(){const input=document.getElementById('custom-value-input');const label=input?.value.trim();if(!label)return;const id='custom-'+label.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,32);if(!id||View.valueCatalog().some(v=>v.id===id)){View.showToast('Ce repère existe déjà ou son nom est trop proche.');return;}Model.data.valueCompass.custom.push({id,label});Model.save();input.value='';View.renderValueCompass();};
+  Controller.toggleFormValue=function(containerId,value){const key=containerId==='eng-values-support'?'_engValuesSupport':'_engValuesTension';const arr=this[key]||[];const i=arr.indexOf(value);i>=0?arr.splice(i,1):arr.push(value);this[key]=arr;View.renderValueLinkers();};
+  Controller.toggleActionValue=function(value){const arr=this._actionValues||[];const i=arr.indexOf(value);i>=0?arr.splice(i,1):arr.push(value);this._actionValues=arr;View.renderActionValueChips();};
+
+  const oldSaveEngagement=Controller.saveEngagement.bind(Controller);
+  Controller.saveEngagement=function(){const editId=document.getElementById('eng-edit-id')?.value;const nom=document.getElementById('eng-nom')?.value.trim()||'';const before=Model.data.engagements.length;const valuesSupport=[...(this._engValuesSupport||[])],valuesTension=[...(this._engValuesTension||[])];oldSaveEngagement();if(!nom)return;const target=editId?Model.data.engagements.find(e=>e.id===editId):(Model.data.engagements.length>before?Model.data.engagements.at(-1):null);if(target){if(!target.createdAt)target.createdAt=new Date().toISOString();target.valuesSupport=valuesSupport;target.valuesTension=valuesTension;Model.save();}this._engValuesSupport=[];this._engValuesTension=[];View.renderValueLinkers();View.renderEngagements();};
+  const oldEditEngagement=Controller.editEngagement.bind(Controller);
+  Controller.editEngagement=function(id){const e=Model.data.engagements.find(x=>x.id===id);this._engValuesSupport=[...(e?.valuesSupport||[])];this._engValuesTension=[...(e?.valuesTension||[])];oldEditEngagement(id);View.renderValueLinkers();};
+  const oldResetEngagement=Controller.resetEngagementForm.bind(Controller);
+  Controller.resetEngagementForm=function(...args){this._engValuesSupport=[];this._engValuesTension=[];oldResetEngagement(...args);View.renderValueLinkers();};
+  Controller.focusEngagement=function(id){this.setCartographyView('list');this.editEngagement(id);document.getElementById('eng-nom')?.scrollIntoView({behavior:'smooth',block:'center'});};
+  Controller.deleteEngagement=function(id){const target=Model.data.engagements.find(e=>e.id===id);if(!target)return;if(!this.confirmAction('Supprimer cet engagement ? Les éventuelles entrées du journal conserveront son libellé comme repère historique.'))return;(Model.data.journalEntries||[]).forEach(j=>{if(j.linkedEngagementId===id){j.linkedEngagementLabel=j.linkedEngagementLabel||target.nom||'Engagement supprimé';j.linkedEngagementId='';}});Model.data.engagements=Model.data.engagements.filter(e=>e.id!==id);Model.save();View.renderEngagements();View.renderJournal();View.renderDashboardSummary();View.renderRevocationStepper();View.showToast('🗑 Engagement supprimé · contexte du journal conservé.');};
+
+  const oldSaveRevocation=Controller.saveRevocation.bind(Controller);
+  Controller.saveRevocation=function(){const before=Model.data.revocations.length;oldSaveRevocation();if(Model.data.revocations.length>before){const rev=Model.data.revocations.at(-1);if(rev&&!rev.createdAt)rev.createdAt=new Date().toISOString();const action=Model.data.integrations.find(a=>a.revocationId===rev.id);if(action&&!action.createdAt)action.createdAt=new Date().toISOString();Model.save();View.renderIntegrations();View.renderTransformationTimeline();View.renderPracticeMirror();}};
+
+  const oldAddIntegration=Controller.addIntegration.bind(Controller);
+  Controller.addIntegration=function(){const before=Model.data.integrations.length;oldAddIntegration();if(Model.data.integrations.length>before){Model.data.integrations.at(-1).createdAt=new Date().toISOString();Model.save();View.renderIntegrations();}};
+  Controller._formatActionTrigger=function(raw){const input=String(raw||'').trim().replace(/[.,;:]+$/,'');if(!input)return'';let m=input.match(/^si\s+(.+)/i);if(m)return`Si ${m[1]}`;m=input.match(/^quand\s+(.+)/i);if(m)return`Quand ${m[1]}`;m=input.match(/^lorsque\s+(.+)/i);if(m)return`Lorsque ${m[1]}`;return`Si ${input}`;};
+  Controller.createActionPlan=function(){const outcome=document.getElementById('action-outcome')?.value.trim()||'', obstacle=document.getElementById('action-obstacle')?.value.trim()||'', trigger=document.getElementById('action-trigger')?.value.trim()||'', behavior=document.getElementById('action-behavior')?.value.trim()||'', confidence=Number(document.getElementById('action-confidence')?.value||0);if(!behavior){View.showToast('⚠ Décrivez d’abord le petit acte que vous souhaitez réellement poser.');return;}const lead=this._formatActionTrigger(trigger);const cleanBehavior=behavior.replace(/^(?:alors\s+)?je\s+/i,'').replace(/[.]+$/,'');const texte=lead?`${lead}, alors je ${cleanBehavior}.`:behavior;Model.data.integrations.push({id:Model.generateId(),texte,done:false,date:new Date().toLocaleDateString('fr-FR'),revocationId:'',createdAt:new Date().toISOString(),outcome,obstacle,trigger,behavior,confidence,values:[...(this._actionValues||[])],reflection:'',completedAt:''});Model.save();['action-outcome','action-obstacle','action-trigger','action-behavior'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});this._actionValues=[];const range=document.getElementById('action-confidence');if(range)range.value='7';View.updateActionConfidence(7);const note=document.getElementById('action-simplify-note');if(note)note.hidden=true;View.renderActionValueChips();View.renderIntegrations();View.renderDashboardSummary();this.completeModule(6);View.showToast('✅ Plan d’action créé.');};
+  Controller.simplifyActionPlan=function(){const behavior=document.getElementById('action-behavior'), outcome=document.getElementById('action-outcome'), note=document.getElementById('action-simplify-note');if(!behavior)return;if(!behavior.value.trim()&&outcome?.value.trim())behavior.value=`faire le plus petit geste possible vers « ${outcome.value.trim()} »`;if(note)note.hidden=false;behavior.focus();View.showToast('La confiance reste la vôtre : simplifiez le geste, puis réévaluez-la vous-même.');};
+  Controller.saveIntegrationReflection=function(id){const a=Model.data.integrations.find(x=>x.id===id);const t=document.getElementById(`reflection-${id}`);if(!a||!t)return;a.reflection=t.value.trim();Model.save();View.renderTransformationTimeline();View.showToast('Observation gardée avec cet acte.');};
+  const oldToggleIntegration=Controller.toggleIntegration.bind(Controller);
+  Controller.toggleIntegration=function(id){const before=Model.data.integrations.find(x=>x.id===id)?.done;oldToggleIntegration(id);const a=Model.data.integrations.find(x=>x.id===id);if(a){if(!before&&a.done)a.completedAt=new Date().toISOString();if(before&&!a.done)a.completedAt='';Model.save();View.renderIntegrations();View.renderTransformationTimeline();View.renderPracticeMirror();}};
+  Controller.deleteIntegration=function(id){const target=Model.data.integrations.find(a=>a.id===id);if(!target)return;if(!this.confirmAction('Supprimer cette action d’intégration ? Les éventuelles entrées du journal conserveront son libellé comme repère historique.'))return;(Model.data.journalEntries||[]).forEach(j=>{if(j.linkedIntegrationId===id){j.linkedIntegrationLabel=j.linkedIntegrationLabel||target.texte||'Action supprimée';j.linkedIntegrationId='';}});Model.data.integrations=Model.data.integrations.filter(a=>a.id!==id);Model.save();View.renderIntegrations();View.renderJournal();View.renderDashboardSummary();View.showToast('🗑 Action supprimée · contexte du journal conservé.');};
+
+  const oldMarkPractice=Controller.markPractice.bind(Controller);
+  Controller.markPractice=function(){const today=this.localDateKey(new Date());oldMarkPractice();Model.data.practiceDays=Model.data.practiceDays||[];if(!Model.data.practiceDays.includes(today))Model.data.practiceDays.push(today);Model.data.practiceDays.sort();Model.save();View.renderStreak();};
+
+  Controller.setJournalMode=function(mode){this.journalMode=['free','quick','review'].includes(mode)?mode:'free';View.renderJournalMode();};
+  Controller.appendJournalPrompt=function(prompt){const area=document.getElementById('journal-entry-text');if(!area)return;const prefix=area.value.trim()?`\n\n${prompt}\n`:`${prompt}\n`;area.value+=prefix;area.focus();};
+  const oldSaveJournal=Controller.saveJournalEntry.bind(Controller);
+  Controller.saveJournalEntry=function(){const editId=document.getElementById('journal-edit-id')?.value;const texte=document.getElementById('journal-entry-text')?.value.trim()||'';const before=Model.data.journalEntries.length;const mode=this.journalMode||'free';const linkedEngagementId=document.getElementById('journal-link-engagement')?.value||'';const linkedIntegrationId=document.getElementById('journal-link-action')?.value||'';const linkedEngagementLabel=Model.data.engagements.find(e=>e.id===linkedEngagementId)?.nom||'';const linkedIntegrationLabel=Model.data.integrations.find(a=>a.id===linkedIntegrationId)?.texte||'';oldSaveJournal();if(!texte)return;let entry=editId?Model.data.journalEntries.find(j=>j.id===editId):(Model.data.journalEntries.length>before?Model.data.journalEntries.at(-1):null);if(entry){entry.createdAt=entry.createdAt||new Date().toISOString();entry.mode=mode;entry.linkedEngagementId=linkedEngagementId;entry.linkedIntegrationId=linkedIntegrationId;entry.linkedEngagementLabel=linkedEngagementLabel;entry.linkedIntegrationLabel=linkedIntegrationLabel;Model.save();View.renderJournal();}};
+  const oldEditJournal=Controller.editJournalEntry.bind(Controller);
+  Controller.editJournalEntry=function(id){oldEditJournal(id);const entry=Model.data.journalEntries.find(j=>j.id===id);this.journalMode=entry?.mode||'free';View.renderJournalMode();View.renderJournalLinks();if(entry){const e=document.getElementById('journal-link-engagement'),a=document.getElementById('journal-link-action');if(e)e.value=entry.linkedEngagementId||'';if(a)a.value=entry.linkedIntegrationId||'';}};
+  const oldResetJournal=Controller.resetJournalForm.bind(Controller);
+  Controller.resetJournalForm=function(...args){oldResetJournal(...args);this.journalMode='free';const e=document.getElementById('journal-link-engagement'),a=document.getElementById('journal-link-action');if(e)e.value='';if(a)a.value='';View.renderJournalMode();};
+
+  Controller._buildMeditationPool=function(){const all=[...MANTRAS_DEFAUT,...Model.data.customMantras],s=Model.data.meditationSettings||{};if(s.source==='custom'&&Model.data.customMantras.length)return [...Model.data.customMantras];if(s.source==='favorites'){const fav=all.filter(m=>Model.data.favoriteMantras.includes(m.id));if(fav.length)return fav;}return all;};
+  Controller._startMeditationTimer=function(){clearInterval(this._medInterval);if(this._medPaused)return;const sec=Number(Model.data.meditationSettings?.interval||12);this._medInterval=setInterval(()=>this.nextMeditationMantra(),sec*1000);};
+  const oldOpenMeditation=Controller.openMeditation.bind(Controller);
+  Controller.openMeditation=function(){clearInterval(this._medInterval);clearTimeout(this._medDurationTimer);this._medPool=this._buildMeditationPool();this._medIndex=0;this._medPaused=false;this._showMedMantra();const overlay=document.getElementById('meditation-overlay');this._medPreviousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;overlay.classList.add('active');overlay.setAttribute('aria-hidden','false');document.body.classList.add('meditation-open');View.renderMeditationSettings();const play=document.getElementById('med-play-toggle');if(play)play.textContent='Pause';this._startMeditationTimer();const duration=Number(Model.data.meditationSettings?.duration||0);if(duration)this._medDurationTimer=setTimeout(()=>{View.showToast('Pratique méditative terminée.');this.closeMeditation();},duration*60000);requestAnimationFrame(()=>overlay.querySelector('.med-close')?.focus());};
+  const oldCloseMeditation=Controller.closeMeditation.bind(Controller);
+  Controller.closeMeditation=function(){clearTimeout(this._medDurationTimer);oldCloseMeditation();};
+  Controller.nextMeditationMantra=function(){if(!this._medPool?.length)return;this._medIndex=(this._medIndex+1)%this._medPool.length;this._showMedMantra();};
+  Controller.previousMeditationMantra=function(){if(!this._medPool?.length)return;this._medIndex=(this._medIndex-1+this._medPool.length)%this._medPool.length;this._showMedMantra();};
+  Controller.toggleMeditationPlayback=function(){this._medPaused=!this._medPaused;const b=document.getElementById('med-play-toggle');if(b)b.textContent=this._medPaused?'Reprendre':'Pause';this._startMeditationTimer();};
+  Controller.updateMeditationSettings=function(){const source=document.getElementById('med-source')?.value||'favorites',interval=Number(document.getElementById('med-interval')?.value||12),duration=Number(document.getElementById('med-duration')?.value||0);Model.data.meditationSettings={source,interval,duration};Model.save();if(document.getElementById('meditation-overlay')?.classList.contains('active')){this._medPool=this._buildMeditationPool();this._medIndex=Math.min(this._medIndex||0,Math.max(0,this._medPool.length-1));this._showMedMantra();this._startMeditationTimer();clearTimeout(this._medDurationTimer);if(duration)this._medDurationTimer=setTimeout(()=>this.closeMeditation(),duration*60000);}};
+  Controller.saveMeditationNote=function(){const input=document.getElementById('med-exit-note');const text=input?.value.trim();if(!text)return;Model.data.journalEntries.push({id:Model.generateId(),date:View.formatDate(new Date()),texte:text,tags:'méditation',createdAt:new Date().toISOString(),mode:'free',linkedEngagementId:'',linkedIntegrationId:'',linkedEngagementLabel:'',linkedIntegrationLabel:''});Model.save();input.value='';View.renderJournal();View.showToast('Phrase gardée dans le journal.');};
+
+  const oldSetTab=Controller.setTab.bind(Controller);
+  Controller.setTab=function(tabId){oldSetTab(tabId);if(tabId==='cartographie')this.setCartographyView(this.cartographyView||'map');if(tabId==='reaffirmation'){View.renderIntegrations();View.renderTransformationTimeline();View.renderActionValueChips();}if(tabId==='journal'){View.renderJournalMode();View.renderJournalLinks();}};
+
+  document.addEventListener('DOMContentLoaded',()=>{Controller.setCartographyView('map');});
+})();
+</script>
+
+<script>
+/* V0.2.1 — consolidation : sécurité des données, accessibilité et cohérence UX. */
+document.addEventListener('DOMContentLoaded', () => {
+  const tabs = [...document.querySelectorAll('.nav-tab')];
+  const originalSetTab = Controller.setTab.bind(Controller);
+  Controller.setTab = function(tabId) {
+    originalSetTab(tabId);
+    tabs.forEach(tab => {
+      if (tab.dataset.tab === tabId) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
+    });
+    const active = tabs.find(tab => tab.dataset.tab === tabId);
+    if (active) {
+      const title = active.querySelector('.nav-copy strong')?.textContent?.trim();
+      if (title) document.title = `${title} — Souveraineté Intérieure`;
+      if (window.matchMedia('(max-width: 980px)').matches) active.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    }
+  };
+  tabs.forEach(tab => {
+    tab.addEventListener('keydown', event => {
+      if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key)) return;
+      event.preventDefault();
+      let index = tabs.indexOf(tab);
+      if (event.key === 'Home') index = 0;
+      else if (event.key === 'End') index = tabs.length - 1;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') index = (index - 1 + tabs.length) % tabs.length;
+      else index = (index + 1) % tabs.length;
+      tabs[index].focus();
+    });
+  });
+  document.addEventListener('keydown', event => {
+    const overlay = document.getElementById('meditation-overlay');
+    if (!overlay?.classList.contains('active')) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      Controller.closeMeditation();
+      return;
+    }
+    if (event.key === 'Tab') {
+      const focusables = [...overlay.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+      if (!focusables.length) { event.preventDefault(); overlay.focus(); return; }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+});
+</script>
+
 </body>
 </html>
