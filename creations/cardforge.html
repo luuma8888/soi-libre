@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Atelier de cartes v0.1.alpha</title>
-  <meta name="description" content="Atelier de cartes v0.1.alpha, créateur hors-ligne de cartes image + textes et de planches imprimables.">
+  <title>CardForge · Atelier de cartes v0.2-alpha</title>
+  <meta name="description" content="CardForge v0.2-alpha, atelier hors ligne pour créer des supports visuels et des planches imprimables, notamment pour l’accompagnement d’enfants autistes et l’apprentissage de la lecture.">
   <style>
     /* =========================================================
        1. Design tokens
@@ -215,337 +215,437 @@
       font-display: block;
     }
 
+
     :root {
-      --bg: #f4fbf8;
-      --surface: #ffffff;
-      --surface-soft: #eef8f3;
-      --ink: #21303d;
-      --muted: #607284;
-      --line: #d7e8df;
-      --primary: #6aa9ff;
-      --primary-strong: #236fc6;
-      --accent: #9ee6c4;
-      --warn: #ffe6a7;
-      --danger: #ffe1e6;
-      --shadow: 0 18px 44px rgba(56, 91, 104, .12);
-      --radius: 18px;
+      color-scheme: light;
+      --bg: #edf5f3;
+      --bg-deep: #dcebea;
+      --surface: #fffdfa;
+      --surface-2: #f6faf8;
+      --surface-3: #edf5f1;
+      --ink: #1c2c34;
+      --ink-soft: #3f5661;
+      --muted: #60757f;
+      --line: #cededa;
+      --line-strong: #aec9c4;
+      --primary: #2f73c7;
+      --primary-hover: #225fa9;
+      --primary-soft: #e6f0ff;
+      --mint: #2c9577;
+      --mint-soft: #e4f5ef;
+      --amber: #a66a13;
+      --amber-soft: #fff2d7;
+      --danger: #a83b52;
+      --danger-soft: #fdecef;
+      --shadow-sm: 0 2px 10px rgba(34, 73, 82, .07);
+      --shadow-md: 0 14px 34px rgba(34, 73, 82, .11);
+      --shadow-stage: 0 22px 54px rgba(32, 72, 83, .16);
+      --radius-sm: 10px;
+      --radius: 16px;
+      --radius-lg: 22px;
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      --focus: 0 0 0 4px rgba(35, 111, 198, .22);
+      --focus: 0 0 0 3px rgba(47, 115, 199, .25);
+      --header-h: 72px;
     }
 
     [data-theme="dark"] {
-      --bg: #101923;
-      --surface: #172433;
-      --surface-soft: #203246;
-      --ink: #edf6ff;
-      --muted: #b6c8d8;
-      --line: #36516a;
-      --primary: #8bc5ff;
-      --primary-strong: #b8dcff;
-      --accent: #63d7a0;
-      --warn: #f6c65b;
-      --danger: #7f2438;
-      --shadow: 0 18px 46px rgba(0, 0, 0, .28);
+      color-scheme: dark;
+      --bg: #111d22;
+      --bg-deep: #17282f;
+      --surface: #19272d;
+      --surface-2: #203138;
+      --surface-3: #263a41;
+      --ink: #edf6f5;
+      --ink-soft: #c7d7d6;
+      --muted: #9db2b4;
+      --line: #385159;
+      --line-strong: #4d6971;
+      --primary: #7db6ff;
+      --primary-hover: #a8ceff;
+      --primary-soft: #233d5b;
+      --mint: #70d1b2;
+      --mint-soft: #1f493e;
+      --amber: #f2c675;
+      --amber-soft: #4a3c22;
+      --danger: #ff9aaa;
+      --danger-soft: #552d37;
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, .18);
+      --shadow-md: 0 16px 40px rgba(0, 0, 0, .24);
+      --shadow-stage: 0 24px 58px rgba(0, 0, 0, .35);
     }
 
     * { box-sizing: border-box; }
-    html { min-height: 100%; }
+    html { min-height: 100%; scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100%;
       font-family: var(--font);
       color: var(--ink);
-      background: linear-gradient(135deg, var(--bg), #eef6ff);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(80, 177, 153, .10), transparent 28rem),
+        radial-gradient(circle at 92% 8%, rgba(73, 134, 209, .10), transparent 32rem),
+        var(--bg);
     }
-    [data-theme="dark"] body { background: linear-gradient(135deg, var(--bg), #162236); }
-
     button, input, textarea, select { font: inherit; }
-    button, .file-button {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--ink);
-      border-radius: 12px;
-      min-height: 40px;
-      padding: .58rem .78rem;
-      cursor: pointer;
-      font-weight: 750;
-    }
-    button:hover, .file-button:hover { border-color: var(--primary); }
-    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, .file-button:focus-visible {
+    button { color: inherit; }
+    button, summary, label[for], .drop { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible, .drop:focus-visible {
       outline: none;
       box-shadow: var(--focus);
     }
-    button.primary { background: var(--primary); border-color: transparent; color: #061424; }
-    button.success { background: var(--accent); border-color: transparent; color: #092418; }
-    button.warn { background: var(--warn); border-color: transparent; color: #322400; }
-    button.danger { background: var(--danger); color: #7d1530; }
-    button.small { min-height: 34px; padding: .42rem .58rem; font-size: .88rem; }
-    button:disabled { opacity: .55; cursor: not-allowed; }
+    button:disabled { opacity: .46; cursor: not-allowed; }
+    button { cursor: pointer; }
+    img, canvas { display: block; max-width: 100%; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: .12rem; font-size: clamp(1.35rem, 2.2vw, 1.72rem); line-height: 1.08; letter-spacing: -.025em; }
+    h2 { margin-bottom: 0; font-size: 1.05rem; letter-spacing: -.01em; }
+    h3 { margin: 0; font-size: .92rem; }
+    p, small { color: var(--muted); line-height: 1.45; }
+    small { font-size: .79rem; }
+    .hidden { display: none !important; }
+    .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+    .icon { width: 1.05rem; height: 1.05rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
-    label { display: block; margin: 0 0 .32rem; font-size: .86rem; font-weight: 800; }
-    input, textarea, select {
-      width: 100%;
+    .app { width: min(1480px, calc(100% - 28px)); margin: 0 auto; padding: 14px 0 42px; }
+    .topbar {
+      position: relative;
+      z-index: 40;
+      min-height: var(--header-h);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      padding: 12px 16px 12px 18px;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: var(--radius-lg);
+      background: color-mix(in srgb, var(--surface) 94%, transparent);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(12px);
+    }
+    .brand-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line)); flex: 0 0 auto; }
+    .brand-mark .icon { width: 23px; height: 23px; }
+    .brand-copy { min-width: 0; }
+    .subtitle { margin: .2rem 0 0; max-width: 82ch; color: var(--muted); font-size: .82rem; line-height: 1.3; }
+    .version-pill { margin-left: .36rem; color: var(--muted); font-size: .7rem; font-weight: 800; vertical-align: middle; letter-spacing: .02em; }
+    .top-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+
+    .button, button, .file-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: .55rem .76rem;
       background: var(--surface);
       color: var(--ink);
-      padding: .68rem .74rem;
-    }
-    select { padding-right: 2.15rem; }
-    textarea { min-height: 68px; resize: vertical; }
-    input[type="color"] { padding: .16rem; min-height: 42px; }
-    input[type="range"] { padding: 0; }
-    h1, h2, h3, p { margin-top: 0; }
-    h1 { margin-bottom: .16rem; font-size: clamp(1.34rem, 3vw, 1.9rem); line-height: 1.05; }
-    h2 { margin-bottom: 0; font-size: 1.04rem; }
-    h3 { margin-bottom: .55rem; font-size: .98rem; color: var(--primary-strong); }
-    p, small { color: var(--muted); line-height: 1.45; }
-    .version-pill {
-      display: inline-block;
-      margin-left: .35rem;
-      color: var(--muted);
-      font-size: .82rem;
-      font-weight: 800;
-      vertical-align: middle;
-    }
-
-    .app {
-      width: min(1360px, calc(100% - 24px));
-      margin: 0 auto;
-      padding: 10px 0 34px;
-    }
-    .topbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .82);
-      box-shadow: var(--shadow);
-    }
-    [data-theme="dark"] .topbar { background: rgba(23, 36, 51, .88); }
-    .topbar p { margin-bottom: 0; max-width: 78ch; font-size: .9rem; line-height: 1.25; }
-    .subtitle {
-      margin: .22rem 0 0;
-      max-width: 62ch;
-      color: var(--muted);
+      font-weight: 760;
       font-size: .88rem;
-      line-height: 1.25;
+      line-height: 1;
+      box-shadow: 0 1px 0 rgba(255,255,255,.2) inset;
     }
-    .top-actions, .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    .top-actions { gap: 6px; justify-content: flex-end; }
-    .top-actions button, .top-actions .file-button {
-      min-height: 36px;
-      padding: .44rem .62rem;
-      font-size: .9rem;
-    }
-    .tabs {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      padding: 8px;
-      border-radius: 18px;
-      background: var(--surface-soft);
-      border: 1px solid var(--line);
-    }
-    .tab-btn[aria-selected="true"] { background: var(--primary); color: #061424; border-color: transparent; }
-    .view { display: none; margin-top: 14px; }
-    .view.active { display: block; }
+    button:hover, .file-button:hover { border-color: var(--line-strong); background: var(--surface-2); }
+    button.primary { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(47, 115, 199, .18); }
+    button.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    [data-theme="dark"] button.primary { color: #0d2235; }
+    button.success { background: var(--mint); border-color: var(--mint); color: #fff; }
+    [data-theme="dark"] button.success { color: #0c2820; }
+    button.danger { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 28%, var(--line)); }
+    button.danger:hover { background: var(--danger-soft); border-color: var(--danger); }
+    button.small { min-height: 34px; padding: .42rem .58rem; font-size: .8rem; }
+    .icon-button { width: 40px; padding: 0; }
+    .ghost-button { background: transparent; box-shadow: none; }
 
-    .creator-grid {
+    .data-tools { position: relative; }
+    .data-tools > summary { list-style: none; }
+    .data-tools > summary::-webkit-details-marker { display: none; }
+    .data-tools[open] > summary { background: var(--surface-2); border-color: var(--line-strong); }
+    .data-menu {
+      position: absolute;
+      z-index: 50;
+      right: 0;
+      top: calc(100% + 8px);
+      width: 230px;
       display: grid;
-      grid-template-columns: minmax(310px, 420px) minmax(360px, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-    .panel-head {
-      min-height: 54px;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(90deg, rgba(106, 169, 255, .15), rgba(158, 230, 196, .18));
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-    }
-    .panel-body { padding: 14px; }
-    .stack { display: grid; gap: 12px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-    .grid-3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 8px; }
-    .color-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-    .hidden { display: none !important; }
-    .hint {
-      padding: 10px 12px;
+      gap: 6px;
+      padding: 8px;
       border: 1px solid var(--line);
       border-radius: 14px;
-      background: var(--surface-soft);
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
     }
-    .drop {
+    .data-menu button { width: 100%; justify-content: flex-start; }
+    .data-menu small { padding: 5px 7px 2px; }
+
+    .tabs {
+      position: sticky;
+      top: 8px;
+      z-index: 30;
+      margin-top: 12px;
       display: grid;
-      place-items: center;
-      min-height: 116px;
-      padding: 14px;
-      border: 2px dashed var(--primary);
-      border-radius: 16px;
-      background: rgba(106, 169, 255, .08);
-      text-align: center;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(14px);
+    }
+    .tab-btn { min-height: 50px; justify-content: flex-start; padding: .54rem .85rem; background: transparent; border-color: transparent; box-shadow: none; }
+    .tab-btn:hover { background: var(--surface-2); }
+    .tab-btn[aria-selected="true"] { background: var(--primary-soft); color: var(--primary-hover); border-color: color-mix(in srgb, var(--primary) 28%, var(--line)); }
+    [data-theme="dark"] .tab-btn[aria-selected="true"] { color: var(--primary); }
+    .tab-copy { display: grid; gap: 2px; text-align: left; }
+    .tab-title { font-weight: 820; }
+    .tab-sub { color: var(--muted); font-weight: 580; font-size: .72rem; }
+    .view { display: none; margin-top: 12px; }
+    .view.active { display: block; }
+
+    .creator-grid { display: grid; grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 14px; align-items: start; min-width: 0; }
+    .editor-panel, .preview-panel, .library-panel, .sheet-panel { min-width: 0; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: clip; }
+    .editor-panel { display: grid; grid-template-rows: auto 1fr auto; }
+    .panel-head, .editor-heading, .sheet-toolbar { min-height: 58px; padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .heading-copy { display: grid; gap: 2px; }
+    .eyebrow { color: var(--mint); font-size: .7rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+    .editor-scroll { display: grid; }
+    .editor-section { padding: 15px 16px; border-bottom: 1px solid var(--line); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
+    .section-title { display: flex; align-items: center; gap: 8px; }
+    .section-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 9px; background: var(--surface-3); color: var(--primary); }
+    .section-icon .icon { width: 15px; height: 15px; }
+    .editor-disclosure { border-bottom: 1px solid var(--line); }
+    .editor-disclosure > summary { min-height: 52px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; padding: 11px 16px; font-weight: 800; }
+    .editor-disclosure > summary:hover { background: var(--surface-2); }
+    .editor-disclosure > summary::after { content: "+"; width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); }
+    .editor-disclosure[open] > summary::after { content: "−"; }
+    .disclosure-body { padding: 0 16px 16px; display: grid; gap: 12px; }
+    .editor-footer { position: static; padding: 12px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 96%, transparent); backdrop-filter: blur(10px); }
+    .editor-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    .autosave-line { margin: 9px 2px 0; display: flex; align-items: center; gap: 7px; font-size: .72rem; color: var(--muted); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); }
+    .autosave-line[data-status="error"] { color: var(--danger); font-weight: 760; }
+    .autosave-line[data-status="error"] .status-dot { background: var(--danger); box-shadow: 0 0 0 4px var(--danger-soft); }
+    .hint a { color: var(--primary); text-underline-offset: 2px; }
+
+    .field { min-width: 0; }
+    label { display: block; margin: 0 0 .34rem; font-size: .78rem; font-weight: 800; color: var(--ink-soft); }
+    input, textarea, select {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: .64rem .7rem;
+    }
+    input::placeholder { color: color-mix(in srgb, var(--muted) 72%, transparent); }
+    select { padding-right: 2.1rem; }
+    input[type="color"] { min-height: 42px; padding: .18rem; }
+    input[type="range"] { min-height: 28px; padding: 0; accent-color: var(--primary); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) 88px; gap: 8px; }
+    .color-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .stack { display: grid; gap: 11px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .hint { padding: 10px 11px; border-left: 3px solid var(--line-strong); background: var(--surface-2); color: var(--muted); }
+    .hint small { display: block; }
+
+    .drop {
+      min-height: 112px;
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 13px;
+      border: 1.5px dashed color-mix(in srgb, var(--primary) 70%, var(--line));
+      border-radius: 14px;
+      background: var(--primary-soft);
       cursor: pointer;
     }
-    .drop.drag { background: rgba(158, 230, 196, .25); }
-    .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
-    .swatch {
-      aspect-ratio: 1;
-      border-radius: 999px;
-      border: 2px solid var(--line);
-      min-height: 32px;
-      padding: 0;
-    }
+    .drop:hover, .drop.drag { border-style: solid; background: color-mix(in srgb, var(--primary-soft) 78%, var(--mint-soft)); }
+    .drop-badge { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: var(--surface); color: var(--primary); box-shadow: var(--shadow-sm); }
+    .drop-badge .icon { width: 21px; height: 21px; }
+    .drop-copy { display: grid; gap: 3px; min-width: 0; }
+    .drop-copy strong { font-size: .84rem; }
+    .drop-copy small { font-size: .72rem; }
+    .drop-action { padding: .42rem .56rem; border-radius: 9px; background: var(--surface); color: var(--primary-hover); font-size: .75rem; font-weight: 800; }
+    .image-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; min-height: 30px; }
+    .image-state { font-size: .72rem; color: var(--muted); }
+
+    .text-block { padding: 10px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .text-block + .text-block { margin-top: 8px; }
+    .text-block-head { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+    .text-index { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 7px; background: var(--primary-soft); color: var(--primary-hover); font-weight: 850; font-size: .72rem; }
+    .text-block-title { font-size: .75rem; font-weight: 820; color: var(--ink-soft); }
+    .text-controls select { font-size: .8rem; }
+    .text-controls input { font-weight: 670; }
+    .micro-label { display: block; margin-bottom: 4px; color: var(--muted); font-size: .67rem; font-weight: 740; }
+    .swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 7px; }
+    .swatch { min-height: 28px; aspect-ratio: 1; padding: 0; border-radius: 9px; border: 2px solid var(--surface); outline: 1px solid var(--line); }
+
+    .preview-panel { position: sticky; top: 82px; }
+    .preview-head { min-height: 58px; padding: 10px 13px 10px 15px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+    .preview-title-row { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .meta-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .meta-chip { min-height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border-radius: 8px; background: var(--surface-3); color: var(--muted); font-size: .69rem; font-weight: 760; }
+    .zoom-tools { display: flex; align-items: center; gap: 5px; }
+    .zoom-tools button { min-width: 32px; min-height: 32px; padding: .3rem .42rem; }
+    .zoom-readout { min-width: 42px; text-align: center; color: var(--muted); font-size: .72rem; font-weight: 760; }
+    .preview-body { padding: 13px; }
     .card-preview-wrap {
+      position: relative;
       display: grid;
       justify-items: center;
       align-items: center;
-      gap: 12px;
-      padding: 14px;
-      background: var(--surface-soft);
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      min-height: 0;
-      max-height: calc(100vh - 240px);
+      padding: clamp(14px, 2vw, 26px);
+      min-height: 560px;
+      max-height: calc(100vh - 190px);
       overflow: auto;
-    }
-    canvas { max-width: 100%; height: auto; background: #fff; }
-    #cardCanvas {
-      width: auto;
-      height: auto;
-      max-width: none;
-      max-height: none;
-      border-radius: 18px;
-      box-shadow: 0 18px 40px rgba(30, 64, 90, .16);
-    }
-    #sheetCanvas {
-      width: 100%;
-      max-height: 720px;
-      object-fit: contain;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      box-shadow: var(--shadow);
+      border-radius: 17px;
+      background-color: var(--surface-3);
+      background-image: radial-gradient(circle, color-mix(in srgb, var(--line-strong) 58%, transparent) 1px, transparent 1px);
+      background-size: 16px 16px;
     }
-    .library-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    .saved-card {
-      display: grid;
-      gap: 8px;
-      padding: 8px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface);
-    }
-    .saved-card.selected { outline: 3px solid rgba(106, 169, 255, .42); }
-    .saved-card img {
-      width: 100%;
-      aspect-ratio: 3 / 4;
-      object-fit: contain;
-      border-radius: 10px;
-      background: #fff;
-      border: 1px solid var(--line);
-    }
-    .saved-card strong {
-      display: block;
-      font-size: .9rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .saved-card .row button { flex: 1 1 auto; }
-    .storage-card {
-      display: grid;
-      gap: 8px;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface-soft);
-    }
-    .storage-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: baseline;
-    }
-    .storage-meter {
-      height: 10px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(96, 114, 132, .18);
-    }
-    .storage-meter span {
-      display: block;
-      width: 0;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent), var(--primary));
-      transition: width .2s ease;
-    }
-    .sheet-layout {
-      display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(360px, 1fr);
-      gap: 14px;
-      align-items: start;
-    }
-    .zoom-tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .zoom-tools button { min-height: 32px; padding: .34rem .52rem; }
-    .toast-area {
-      position: fixed;
-      right: 14px;
-      bottom: 14px;
-      display: grid;
-      gap: 8px;
-      z-index: 20;
-    }
-    .toast {
-      max-width: 360px;
-      padding: 11px 13px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--surface);
-      box-shadow: var(--shadow);
-      color: var(--ink);
-    }
+    #cardCanvas { width: auto; height: auto; max-width: none; max-height: none; border-radius: 14px; box-shadow: var(--shadow-stage); background: #fff; }
+    .preview-foot { display: flex; justify-content: space-between; gap: 12px; padding: 0 15px 13px; color: var(--muted); font-size: .72rem; }
+
+    .sheet-layout { display: grid; grid-template-columns: minmax(430px, 560px) minmax(0, 1fr); min-width: 0; gap: 14px; align-items: start; }
+    .library-panel { min-width: 0; }
+    .library-tools { padding: 12px 14px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+    .search-wrap { position: relative; }
+    .search-wrap .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+    .search-wrap input { padding-left: 36px; }
+    .selection-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .selection-summary { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: .76rem; font-weight: 760; }
+    .selection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+    .library-body { padding: 12px; max-height: min(720px, calc(100vh - 250px)); overflow: auto; }
+    .library-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .saved-card { position: relative; display: grid; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+    .saved-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
+    .saved-card.selected { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
+    .saved-card-media { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
+    .saved-card img { width: 100%; aspect-ratio: 3 / 4; object-fit: contain; background: #fff; }
+    .selected-mark { position: absolute; top: 7px; right: 7px; width: 25px; height: 25px; display: grid; place-items: center; border-radius: 8px; background: var(--primary); color: #fff; box-shadow: var(--shadow-sm); opacity: 0; transform: scale(.8); transition: .14s ease; }
+    .saved-card.selected .selected-mark { opacity: 1; transform: scale(1); }
+    .saved-card-meta { min-width: 0; display: grid; gap: 2px; }
+    .saved-card-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .82rem; }
+    .saved-card-meta small { font-size: .67rem; }
+    .saved-card-actions { display: grid; grid-template-columns: 1fr 1fr auto; gap: 5px; }
+    .saved-card-actions button { min-height: 32px; padding: .38rem .45rem; font-size: .71rem; }
+    .empty-state { grid-column: 1 / -1; min-height: 180px; display: grid; place-items: center; text-align: center; padding: 24px; border: 1px dashed var(--line-strong); border-radius: 14px; background: var(--surface-2); }
+    .empty-state-inner { max-width: 280px; display: grid; justify-items: center; gap: 7px; }
+    .empty-state .section-icon { width: 40px; height: 40px; }
+    .empty-state p { margin: 0; font-size: .78rem; }
+
+    .maintenance { border-top: 1px solid var(--line); }
+    .maintenance > summary { padding: 11px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .78rem; font-weight: 800; }
+    .maintenance > summary:hover { background: var(--surface-2); }
+    .maintenance-body { padding: 0 14px 13px; display: grid; gap: 9px; }
+    .storage-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .storage-meter { height: 7px; overflow: hidden; border-radius: 999px; background: var(--surface-3); }
+    .storage-meter span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--mint); transition: width .2s ease; }
+
+    .sheet-panel { position: sticky; top: 82px; }
+    .sheet-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+    .sheet-config { display: flex; align-items: end; gap: 8px; flex-wrap: wrap; }
+    .compact-field { display: grid; gap: 3px; min-width: 116px; }
+    .compact-field label { margin: 0; font-size: .66rem; color: var(--muted); }
+    .compact-field select { min-height: 36px; padding-top: .45rem; padding-bottom: .45rem; font-size: .8rem; }
+    .page-controls { display: flex; align-items: center; gap: 5px; }
+    .page-controls button { min-width: 34px; min-height: 34px; padding: .3rem; }
+    #sheetPageInfo { min-width: 66px; text-align: center; font-size: .72rem; font-weight: 760; color: var(--muted); }
+    .sheet-body { padding: 13px; display: grid; gap: 10px; }
+    .sheet-stage { padding: clamp(10px, 1.4vw, 18px); border-radius: 16px; border: 1px solid var(--line); background: var(--surface-3); }
+    #sheetCanvas { width: 100%; max-height: calc(100vh - 300px); object-fit: contain; border: 1px solid var(--line); border-radius: 9px; box-shadow: var(--shadow-stage); background: #fff; }
+    .sheet-status { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .sheet-note { color: var(--muted); font-size: .72rem; }
+    .sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sheet-actions button { flex: 1 1 160px; }
     #printArea { display: none; }
 
-    @media (max-width: 980px) {
-      .creator-grid, .sheet-layout { grid-template-columns: 1fr; }
-      .card-preview-wrap { max-height: none; }
-      .grid-3 { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 620px) {
-      .app { width: min(100% - 16px, 1360px); padding-top: 8px; }
-      .topbar { grid-template-columns: 1fr; border-radius: 16px; padding: 10px; }
-      .topbar p, .subtitle { font-size: .82rem; }
-      .top-actions button, .top-actions .file-button { flex: 1 1 calc(50% - 8px); text-align: center; }
-      .grid-2 { grid-template-columns: 1fr; }
-      .color-grid { grid-template-columns: 1fr; }
-      .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .swatches { grid-template-columns: repeat(4, 1fr); }
-    }
+    .toast-area { position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; z-index: 100; pointer-events: none; }
+    .toast { max-width: min(360px, calc(100vw - 32px)); padding: 11px 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-md); color: var(--ink); font-size: .82rem; pointer-events: auto; }
 
+    @media (max-width: 1120px) {
+      .creator-grid, .sheet-layout { grid-template-columns: minmax(330px, 400px) minmax(0, 1fr); }
+      .library-grid { grid-template-columns: 1fr; }
+      .preview-title-row { align-items: flex-start; flex-direction: column; gap: 5px; }
+      .meta-chips { display: none; }
+    }
+    @media (max-width: 900px) {
+      .creator-grid, .sheet-layout { grid-template-columns: minmax(0, 1fr); }
+      .preview-panel, .sheet-panel { position: static; }
+      .card-preview-wrap { min-height: 420px; max-height: none; }
+      .library-body { max-height: none; }
+      .library-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      #sheetCanvas { max-height: none; }
+    }
+    @media (max-width: 680px) {
+      .app { width: min(100% - 14px, 1480px); padding-top: 7px; }
+      .topbar { grid-template-columns: minmax(0, 1fr) auto; min-height: 62px; padding: 9px 10px; gap: 8px; border-radius: 16px; }
+      .brand-mark { width: 36px; height: 36px; border-radius: 11px; }
+      .brand-mark .icon { width: 19px; height: 19px; }
+      h1 { font-size: 1.12rem; }
+      .subtitle { display: none; }
+      .top-actions { gap: 5px; }
+      #saveCardBtn { width: 40px; padding: 0; }
+      #saveCardBtn .action-label { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; }
+      .data-tools > summary { width: 40px; padding: 0; }
+      .data-tools .summary-label { display: none; }
+      .tabs { top: 5px; margin-top: 7px; padding: 4px; border-radius: 13px; }
+      .tab-btn { min-height: 44px; padding: .45rem .58rem; justify-content: center; }
+      .tab-sub { display: none; }
+      .tab-title { font-size: .82rem; }
+      .tab-btn .icon { display: none; }
+      .view { margin-top: 7px; }
+      .editor-panel, .preview-panel, .library-panel, .sheet-panel { border-radius: 16px; }
+      .editor-heading, .panel-head { min-height: 52px; padding: 10px 12px; }
+      .editor-section { padding: 13px 12px; }
+      .editor-disclosure > summary { padding: 10px 12px; }
+      .disclosure-body { padding: 0 12px 13px; }
+      .drop { grid-template-columns: 40px 1fr; min-height: 100px; padding: 11px; }
+      .drop-badge { width: 40px; height: 40px; }
+      .drop-action { display: none; }
+      .grid-2, .color-grid { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+      .text-block { padding: 9px; }
+      .text-controls { display: grid; grid-template-columns: 1fr 92px; gap: 7px; }
+      .text-controls .text-value { grid-column: 1 / -1; }
+      .swatches { grid-template-columns: repeat(8, 1fr); }
+      .preview-head { min-height: 52px; padding: 9px 10px 9px 12px; }
+      .preview-body { padding: 9px; }
+      .card-preview-wrap { min-height: 360px; padding: 12px; border-radius: 13px; }
+      .preview-foot { padding: 0 11px 11px; }
+      .sheet-layout { gap: 7px; }
+      .library-tools { padding: 10px; }
+      .library-body { padding: 9px; }
+      .library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .saved-card-actions { grid-template-columns: 1fr auto; }
+      .saved-card-actions [data-open-card] { grid-column: 1 / -1; grid-row: 1; }
+      .saved-card-actions [data-select-card] { grid-column: 1; }
+      .saved-card-actions [data-delete-card] { grid-column: 2; }
+      .sheet-toolbar { grid-template-columns: 1fr; align-items: stretch; padding: 10px; }
+      .sheet-config { display: grid; grid-template-columns: 1fr 1fr; }
+      .page-controls { justify-content: center; }
+      .sheet-body { padding: 9px; }
+      .sheet-stage { padding: 8px; }
+      .sheet-status { align-items: flex-start; }
+      .toast-area { right: 8px; bottom: 8px; }
+    }
+    @media (max-width: 420px) {
+      .library-grid { grid-template-columns: 1fr 1fr; }
+      .saved-card-meta small { display: none; }
+      .editor-actions { grid-template-columns: 1fr auto; }
+      .editor-actions button { min-height: 42px; }
+      .preview-foot span:last-child { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    }
     @media print {
       body { background: #fff !important; color: #111 !important; }
       .app, .toast-area { display: none !important; }
@@ -553,222 +653,158 @@
       @page { size: A4; margin: 8mm; }
       #printArea img { width: 100%; height: auto; display: block; page-break-inside: avoid; }
     }
+
   </style>
 </head>
+
 <body>
   <div class="app" id="app">
     <header class="topbar">
-      <div>
-        <h1>Atelier de cartes <span class="version-pill">v0.1.alpha</span></h1>
-        <p class="subtitle">Créer des supports visuels et planches imprimables pour familles, professionnels et écoles accompagnant des enfants autistes, ou simplement pour l'apprentissage de la lecture.</p>
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+        <div class="brand-copy">
+          <h1>CardForge <span class="version-pill">v0.2-alpha</span></h1>
+          <p class="subtitle">Un atelier hors ligne pour créer des supports visuels et des planches imprimables, notamment pour les familles, professionnels et écoles accompagnant des enfants autistes, ainsi que pour l’apprentissage de la lecture.</p>
+        </div>
       </div>
-      <div class="top-actions" aria-label="Actions principales">
-        <button class="primary" id="saveCardBtn">Sauvegarder carte</button>
-        <button id="themeBtn" type="button">Mode nuit</button>
-        <button id="exportJsonBtn" type="button">Exporter JSON</button>
-        <button id="importJsonBtn" type="button">Importer JSON</button>
-        <input class="hidden" id="importJsonInput" type="file" accept="application/json,.json">
+      <div class="top-actions" aria-label="Actions globales">
+        <button class="primary" id="saveCardBtn" type="button" title="Ajouter la carte actuelle à la bibliothèque"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span class="action-label">Ajouter la carte</span></button>
+        <button class="icon-button" id="themeBtn" type="button" aria-label="Mode nuit" title="Changer de thème"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8 8 0 1 1 8.8 4a6.5 6.5 0 0 0 11.2 11.2Z"/></svg><span class="sr-only action-label">Mode nuit</span></button>
+        <details class="data-tools">
+          <summary class="button" aria-label="Outils de données"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="summary-label">Données</span></summary>
+          <div class="data-menu">
+            <button id="exportJsonBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg><span>Exporter la sauvegarde JSON</span></button>
+            <button id="importJsonBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0 4 4m-4-4-4 4M5 20h14"/></svg><span>Importer une sauvegarde JSON</span></button>
+            <small>Les données restent sur cet appareil sauf export manuel.</small>
+          </div>
+        </details>
+        <input class="hidden" id="importJsonInput" type="file" accept="application/json,.json" aria-label="Importer une sauvegarde JSON CardForge">
       </div>
     </header>
 
-    <nav class="tabs" aria-label="Vues principales">
-      <button class="tab-btn" data-view="create" aria-selected="true" type="button">Créer une carte</button>
-      <button class="tab-btn" data-view="sheet" aria-selected="false" type="button">Planche & export</button>
+    <nav class="tabs" aria-label="Vues principales" role="tablist">
+      <button class="tab-btn" id="tab-create" data-view="create" aria-selected="true" aria-controls="view-create" role="tab" tabindex="0" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h5"/></svg><span class="tab-copy"><span class="tab-title">Atelier</span><span class="tab-sub">Composer et prévisualiser une carte</span></span></button>
+      <button class="tab-btn" id="tab-sheet" data-view="sheet" aria-selected="false" aria-controls="view-sheet" role="tab" tabindex="-1" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="tab-copy"><span class="tab-title">Bibliothèque & planche</span><span class="tab-sub">Choisir les cartes et préparer l’impression</span></span></button>
     </nav>
 
     <main>
-      <section class="view active" id="view-create">
+      <section class="view active" id="view-create" role="tabpanel" aria-labelledby="tab-create">
         <div class="creator-grid">
-          <section class="panel" aria-label="Réglages de carte">
-            <div class="panel-head">
-              <h2>Carte</h2>
-              <button class="small" id="newCardBtn" type="button">Nouvelle</button>
+          <section class="editor-panel" aria-label="Éditeur de carte">
+            <div class="editor-heading">
+              <div class="heading-copy"><span class="eyebrow">Carte en cours</span><h2 id="createViewTitle">Composer</h2></div>
+              <button class="small ghost-button" id="newCardBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Nouvelle</span></button>
             </div>
-            <div class="panel-body stack">
-              <div class="field">
-                <label for="titleInput">Nom</label>
-                <input id="titleInput" type="text" placeholder="Ex : Boire">
-              </div>
 
-              <label class="drop" id="dropZone" for="imageInput" tabindex="0">
-                <span><strong>Image</strong><br><small>Choisir ou déposer une image. Elle sera compressée localement.</small></span>
-                <input class="hidden" id="imageInput" type="file" accept="image/*">
-              </label>
+            <div class="editor-scroll">
+              <section class="editor-section">
+                <div class="section-head"><div class="section-title"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><h3>Repère</h3></div></div>
+                <div class="field"><label for="titleInput">Nom de la carte</label><input id="titleInput" type="text" placeholder="Ex. : Boire"></div>
+              </section>
 
-              <div class="grid-2">
-	                <div class="field">
-	                  <label for="formatSelect">Format</label>
-	                  <select id="formatSelect">
-	                    <option value="a4p">A4 portrait</option>
-	                    <option value="a4l">A4 paysage</option>
-	                    <option value="3x4">3:4 portrait</option>
-	                    <option value="4x3">4:3 paysage</option>
-	                    <option value="16x9">16:9 paysage</option>
-	                    <option value="9x16">9:16 portrait</option>
-	                    <option value="square">Carré</option>
-	                  </select>
-	                </div>
-                <div class="field">
-                  <label for="layoutSelect">Disposition</label>
-                  <select id="layoutSelect">
-                    <option value="auto">Automatique</option>
-                    <option value="top">Image en haut</option>
-                    <option value="left">Image à gauche</option>
-                    <option value="full">Image pleine carte</option>
-                  </select>
+              <section class="editor-section">
+                <div class="section-head"><div class="section-title"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m4 17 5-5 4 4 2-2 5 5"/></svg></span><h3>Image</h3></div></div>
+                <label class="drop" id="dropZone" for="imageInput" tabindex="0">
+                  <span class="drop-badge" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m4 17 5-5 4 4 2-2 5 5"/></svg></span>
+                  <span class="drop-copy"><strong id="imageDropTitle">Choisir ou déposer une image</strong><small>Compression locale automatique pour préserver l’espace de stockage.</small></span>
+                  <span class="drop-action">Choisir</span>
+                  <input class="hidden" id="imageInput" type="file" accept="image/*">
+                </label>
+                <div class="image-tools"><span class="image-state" id="imageState">Aucune image chargée</span><button class="small danger hidden" id="removeImageBtn" type="button">Retirer</button></div>
+              </section>
+
+              <section class="editor-section">
+                <div class="section-head">
+                  <div class="section-title"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M12 5v14M8 19h8"/></svg></span><h3>Textes</h3></div>
+                  <div class="field" style="width:116px"><label class="sr-only" for="textCountSelect">Nombre de textes</label><select id="textCountSelect" aria-label="Nombre de textes"><option value="0">Aucun</option><option value="1">1 texte</option><option value="2">2 textes</option><option value="3" selected>3 textes</option></select></div>
                 </div>
-              </div>
+                <div id="textFields" aria-label="Textes de la carte"></div>
+                <div class="row" style="margin-top:9px"><button class="small" id="repeatTextBtn" type="button">Répéter le texte 1</button></div>
+              </section>
 
-              <div class="grid-2">
-                <div class="field">
-                  <label for="fitSelect">Image</label>
-                  <select id="fitSelect">
-                    <option value="contain">Image entière</option>
-                    <option value="cover">Remplir le cadre</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="textCountSelect">Textes</label>
-                  <select id="textCountSelect">
-                    <option value="0">0 texte</option>
-                    <option value="1">1 texte</option>
-                    <option value="2">2 textes</option>
-                    <option value="3" selected>3 textes</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="imageShareInput">Place de l’image <span id="imageShareValue">62%</span></label>
-                <input id="imageShareInput" type="range" min="35" max="82" step="1">
-                <small>En paysage, règle la largeur de l’image. En portrait, règle sa hauteur.</small>
-              </div>
-
-              <div class="row">
-                <button class="small" id="repeatTextBtn" type="button">Répéter le texte 1</button>
-              </div>
-
-              <div id="textFields" class="stack" aria-label="Textes de la carte"></div>
-
-              <details>
-                <summary><strong>Personnalisation simple</strong></summary>
-                <div class="stack" style="margin-top:10px">
-                  <div class="color-grid">
-                    <div class="field">
-                      <label for="bgColorInput">Fond</label>
-                      <input id="bgColorInput" type="color">
-                    </div>
-                    <div class="field">
-                      <label for="borderColorInput">Bordure</label>
-                      <input id="borderColorInput" type="color">
-                    </div>
-                    <div class="field">
-                      <label for="textColorInput">Texte</label>
-                      <input id="textColorInput" type="color">
-                    </div>
-                  </div>
-                  <div class="swatches" id="swatches"></div>
+              <details class="editor-disclosure" open>
+                <summary><span class="section-title"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h3M11 12h9M4 18h8M16 18h4"/><circle cx="16" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></svg></span><span>Mise en page</span></span></summary>
+                <div class="disclosure-body">
                   <div class="grid-2">
-                    <div class="field">
-                      <label for="fontSizeInput">Taille texte</label>
-                      <input id="fontSizeInput" type="range" min="34" max="110" step="2">
-                    </div>
-                    <div class="field">
-                      <label for="radiusInput">Arrondi</label>
-                      <input id="radiusInput" type="range" min="0" max="48" step="2">
-                    </div>
+                    <div class="field"><label for="formatSelect">Format</label><select id="formatSelect"><option value="a4p">A4 portrait</option><option value="a4l">A4 paysage</option><option value="3x4">3:4 portrait</option><option value="4x3">4:3 paysage</option><option value="16x9">16:9 paysage</option><option value="9x16">9:16 portrait</option><option value="square">Carré</option></select></div>
+                    <div class="field"><label for="layoutSelect">Disposition</label><select id="layoutSelect"><option value="auto">Automatique</option><option value="top">Image en haut</option><option value="left">Image à gauche</option><option value="full">Image pleine carte</option></select></div>
                   </div>
-                  <div class="hint">
-                    <small>Polices embarquées localement : OpenDyslexic (https://opendyslexic.org/), Marelle (https://marelle.forge.apps.education.fr/) et polices cursives Éduscol (https://eduscol.education.gouv.fr/6690/polices-de-caracteres-cursives-pour-l-enseignement-de-l-ecriture).</small>
+                  <div class="grid-2">
+                    <div class="field"><label for="fitSelect">Cadrage de l’image</label><select id="fitSelect"><option value="contain">Image entière</option><option value="cover">Remplir le cadre</option></select></div>
+                    <div class="field"><label for="imageShareInput">Place de l’image <span id="imageShareValue">62%</span></label><input id="imageShareInput" type="range" min="35" max="82" step="1"><small>Largeur en paysage, hauteur en portrait.</small></div>
                   </div>
                 </div>
               </details>
 
-              <div class="row">
-                <button class="primary" id="saveCardBtn2" type="button">Sauvegarder carte</button>
-                <button id="downloadCardBtn" type="button">PNG carte</button>
-              </div>
-              <div class="hint"><small id="saveInfo">Aucune carte sauvegardée pour l’instant.</small></div>
+              <details class="editor-disclosure">
+                <summary><span class="section-title"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a2 2 0 0 1 0-4h5a4 4 0 0 0 4-4c0-3.3-4-6-9-6Z"/><circle cx="7.5" cy="9" r=".8"/><circle cx="10" cy="6.5" r=".8"/><circle cx="14" cy="6.5" r=".8"/></svg></span><span>Apparence</span></span></summary>
+                <div class="disclosure-body">
+                  <div class="color-grid">
+                    <div class="field"><label for="bgColorInput">Fond</label><input id="bgColorInput" type="color"></div>
+                    <div class="field"><label for="borderColorInput">Bordure</label><input id="borderColorInput" type="color"></div>
+                    <div class="field"><label for="textColorInput">Texte</label><input id="textColorInput" type="color"></div>
+                  </div>
+                  <div><span class="micro-label">Couleurs rapides pour le fond</span><div class="swatches" id="swatches"></div></div>
+                  <div class="grid-2">
+                    <div class="field"><label for="fontSizeInput">Taille du texte</label><input id="fontSizeInput" type="range" min="34" max="110" step="2"></div>
+                    <div class="field"><label for="radiusInput">Arrondi de la carte</label><input id="radiusInput" type="range" min="0" max="48" step="2"></div>
+                  </div>
+                  <div class="hint"><small>Polices pédagogiques embarquées localement : OpenDyslexic, Marelle et cursives Éduscol. Aucun chargement Internet n’est nécessaire.</small><small>Sources : <a href="https://opendyslexic.org/" target="_blank" rel="noreferrer">OpenDyslexic</a> · <a href="https://marelle.forge.apps.education.fr/" target="_blank" rel="noreferrer">Marelle</a> · <a href="https://eduscol.education.gouv.fr/6690/polices-de-caracteres-cursives-pour-l-enseignement-de-l-ecriture" target="_blank" rel="noreferrer">polices cursives Éduscol</a>.</small></div>
+                </div>
+              </details>
             </div>
+
+            <footer class="editor-footer">
+              <div class="editor-actions"><button class="primary" id="saveCardBtn2" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter à la bibliothèque</span></button><button id="downloadCardBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg><span>PNG</span></button></div>
+              <div class="autosave-line"><span class="status-dot" aria-hidden="true"></span><span id="saveInfo">Brouillon enregistré localement.</span></div>
+            </footer>
           </section>
 
-          <section class="panel" aria-label="Aperçu">
-            <div class="panel-head">
-              <h2>Aperçu</h2>
-              <div class="zoom-tools" aria-label="Zoom aperçu">
-                <button class="small" id="zoomOutBtn" type="button">-</button>
-                <small id="zoomLabel">100%</small>
-                <button class="small" id="zoomInBtn" type="button">+</button>
-                <button class="small" id="zoomFitBtn" type="button">Adapter</button>
-              </div>
+          <section class="preview-panel" aria-label="Aperçu de la carte">
+            <div class="preview-head">
+              <div class="preview-title-row"><h2>Aperçu en direct</h2><div class="meta-chips"><span class="meta-chip" id="cardFormatMeta">3:4 portrait</span><span class="meta-chip" id="cardTextMeta">3 textes</span></div></div>
+              <div class="zoom-tools" aria-label="Zoom de l’aperçu"><button class="small" id="zoomOutBtn" type="button" aria-label="Réduire le zoom">−</button><span class="zoom-readout" id="zoomLabel">100%</span><button class="small" id="zoomInBtn" type="button" aria-label="Augmenter le zoom">+</button><button class="small" id="zoomFitBtn" type="button">Adapter</button></div>
             </div>
-            <div class="panel-body">
-              <div class="card-preview-wrap">
-                <canvas id="cardCanvas" width="744" height="1039"></canvas>
-              </div>
-            </div>
+            <div class="preview-body"><div class="card-preview-wrap"><canvas id="cardCanvas" width="744" height="1039"></canvas></div></div>
+            <div class="preview-foot"><span>Tout le rendu est calculé dans le navigateur.</span><span>Le PNG reprend exactement cet aperçu.</span></div>
           </section>
         </div>
       </section>
 
-      <section class="view" id="view-sheet">
+      <section class="view" id="view-sheet" role="tabpanel" aria-labelledby="tab-sheet">
         <div class="sheet-layout">
-          <section class="panel" aria-label="Cartes sauvegardées">
-            <div class="panel-head">
-              <h2>Bibliothèque</h2>
-              <small id="libraryCount">0 carte</small>
+          <section class="library-panel" aria-label="Bibliothèque de cartes">
+            <div class="panel-head"><div class="heading-copy"><span class="eyebrow">Collection locale</span><h2 id="sheetViewTitle">Bibliothèque</h2></div><span class="meta-chip" id="libraryCount">0 carte</span></div>
+            <div class="library-tools">
+              <div class="search-wrap"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><label class="sr-only" for="librarySearch">Rechercher une carte</label><input id="librarySearch" type="search" placeholder="Rechercher par nom…" autocomplete="off"></div>
+              <div class="selection-bar">
+                <span class="selection-summary"><span class="selection-dot" aria-hidden="true"></span><span id="selectedSummary">Toute la bibliothèque · 0 carte</span></span>
+                <div class="row"><button class="small" id="selectAllBtn" type="button">Toute la bibliothèque</button><button class="small" id="clearSelectionBtn" type="button">Aucune carte</button></div>
+              </div>
             </div>
-            <div class="panel-body stack">
-              <div class="storage-card" aria-label="Mémoire locale">
-                <div class="storage-head">
-                  <strong>Mémoire locale</strong>
-                  <small id="storageInfo">Calcul en cours...</small>
-                </div>
+            <div class="library-body"><div class="library-grid" id="libraryGrid"></div></div>
+            <details class="maintenance">
+              <summary><span>Stockage & entretien</span><small id="storageInfo">Calcul en cours…</small></summary>
+              <div class="maintenance-body">
                 <div class="storage-meter" aria-hidden="true"><span id="storageMeter"></span></div>
-                <small>Repère indicatif : au-delà d’environ 4 Mo, exporte en JSON puis allège ou vide la bibliothèque.</small>
-                <div class="row">
-                  <button class="small" id="compactImagesBtn" type="button">Alléger images</button>
-                  <button class="small danger" id="clearLocalDataBtn" type="button">Effacer mémoire</button>
-                </div>
+                <small>Repère indicatif : au-delà d’environ 4 Mo, exporte une sauvegarde JSON avant d’alléger les images ou de vider les données.</small>
+                <div class="row"><button class="small" id="compactImagesBtn" type="button">Alléger les images</button><button class="small danger" id="clearLibraryBtn" type="button">Vider la bibliothèque</button><button class="small danger" id="clearLocalDataBtn" type="button">Effacer toute la mémoire</button></div>
               </div>
-              <div class="row">
-                <button class="small" id="selectAllBtn" type="button">Tout sélectionner</button>
-                <button class="small" id="clearSelectionBtn" type="button">Désélectionner</button>
-                <button class="small danger" id="clearLibraryBtn" type="button">Vider</button>
-              </div>
-              <div class="library-grid" id="libraryGrid"></div>
-            </div>
+            </details>
           </section>
 
-          <section class="panel" aria-label="Planche">
-            <div class="panel-head">
-              <h2>Planche</h2>
-              <small id="sheetInfo">A4</small>
+          <section class="sheet-panel" aria-label="Planche d’impression">
+            <div class="sheet-toolbar">
+              <div class="sheet-config">
+                <div class="compact-field"><label for="sheetGridSelect">Grille</label><select id="sheetGridSelect"><option value="2x2">2 × 2</option><option value="2x3" selected>2 × 3</option><option value="3x3">3 × 3</option><option value="3x4">3 × 4</option></select></div>
+                <div class="compact-field"><label for="sheetOrientationSelect">Orientation</label><select id="sheetOrientationSelect"><option value="portrait">Portrait</option><option value="landscape">Paysage</option></select></div>
+              </div>
+              <div class="page-controls" aria-label="Pages de la planche"><button id="sheetPrevBtn" type="button" aria-label="Page précédente">←</button><span id="sheetPageInfo">Page 1 / 1</span><button id="sheetNextBtn" type="button" aria-label="Page suivante">→</button></div>
             </div>
-            <div class="panel-body stack">
-              <div class="grid-2">
-                <div class="field">
-                  <label for="sheetGridSelect">Grille</label>
-                  <select id="sheetGridSelect">
-                    <option value="2x2">2 × 2</option>
-                    <option value="2x3" selected>2 × 3</option>
-                    <option value="3x3">3 × 3</option>
-                    <option value="3x4">3 × 4</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="sheetOrientationSelect">Orientation</label>
-                  <select id="sheetOrientationSelect">
-                    <option value="portrait">Portrait</option>
-                    <option value="landscape">Paysage</option>
-                  </select>
-                </div>
-              </div>
-              <canvas id="sheetCanvas" width="1240" height="1754"></canvas>
-              <div class="row">
-                <button class="success" id="downloadSheetBtn" type="button">PNG planche</button>
-                <button id="printSheetBtn" type="button">Imprimer</button>
-              </div>
+            <div class="sheet-body">
+              <div class="sheet-status"><div><h2>Planche A4</h2><span class="sheet-note" id="sheetSelectionNote">Toute la bibliothèque est utilisée.</span></div><span class="meta-chip" id="sheetInfo">0 / 6 cartes</span></div>
+              <div class="sheet-stage"><canvas id="sheetCanvas" width="1240" height="1754"></canvas></div>
+              <div class="sheet-actions"><button class="success" id="downloadSheetBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg><span>PNG de cette page</span></button><button id="printSheetBtn" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg><span>Imprimer cette page</span></button></div>
             </div>
           </section>
         </div>
@@ -779,18 +815,19 @@
   <div class="toast-area" id="toastArea" aria-live="polite" aria-atomic="true"></div>
   <div id="printArea" aria-hidden="true"></div>
 
+
   <script>
     const App = {
       config: {
-        version: 'v0.1.alpha',
-        storageKey: 'luuma_cardforge_v0_1_alpha',
-        legacyStorageKeys: ['luuma_cardforge_essentiel_v1'],
+        version: 'v0.2-alpha',
+        storageKey: 'luuma_cardforge_v0_2_alpha',
+        legacyStorageKeys: ['luuma_cardforge_v0_2_1_alpha', 'luuma_cardforge_v0_1_alpha', 'luuma_cardforge_essentiel_v1'],
         maxImageSide: 1400,
         jpegQuality: 0.86
       },
       i18n: {
         fr: {
-          saved: 'Carte sauvegardée.',
+          saved: 'Carte ajoutée à la bibliothèque.',
           imported: 'Import terminé.',
           exported: 'Export préparé.'
         }
@@ -798,9 +835,14 @@
       state: {
         settings: { theme: 'light' },
         selectedIds: new Set(),
+        sheetSelectionMode: 'all',
+        storageStatus: 'saved',
         previewZoom: 1,
         previewFit: true,
         renderJob: 0,
+        sheetRenderJob: 0,
+        libraryQuery: '',
+        sheetPage: 0,
         card: null,
         library: []
       },
@@ -864,8 +906,11 @@
         this.view.syncForm();
         this.view.renderLibrary();
         this.view.applyTheme();
+        this.view.updateContextLabels();
         this.bind();
+        if (window.matchMedia('(max-width: 680px)').matches) document.querySelector('.editor-disclosure[open]')?.removeAttribute('open');
         this.renderAll();
+        this.store.save();
       },
 
       cacheEls() {
@@ -909,7 +954,7 @@
         return {
           id: seed.id || this.uid(),
           title: seed.title || 'Nouvelle carte',
-          imageData: seed.imageData || '',
+          imageData: this.normalizeImageData(seed.imageData),
           format: this.normalizeFormat(seed.format),
           layout: seed.layout || 'auto',
           fit: seed.fit || 'contain',
@@ -930,6 +975,11 @@
         return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
       },
 
+      normalizeImageData(value) {
+        const imageData = typeof value === 'string' ? value.trim() : '';
+        return /^data:image\//i.test(imageData) ? imageData : '';
+      },
+
       normalizeFormat(format) {
         if (format === 'portrait') return '3x4';
         if (format === 'landscape') return '4x3';
@@ -940,6 +990,34 @@
         return JSON.parse(JSON.stringify(value));
       },
 
+      cardComparable(card) {
+        const source = card || {};
+        const texts = Array.isArray(source.texts) ? source.texts.slice(0, 3) : ['Texte 1', 'Texte 2', 'Texte 3'];
+        const textStyles = texts.map((_, index) => ({
+          font: source.textStyles?.[index]?.font || 'system',
+          transform: source.textStyles?.[index]?.transform || 'normal'
+        }));
+        return {
+          title: ['Nouvelle carte', 'Carte', ''].includes(String(source.title || '').trim()) ? 'Nouvelle carte' : String(source.title || '').trim(),
+          imageData: this.normalizeImageData(source.imageData),
+          format: this.normalizeFormat(source.format),
+          layout: source.layout || 'auto',
+          fit: source.fit || 'contain',
+          imageShare: Number(source.imageShare || 62),
+          bgColor: source.bgColor || '#fff9ed',
+          borderColor: source.borderColor || '#6aa9ff',
+          textColor: source.textColor || '#111827',
+          fontSize: Number(source.fontSize || 72),
+          radius: Number(source.radius || 24),
+          texts, textStyles
+        };
+      },
+
+      isPristineDraft(card) {
+        const base = this.cardComparable(this.createCard());
+        return JSON.stringify(this.cardComparable(card)) === JSON.stringify(base);
+      },
+
       savedPayload() {
         return {
           app: 'cardforge',
@@ -948,6 +1026,7 @@
           settings: this.state.settings,
           current: this.state.card,
           library: this.state.library,
+          sheetSelectionMode: this.state.sheetSelectionMode,
           selectedIds: [...this.state.selectedIds]
         };
       },
@@ -985,31 +1064,50 @@
           const keys = [App.config.storageKey, ...(App.config.legacyStorageKeys || [])];
           for (const key of keys) {
             const raw = localStorage.getItem(key);
-            if (raw) return raw;
+            if (raw) return { key, raw };
           }
-          return '';
+          return null;
         },
         load() {
           try {
-            const raw = App.store.readSavedData();
-            if (!raw) return;
-            const parsed = JSON.parse(raw);
+            const saved = App.store.readSavedData();
+            if (!saved) return;
+            const parsed = JSON.parse(saved.raw);
             App.state.settings = { theme: 'light', ...(parsed.settings || {}) };
             App.state.card = App.createCard(parsed.current || {});
-            App.state.library = Array.isArray(parsed.library) ? parsed.library.map(c => App.createCard(c)).slice(0, 60) : [];
-            App.state.selectedIds = new Set(Array.isArray(parsed.selectedIds) ? parsed.selectedIds : []);
+            App.state.library = Array.isArray(parsed.library) ? parsed.library.map(c => App.createCard(c)) : [];
+            const libraryIds = new Set(App.state.library.map(card => card.id));
+            const rawSelected = Array.isArray(parsed.selectedIds) ? parsed.selectedIds.filter(id => libraryIds.has(id)) : [];
+            App.state.selectedIds = new Set(rawSelected);
+            App.state.sheetSelectionMode = parsed.sheetSelectionMode === 'custom'
+              ? 'custom'
+              : parsed.sheetSelectionMode === 'all'
+                ? 'all'
+                : (rawSelected.length ? 'custom' : 'all');
+            App.state.storageStatus = 'saved';
+            if (saved.key !== App.config.storageKey) App.store.save();
           } catch (err) {
             console.warn(err);
+            App.state.storageStatus = 'error';
+            App.view.updateSaveInfo();
             App.toast('Sauvegarde locale illisible. Une nouvelle session est ouverte.');
           }
         },
         save() {
+          const wasError = App.state.storageStatus === 'error';
           try {
             localStorage.setItem(App.config.storageKey, JSON.stringify(App.savedPayload()));
+            App.state.storageStatus = 'saved';
+            App.view.updateSaveInfo();
             App.view.updateStorageUsage();
+            return true;
           } catch (err) {
             console.warn(err);
-            App.toast('Stockage local plein ou indisponible. Exporte en JSON pour garder tes cartes.');
+            App.state.storageStatus = 'error';
+            App.view.updateSaveInfo();
+            App.view.updateStorageUsage();
+            if (!wasError) App.toast('Stockage local plein ou indisponible. Exporte en JSON pour garder tes cartes.');
+            return false;
           }
         }
       },
@@ -1017,7 +1115,12 @@
       view: {
         applyTheme() {
           App.els.root.dataset.theme = App.state.settings.theme || 'light';
-          document.getElementById('themeBtn').textContent = App.state.settings.theme === 'dark' ? 'Mode jour' : 'Mode nuit';
+          const themeLabel = App.state.settings.theme === 'dark' ? 'Mode jour' : 'Mode nuit';
+          const themeBtn = document.getElementById('themeBtn');
+          themeBtn.setAttribute('aria-label', themeLabel);
+          themeBtn.title = themeLabel;
+          const labelNode = themeBtn.querySelector('.action-label');
+          if (labelNode) labelNode.textContent = themeLabel;
         },
         syncForm() {
           const card = App.state.card;
@@ -1034,6 +1137,25 @@
           App.els.fontSizeInput.value = card.fontSize;
           App.els.radiusInput.value = card.radius;
           App.view.renderTextFields();
+          App.view.updateContextLabels();
+        },
+        updateContextLabels() {
+          const card = App.state.card;
+          if (!card) return;
+          const formatLabels = {
+            a4p: 'A4 portrait', a4l: 'A4 paysage', '3x4': '3:4 portrait', '4x3': '4:3 paysage',
+            '16x9': '16:9 paysage', '9x16': '9:16 portrait', square: 'Carré'
+          };
+          const formatMeta = document.getElementById('cardFormatMeta');
+          const textMeta = document.getElementById('cardTextMeta');
+          const imageState = document.getElementById('imageState');
+          const imageDropTitle = document.getElementById('imageDropTitle');
+          const removeImageBtn = document.getElementById('removeImageBtn');
+          if (formatMeta) formatMeta.textContent = formatLabels[card.format] || card.format;
+          if (textMeta) textMeta.textContent = `${card.texts.length} texte${card.texts.length > 1 ? 's' : ''}`;
+          if (imageState) imageState.textContent = card.imageData ? 'Image chargée · remplaçable à tout moment' : 'Aucune image chargée';
+          if (imageDropTitle) imageDropTitle.textContent = card.imageData ? 'Remplacer l’image' : 'Choisir ou déposer une image';
+          if (removeImageBtn) removeImageBtn.classList.toggle('hidden', !card.imageData);
         },
         renderTextFields() {
           const count = Number(App.els.textCountSelect?.value || App.state.card.texts.length || 0);
@@ -1042,32 +1164,67 @@
           App.state.card.texts = App.state.card.texts.slice(0, count);
           App.state.card.textStyles = App.state.card.textStyles.slice(0, count);
           App.els.textFields.innerHTML = '';
+          if (!count) {
+            const empty = document.createElement('div');
+            empty.className = 'hint';
+            empty.innerHTML = '<small>Carte sans texte : l’image peut occuper tout l’espace disponible selon la disposition choisie.</small>';
+            App.els.textFields.appendChild(empty);
+            App.view.updateContextLabels();
+            return;
+          }
           App.state.card.texts.forEach((value, index) => {
-            const field = document.createElement('div');
-            field.className = 'field';
-            const label = document.createElement('label');
-            label.htmlFor = `textInput${index}`;
-            label.textContent = `Texte ${index + 1}`;
+            const block = document.createElement('div');
+            block.className = 'text-block';
+            const head = document.createElement('div');
+            head.className = 'text-block-head';
+            head.innerHTML = `<span class="text-index">${index + 1}</span><span class="text-block-title">Texte ${index + 1}</span>`;
             const row = document.createElement('div');
-            row.className = 'grid-3';
+            row.className = 'grid-3 text-controls';
+
+            const valueWrap = document.createElement('div');
+            valueWrap.className = 'text-value';
+            const valueLabel = document.createElement('label');
+            valueLabel.className = 'micro-label';
+            valueLabel.htmlFor = `textInput${index}`;
+            valueLabel.textContent = 'Contenu';
             const input = document.createElement('input');
             input.id = `textInput${index}`;
             input.type = 'text';
             input.value = value;
+            input.placeholder = index === 0 ? 'Ex. : Boire' : `Texte ${index + 1}`;
             input.dataset.textIndex = String(index);
-            const style = App.state.card.textStyles[index] || { font: 'system', transform: 'normal' };
+            valueWrap.append(valueLabel, input);
+
+            const fontWrap = document.createElement('div');
+            const fontLabel = document.createElement('label');
+            fontLabel.className = 'micro-label';
+            fontLabel.htmlFor = `fontSelect${index}`;
+            fontLabel.textContent = 'Police';
             const font = document.createElement('select');
+            font.id = `fontSelect${index}`;
             font.dataset.fontIndex = String(index);
             App.view.fillFontSelect(font);
+            const style = App.state.card.textStyles[index] || { font: 'system', transform: 'normal' };
             font.value = App.data.fontChoices.some(choice => choice.value === style.font) ? style.font : 'system';
+            fontWrap.append(fontLabel, font);
+
+            const transformWrap = document.createElement('div');
+            const transformLabel = document.createElement('label');
+            transformLabel.className = 'micro-label';
+            transformLabel.htmlFor = `transformSelect${index}`;
+            transformLabel.textContent = 'Casse';
             const transform = document.createElement('select');
+            transform.id = `transformSelect${index}`;
             transform.dataset.transformIndex = String(index);
             transform.innerHTML = '<option value="normal">Normal</option><option value="upper">MAJ</option><option value="lower">min</option>';
             transform.value = style.transform || 'normal';
-            row.append(input, font, transform);
-            field.append(label, row);
-            App.els.textFields.appendChild(field);
+            transformWrap.append(transformLabel, transform);
+
+            row.append(valueWrap, fontWrap, transformWrap);
+            block.append(head, row);
+            App.els.textFields.appendChild(block);
           });
+          App.view.updateContextLabels();
         },
         renderSwatches() {
           App.els.swatches.innerHTML = '';
@@ -1076,6 +1233,7 @@
             btn.className = 'swatch';
             btn.type = 'button';
             btn.title = color;
+            btn.setAttribute('aria-label', `Utiliser ${color} comme couleur de fond`);
             btn.style.background = color;
             btn.dataset.color = color;
             App.els.swatches.appendChild(btn);
@@ -1100,49 +1258,101 @@
             select.appendChild(optgroup);
           });
         },
+        updateSaveInfo() {
+          if (!App.els.saveInfo) return;
+          const line = App.els.saveInfo.closest('.autosave-line');
+          const count = App.state.library.length;
+          if (App.state.storageStatus === 'error') {
+            App.els.saveInfo.textContent = 'Non enregistré localement · exporte en JSON pour sécuriser tes cartes.';
+            if (line) line.dataset.status = 'error';
+            return;
+          }
+          if (App.state.storageStatus === 'empty') {
+            App.els.saveInfo.textContent = 'Mémoire locale effacée · le prochain changement recréera le brouillon.';
+            if (line) line.dataset.status = 'saved';
+            return;
+          }
+          App.els.saveInfo.textContent = count
+            ? `Brouillon auto-enregistré · ${count} carte${count > 1 ? 's' : ''} dans la bibliothèque.`
+            : 'Brouillon auto-enregistré · bibliothèque encore vide.';
+          if (line) line.dataset.status = 'saved';
+        },
         renderLibrary() {
           const count = App.state.library.length;
+          const selectedCount = App.state.sheetSelectionMode === 'all'
+            ? count
+            : App.state.library.filter(card => App.state.selectedIds.has(card.id)).length;
+          const query = String(App.state.libraryQuery || '').trim().toLocaleLowerCase('fr');
+          const visibleCards = query
+            ? App.state.library.filter(card => String(card.title || '').toLocaleLowerCase('fr').includes(query))
+            : App.state.library;
           App.els.libraryCount.textContent = `${count} carte${count > 1 ? 's' : ''}`;
-          App.els.saveInfo.textContent = count
-            ? `${count} carte${count > 1 ? 's' : ''} sauvegardée${count > 1 ? 's' : ''}. Minimum utile : 12 cartes ou plus.`
-            : 'Aucune carte sauvegardée pour l’instant.';
+          App.view.updateSaveInfo();
+          const summary = document.getElementById('selectedSummary');
+          if (summary) {
+            if (App.state.sheetSelectionMode === 'all') summary.textContent = `Toute la bibliothèque · ${count} carte${count > 1 ? 's' : ''}`;
+            else if (selectedCount) summary.textContent = `${selectedCount} carte${selectedCount > 1 ? 's' : ''} choisie${selectedCount > 1 ? 's' : ''} pour la planche`;
+            else summary.textContent = 'Aucune carte choisie · planche vide';
+          }
           App.els.libraryGrid.innerHTML = '';
-          if (!count) {
+          if (!count || !visibleCards.length) {
             const empty = document.createElement('div');
-            empty.className = 'hint';
-            empty.innerHTML = '<small>Sauvegarde quelques cartes, puis reviens ici pour composer une planche.</small>';
+            empty.className = 'empty-state';
+            const message = !count
+              ? 'Ajoute ta première carte depuis l’Atelier. Elle apparaîtra ici et pourra être placée sur une planche.'
+              : 'Aucune carte ne correspond à cette recherche.';
+            empty.innerHTML = `<div class="empty-state-inner"><span class="section-icon" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><strong>${!count ? 'Bibliothèque vide' : 'Aucun résultat'}</strong><p>${message}</p></div>`;
             App.els.libraryGrid.appendChild(empty);
             App.view.updateStorageUsage();
             return;
           }
-          App.state.library.forEach(card => {
+          const formatLabels = { a4p: 'A4 portrait', a4l: 'A4 paysage', '3x4': '3:4', '4x3': '4:3', '16x9': '16:9', '9x16': '9:16', square: 'Carré' };
+          visibleCards.forEach(card => {
+            const selected = App.state.sheetSelectionMode === 'all' || App.state.selectedIds.has(card.id);
             const item = document.createElement('article');
-            item.className = `saved-card${App.state.selectedIds.has(card.id) ? ' selected' : ''}`;
+            item.className = `saved-card${selected ? ' selected' : ''}`;
+            const media = document.createElement('div');
+            media.className = 'saved-card-media';
             const img = document.createElement('img');
-            img.alt = card.title || 'Carte sauvegardée';
+            img.alt = `Aperçu de ${card.title || 'la carte'}`;
+            img.loading = 'lazy';
             img.src = App.renderer.blankCardDataUrl(card, 0.28);
             App.renderer.cardDataUrlAsync(card, 0.28).then(src => { img.src = src; });
+            const mark = document.createElement('span');
+            mark.className = 'selected-mark';
+            mark.setAttribute('aria-hidden', 'true');
+            mark.textContent = '✓';
+            media.append(img, mark);
+
+            const meta = document.createElement('div');
+            meta.className = 'saved-card-meta';
             const title = document.createElement('strong');
             title.textContent = card.title || 'Carte';
-            const row = document.createElement('div');
-            row.className = 'row';
+            title.title = card.title || 'Carte';
+            const sub = document.createElement('small');
+            sub.textContent = `${formatLabels[card.format] || card.format} · ${card.texts.filter(t => String(t || '').trim()).length} texte(s)`;
+            meta.append(title, sub);
+
+            const actions = document.createElement('div');
+            actions.className = 'saved-card-actions';
             const select = document.createElement('button');
-            select.className = 'small';
             select.type = 'button';
             select.dataset.selectCard = card.id;
-            select.textContent = App.state.selectedIds.has(card.id) ? 'Retirer' : 'Planche';
+            select.setAttribute('aria-pressed', String(selected));
+            select.textContent = selected ? 'Retirer' : 'Choisir';
             const open = document.createElement('button');
-            open.className = 'small';
             open.type = 'button';
             open.dataset.openCard = card.id;
             open.textContent = 'Ouvrir';
             const del = document.createElement('button');
-            del.className = 'small danger';
+            del.className = 'danger';
             del.type = 'button';
             del.dataset.deleteCard = card.id;
-            del.textContent = 'Supprimer';
-            row.append(select, open, del);
-            item.append(img, title, row);
+            del.setAttribute('aria-label', `Supprimer ${card.title || 'la carte'}`);
+            del.title = 'Supprimer';
+            del.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>';
+            actions.append(select, open, del);
+            item.append(media, meta, actions);
             App.els.libraryGrid.appendChild(item);
           });
           App.view.updateStorageUsage();
@@ -1382,11 +1592,16 @@
           if (line) lines.push(line);
           return lines.length ? lines : [''];
         },
-        async drawSheet() {
+        async drawSheet(renderJob = App.state.sheetRenderJob) {
           const selected = App.state.library.filter(card => App.state.selectedIds.has(card.id));
-          const cards = selected.length ? selected : App.state.library;
+          const sourceCards = App.state.sheetSelectionMode === 'all' ? App.state.library : selected;
           const orientation = App.els.sheetOrientationSelect.value;
           const [cols, rows] = App.els.sheetGridSelect.value.split('x').map(Number);
+          const max = cols * rows;
+          const totalPages = Math.max(1, Math.ceil(sourceCards.length / max));
+          App.state.sheetPage = Math.max(0, Math.min(App.state.sheetPage, totalPages - 1));
+          const pageStart = App.state.sheetPage * max;
+          const cards = sourceCards.slice(pageStart, pageStart + max);
           const canvas = App.els.sheetCanvas;
           canvas.width = orientation === 'landscape' ? 1754 : 1240;
           canvas.height = orientation === 'landscape' ? 1240 : 1754;
@@ -1397,9 +1612,8 @@
           const gap = 24;
           const cellW = (canvas.width - margin * 2 - gap * (cols - 1)) / cols;
           const cellH = (canvas.height - margin * 2 - gap * (rows - 1)) / rows;
-          const max = cols * rows;
           this.drawSheetGuides(ctx, canvas, margin);
-          for (let i = 0; i < Math.min(cards.length, max); i++) {
+          for (let i = 0; i < cards.length; i++) {
             const card = cards[i];
             const col = i % cols;
             const row = Math.floor(i / cols);
@@ -1407,13 +1621,28 @@
             const y = margin + row * (cellH + gap);
             const cardCanvas = document.createElement('canvas');
             await this.drawCard(cardCanvas, card);
+            if (renderJob !== App.state.sheetRenderJob) return;
             const scale = Math.min(cellW / cardCanvas.width, cellH / cardCanvas.height);
             const w = cardCanvas.width * scale;
             const h = cardCanvas.height * scale;
             ctx.drawImage(cardCanvas, x + (cellW - w) / 2, y + (cellH - h) / 2, w, h);
           }
+          if (renderJob !== App.state.sheetRenderJob) return;
           this.drawSheetGuides(ctx, canvas, margin);
-          App.els.sheetInfo.textContent = `${Math.min(cards.length, max)} / ${max} carte(s) · marge visible`;
+          App.els.sheetInfo.textContent = `${cards.length} / ${max} carte${cards.length > 1 ? 's' : ''}`;
+          const pageInfo = document.getElementById('sheetPageInfo');
+          const prev = document.getElementById('sheetPrevBtn');
+          const next = document.getElementById('sheetNextBtn');
+          const note = document.getElementById('sheetSelectionNote');
+          if (pageInfo) pageInfo.textContent = `Page ${App.state.sheetPage + 1} / ${totalPages}`;
+          if (prev) prev.disabled = App.state.sheetPage <= 0;
+          if (next) next.disabled = App.state.sheetPage >= totalPages - 1;
+          if (note) {
+            if (!App.state.library.length) note.textContent = 'Ajoute des cartes à la bibliothèque pour composer une planche.';
+            else if (App.state.sheetSelectionMode === 'all') note.textContent = `Toute la bibliothèque : ${sourceCards.length} carte${sourceCards.length > 1 ? 's' : ''} · ${totalPages} page${totalPages > 1 ? 's' : ''}.`;
+            else if (sourceCards.length) note.textContent = `${sourceCards.length} carte${sourceCards.length > 1 ? 's' : ''} sélectionnée${sourceCards.length > 1 ? 's' : ''} · ${totalPages} page${totalPages > 1 ? 's' : ''}.`;
+            else note.textContent = 'Sélection personnalisée vide : aucune carte sur la planche.';
+          }
         },
         drawSheetGuides(ctx, canvas, margin) {
           ctx.save();
@@ -1443,12 +1672,26 @@
         document.querySelectorAll('.tab-btn').forEach(btn => {
           btn.addEventListener('click', () => this.setView(btn.dataset.view));
         });
+        document.querySelector('.tabs').addEventListener('keydown', event => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          const tabs = [...document.querySelectorAll('.tab-btn')];
+          const current = Math.max(0, tabs.indexOf(document.activeElement));
+          let next = current;
+          if (event.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length;
+          if (event.key === 'ArrowRight') next = (current + 1) % tabs.length;
+          if (event.key === 'Home') next = 0;
+          if (event.key === 'End') next = tabs.length - 1;
+          event.preventDefault();
+          tabs[next].focus();
+          tabs[next].click();
+        });
         document.getElementById('themeBtn').addEventListener('click', () => {
           this.state.settings.theme = this.state.settings.theme === 'dark' ? 'light' : 'dark';
           this.view.applyTheme();
           this.store.save();
         });
         document.getElementById('newCardBtn').addEventListener('click', () => {
+          if (!this.isPristineDraft(this.state.card) && !confirm('Commencer une nouvelle carte ? Le brouillon actuel sera remplacé. Ajoute-le à la bibliothèque ou exporte une sauvegarde JSON si tu veux le conserver.')) return;
           this.state.card = this.createCard();
           this.view.syncForm();
           this.renderAll();
@@ -1457,7 +1700,7 @@
         document.getElementById('saveCardBtn').addEventListener('click', () => this.saveCurrentCard());
         document.getElementById('saveCardBtn2').addEventListener('click', () => this.saveCurrentCard());
         document.getElementById('downloadCardBtn').addEventListener('click', () => this.downloadCanvas(this.els.cardCanvas, this.safeName(this.state.card.title) + '.png'));
-        document.getElementById('downloadSheetBtn').addEventListener('click', () => this.downloadCanvas(this.els.sheetCanvas, 'atelier_de_cartes_planche.png'));
+        document.getElementById('downloadSheetBtn').addEventListener('click', () => this.downloadCanvas(this.els.sheetCanvas, `cardforge_planche_page_${this.state.sheetPage + 1}.png`));
         document.getElementById('printSheetBtn').addEventListener('click', () => this.printSheet());
         document.getElementById('exportJsonBtn').addEventListener('click', () => this.exportJson());
         this.els.importJsonBtn.addEventListener('click', () => this.els.importJsonInput.click());
@@ -1482,6 +1725,14 @@
           if (event.target.dataset.textIndex != null || event.target.dataset.fontIndex != null || event.target.dataset.transformIndex != null) this.updateFromForm();
         });
         document.getElementById('repeatTextBtn').addEventListener('click', () => this.repeatFirstText());
+        document.getElementById('removeImageBtn').addEventListener('click', () => {
+          this.state.card.imageData = '';
+          this.state.card.updatedAt = new Date().toISOString();
+          this.view.updateContextLabels();
+          this.renderAll();
+          this.store.save();
+          this.toast('Image retirée.');
+        });
         document.getElementById('zoomOutBtn').addEventListener('click', () => this.setPreviewZoom(this.state.previewZoom - 0.1, false));
         document.getElementById('zoomInBtn').addEventListener('click', () => this.setPreviewZoom(this.state.previewZoom + 0.1, false));
         document.getElementById('zoomFitBtn').addEventListener('click', () => this.fitPreviewZoom());
@@ -1494,15 +1745,23 @@
           this.store.save();
         });
         this.bindImageImport();
+        document.getElementById('librarySearch').addEventListener('input', event => {
+          this.state.libraryQuery = event.target.value;
+          this.view.renderLibrary();
+        });
         this.els.libraryGrid.addEventListener('click', event => this.handleLibraryClick(event));
         document.getElementById('selectAllBtn').addEventListener('click', () => {
-          this.state.selectedIds = new Set(this.state.library.map(card => card.id));
+          this.state.sheetSelectionMode = 'all';
+          this.state.selectedIds.clear();
+          this.state.sheetPage = 0;
           this.view.renderLibrary();
           this.renderSheet();
           this.store.save();
         });
         document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+          this.state.sheetSelectionMode = 'custom';
           this.state.selectedIds.clear();
+          this.state.sheetPage = 0;
           this.view.renderLibrary();
           this.renderSheet();
           this.store.save();
@@ -1511,14 +1770,21 @@
           if (!this.state.library.length || !confirm('Vider toute la bibliothèque locale ?')) return;
           this.state.library = [];
           this.state.selectedIds.clear();
+          this.state.sheetSelectionMode = 'all';
+          this.state.libraryQuery = '';
+          const search = document.getElementById('librarySearch');
+          if (search) search.value = '';
+          this.state.sheetPage = 0;
           this.view.renderLibrary();
           this.renderSheet();
           this.store.save();
         });
         document.getElementById('compactImagesBtn').addEventListener('click', () => this.compactStoredImages());
         document.getElementById('clearLocalDataBtn').addEventListener('click', () => this.clearLocalData());
-        this.els.sheetGridSelect.addEventListener('change', () => this.renderSheet());
-        this.els.sheetOrientationSelect.addEventListener('change', () => this.renderSheet());
+        this.els.sheetGridSelect.addEventListener('change', () => { this.state.sheetPage = 0; this.renderSheet(); });
+        this.els.sheetOrientationSelect.addEventListener('change', () => { this.state.sheetPage = 0; this.renderSheet(); });
+        document.getElementById('sheetPrevBtn').addEventListener('click', () => { this.state.sheetPage = Math.max(0, this.state.sheetPage - 1); this.renderSheet(); });
+        document.getElementById('sheetNextBtn').addEventListener('click', () => { this.state.sheetPage += 1; this.renderSheet(); });
       },
 
       bindImageImport() {
@@ -1550,9 +1816,9 @@
       },
 
       setView(view) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.setAttribute('aria-selected', String(btn.dataset.view === view)));
+        document.querySelectorAll('.tab-btn').forEach(btn => { const active = btn.dataset.view === view; btn.setAttribute('aria-selected', String(active)); btn.tabIndex = active ? 0 : -1; });
         document.querySelectorAll('.view').forEach(node => node.classList.toggle('active', node.id === `view-${view}`));
-        if (view === 'sheet') this.renderSheet();
+        if (view === 'sheet') { this.view.renderLibrary(); this.renderSheet(); }
       },
 
       updateFromForm() {
@@ -1574,6 +1840,7 @@
           transform: this.els.textFields.querySelector(`[data-transform-index="${index}"]`)?.value || 'normal'
         }));
         card.updatedAt = new Date().toISOString();
+        this.view.updateContextLabels();
         this.renderAll();
         this.store.save();
       },
@@ -1671,14 +1938,14 @@
         this.view.renderLibrary();
         await this.renderAll();
         await this.renderSheet();
-        this.store.save();
+        const persisted = this.store.save();
         const after = this.byteSize(JSON.stringify(this.savedPayload()));
         const saved = Math.max(0, before - after);
-        this.toast(saved ? `Images allégées : ${this.formatBytes(saved)} libérés.` : 'Les images étaient déjà assez légères.');
+        if (persisted) this.toast(saved ? `Images allégées : ${this.formatBytes(saved)} libérés.` : 'Les images étaient déjà assez légères.');
       },
 
       clearLocalData() {
-        if (!confirm('Effacer toute la mémoire locale de l’Atelier de cartes ? Exporte en JSON avant si tu veux garder tes cartes.')) return;
+        if (!confirm('Effacer toute la mémoire locale de CardForge ? Exporte en JSON avant si tu veux garder tes cartes.')) return;
         try {
           [this.config.storageKey, ...(this.config.legacyStorageKeys || [])].forEach(key => localStorage.removeItem(key));
         } catch (err) {
@@ -1687,6 +1954,12 @@
         this.state.card = this.createCard();
         this.state.library = [];
         this.state.selectedIds.clear();
+        this.state.sheetSelectionMode = 'all';
+        this.state.libraryQuery = '';
+        this.state.sheetPage = 0;
+        const search = document.getElementById('librarySearch');
+        if (search) search.value = '';
+        this.state.storageStatus = 'empty';
         this.view.syncForm();
         this.view.renderLibrary();
         this.renderAll();
@@ -1704,21 +1977,27 @@
           updatedAt: now
         });
         this.state.library.unshift(card);
-        this.state.library = this.state.library.slice(0, 60);
+        this.state.sheetPage = 0;
         const libraryIds = new Set(this.state.library.map(item => item.id));
         this.state.selectedIds = new Set([...this.state.selectedIds].filter(id => libraryIds.has(id)));
-        this.state.selectedIds.add(card.id);
         this.view.renderLibrary();
         this.renderSheet();
-        this.store.save();
-        this.toast(this.i18n.fr.saved);
+        const saved = this.store.save();
+        if (saved) this.toast(this.i18n.fr.saved);
       },
 
       handleLibraryClick(event) {
-        const selectId = event.target.dataset.selectCard;
-        const openId = event.target.dataset.openCard;
-        const deleteId = event.target.dataset.deleteCard;
+        const action = event.target.closest('[data-select-card], [data-open-card], [data-delete-card]');
+        if (!action || !this.els.libraryGrid.contains(action)) return;
+        const selectId = action.dataset.selectCard;
+        const openId = action.dataset.openCard;
+        const deleteId = action.dataset.deleteCard;
         if (selectId) {
+          this.state.sheetPage = 0;
+          if (this.state.sheetSelectionMode === 'all') {
+            this.state.sheetSelectionMode = 'custom';
+            this.state.selectedIds = new Set(this.state.library.map(card => card.id));
+          }
           if (this.state.selectedIds.has(selectId)) this.state.selectedIds.delete(selectId);
           else this.state.selectedIds.add(selectId);
         }
@@ -1731,6 +2010,7 @@
           }
         }
         if (deleteId) {
+          this.state.sheetPage = 0;
           const card = this.state.library.find(item => item.id === deleteId);
           if (!card || !confirm(`Supprimer « ${card.title || 'Carte'} » ?`)) return;
           this.state.library = this.state.library.filter(item => item.id !== deleteId);
@@ -1738,6 +2018,7 @@
         }
         this.view.renderLibrary();
         this.renderAll();
+        this.renderSheet();
         this.store.save();
       },
 
@@ -1755,7 +2036,8 @@
       },
 
       async renderSheet() {
-        await this.renderer.drawSheet();
+        const job = ++this.state.sheetRenderJob;
+        await this.renderer.drawSheet(job);
       },
 
       downloadCanvas(canvas, filename) {
@@ -1774,8 +2056,16 @@
 
       printSheet() {
         this.els.printArea.innerHTML = '';
+        let printStyle = document.getElementById('dynamicPrintPageStyle');
+        if (!printStyle) {
+          printStyle = document.createElement('style');
+          printStyle.id = 'dynamicPrintPageStyle';
+          document.head.appendChild(printStyle);
+        }
+        const printOrientation = this.els.sheetOrientationSelect.value === 'landscape' ? 'landscape' : 'portrait';
+        printStyle.textContent = `@media print { @page { size: A4 ${printOrientation}; margin: 8mm; } }`;
         const img = document.createElement('img');
-        img.alt = 'Planche Atelier de cartes';
+        img.alt = 'Planche CardForge';
         img.src = this.els.sheetCanvas.toDataURL('image/png');
         this.els.printArea.appendChild(img);
         document.body.classList.add('printing');
@@ -1792,13 +2082,15 @@
           exportedAt: new Date().toISOString(),
           settings: this.state.settings,
           current: this.state.card,
-          library: this.state.library
+          library: this.state.library,
+          sheetSelectionMode: this.state.sheetSelectionMode,
+          selectedIds: [...this.state.selectedIds]
         };
         const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `cardforge_v0_1_alpha_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `cardforge_v0_2_alpha_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1809,23 +2101,38 @@
       async importJson(file) {
         try {
           const parsed = JSON.parse(await file.text());
-          const library = Array.isArray(parsed.library) ? parsed.library : [];
+          if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Racine JSON invalide');
+          if (parsed.app && parsed.app !== 'cardforge') throw new Error('Application incompatible');
+          if (parsed.library != null && !Array.isArray(parsed.library)) throw new Error('Bibliothèque invalide');
+          if (parsed.current != null && (typeof parsed.current !== 'object' || Array.isArray(parsed.current))) throw new Error('Carte courante invalide');
+          const library = Array.isArray(parsed.library) ? parsed.library.filter(card => card && typeof card === 'object' && !Array.isArray(card)) : [];
           if (!library.length && !parsed.current) throw new Error('Format vide');
-          if (!confirm('Importer ce fichier Atelier de cartes ? Les cartes importées remplaceront la bibliothèque actuelle.')) return;
+          if (!confirm('Importer ce fichier CardForge ? Les cartes importées remplaceront la bibliothèque actuelle.')) return;
           this.state.settings = { theme: 'light', ...(parsed.settings || {}) };
           this.state.card = this.createCard(parsed.current || library[0] || {});
           this.state.library = library.map(card => this.createCard(card));
-          this.state.selectedIds = new Set(this.state.library.map(card => card.id));
+          const libraryIds = new Set(this.state.library.map(card => card.id));
+          const rawSelected = Array.isArray(parsed.selectedIds) ? parsed.selectedIds.filter(id => libraryIds.has(id)) : [];
+          this.state.selectedIds = new Set(rawSelected);
+          this.state.sheetSelectionMode = parsed.sheetSelectionMode === 'custom'
+            ? 'custom'
+            : parsed.sheetSelectionMode === 'all'
+              ? 'all'
+              : (Array.isArray(parsed.selectedIds) && rawSelected.length ? 'custom' : 'all');
+          this.state.libraryQuery = '';
+          this.state.sheetPage = 0;
+          const search = document.getElementById('librarySearch');
+          if (search) search.value = '';
           this.view.applyTheme();
           this.view.syncForm();
           this.view.renderLibrary();
           this.renderAll();
           this.renderSheet();
-          this.store.save();
-          this.toast(this.i18n.fr.imported);
+          const saved = this.store.save();
+          if (saved) this.toast(this.i18n.fr.imported);
         } catch (err) {
           console.warn(err);
-          this.toast('Import impossible : fichier JSON non reconnu.');
+          this.toast('Import impossible : fichier JSON CardForge non reconnu ou incompatible.');
         }
       },
 
