@@ -110,6 +110,13 @@
             align-items: start;
         }
 
+        .card-column-stack {
+            display: grid;
+            gap: 40px;
+            align-content: start;
+            min-width: 0;
+        }
+
         /* Cartes horizontales */
         .card {
             background: var(--bg-card);
@@ -414,6 +421,27 @@
             opacity: 1;
         }
 
+        .ecritoire-variants {
+            display: grid;
+            gap: 7px;
+            margin: 12px 0 15px;
+        }
+
+        .ecritoire-option {
+            padding: 8px 10px;
+            border: 1px solid #eee9f5;
+            border-radius: 10px;
+            background: #fcfaff;
+            color: var(--text-light);
+            font-size: 0.76rem;
+            line-height: 1.4;
+        }
+
+        .ecritoire-option strong {
+            color: var(--text);
+            margin-right: 4px;
+        }
+
         .card.compact-card .card-content {
             padding: 26px 28px;
         }
@@ -592,6 +620,27 @@
                 background-color: #ffffff;
                 border-radius: 16px;
                 box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
+            }
+            .card .triple-captures {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 7px;
+                width: 72px;
+                min-width: 0;
+                height: auto;
+                min-height: 0;
+                padding: 0;
+                background: transparent;
+                border: 0;
+                box-shadow: none;
+            }
+            .card .triple-captures .capture-thumb {
+                width: 72px;
+                min-height: 0;
+                height: auto;
+                aspect-ratio: 1 / 1;
+                background-position: left top;
+                border-radius: 14px;
             }
             .container { padding: 30px 15px; }
             .card-audience {
@@ -907,61 +956,6 @@
                 <p class="group-description">Ces outils soutiennent les ateliers, les dossiers, les supports et les projets à façonner.</p>
             </div>
             <div class="group-grid">
-        <article class="card compact-card card-theme-creation">
-            <div class="card-audience">
-                <span class="audience-line">Vous voulez transformer une idée scénique en dossier jouable.</span>
-                <span class="audience-tag">Création</span>
-            </div>
-            <div class="card-image-side"
-                style="background-image: url('assets/atelier-comedie-musicale-preview.png'); background-position: center top;"
-                data-full="assets/atelier-comedie-musicale-full.png"
-                title="Cliquez pour voir la capture plein écran">
-            </div>
-            <div class="card-content">
-                <div>
-                    <div class="card-header">
-                        <h2 class="card-title">Atelier Comédie Musicale</h2>
-                        <span class="version-tag">v0.2</span>
-                    </div>
-                    <p class="card-description">
-                        Faites mûrir une comédie musicale du germe au plateau : dramaturgie, scènes, chansons, inspiration, tests, audit et dossier.
-                    </p>
-                </div>
-                <div class="card-actions">
-                    <a href="creations/atelier_comedie_musicale.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/atelier_comedie_musicale.html" download="atelier-comedie-musicale-v0-2.html" class="btn btn-download">Télécharger</a>
-                </div>
-            </div>
-        </article>
-
-        <article class="card compact-card card-theme-creation">
-            <div class="card-audience">
-                <span class="audience-line">Vous voulez synchroniser des paroles, préparer un karaoké et exporter des sous-titres ou une vidéo.</span>
-                <span class="audience-tag">Audio & vidéo</span>
-            </div>
-            <div class="card-image-side"
-                style="background-image: url('assets/syncrostella-preview.png'); background-position: center top;"
-                data-full="assets/syncrostella-full.png"
-                title="Cliquez pour voir la capture grand écran">
-            </div>
-            <div class="card-content">
-                <div>
-                    <div class="card-header">
-                        <h2 class="card-title">SyncroStella</h2>
-                        <span class="version-tag">v0.1.alpha</span>
-                    </div>
-                    <p class="card-description">
-                        Synchronisez les paroles, ajustez le karaoké et exportez en JSON, ASS, SRT ou vidéo MP4 optionnelle.
-                    </p>
-                </div>
-                <div class="card-actions wrap">
-                    <a href="creations/syncrostella/syncro-stella.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/syncrostella/syncro-stella.html" download="syncro-stella-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
-                    <a href="creations/syncrostella/karaoke_video_builder.py" download="karaoke_video_builder.py" class="btn btn-download btn-optional">Script Python optionnel</a>
-                </div>
-            </div>
-        </article>
-
         <article class="card compact-card card-theme-autonomy">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez préparer un collectif avec clarté, paix et réalisme.</span>
@@ -991,27 +985,28 @@
 
         <article class="card compact-card card-theme-creation">
             <div class="card-audience">
-                <span class="audience-line">Vous voulez créer des supports visuels utiles, imprimables et adaptés.</span>
-                <span class="audience-tag">Création</span>
+                <span class="audience-line">Vous voulez synchroniser des paroles, préparer un karaoké et exporter des sous-titres ou une vidéo.</span>
+                <span class="audience-tag">Audio & vidéo</span>
             </div>
             <div class="card-image-side"
-                style="background-image: url('assets/cardforge-preview.png'); background-position: left top;"
-                data-full="assets/cardforge-full.png"
-                title="Cliquez pour voir la capture plein écran">
+                style="background-image: url('assets/syncrostella-preview.png'); background-position: center top;"
+                data-full="assets/syncrostella-full.png"
+                title="Cliquez pour voir la capture grand écran">
             </div>
             <div class="card-content">
                 <div>
                     <div class="card-header">
-                        <h2 class="card-title">CardForge — Atelier de cartes</h2>
-                        <span class="version-tag">v0.2-alpha</span>
+                        <h2 class="card-title">SyncroStella</h2>
+                        <span class="version-tag">v0.1.alpha</span>
                     </div>
                     <p class="card-description">
-                        Composez des supports visuels adaptés, organisez votre bibliothèque et préparez des planches imprimables pour la lecture et l’accompagnement.
+                        Synchronisez les paroles, ajustez le karaoké et exportez en JSON, ASS, SRT ou vidéo MP4 optionnelle.
                     </p>
                 </div>
-                <div class="card-actions">
-                    <a href="creations/cardforge.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/cardforge.html" download="cardforge_v0_2_alpha.html" class="btn btn-download">Télécharger</a>
+                <div class="card-actions wrap">
+                    <a href="creations/syncrostella/syncro-stella.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/syncrostella/syncro-stella.html" download="syncro-stella-v0-1-alpha.html" class="btn btn-download">Télécharger</a>
+                    <a href="creations/syncrostella/karaoke_video_builder.py" download="karaoke_video_builder.py" class="btn btn-download btn-optional">Script Python optionnel</a>
                 </div>
             </div>
         </article>
@@ -1045,6 +1040,76 @@
 
         <article class="card compact-card card-theme-creation">
             <div class="card-audience">
+                <span class="audience-line">Vous voulez créer des supports visuels utiles, imprimables et adaptés.</span>
+                <span class="audience-tag">Création</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/cardforge-preview.png'); background-position: left top;"
+                data-full="assets/cardforge-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">CardForge — Atelier de cartes</h2>
+                        <span class="version-tag">v0.2-alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Composez des supports visuels adaptés, organisez votre bibliothèque et préparez des planches imprimables pour la lecture et l’accompagnement.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/cardforge.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/cardforge.html" download="cardforge_v0_2_alpha.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez écrire, structurer et publier différents projets en Markdown.</span>
+                <span class="audience-tag">Écriture</span>
+            </div>
+            <div class="card-image-side dual-captures triple-captures" title="Cliquez sur une capture pour agrandir">
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/ecritoire-atelier-preview.png');"
+                    data-full="assets/ecritoire-atelier-full.png"><span>Atelier</span></div>
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/ecritoire-trame-preview.png');"
+                    data-full="assets/ecritoire-trame-full.png"><span>Trame</span></div>
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/ecritoire-traces-preview.png');"
+                    data-full="assets/ecritoire-traces-full.png"><span>Traces</span></div>
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Écritoire</h2>
+                        <span class="version-tag">v0.1.alpha</span>
+                    </div>
+                    <p class="card-description">
+                        Trois ateliers autonomes pour écrire en Markdown, du document libre au roman et au récit de vie.
+                    </p>
+                    <div class="ecritoire-variants">
+                        <div class="ecritoire-option"><strong>Atelier</strong> Écrire tout document, structurer, prévisualiser et publier.</div>
+                        <div class="ecritoire-option"><strong>Trame</strong> Construire une fiction ou un roman, de la scène à la révision.</div>
+                        <div class="ecritoire-option"><strong>Traces</strong> Composer une autobiographie, un récit de vie ou un essai personnel.</div>
+                    </div>
+                </div>
+                <div class="card-actions wrap">
+                    <a href="creations/ecritoire/ecritoire-atelier.html" class="btn btn-visit">Ouvrir Atelier</a>
+                    <a href="creations/ecritoire/ecritoire-atelier.html" download="ecritoire-atelier-v0-1-alpha.html" class="btn btn-download">Télécharger Atelier</a>
+                    <a href="creations/ecritoire/ecritoire-trame.html" class="btn btn-visit">Ouvrir Trame</a>
+                    <a href="creations/ecritoire/ecritoire-trame.html" download="ecritoire-trame-v0-1-alpha.html" class="btn btn-download">Télécharger Trame</a>
+                    <a href="creations/ecritoire/ecritoire-traces.html" class="btn btn-visit">Ouvrir Traces</a>
+                    <a href="creations/ecritoire/ecritoire-traces.html" download="ecritoire-traces-v0-1-alpha.html" class="btn btn-download">Télécharger Traces</a>
+                </div>
+            </div>
+        </article>
+
+        <div class="card-column-stack">
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
                 <span class="audience-line">Vous voulez organiser, tester et réutiliser vos prompts sans perdre vos variantes.</span>
                 <span class="audience-tag">Création IA</span>
             </div>
@@ -1071,6 +1136,34 @@
                 </div>
             </div>
         </article>
+
+        <article class="card compact-card card-theme-creation">
+            <div class="card-audience">
+                <span class="audience-line">Vous voulez transformer une idée scénique en dossier jouable.</span>
+                <span class="audience-tag">Création</span>
+            </div>
+            <div class="card-image-side"
+                style="background-image: url('assets/atelier-comedie-musicale-preview.png'); background-position: center top;"
+                data-full="assets/atelier-comedie-musicale-full.png"
+                title="Cliquez pour voir la capture plein écran">
+            </div>
+            <div class="card-content">
+                <div>
+                    <div class="card-header">
+                        <h2 class="card-title">Atelier Comédie Musicale</h2>
+                        <span class="version-tag">v0.2</span>
+                    </div>
+                    <p class="card-description">
+                        Faites mûrir une comédie musicale du germe au plateau : dramaturgie, scènes, chansons, inspiration, tests, audit et dossier.
+                    </p>
+                </div>
+                <div class="card-actions">
+                    <a href="creations/atelier_comedie_musicale.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/atelier_comedie_musicale.html" download="atelier-comedie-musicale-v0-2.html" class="btn btn-download">Télécharger</a>
+                </div>
+            </div>
+        </article>
+        </div>
 
         <article class="card compact-card card-theme-teaching">
             <div class="card-audience">
