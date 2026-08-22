@@ -25,10 +25,11 @@ const readJson = async (file, fallback = null) => {
 
 const classicHtml = await readFile(CLASSIC_PATH, "utf8");
 const refonteTemplate = await readFile(APP_PATH, "utf8");
-const engineScript = classicHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1]
+const classicEngineScript = classicHtml.match(/<script>([\s\S]*?)<\/script>/)?.[1]
   ?.replace('document.addEventListener("DOMContentLoaded", initApp);', "")
   .trim();
-if (!engineScript) throw new Error("Le moteur classique n'a pas pu etre extrait.");
+if (!classicEngineScript) throw new Error("Le moteur classique n'a pas pu etre extrait.");
+const engineScript = adaptEngineForRefonteV11(classicEngineScript);
 if (engineScript.includes("</script>")) throw new Error("Le moteur contient une fermeture script non integrable telle quelle.");
 
 const app = loadClassicEngine(engineScript);
@@ -47,27 +48,33 @@ app.App.state.displayMode = "essential";
 const fullResults = app.calculateAllMatches(profile, app.App.state.dataset, { skipAudit: true });
 const selectedResults = selectStratifiedResults(fullResults);
 const selectedIds = new Set(selectedResults.map(result => result.jobId));
-const prototypeDataset = compactPrototypeDataset(app.App.state.dataset, selectedIds);
+const fallbackDataset = compactPrototypeDataset(app.App.state.dataset, selectedIds);
+const activeDataset = compactActiveDataset(app.App.state.dataset, fullResults);
 
-app.App.state.dataset = prototypeDataset;
-const prototypeResults = app.calculateAllMatches(profile, prototypeDataset, { skipAudit: true });
-const manifest = buildManifest({
+app.App.state.dataset = fallbackDataset;
+const fallbackResults = app.calculateAllMatches(profile, fallbackDataset, { skipAudit: true });
+const fallbackManifest = buildManifest({
   selectedResults,
   fullResults,
-  prototypeResults,
+  prototypeResults: fallbackResults,
   profile,
   classicHtml
 });
+app.App.state.dataset = activeDataset;
+const activeResults = app.calculateAllMatches(profile, activeDataset, { skipAudit: true });
+const activeManifest = buildActiveManifest({ activeDataset, activeResults, fullResults, fallbackDataset, fallbackManifest });
 
 const payload = {
   schemaVersion: "1.0.0",
-  appVersion: "1.0.0-prototype.1",
-  buildId: "20260816-interface-refonte-v1-02",
-  generatedAt: manifest.generatedAt,
-  classicReference: manifest.classicReference,
-  dataset: prototypeDataset,
+  appVersion: "1.1.0",
+  buildId: "20260816-ma-boussole-rome1000-v1-1-01",
+  generatedAt: activeManifest.generatedAt,
+  classicReference: fallbackManifest.classicReference,
+  dataset: activeDataset,
+  fallbackDataset,
   defaultProfile: profile,
-  sampleManifest: manifest
+  sampleManifest: fallbackManifest,
+  runtimeManifest: activeManifest
 };
 
 const builtHtml = replaceMarkedBlock(
@@ -79,23 +86,26 @@ const builtHtml = replaceMarkedBlock(
 await mkdir(OUTPUT_DIR, { recursive: true });
 await mkdir(TMP_DIR, { recursive: true });
 await writeFile(APP_PATH, builtHtml);
-await writeFile(path.join(OUTPUT_DIR, "rome100-stratified-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+await writeFile(path.join(OUTPUT_DIR, "rome100-stratified-manifest.json"), `${JSON.stringify(fallbackManifest, null, 2)}\n`);
+await writeFile(path.join(OUTPUT_DIR, "rome1000-embedded-manifest.json"), `${JSON.stringify(activeManifest, null, 2)}\n`);
 await writeFile(path.join(TMP_DIR, "prototype-data-summary.json"), `${JSON.stringify({
-  ...manifest,
+  ...activeManifest,
   output: {
     htmlPath: path.relative(ROOT, APP_PATH),
     htmlBytes: Buffer.byteLength(builtHtml),
     htmlSha256: sha256(builtHtml),
-    embeddedDatasetBytes: Buffer.byteLength(JSON.stringify(prototypeDataset))
+    embeddedDatasetBytes: Buffer.byteLength(JSON.stringify(activeDataset)),
+    fallbackDatasetBytes: Buffer.byteLength(JSON.stringify(fallbackDataset))
   }
 }, null, 2)}\n`);
 
 console.log(JSON.stringify({
   status: "built",
   html: path.relative(ROOT, APP_PATH),
-  jobs: prototypeDataset.jobs.length,
-  directions: manifest.coverage.directions,
-  top5Preserved: manifest.validation.top5Preserved,
+  jobs: activeDataset.jobs.length,
+  fallbackJobs: fallbackDataset.jobs.length,
+  directions: activeManifest.coverage.directions,
+  top5Preserved: activeManifest.validation.top5Preserved,
   htmlBytes: Buffer.byteLength(builtHtml),
   htmlSha256: sha256(builtHtml)
 }, null, 2));
@@ -218,6 +228,88 @@ function compactPrototypeDataset(dataset, selectedIds) {
   };
 }
 
+function compactActiveDataset(dataset, fullResults) {
+  const directionByJobId = new Map((fullResults.completeList || []).map(result => [result.jobId, {
+    primaryDirection: result.primaryDirection,
+    primaryDirectionLabel: result.primaryDirectionLabel,
+    secondaryDirections: result.secondaryDirections || []
+  }]));
+  const jobs = (dataset.jobs || []).map(job => ({
+    ...job,
+    requiredSkills: job.requiredSkills || job.matchableSkillIds || [],
+    optionalSkills: job.optionalSkills || [],
+    softSkills: job.softSkills || job.softSkillIds || [],
+    knowledge: job.knowledge || job.knowledgeIds || [],
+    ...(directionByJobId.get(job.id) || {})
+  }));
+  const referencedSkillIds = new Set(jobs.flatMap(job => [
+    ...(job.requiredSkills || []), ...(job.optionalSkills || []), ...(job.mobilizedSkillIds || []),
+    ...(job.matchableSkillIds || []), ...(job.softSkillIds || [])
+  ]).map(item => typeof item === "string" ? item : item?.id).filter(Boolean));
+  const skillById = new Map([...(dataset.skillsEngine || []), ...(dataset.skills || [])].map(skill => [skill.id, skill]));
+  const missingSkillIds = [...referencedSkillIds].filter(id => !skillById.has(id));
+  if (missingSkillIds.length) throw new Error(`Compétences référencées absentes du paquet compact : ${missingSkillIds.slice(0, 8).join(", ")}`);
+  return {
+    ...dataset,
+    datasetName: "Boussole Pro - ROME1000 complet embarqué",
+    datasetVersion: "rome1000-refonte-v1.1",
+    provenance: "embedded_validated_rome1000",
+    jobs,
+    runtimeBundleIdentity: {
+      ...(dataset.runtimeBundleIdentity || {}),
+      inputMode: "embedded_rome1000_complete",
+      runtimeBundleRevision: "rome1000-refonte-v1.1-r1",
+      sourceDatasetVersion: dataset.datasetVersion,
+      counts: { jobs: jobs.length, skillsEngine: (dataset.skillsEngine || []).length, jobAppellations: (dataset.jobAppellations || []).length }
+    }
+  };
+}
+
+function buildActiveManifest({ activeDataset, activeResults, fullResults, fallbackDataset, fallbackManifest }) {
+  const jobs = activeDataset.jobs || [];
+  const codes = jobs.map(job => job.romeCode);
+  const directionCounts = {};
+  jobs.forEach(job => { directionCounts[job.primaryDirection || "unclassified"] = (directionCounts[job.primaryDirection || "unclassified"] || 0) + 1; });
+  const fullTop5 = (fullResults.top5 || []).map(result => result.romeCode);
+  const activeTop5 = (activeResults.top5 || []).map(result => result.romeCode);
+  return {
+    schemaVersion: "1.1.0",
+    reportKind: "boussole_refonte_v1_1_rome1000_embedded_manifest",
+    generatedAt: new Date().toISOString(),
+    source: "validated_rome1000_candidate_compacted_after_runtime_merge",
+    sourceDatasetVersion: activeDataset.runtimeBundleIdentity?.sourceDatasetVersion || null,
+    datasetVersion: activeDataset.datasetVersion,
+    count: jobs.length,
+    counts: {
+      jobs: jobs.length,
+      uniqueRomeCodes: new Set(codes).size,
+      skillsEngine: (activeDataset.skillsEngine || []).length,
+      jobAppellations: (activeDataset.jobAppellations || []).length,
+      fallbackJobs: (fallbackDataset.jobs || []).length
+    },
+    coverage: { directions: Object.keys(directionCounts).filter(key => key !== "unclassified").length, directionCounts },
+    sizes: {
+      activeDatasetBytes: Buffer.byteLength(JSON.stringify(activeDataset)),
+      fallbackDatasetBytes: Buffer.byteLength(JSON.stringify(fallbackDataset))
+    },
+    fallback: {
+      mode: "embedded_rome100_stratified_emergency_only",
+      datasetVersion: fallbackDataset.datasetVersion,
+      manifestIdentity: fallbackManifest.validation.deterministicIdentity
+    },
+    validation: {
+      exact1000Jobs: jobs.length === 1000,
+      uniqueValidRomeCodes: new Set(codes).size === 1000 && codes.every(code => /^[A-Z][0-9]{4}$/.test(code || "")),
+      all17DirectionsCovered: Object.keys(directionCounts).filter(key => key !== "unclassified").length === 17,
+      noUnclassifiedJob: !directionCounts.unclassified,
+      fullTop5,
+      activeTop5,
+      top5Preserved: JSON.stringify(fullTop5) === JSON.stringify(activeTop5),
+      deterministicIdentity: sha256(codes.slice().sort().join("|"))
+    }
+  };
+}
+
 function buildManifest({ selectedResults, fullResults, prototypeResults, profile: selectedProfile, classicHtml: sourceHtml }) {
   const generatedAt = new Date().toISOString();
   const selectedCodes = selectedResults.map(result => result.romeCode || result.job?.romeCode);
@@ -286,6 +378,27 @@ function isRegulatedResult(result = {}) {
   return result.job?.accessSummary?.regulated === true || result.accessSummaryV1?.regulated === true || status === "regulated";
 }
 
+function adaptEngineForRefonteV11(source) {
+  const replacements = [
+    ['const mastery = new Set(["beginner", "autonomous", "advanced", "expert"]);', 'const mastery = new Set(["not_specified", "beginner", "autonomous", "advanced", "expert"]);', "experience_mastery_states"],
+    ['const enjoyment = new Set(["dislike", "neutral", "like", "love"]);', 'const enjoyment = new Set(["not_specified", "dislike", "neutral", "like", "love"]);', "experience_enjoyment_states"],
+    ['const continuation = new Set(["yes", "maybe", "no"]);', 'const continuation = new Set(["not_specified", "yes", "maybe", "no"]);', "experience_continuation_states"],
+    ['masteryLevel: mastery.has(item.masteryLevel) ? item.masteryLevel : "autonomous",', 'masteryLevel: mastery.has(item.masteryLevel) ? item.masteryLevel : "not_specified",', "experience_mastery_default"],
+    ['enjoymentLevel: enjoyment.has(item.enjoymentLevel) ? item.enjoymentLevel : "neutral",', 'enjoymentLevel: enjoyment.has(item.enjoymentLevel) ? item.enjoymentLevel : "not_specified",', "experience_enjoyment_default"],
+    ['wantsToContinue: continuation.has(item.wantsToContinue) ? item.wantsToContinue : "maybe",', 'wantsToContinue: continuation.has(item.wantsToContinue) ? item.wantsToContinue : "not_specified",', "experience_continuation_default"],
+    ['score += { beginner: 0, autonomous: 2, advanced: 4, expert: 5 }[exp.masteryLevel] ?? 1;', 'score += { not_specified: 0, beginner: 0, autonomous: 2, advanced: 4, expert: 5 }[exp.masteryLevel] ?? 0;', "experience_mastery_neutrality"],
+    ['score += { dislike: -7, neutral: 0, like: 2, love: 4 }[exp.enjoymentLevel] ?? 0;', 'score += { not_specified: 0, dislike: -7, neutral: 0, like: 2, love: 4 }[exp.enjoymentLevel] ?? 0;', "experience_enjoyment_neutrality"],
+    ['score += { no: -8, maybe: 1, yes: 3 }[exp.wantsToContinue] ?? 1;', 'score += { not_specified: 0, no: -8, maybe: 1, yes: 3 }[exp.wantsToContinue] ?? 0;', "experience_continuation_neutrality"],
+    ['radiusKm: Number(profile.mobility?.radiusKm || 20),', 'radiusKm: profile.mobility?.radiusKm === null || profile.mobility?.radiusKm === undefined || profile.mobility?.radiusKm === "" ? null : Number(profile.mobility.radiusKm),', "mobility_radius_neutrality"],
+    ['  ["education", "Éducation"],\n  ["proprete", "Propreté / entretien"],', '  ["education", "Éducation"],\n  ["petite_enfance", "Petite enfance"],\n  ["proprete", "Propreté / entretien"],', "excluded_domain_option"],
+    ['  education: ["education_enfance"],\n  proprete:', '  education: ["education_enfance"],\n  petite_enfance: ["education_enfance"],\n  proprete:', "excluded_domain_mapping"]
+  ];
+  return replacements.reduce((current, [before, after, label]) => {
+    if (!current.includes(before)) throw new Error(`Adaptation moteur v1.1 introuvable : ${label}.`);
+    return current.replace(before, after);
+  }, source);
+}
+
 async function loadGeneratedBundle() {
   return {
     manifest: await readJson(path.join(RUNTIME_DIR, "import-manifest.rome.json"), {}),
@@ -335,7 +448,7 @@ function loadClassicEngine(script) {
   };
   context.window = Object.assign(context.window, context);
   vm.createContext(context);
-  vm.runInContext(`${script}\nthis.__refonteEngine={App,mergeGeneratedDatasetIntoApp,markDatasetAsOfficialRome,normalizeProfile,calculateAllMatches,buildResultsViewModel};`, context, { timeout: 30000 });
+  vm.runInContext(`${script}\nthis.__refonteEngine={App,mergeGeneratedDatasetIntoApp,markDatasetAsOfficialRome,normalizeProfile,calculateAllMatches,buildResultsViewModel,prepareCompactDatasetExport,validateDataset};`, context, { timeout: 30000 });
   return context.__refonteEngine;
 }
 

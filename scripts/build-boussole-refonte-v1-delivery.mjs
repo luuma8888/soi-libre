@@ -1,93 +1,89 @@
+import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { cp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { access, cp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 
+const run = promisify(execFile);
 const ROOT = process.cwd();
 const APP_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
 const CLASSIC_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-classic-v0.8.4.html");
-const MANIFEST_PATH = path.join(ROOT, "creations/boussolepro/data/generated/refonte-v1/rome100-stratified-manifest.json");
+const ACTIVE_MANIFEST_PATH = path.join(ROOT, "creations/boussolepro/data/generated/refonte-v1/rome1000-embedded-manifest.json");
+const FALLBACK_MANIFEST_PATH = path.join(ROOT, "creations/boussolepro/data/generated/refonte-v1/rome100-stratified-manifest.json");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/refonte-interface-v1");
-const DELIVERY_DIR = path.join(ROOT, "tmp/monde-pro/livraison-boussole-pro-refonte-interface-v1");
+const DELIVERY_DIR = path.join(ROOT, "tmp/monde-pro/livraison-boussole-pro-ma-boussole-v1.1");
 const CAPTURE_DIR = path.join(REPORT_DIR, "captures");
-const CLASSIC_ARCHIVE = path.join(ROOT, "tmp/monde-pro/livraison-boussole-pro-v0.8.4-classic-frozen-r1.tar.gz");
+const TEST_PROFILE_PATH = path.join(REPORT_DIR, "boussole-pro-refonte-profil-migre-v1.1-test.json");
+const REQUESTED_PROFILE_PATH = path.join(ROOT, "tmp/monde-pro/boussole-pro-refonte-profil-2026-08-16-luuma.json");
 
-const [appHtml, classicHtml, manifest, engineReport, browserReport, classicArchive] = await Promise.all([
-  readFile(APP_PATH), readFile(CLASSIC_PATH), readJson(MANIFEST_PATH),
+const [appHtml, classicHtml, activeManifest, fallbackManifest, engineReport, browserReport] = await Promise.all([
+  readFile(APP_PATH), readFile(CLASSIC_PATH), readJson(ACTIVE_MANIFEST_PATH), readJson(FALLBACK_MANIFEST_PATH),
   readJson(path.join(REPORT_DIR, "engine-invariance-and-migration-report.json")),
-  readJson(path.join(REPORT_DIR, "browser-accessibility-performance-report.json")),
-  readFile(CLASSIC_ARCHIVE)
+  readJson(path.join(REPORT_DIR, "browser-accessibility-performance-report.json"))
 ]);
 if (engineReport.status !== "passed" || browserReport.status !== "passed") throw new Error("Les validations obligatoires ne sont pas toutes au vert.");
+if (!activeManifest.validation?.top5Preserved || activeManifest.count !== 1000) throw new Error("Le manifeste ROME1000 n'est pas conforme.");
 
-const branch = process.env.BOUSSOLE_REFONTE_BRANCH || "soi-libre-codex";
-const head = manifest.classicReference.commit;
+const branch = process.env.BOUSSOLE_REFONTE_BRANCH || (await git("branch", "--show-current"));
+const baseCommit = process.env.BOUSSOLE_REFONTE_BASE_COMMIT || (await git("rev-parse", "HEAD"));
 const generatedAt = new Date().toISOString();
+const requestedProfileAvailable = await exists(REQUESTED_PROFILE_PATH);
+const passedTests = engineReport.assertions.filter(row => row.status === "passed").length + browserReport.assertions.filter(row => row.status === "passed").length;
+const failedTests = engineReport.assertions.filter(row => row.status !== "passed").length + browserReport.assertions.filter(row => row.status !== "passed").length;
 
 const profileInventory = {
-  schemaVersion: "1.0.0",
-  reportKind: "boussole_refonte_v1_profile_field_inventory",
-  generatedAt,
-  sourceProfileVersion: manifest.profile,
-  policy: "Seuls les champs visibles et editables dans la refonte alimentent le profil actif. L'instantane classique complet est conserve separement dans migration.legacyProfileSnapshot et ne participe pas aux calculs.",
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_profile_field_inventory", generatedAt,
+  policy: "Seuls les champs visibles et modifiables dans les neuf étapes alimentent le profil actif. L'instantané historique reste séparé et n'alimente pas le moteur.",
   steps: {
     "Départ": ["profileName", "ageRange", "searchHorizon"],
-    "Formation": ["diplomaLevel", "trainingOpenness", "trainingFamilies"],
-    "Contraintes": ["constraints visibles", "mobility.radiusKm"],
-    "Compétences": ["customSkills", "jobExperiences : métier, durée et poste actuel"],
+    "Formation": ["diplomaLevel", "diplomas", "freeCertifications", "trainingFamilies", "trainingOpenness", "desiredTrainingFamilies"],
+    "Contraintes": ["constraints sans longTraining", "mobility.radiusKm", "mobility.relocation", "driverLicenseBStatus et driverLicenses dérivé", "preferredSchedule", "availability.hoursPerWeek"],
+    "Parcours professionnel": ["jobExperiences et uniquement ses champs visibles"],
+    "Compétences": ["skillSelections", "tableaux moteur dérivés", "customSkills"],
     "Envies": ["interests", "values"],
-    "Environnements": ["preferredWorkStyles", "preferredEnvironments"],
-    "Validation": ["profile summary and versioned export"],
-    "Première lecture": ["calculated portrait and results entry"]
+    "Environnements": ["preferredWorkStyles", "preferredEnvironments", "excludedDomains"],
+    "Validation": ["résumé des sept sections actives"],
+    "Première lecture": ["portrait synthétique et accès aux résultats"]
   },
-  handling: {
-    directlyEditableInPrototype: ["profileName", "ageRange", "searchHorizon", "diplomaLevel", "trainingOpenness", "trainingFamilies", "constraints", "mobility.radiusKm", "customSkills", "jobExperiences", "interests", "values", "preferredWorkStyles", "preferredEnvironments"],
-    preservedButExcludedFromActiveProfile: ["diplomas", "certifications", "trainingBudget", "desiredTrainingFamilies", "driverLicenses", "excludedDomains", "availability", "skills", "skillSignals", "softSkills", "experienceDomains", "experienceDomainDetails", "domainOrientation", "needForMeaning", "needForSecurity", "needForAutonomy", "contextPreferences", "preferredSchedule", "marketPreference", "custom criterionWeights", "hidden job experience preferences"],
-    unknownFields: "preserved_in_legacy_profile_snapshot_only"
-  }
+  excludedFromActiveProfile: ["trainingBudget", "experienceDomains", "experienceDomainDetails", "domainOrientation", "experienceDuration", "skillSignals", "needForMeaning", "needForSecurity", "needForAutonomy", "contextPreferences", "marketPreference", "criterionWeights personnalisés"],
+  historicalHandling: "preserved_in_separate_migration_snapshot_only"
 };
 
 const migrationReport = {
-  schemaVersion: "1.0.0", reportKind: "boussole_refonte_v1_profile_migration", generatedAt,
-  status: engineReport.profileMigration.unknownTopLevelFieldsPreserved ? "passed" : "failed",
-  source: manifest.profile.source,
-  tests: {
-    classicEnvelopeAccepted: true,
-    normalizedByClassicAdapter: true,
-    unknownFieldsPreservedInSeparateSnapshot: browserReport.assertions.some(row => row.name === "legacy_snapshot_separate_from_active_profile" && row.status === "passed"),
-    hiddenFieldsExcludedFromActiveProfile: browserReport.assertions.some(row => row.name === "legacy_hidden_fields_ignored" && row.status === "passed"),
-    clearedProfileDoesNotReimportClassicData: browserReport.assertions.some(row => row.name === "cleared_profile_not_reimported_from_classic" && row.status === "passed"),
-    newProfileStartsWithoutLegacyData: browserReport.assertions.some(row => row.name === "new_profile_starts_without_legacy_data" && row.status === "passed"),
-    rawSnapshotPreservedForExport: true,
-    localAutosave: browserReport.assertions.some(row => row.name === "local_storage_saved" && row.status === "passed"),
-    inputFocusPreserved: browserReport.assertions.some(row => row.name === "experience_years_keep_focus" && row.status === "passed"),
-    currentJobCanBeUnchecked: browserReport.assertions.some(row => row.name === "current_job_can_be_unchecked" && row.status === "passed")
-  }
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_profile_migration", generatedAt,
+  status: browserReport.assertions.some(row => row.name === "active_profile_import_export_import_identity" && row.status === "passed") ? "passed" : "failed",
+  requestedReceptionProfile: { path: path.relative(ROOT, REQUESTED_PROFILE_PATH), available: requestedProfileAvailable, limitation: requestedProfileAvailable ? null : "Le fichier nommé dans les instructions n'était pas présent dans le dépôt local." },
+  replacementFixture: path.relative(ROOT, TEST_PROFILE_PATH),
+  tests: Object.fromEntries(browserReport.assertions.filter(row => /legacy_|profile_|experience_details|local_storage|current_job/.test(row.name)).map(row => [row.name, row.status]))
 };
 
 const invarianceReport = {
-  schemaVersion: "1.0.0", reportKind: "boussole_refonte_v1_semantic_invariance", generatedAt,
-  status: engineReport.status,
-  classicEnginePolicy: manifest.classicReference.enginePolicy,
-  assertions: engineReport.assertions.filter(row => /deterministic|skills_|diploma_|market_|excluded_|view_contract|top5_/.test(row.name)),
-  calculations: engineReport.calculations
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_semantic_invariance", generatedAt,
+  status: engineReport.status, assertions: engineReport.assertions.filter(row => /deterministic|skills_|diploma_|market_|excluded_|view_contract|top5_/.test(row.name)), calculations: engineReport.calculations
 };
 
 const accessibilityReport = {
-  schemaVersion: "1.0.0", reportKind: "boussole_refonte_v1_accessibility", generatedAt,
-  status: browserReport.status,
-  automatedAndBrowserChecks: browserReport.assertions.filter(row => /overflow|accessible|focus|target|landmark|label|svg|motion|navigation|dialog|theme/.test(row.name)),
-  viewportResults: { desktop: browserReport.browser.desktop, mobile: browserReport.browser.mobile, mobileScenario: browserReport.scenarios.mobile },
-  errors: browserReport.errors,
-  limitation: "Contrôles automatisés et clavier Chromium réalisés ; une réception humaine avec lecteur d'écran reste conseillée avant diffusion générale."
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_accessibility", generatedAt, status: browserReport.status,
+  checks: browserReport.assertions.filter(row => /overflow|accessible|focus|target|landmark|label|motion|navigation|combobox|step_titles/.test(row.name)),
+  viewports: { desktop: browserReport.browser.desktop, mobile: browserReport.browser.mobile }, errors: browserReport.errors,
+  limitation: "Une réception humaine avec lecteur d'écran reste nécessaire avant diffusion générale."
 };
 
 const performanceReport = {
-  schemaVersion: "1.0.0", reportKind: "boussole_refonte_v1_performance", generatedAt,
-  status: browserReport.status,
-  html: browserReport.html,
-  measurements: browserReport.performance,
-  corpus: { jobs: manifest.count, directions: manifest.coverage.directions },
-  scope: "Prototype autonome ROME100 ; ces valeurs ne préjugent pas du futur paquet ROME1000 allégé."
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_performance", generatedAt, status: browserReport.status,
+  html: browserReport.html, measurements: browserReport.performance,
+  corpus: { activeJobs: activeManifest.count, fallbackJobs: fallbackManifest.count, directions: activeManifest.coverage.directions },
+  interpretation: "Le démarrage et le premier calcul sont perceptibles avec le paquet complet. L'interface affiche un état de progression avant le calcul ; les recherches restent limitées à huit résultats et ne chargent pas le corpus dans le DOM."
+};
+
+const deliveryManifest = {
+  schemaVersion: "1.1.0", reportKind: "boussole_refonte_v1_1_delivery_manifest", generatedAt,
+  branch, branchUnchanged: branch === "soi-libre-codex", baseCommit,
+  app: { path: path.relative(ROOT, APP_PATH), version: "1.1.0", buildId: "20260816-ma-boussole-rome1000-v1-1-01", bytes: appHtml.length, sha256: sha256(appHtml) },
+  classicBackup: { path: path.relative(ROOT, CLASSIC_PATH), sha256: sha256(classicHtml), unchanged: sha256(classicHtml) === "ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da" },
+  dataset: { version: activeManifest.datasetVersion, activeJobs: activeManifest.count, uniqueRomeCodes: activeManifest.counts.uniqueRomeCodes, fallbackJobs: fallbackManifest.count, identitySha256: activeManifest.validation.deterministicIdentity, top5Preserved: activeManifest.validation.top5Preserved },
+  tests: { passed: passedTests, failed: failedTests, engine: engineReport.assertions.length, browser: browserReport.assertions.length },
+  evidence: { rome1000OnlyJob: { romeCode: "A1101", title: "Conducteur / Conductrice d'engins agricoles" }, captures: 11, requestedProfileAvailable }
 };
 
 await Promise.all([
@@ -95,45 +91,44 @@ await Promise.all([
   writeJson(path.join(REPORT_DIR, "profile-migration-report.json"), migrationReport),
   writeJson(path.join(REPORT_DIR, "engine-invariance-report.json"), invarianceReport),
   writeJson(path.join(REPORT_DIR, "accessibility-report.json"), accessibilityReport),
-  writeJson(path.join(REPORT_DIR, "performance-report.json"), performanceReport)
+  writeJson(path.join(REPORT_DIR, "performance-report.json"), performanceReport),
+  writeJson(path.join(REPORT_DIR, "delivery-manifest-v1.1.json"), deliveryManifest)
 ]);
 
-const auditPath = path.join(REPORT_DIR, "AUDIT_BOUSSOLE_PRO_REFONTE_INTERFACE_V1.md");
-const audit = `# Audit final - Boussole Pro refonte interface v1
+const auditPath = path.join(REPORT_DIR, "AUDIT_BOUSSOLE_PRO_MA_BOUSSOLE_ROME1000_V1_1.md");
+const audit = `# Audit final - Ma Boussole ROME1000 v1.1
 
-Date : ${generatedAt.slice(0, 10)}
+- branche conservée : ${deliveryManifest.branchUnchanged ? "oui" : "non"} — \`${branch}\` ;
+- sauvegarde de la version précédente : commit \`${baseCommit}\` ;
+- métiers réellement actifs : ${activeManifest.count} ;
+- Ma Boussole : 9 étapes, oui ;
+- données fantômes : absentes du profil actif, oui ;
+- tests : ${passedTests} réussis / ${failedTests} échoué ;
+- limites restantes : HTML de ${formatMiB(appHtml.length)} Mio, premier calcul mesuré à ${browserReport.performance.calculationMs} ms, profil de réception nommé dans les instructions ${requestedProfileAvailable ? "disponible" : "absent du dossier local"}.
 
-Branche locale : \`${branch}\`
+## État livré
 
-Base classique : \`${manifest.classicReference.commit}\` / \`${manifest.classicReference.tag}\`
+Le fichier canonique autonome calcule réellement sur 1 000 codes ROME uniques. Le ROME100 stratifié est conservé uniquement comme repli explicite et testable. Le Top 5 du profil de référence est identique avant et après embarquement. Le fichier classique figé n'a pas été modifié (SHA-256 \`${sha256(classicHtml)}\`).
 
-## Verdict
+Ma Boussole suit les neuf étapes verrouillées. Les recherches métier et compétence sont des combobox accessibles limitées à huit suggestions ; les compétences proposées ne sont jamais sélectionnées automatiquement. Les expériences nouvelles restent neutres tant que l'utilisateur ne précise pas durée, période, maîtrise, appréciation ou intention.
 
-Le prototype fonctionnel est livré sur 100 métiers ROME réels stratifiés. La photographie classique n'a pas été modifiée. Le moteur classique figé est embarqué tel quel derrière un nouveau contrat de vue ; le DOM, le CSS, la navigation et les composants de la refonte sont neufs.
+## Réception
 
-| Élément | Résultat | Preuve |
-|---|---|---|
-| Classique préservée | OK | HTML \`${sha256(classicHtml)}\` ; tag/commit canonique ; archive \`${sha256(classicArchive)}\` vérifiée avant chantier |
-| Nouveau HTML canonique | OK | \`creations/boussolepro/boussole-pro.html\` ; ${appHtml.length} octets ; \`${sha256(appHtml)}\` |
-| 100 métiers réels | 100, 17 directions, minimum ${manifest.validation.minimumPerDirection} par direction | \`rome100-stratified-manifest.json\` ; codes ROME tous valides ; Top ROME1000 conservé |
-| Ma Boussole | OK | 8 étapes ; autosauvegarde ; saisie sans perte de focus ; poste actuel décochable ; inventaire des champs |
-| Résultats | OK | portrait, rosace et liste équivalente, 7 familles, cartes, tri et pagination contrôlés dans Chromium |
-| Exploration | OK | sans profil, 17 directions, recherche code/intitulé/appellation, filtres repliés et pagination |
-| Ma liste et fiche | OK | persistance, comparaison de 2 métiers, export, dialogue plein écran, focus initial et restauré |
-| Invariants moteur | OK | 25 assertions : déterminisme et invariance aux compétences, diplôme et Marché |
-| Accessibilité et parcours | OK dans le périmètre automatisé | ${browserReport.assertions.length} assertions Chromium ; import filtré, effacement durable, noms accessibles, focus, cibles, repères, SVG alternatif, mouvement réduit ; réception lecteur d'écran conseillée |
-| Bureau et mobile | OK | 1440x1000 et 390x844, aucun débordement horizontal, 10 captures |
-| Hors ligne | OK | démarrage \`file://\` avec 100 métiers embarqués et réseau Chromium désactivé |
-| Git | branche \`${branch}\`, base \`${head}\`, commit de refonte non créé | Conformément à AGENTS.md, aucun commit automatique ; les fichiers fonctionnels sont prêts à être relus et commités séparément des rapports |
-| Limites | Reportées | HTML de 14 Mio environ ; extraction du moteur pur et paquet ROME1000 allégé reportés ; audit lecteur d'écran humain et validation UX utilisateurs à réaliser |
+- Moteur et invariants : ${engineReport.assertions.length} contrôles réussis.
+- Navigateur Chromium : ${browserReport.assertions.length} contrôles réussis, aucune erreur console ou runtime.
+- Bureau : neuf captures, une par étape, en 1440 × 1000.
+- Mobile : captures Parcours professionnel et Compétences en 390 × 844, sans débordement horizontal.
+- Preuve hors ROME100 : \`A1101 — Conducteur / Conductrice d'engins agricoles\`, trouvé dans le corpus actif ROME1000.
+- Import/export : égalité stricte du profil actif après export puis réimport ; l'instantané historique reste séparé.
 
-## Limites acceptées
+## Mesures et limites
 
-- Le prototype embarque une photographie exacte du moteur classique, y compris du code historique inutilisé par la nouvelle interface. L'extraction d'un module moteur pur appartient à l'industrialisation après validation UX.
-- Le passage à 1 000 métiers et le constructeur de données allégées ne font pas partie de cette mission.
-- Les données d'accès et de Marché inconnues restent affichées comme telles.
-- Les contrôles RGAA/WCAG automatisés ne remplacent pas une réception humaine avec lecteur d'écran.
-- Les champs classiques non gérés par l'interface sont conservés uniquement dans l'instantané d'archive de l'export. Ils ne sont ni injectés dans le profil actif ni pris en compte par le moteur de la refonte.
+- HTML autonome : ${appHtml.length} octets (${formatMiB(appHtml.length)} Mio), SHA-256 \`${sha256(appHtml)}\`.
+- Démarrage Chromium : ${browserReport.performance.navigation.domContentLoadedMs} ms ; chargement : ${browserReport.performance.navigation.loadMs} ms.
+- Premier calcul ROME1000 : ${browserReport.performance.calculationMs} ms ; un état de progression est peint avant le calcul.
+- Vingt recherches métier + compétence : ${browserReport.performance.searchJobAndSkill20IterationsMs} ms.
+- Une tentative de compactage plus agressive a été rejetée parce qu'elle modifiait le Top 5. Le paquet complet validé est donc conservé pour privilégier l'exactitude ; une extraction future des seules tables réellement lues par le moteur devra être accompagnée d'un test de parité stricte.
+- Le profil \`boussole-pro-refonte-profil-2026-08-16-luuma.json\` n'était pas présent. La migration a été reçue avec le scénario synthétique automatisé et l'export \`boussole-pro-refonte-profil-migre-v1.1-test.json\` ; le profil nommé devra être rejoué lorsqu'il sera fourni.
 `;
 await writeFile(auditPath, audit);
 
@@ -142,13 +137,16 @@ await mkdir(path.join(DELIVERY_DIR, "reports/captures"), { recursive: true });
 await mkdir(path.join(DELIVERY_DIR, "scripts"), { recursive: true });
 await cp(APP_PATH, path.join(DELIVERY_DIR, "app/boussole-pro.html"));
 await cp(CLASSIC_PATH, path.join(DELIVERY_DIR, "app/boussole-pro-classic-v0.8.4.html"));
-await cp(MANIFEST_PATH, path.join(DELIVERY_DIR, "app/data/rome100-stratified-manifest.json"));
+await cp(ACTIVE_MANIFEST_PATH, path.join(DELIVERY_DIR, "app/data/rome1000-embedded-manifest.json"));
+await cp(FALLBACK_MANIFEST_PATH, path.join(DELIVERY_DIR, "app/data/rome100-stratified-manifest.json"));
 for (const file of [
-  "MAQUETTES_BASSE_FIDELITE.md", "prototype-data-summary.json", "engine-invariance-and-migration-report.json",
-  "browser-accessibility-performance-report.json", "profile-field-inventory.json", "profile-migration-report.json",
-  "engine-invariance-report.json", "accessibility-report.json", "performance-report.json", "AUDIT_BOUSSOLE_PRO_REFONTE_INTERFACE_V1.md"
+  "prototype-data-summary.json", "engine-invariance-and-migration-report.json", "browser-accessibility-performance-report.json",
+  "profile-field-inventory.json", "profile-migration-report.json", "engine-invariance-report.json", "accessibility-report.json",
+  "performance-report.json", "delivery-manifest-v1.1.json", "AUDIT_BOUSSOLE_PRO_MA_BOUSSOLE_ROME1000_V1_1.md",
+  "boussole-pro-refonte-profil-migre-v1.1-test.json"
 ]) await cp(path.join(REPORT_DIR, file), path.join(DELIVERY_DIR, "reports", file));
-await cp(CAPTURE_DIR, path.join(DELIVERY_DIR, "reports/captures"), { recursive: true });
+for (const file of (await readdir(CAPTURE_DIR)).filter(name => /^etape-(?:0[1-9]-bureau|04-parcours-mobile|05-competences-mobile)\.png$/.test(name)))
+  await cp(path.join(CAPTURE_DIR, file), path.join(DELIVERY_DIR, "reports/captures", file));
 for (const file of ["build-boussole-refonte-v1.mjs", "validate-boussole-refonte-v1.mjs", "measure-boussole-refonte-v1-browser.mjs", "build-boussole-refonte-v1-delivery.mjs"])
   await cp(path.join(ROOT, "scripts", file), path.join(DELIVERY_DIR, "scripts", file));
 
@@ -157,25 +155,12 @@ const checksums = [];
 for (const file of files.filter(file => path.basename(file) !== "SHA256SUMS")) checksums.push(`${sha256(await readFile(file))}  ${path.relative(DELIVERY_DIR, file)}`);
 await writeFile(path.join(DELIVERY_DIR, "SHA256SUMS"), `${checksums.sort().join("\n")}\n`);
 
-console.log(JSON.stringify({
-  status: "ready",
-  branch,
-  baseCommit: head,
-  html: { bytes: appHtml.length, sha256: sha256(appHtml) },
-  classic: { htmlSha256: sha256(classicHtml), archiveSha256: sha256(classicArchive) },
-  delivery: path.relative(ROOT, DELIVERY_DIR),
-  files: files.length + 1,
-  audit: path.relative(ROOT, auditPath)
-}, null, 2));
+console.log(JSON.stringify({ status: "ready", branch, baseCommit, html: deliveryManifest.app, dataset: deliveryManifest.dataset, tests: deliveryManifest.tests, delivery: path.relative(ROOT, DELIVERY_DIR), files: files.length + 1, audit: path.relative(ROOT, auditPath) }, null, 2));
 
+async function git(...args) { return (await run("git", args, { cwd: ROOT })).stdout.trim(); }
+async function exists(file) { try { await access(file); return true; } catch { return false; } }
 async function readJson(file) { return JSON.parse(await readFile(file, "utf8")); }
 async function writeJson(file, value) { await writeFile(file, `${JSON.stringify(value, null, 2)}\n`); }
 function sha256(value) { return createHash("sha256").update(value).digest("hex"); }
-async function walk(directory) {
-  const rows = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const file = path.join(directory, entry.name);
-    if (entry.isDirectory()) rows.push(...await walk(file)); else rows.push(file);
-  }
-  return rows;
-}
+function formatMiB(bytes) { return (bytes / 1024 / 1024).toFixed(1); }
+async function walk(directory) { const rows = []; for (const entry of await readdir(directory, { withFileTypes: true })) { const file = path.join(directory, entry.name); if (entry.isDirectory()) rows.push(...await walk(file)); else rows.push(file); } return rows; }

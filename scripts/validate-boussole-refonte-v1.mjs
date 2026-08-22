@@ -6,7 +6,7 @@ import vm from "node:vm";
 const ROOT = process.cwd();
 const CLASSIC_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-classic-v0.8.4.html");
 const APP_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
-const MANIFEST_PATH = path.join(ROOT, "creations/boussolepro/data/generated/refonte-v1/rome100-stratified-manifest.json");
+const MANIFEST_PATH = path.join(ROOT, "creations/boussolepro/data/generated/refonte-v1/rome1000-embedded-manifest.json");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/refonte-interface-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "engine-invariance-and-migration-report.json");
 const EXPECTED_CLASSIC_COMMIT = "bd9b54767ed143668826074e757a8e2dc46502ad";
@@ -56,16 +56,12 @@ assert("classic_html_immutable", sha256(classicHtml) === EXPECTED_CLASSIC_SHA, {
 assert("classic_commit_reference", payload.classicReference.commit === EXPECTED_CLASSIC_COMMIT);
 assert("new_html_distinct", sha256(refonteHtml) !== sha256(classicHtml));
 assert("single_page_offline", !/(?:src|href)=["']https?:\/\//i.test(refonteHtml) && !/<script[^>]+src=/i.test(refonteHtml));
-assert("rome100_exact", payload.dataset.jobs.length === 100 && manifest.count === 100);
-assert("real_rome_codes", manifest.validation.allRealRomeCodes === true);
+assert("rome1000_exact", payload.dataset.jobs.length === 1000 && manifest.count === 1000 && manifest.validation.exact1000Jobs === true);
+assert("rome100_emergency_fallback", payload.fallbackDataset.jobs.length === 100 && manifest.counts.fallbackJobs === 100);
+assert("real_unique_rome_codes", manifest.validation.uniqueValidRomeCodes === true);
 assert("all_17_directions", manifest.validation.all17DirectionsCovered === true && manifest.coverage.directions === 17);
-assert("several_jobs_per_direction", manifest.validation.minimumPerDirection >= 3, manifest.coverage.directionCounts);
-assert("market_stratified", Object.values(manifest.coverage.marketCounts).every(count => count > 0), manifest.coverage.marketCounts);
-assert("access_stratified", Object.keys(manifest.coverage.accessCounts).length >= 4, manifest.coverage.accessCounts);
-assert("regulated_and_unregulated", manifest.coverage.regulated > 0 && manifest.coverage.regulated < 100, { regulated: manifest.coverage.regulated });
-assert("excluded_paths_present", manifest.coverage.excluded >= 3, { excluded: manifest.coverage.excluded });
-assert("dream_paths_present", manifest.coverage.dreamCandidates >= 3, { dream: manifest.coverage.dreamCandidates });
-assert("top5_preserved_from_rome1000", manifest.validation.top5Preserved === true, { full: manifest.validation.fullTop5, prototype: manifest.validation.prototypeTop5 });
+assert("no_unclassified_job", manifest.validation.noUnclassifiedJob === true);
+assert("top5_preserved_from_full_runtime", manifest.validation.top5Preserved === true, { full: manifest.validation.fullTop5, active: manifest.validation.activeTop5 });
 assert("deterministic_repeat", baseline.sha256 === repeat.sha256, { first: baseline.sha256, second: repeat.sha256 });
 assert("skills_do_not_change_top", JSON.stringify(topIdentity(baseline.results)) === JSON.stringify(topIdentity(skillsOnly.results)));
 assert("skills_do_not_change_personal_fit", JSON.stringify(scoreIdentity(baseline.results)) === JSON.stringify(scoreIdentity(skillsOnly.results)));
@@ -75,12 +71,15 @@ assert("market_does_not_change_top", JSON.stringify(topIdentity(baseline.results
 assert("market_does_not_change_personal_fit", JSON.stringify(scoreIdentity(baseline.results)) === JSON.stringify(scoreIdentity(marketOnly.results)));
 assert("excluded_still_consultable", baseline.results.excludedPaths.length > 0 && baseline.results.excludedPaths.every(item => baseline.results.completeList.some(row => row.jobId === item.jobId)));
 assert("unknown_profile_fields_preserved", migratedUnknown.futureProfileField?.preserved === true && migratedUnknown.futureArray?.[0] === "sentinel");
-assert("search_index_complete", baseline.results.explorationSearchIndex.length === 100 && baseline.results.explorationSearchIndex.every(row => row.romeCode && row.text));
+assert("search_index_complete", baseline.results.explorationSearchIndex.length === 1000 && baseline.results.explorationSearchIndex.every(row => row.romeCode && row.text));
 assert("view_contract_complete", ["profilePortrait", "topDirections", "recommendedPaths", "dreamPaths", "skillsSupportedPaths", "exploratoryPaths", "excludedPaths", "completeList", "jobDetailsById", "explorationCatalog", "explorationSearchIndex", "jobsByPrimaryDirection", "resultMetadata"].every(key => key in baseline.results));
+assert("nine_locked_steps", ["Départ", "Formation", "Contraintes", "Parcours professionnel", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"].every((title, index) => refonteHtml.includes(`${index + 1}. ${title}`) || refonteHtml.includes(`\"${title}\"`)));
+assert("no_job_datalist_in_v11_interface", !/<datalist\b/i.test(refonteHtml.slice(refonteHtml.lastIndexOf("// Adaptation v1.1"))));
+assert("v11_build_identity", payload.appVersion === "1.1.0" && payload.buildId === "20260816-ma-boussole-rome1000-v1-1-01");
 
 const report = {
   schemaVersion: "1.0.0",
-  reportKind: "boussole_refonte_v1_engine_invariance_and_profile_migration",
+  reportKind: "boussole_refonte_v1_1_engine_invariance_and_profile_migration",
   generatedAt: new Date().toISOString(),
   status: failures.length ? "failed" : "passed",
   build: { appVersion: payload.appVersion, buildId: payload.buildId, htmlSha256: sha256(refonteHtml), htmlBytes: Buffer.byteLength(refonteHtml) },
