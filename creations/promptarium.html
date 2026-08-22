@@ -3,26 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Promptarium v0.4.alpha</title>
+  <meta name="application-name" content="Promptarium" />
+  <meta name="version" content="v0.5.alpha" />
+  <meta name="description" content="Bibliothèque et atelier autonome pour classer, composer, tester et exporter des prompts." />
+  <title>Promptarium v0.5.alpha</title>
   <style>
 :root{
   --bg:#f8f7f2; --panel:#fffdf8; --panel2:#f0ede4; --ink:#24231f; --muted:#6f6b60;
-  --line:#ded8ca; --soft:#ebe4d5; --accent:#6f8f84; --accent2:#b99d70; --danger:#b86b65;
+  --line:#ded8ca; --soft:#ebe4d5; --accent:#6f8f84; --accent-ink:#4d6f65; --accent2:#b99d70; --danger:#b86b65;
   --ok:#6d9277; --warn:#b08a45; --shadow:0 16px 42px rgba(46,40,28,.08);
   --radius:18px; --radius2:12px; --space:14px; --fs:14px;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-[data-space="dashboard"]{--bg:#f7f6ee;--panel2:#eeefe1;--accent:#7d997c}
-[data-space="capture"]{--bg:#fbf5e8;--panel2:#f3ead8;--accent:#b99462}
-[data-space="library"]{--bg:#f1f8f8;--panel2:#e2eeee;--accent:#6f9aa0}
-[data-space="variables"]{--bg:#f7f3fb;--panel2:#ebe3f3;--accent:#9279ad}
-[data-space="compose"]{--bg:#fbf1ec;--panel2:#f2dfd6;--accent:#b9826b}
-[data-space="audit"]{--bg:#fbf0f2;--panel2:#f3dfe4;--accent:#b97687}
-[data-space="vault"]{--bg:#f4f4f0;--panel2:#e8e8df;--accent:#7c8778}
+[data-space="dashboard"]{--bg:#f7f6ee;--panel2:#eeefe1;--accent:#7d997c;--accent-ink:#4f704f}
+[data-space="capture"]{--bg:#fbf5e8;--panel2:#f3ead8;--accent:#b99462;--accent-ink:#765525}
+[data-space="library"]{--bg:#f1f8f8;--panel2:#e2eeee;--accent:#6f9aa0;--accent-ink:#3e6c72}
+[data-space="variables"]{--bg:#f7f3fb;--panel2:#ebe3f3;--accent:#9279ad;--accent-ink:#695080}
+[data-space="compose"]{--bg:#fbf1ec;--panel2:#f2dfd6;--accent:#b9826b;--accent-ink:#80503e}
+[data-space="audit"]{--bg:#fbf0f2;--panel2:#f3dfe4;--accent:#b97687;--accent-ink:#824557}
+[data-space="vault"]{--bg:#f4f4f0;--panel2:#e8e8df;--accent:#7c8778;--accent-ink:#566151}
 [data-theme="dark"]{
   --bg:#171817; --panel:#20221f; --panel2:#292b27; --ink:#f3f0e6; --muted:#b8b1a4;
-  --line:#3a3a33; --soft:#2f322e; --accent:#9cc5b8; --accent2:#d0b17f; --danger:#d98780;
+  --line:#3a3a33; --soft:#2f322e; --accent:#9cc5b8; --accent-ink:#bfe2d7; --accent2:#d0b17f; --danger:#d98780;
   --ok:#a0c6a8; --warn:#d4b265; --shadow:0 18px 45px rgba(0,0,0,.28);
 }
 [data-theme="dark"][data-space]{--bg:#171817;--panel:#20221f;--panel2:#292b27}
@@ -38,8 +41,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .item[data-kind="prompt"]::before{background:#8aa3ff}.item[data-kind="fragment"]::before{background:#9cc5b8}.item[data-kind="recipe"]::before{background:#d0b17f}
 .rolechip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 8px;font-size:.8rem;border:1px solid var(--line);background:var(--panel2);color:var(--muted)}
 .rolechip .r-dot{width:8px;height:8px;border-radius:999px;background:var(--role-color,var(--accent));display:inline-block}.rolechip.strong{font-weight:700;color:var(--ink)}
-.tagclick{cursor:pointer}.tagclick:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
-.quickchips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.quickchips .pill{cursor:pointer}.quickchips .pill:hover{border-color:var(--accent);color:var(--accent)}
+.tagclick{cursor:pointer}.tagclick:hover{border-color:var(--accent);color:var(--accent-ink);background:color-mix(in srgb,var(--accent) 10%,var(--panel2))}
+.quickchips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.quickchips .pill{cursor:pointer}.quickchips .pill:hover{border-color:var(--accent);color:var(--accent-ink)}
 .qualityline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:.84rem;margin:6px 0}.qbar{width:74px;height:6px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);overflow:hidden}.qbar span{display:block;height:100%;background:linear-gradient(90deg,var(--warn),var(--accent),var(--ok));width:var(--q,0%)}
 .shortcut-hint{font-size:.82rem;color:var(--muted);margin-top:8px}.kbdline{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.kbdline .kbd{background:var(--panel);}
 @media (max-width:900px){.quickchips{max-height:74px;overflow:auto}.qualityline{font-size:.8rem}}
@@ -103,26 +106,45 @@ body.is-resizing{user-select:none;cursor:col-resize}
 .gallery-bulk-tools{display:grid;gap:8px}
 @media (max-width:900px){.collection-browse-layout{grid-template-columns:1fr}.collection-rail{position:static}}
 @media (min-width:901px){.capture-split>.card,.compose-split>.card,.library-split>.card,.variables-split>.card,.capture-split>aside,.compose-split>aside,.library-split>aside,.variables-split>aside{max-height:calc(100vh - 36px);overflow:auto;overscroll-behavior:contain}.capture-split[data-panel-layout="focus"]>.card,.compose-split[data-panel-layout="focus"]>.card,.library-split[data-panel-layout="focus"]>.card,.variables-split[data-panel-layout="focus"]>.card,.capture-split[data-panel-layout="focus"]>aside,.compose-split[data-panel-layout="focus"]>aside,.library-split[data-panel-layout="focus"]>aside,.variables-split[data-panel-layout="focus"]>aside{max-height:calc(100vh - 48px)}.capture-suggestions-panel{overflow:hidden}.library-layout .list,.variables-list{max-height:none;overflow:visible}.library-viewer,.variables-viewer{position:sticky;top:10px}.collection-rail{max-height:calc(100vh - 120px);overflow:auto;overscroll-behavior:contain}}
+
+/* v0.5.alpha — refonte UX : navigation hiérarchisée, atelier adaptatif et langage visuel plus éditorial. */
+:root{--bg:#f5f3ed;--panel:#fffefa;--panel2:#efede6;--ink:#23231f;--muted:#706d64;--line:#dcd7ca;--soft:#e8e3d8;--accent:#708f84;--accent2:#a88d65;--shadow:0 14px 36px rgba(52,47,37,.065);--radius:16px;--radius2:10px;--header-h:68px}
+[data-theme="dark"]{--bg:#171917;--panel:#20221f;--panel2:#292c28;--ink:#f4f1e8;--muted:#bbb5a9;--line:#3b3d37;--soft:#30332e}
+html{scroll-behavior:smooth}body{letter-spacing:.002em}.app{max-width:1760px;padding:14px 20px 22px}.app-header{min-height:var(--header-h);margin:0;display:flex;align-items:center;padding:7px 0 11px;border-bottom:1px solid var(--line)}
+.brand{gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:var(--ink);color:var(--bg);box-shadow:none}.brand h1{font-size:1.18rem;letter-spacing:-.015em}.brand p{margin-top:2px;font-size:.82rem}.version-mark{font-size:.72rem;font-weight:700;color:var(--muted);margin-left:5px;letter-spacing:.02em}
+.btn{border-radius:10px;box-shadow:none;transition:border-color .14s,background .14s,transform .14s}.btn:hover:not(:disabled){border-color:color-mix(in srgb,var(--ink) 22%,var(--line));background:color-mix(in srgb,var(--panel2) 55%,var(--panel));transform:none}.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}.btn.primary:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 88%,var(--accent));border-color:transparent}.btn.small{border-radius:9px}
+.ui-icon,.nav-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.top-actions{gap:7px}.header-action,.header-add{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:8px 11px}.shortcut-badge{font-family:var(--mono);font-size:.68rem;color:var(--muted);border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:2px 5px}.header-add{padding-inline:14px}
+.nav{display:block;margin:10px 0 16px}.nav-shell{position:relative}.nav-primary{display:inline-flex;align-items:center;gap:3px;padding:4px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 86%,transparent);border-radius:12px}.nav-group{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:var(--muted);font-weight:720;padding:8px 12px;border-radius:8px;cursor:pointer}.nav-group:hover{color:var(--ink);background:var(--panel2)}.nav-group.active{color:var(--ink);background:var(--panel);box-shadow:0 1px 7px rgba(36,35,31,.07)}.nav-icon{width:17px;height:17px}
+.nav-context{min-height:44px;display:flex;align-items:center;gap:12px;margin-top:8px;padding:0 2px}.nav-context-title{font-size:.76rem;font-weight:760;color:var(--muted);text-transform:uppercase;letter-spacing:.075em;white-space:nowrap}.nav-context-copy{color:var(--muted);font-size:.86rem}.nav-secondary{display:flex;align-items:center;gap:4px}.nav-sub{border:0;background:transparent;color:var(--muted);padding:7px 10px;border-radius:8px;font-weight:650;cursor:pointer}.nav-sub:hover{color:var(--ink);background:var(--panel2)}.nav-sub.active{color:var(--ink);background:var(--panel2)}
+.card{box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--line) 86%,transparent);padding:16px}.section-title h2{font-size:1.04rem;letter-spacing:-.01em}.section-title h3{letter-spacing:-.005em}.eyebrow{display:block;margin-bottom:4px;color:var(--accent-ink);font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.hint,.muted{color:var(--muted)}
+input,select,textarea{background:var(--panel);border-radius:9px;padding:9px 10px}select{appearance:auto}.details{border-radius:10px;background:color-mix(in srgb,var(--panel2) 62%,var(--panel));padding:10px}.details[open]>summary{margin-bottom:7px}.pill{border-radius:8px;padding:4px 7px;background:var(--panel2)}.rolechip{border-radius:8px}.segchoice{border-radius:10px;padding:3px;background:var(--panel2)}.segoption{border-radius:7px}.check{border-radius:9px}.togglebar{border-radius:10px}.togglebar button,.togglebar button.active{border-radius:7px}.item{border-radius:10px;background:var(--panel);padding:11px}.item:hover{transform:none;background:color-mix(in srgb,var(--accent) 4%,var(--panel));border-color:color-mix(in srgb,var(--accent) 70%,var(--line))}.item.active{outline:0;border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--panel))}.item::before{display:none}.codebox{border-radius:10px;background:#181916;color:#f8f4e9}.summaryline{gap:5px}.summaryline .pill{background:transparent;border-color:var(--line)}
+.home-grid{display:grid;gap:14px}.home-hero{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.55fr);gap:24px;align-items:stretch;padding:24px}.home-hero-copy h2{font-size:clamp(1.65rem,2.6vw,2.5rem);line-height:1.08;letter-spacing:-.035em;margin:0 0 8px;max-width:760px}.home-hero-copy>p{font-size:.96rem;color:var(--muted);max-width:720px;margin:0 0 20px}.home-main-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.home-action{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--panel);padding:12px;border-radius:11px;cursor:pointer;color:var(--ink)}.home-action:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 5%,var(--panel))}.home-action.primary-action{background:var(--ink);border-color:var(--ink);color:var(--bg)}.home-action.primary-action small{color:color-mix(in srgb,var(--bg) 72%,transparent)}.home-action-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--panel2)}.primary-action .home-action-icon{background:rgba(255,255,255,.12)}.home-action strong{display:block;font-size:.9rem}.home-action small{display:block;margin-top:2px;color:var(--muted);font-size:.77rem;line-height:1.3}.action-arrow{font-size:1rem;opacity:.62}.home-status{display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--line);padding-left:24px;gap:8px}.status-number{display:flex;align-items:baseline;gap:8px}.status-number strong{font-size:1.55rem;letter-spacing:-.03em}.status-number span{color:var(--muted);font-size:.82rem}.status-backup{display:flex;align-items:center;gap:7px;border-top:1px solid var(--line);padding-top:11px;margin-top:3px;color:var(--muted);font-size:.8rem}.status-dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}.status-backup.needs-backup .status-dot{background:var(--warn)}.home-status .btn{align-self:flex-start}.home-sections{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.05fr) minmax(0,1.05fr);gap:14px}.home-lane{min-width:0}.home-workflow{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.home-workflow .btn{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:11px;text-align:left}.home-workflow .btn span{font-size:.76rem;color:var(--muted);font-weight:450}.text-action{margin-top:9px;border:0;background:transparent;color:var(--accent-ink);font-weight:720;padding:5px 0;cursor:pointer}.text-action:hover{text-decoration:underline}.home-lane .list{max-height:265px}
+.capture-single{display:block;max-width:1180px;margin-inline:auto}.capture-single>.card{max-height:none!important;overflow:visible!important}.capture-single .panel-layout-tools{display:none}.capture-split.has-suggestions{grid-template-columns:minmax(420px,var(--split-left,58%)) 12px minmax(390px,1fr)}
+.filters>input:first-child,#variableSearch,#gallerySearch,#fragmentPickerSearch,#recipePickerSearch{min-height:42px;background:var(--panel)}.library-mode{display:inline-flex;padding:3px;border:1px solid var(--line);background:var(--panel2);border-radius:10px}.library-mode .btn{border:0;background:transparent}.library-mode .btn.active{background:var(--panel);box-shadow:0 1px 5px rgba(0,0,0,.06)}.collection-rail{border-radius:10px}.collection-folder{border-radius:9px}.gallery-card{border-radius:11px}.gallery-card img,.gallery-placeholder{border-radius:9px}.gallery-bulk-summary{border-radius:10px}.footer{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:22px}.footer-dot{opacity:.45}
+@media (min-width:901px){.nav-shell{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:16px}.nav-context{margin-top:0;border-left:1px solid var(--line);padding-left:16px}.nav-context-home{border-left:0}.capture-single{grid-template-columns:1fr!important}.capture-single>.card{grid-column:1/-1}.library-split>.card,.compose-split>.card,.variables-split>.card{scrollbar-gutter:stable}.viewer{scrollbar-gutter:stable}}
+@media (max-width:1100px){.home-main-actions{grid-template-columns:1fr}.home-hero{grid-template-columns:1fr}.home-status{border-left:0;border-top:1px solid var(--line);padding:16px 0 0;display:grid;grid-template-columns:repeat(4,1fr)}.status-backup{grid-column:1/-1}.home-status .btn{grid-column:1/-1}.home-sections{grid-template-columns:1fr 1fr}.home-sections>.home-lane:first-child{grid-column:1/-1}.home-workflow{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:900px){:root{--header-h:58px}.app{padding:8px 10px calc(84px + env(safe-area-inset-bottom))}.app-header{position:sticky;top:0;z-index:18;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);align-items:center;flex-direction:row}.brand p{display:none}.brand h1{font-size:1.05rem}.logo{width:36px;height:36px}.top-actions{margin-left:auto;flex-wrap:nowrap}.header-action span:not(.shortcut-badge),.backup-action,.shortcut-badge{display:none}.header-action{width:38px;padding:0;justify-content:center}.header-add{padding:8px 10px}.header-add span{display:none}.nav{margin:7px 0 10px}.nav-shell{min-height:44px}.nav-primary{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:22;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(14px);box-shadow:0 8px 30px rgba(0,0,0,.16)}.nav-group{justify-content:center;flex-direction:column;gap:2px;padding:6px 4px;font-size:.72rem;min-height:50px}.nav-group .nav-icon{width:18px;height:18px}.nav-context{min-height:40px;margin:0;overflow-x:auto;padding:0 1px;gap:8px}.nav-context-title{display:none}.nav-context-copy{font-size:.8rem}.nav-secondary{min-width:max-content}.nav-sub{padding:7px 10px;background:var(--panel2)}.nav-sub.active{background:var(--ink);color:var(--bg)}.mobile-fab{display:none!important}.card{padding:13px}.home-hero{padding:17px;gap:14px}.home-hero-copy h2{font-size:1.65rem}.home-main-actions{grid-template-columns:1fr}.home-status{grid-template-columns:repeat(4,1fr);gap:7px}.status-number{display:block}.status-number strong{display:block;font-size:1.3rem}.home-sections{grid-template-columns:1fr}.home-sections>.home-lane:first-child{grid-column:auto}.home-workflow{grid-template-columns:repeat(2,minmax(0,1fr))}.capture-single{max-width:none}.capture-split.has-suggestions{grid-template-columns:1fr!important}.footer{font-size:.75rem}.footer-dot{display:none}.footer span{width:100%;text-align:center}}
+@media (max-width:560px){.version-mark{display:none}.home-status{grid-template-columns:repeat(2,1fr)}.home-action{padding:10px}.home-workflow{grid-template-columns:1fr 1fr}.top-actions{gap:5px}.gallery-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.row.three{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.item,.toast{transition:none!important}}
+
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <header class="topbar">
+  <header class="topbar app-header">
     <div class="brand">
-      <div class="logo">P</div>
-      <div><h1>Promptarium <span class="muted">v0.4.alpha</span></h1><p>Bibliothèque locale de prompts, morceaux réutilisables et modèles à remplir.</p></div>
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" width="23" height="23"><path d="M5 4.5h9.5A4.5 4.5 0 0 1 19 9v6a4.5 4.5 0 0 1-4.5 4.5H9A4 4 0 0 1 5 15.5v-11Z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 9h6M9 12h4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/></svg></div>
+      <div><h1>Promptarium <span class="version-mark">v0.5.alpha</span></h1><p>Bibliothèque et atelier local de prompts.</p></div>
     </div>
     <div class="top-actions no-print">
-      <button class="btn small" data-action="quick-backup" title="Exporter immédiatement une copie JSON complète">💾 Sauvegarde rapide</button>
-      <button class="btn small" data-action="toggle-theme">🌗 Thème</button>
-      <button class="btn small" data-action="toggle-density">↕ Densité</button>
-      <button class="btn small primary" data-tab-go="capture">+ Ajouter</button>
+      <button class="btn header-action" data-action="open-search" title="Rechercher dans la bibliothèque (Ctrl/⌘ K)"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><span>Rechercher</span><span class="shortcut-badge">⌘K</span></button>
+      <button class="btn header-action backup-action" data-action="quick-backup" title="Exporter immédiatement une copie JSON complète"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5h11l3 3v14H5z"/><path d="M8 3.5v6h8v-6M8 20.5v-7h8v7"/></svg><span>Sauvegarde</span></button>
+      <button class="btn primary header-add" data-tab-go="capture"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter</span></button>
     </div>
   </header>
-  <nav class="nav no-print" id="tabs"></nav>
-  <main id="view"><div class="card">Chargement…</div></main>
-  <button class="btn primary mobile-fab no-print" data-tab-go="capture">+ Ajouter</button>
-  <div class="footer">Promptarium v0.4.alpha est local et offline. Exporte régulièrement ton JSON pour garder une copie de sécurité.</div>
+  <nav class="nav nav-shell no-print" id="tabs" aria-label="Navigation principale"></nav>
+  <main id="view" tabindex="-1"><div class="card">Chargement…</div></main>
+  <div class="footer"><span>Promptarium v0.5.alpha · local et hors ligne</span><span class="footer-dot">•</span><span>Une copie JSON régulière reste la meilleure sauvegarde.</span></div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modal" id="copyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="copyModalTitle">
@@ -136,10 +158,10 @@ body.is-resizing{user-select:none;cursor:col-resize}
   <div class="modalbox">
     <div class="section-title"><div><h3 id="suggestionModalTitle">Édition grand format du morceau proposé</h3><p>Vérifie, corrige, complète ou prépare ce morceau avant de le sauvegarder.</p></div><button class="btn small" data-action="close-suggestion-modal">Fermer</button></div>
     <div class="row">
-      <div><label>Titre proposé</label><input id="sgModalTitle"></div>
-      <div><label>Étiquette</label><select id="sgModalRole"></select></div>
+      <div><label for="sgModalTitle">Titre proposé</label><input id="sgModalTitle"></div>
+      <div><label for="sgModalRole">Étiquette</label><select id="sgModalRole"></select></div>
     </div>
-    <label>Texte complet du morceau</label>
+    <label for="sgModalContent">Texte complet du morceau</label>
     <textarea id="sgModalContent" placeholder="Texte complet du morceau…"></textarea>
     <div class="toolbar" style="margin-top:10px"><button class="btn primary" data-action="apply-suggestion-editor">Appliquer au morceau proposé</button><button class="btn" data-action="close-suggestion-modal">Annuler</button></div>
   </div>
@@ -164,7 +186,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
 (function(){
   'use strict';
 
-  const VERSION = 'v0.4.alpha';
+  const VERSION = 'v0.5.alpha';
   const DB_NAME = 'PromptariumOfflineDB';
   const DB_VERSION = 1;
   const STORE = 'kv';
@@ -948,17 +970,22 @@ body.is-resizing{user-select:none;cursor:col-resize}
     else if(ui.space === 'vault') elView.innerHTML = viewVault();
   }
   function renderTabs(){
-    const tabs = [
-      ['dashboard','Vue d’ensemble'],
-      ['capture','Ajouter'],
-      ['library','Bibliothèque'],
-      ['gallery','Vignettes'],
-      ['variables','Remplir'],
-      ['compose','Composer'],
-      ['audit','Améliorer'],
-      ['vault','Sauvegarder']
+    const icon = name => ({
+      home:'<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5v7a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"/><path d="M9 20v-6h6v6"/></svg>',
+      library:'<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a3 3 0 0 1 3 3v14H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M14 6a3 3 0 0 1 3-3h1a2 2 0 0 1 2 2v15h-6M7.5 8H11M7.5 11H11"/></svg>',
+      atelier:'<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="18" r="2"/></svg>',
+      care:'<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 14 7l4-.3-1.3 3.8 3 2.5-3 2.5 1.3 3.8-4-.3-2 3.5-2-3.5-4 .3 1.3-3.8-3-2.5 3-2.5L6 6.7 10 7z"/><circle cx="12" cy="13" r="2.5"/></svg>'
+    })[name] || '';
+    const groups = [
+      {id:'home', label:'Accueil', icon:'home', defaultSpace:'dashboard', spaces:[['dashboard','Vue d’ensemble']]},
+      {id:'library', label:'Bibliothèque', icon:'library', defaultSpace:'library', spaces:[['library','Explorer'],['gallery','Vignettes']]},
+      {id:'atelier', label:'Atelier', icon:'atelier', defaultSpace:'capture', spaces:[['capture','Ajouter'],['compose','Composer'],['variables','Remplir']]},
+      {id:'care', label:'Entretien', icon:'care', defaultSpace:'audit', spaces:[['audit','Améliorer'],['vault','Données & réglages']]}
     ];
-    elTabs.innerHTML = tabs.map(([id,label]) => `<button class="tab ${ui.space===id?'active':''}" data-space="${id}" ${ui.space===id?'aria-current="page"':''}>${label}</button>`).join('');
+    const group = groups.find(g => g.spaces.some(([space]) => space === ui.space)) || groups[0];
+    const primary = groups.map(g => `<button class="nav-group ${g.id===group.id?'active':''}" data-space="${g.defaultSpace}" ${g.id===group.id?'aria-current="true"':''}>${icon(g.icon)}<span>${g.label}</span></button>`).join('');
+    const secondary = group.spaces.length > 1 ? `<div class="nav-context"><span class="nav-context-title">${group.label}</span><div class="nav-secondary">${group.spaces.map(([space,label])=>`<button class="nav-sub ${ui.space===space?'active':''}" data-space="${space}" ${ui.space===space?'aria-current="page"':''}>${label}</button>`).join('')}</div></div>` : '<div class="nav-context nav-context-home"><span class="nav-context-title">Ton espace de départ</span><span class="nav-context-copy">Retrouver, créer et faire mûrir sans multiplier les détours.</span></div>';
+    elTabs.innerHTML = `<div class="nav-primary">${primary}</div>${secondary}`;
   }
 
   function summaryLine(){
@@ -975,32 +1002,50 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const items = allActiveItems();
     const latest = items.slice(0,6);
     const todo = items.filter(x=>x.status==='à tester' || x.status==='à corriger').slice(0,6);
-    return `<section class="grid">
-      <div class="card">
-        <div class="section-title"><div><h2>Vue d’ensemble</h2><p>Choisis le prochain geste utile : ajouter, retrouver, composer ou améliorer.</p></div></div>
-        <div class="home-actions">
-          <button class="btn primary" data-space="capture"><strong>Ajouter un prompt</strong><br><span class="hint">Coller, classer ou découper un nouvel élément.</span></button>
-          <button class="btn" data-space="library"><strong>Ouvrir la bibliothèque</strong><br><span class="hint">Chercher, parcourir les collections et copier.</span></button>
-          <button class="btn" data-space="gallery"><strong>Voir les vignettes</strong><br><span class="hint">Parcourir les prompts par exemple visuel.</span></button>
-          <button class="btn" data-space="audit"><strong>Améliorer les éléments</strong><br><span class="hint">Voir ce qui reste à tester, compléter ou valider.</span></button>
+    const changes = Number(state.meta.changesSinceExport||0);
+    return `<section class="home-grid">
+      <div class="card home-hero">
+        <div class="home-hero-copy">
+          <span class="eyebrow">Espace de travail</span>
+          <h2>Qu’est-ce que tu veux faire maintenant ?</h2>
+          <p>Promptarium garde la bibliothèque en arrière-plan et t’emmène directement vers le geste utile.</p>
+          <div class="home-main-actions">
+            <button class="home-action primary-action" data-action="open-search"><span class="home-action-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></span><span><strong>Retrouver un prompt</strong><small>Recherche, tags et collections</small></span><span class="action-arrow">→</span></button>
+            <button class="home-action" data-space="capture"><span class="home-action-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span><strong>Ajouter</strong><small>Prompt ou morceau réutilisable</small></span><span class="action-arrow">→</span></button>
+            <button class="home-action" data-space="compose"><span class="home-action-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h9M5 12h14M5 17h11"/><path d="m17 5 2 2-2 2"/></svg></span><span><strong>Composer</strong><small>Assembler et remplir un prompt final</small></span><span class="action-arrow">→</span></button>
+          </div>
         </div>
-        ${summaryLine()}
-      </div>
-      <div class="card">
-        <div class="section-title"><div><h2>Départs rapides</h2><p>Promptarium prépare le bon espace selon ton intention.</p></div></div>
-        <div class="workflow">
-          <button class="btn" data-action="start-workflow" data-workflow="image"><strong>Image</strong><br><span class="hint">Prompt visuel, style, format, negative prompt.</span></button>
-          <button class="btn" data-action="start-workflow" data-workflow="video"><strong>Vidéo</strong><br><span class="hint">Scène, mouvement, caméra, rythme.</span></button>
-          <button class="btn" data-action="start-workflow" data-workflow="conversation"><strong>Conversation</strong><br><span class="hint">Rôle, objectif, contraintes, sortie attendue.</span></button>
-          <button class="btn" data-action="start-workflow" data-workflow="split"><strong>Découper</strong><br><span class="hint">Transformer un long prompt en morceaux.</span></button>
+        <div class="home-status" aria-label="État de la bibliothèque">
+          <div class="status-number"><strong>${active(state.prompts).length}</strong><span>prompts</span></div>
+          <div class="status-number"><strong>${active(state.fragments).length}</strong><span>morceaux</span></div>
+          <div class="status-number"><strong>${active(state.recipes).length}</strong><span>modèles</span></div>
+          <div class="status-number"><strong>${active(state.collections).length}</strong><span>collections</span></div>
+          <div class="status-backup ${changes?'needs-backup':''}"><span class="status-dot"></span><span>${changes ? `${changes} changement(s) non exporté(s)` : 'Bibliothèque exportée à jour'}</span></div>
+          ${changes ? '<button class="btn small" data-action="quick-backup">Exporter maintenant</button>' : ''}
         </div>
       </div>
-      <section class="grid two">
-        <div class="card">${dashboardList('Derniers éléments', latest, 'Aucun élément pour l’instant.')}</div>
-        <div class="card">${dashboardList('À tester / corriger', todo, 'Aucun point d’attention pour l’instant.')}</div>
-      </section>
+      <div class="home-sections">
+        <section class="card home-lane">
+          <div class="section-title"><div><span class="eyebrow">Créer</span><h2>Partir d’une intention</h2><p>Prépare directement le bon canevas.</p></div></div>
+          <div class="workflow home-workflow">
+            <button class="btn" data-action="start-workflow" data-workflow="image"><strong>Image</strong><span>Visuel, style, format</span></button>
+            <button class="btn" data-action="start-workflow" data-workflow="video"><strong>Vidéo</strong><span>Scène, mouvement, caméra</span></button>
+            <button class="btn" data-action="start-workflow" data-workflow="conversation"><strong>Conversation</strong><span>Rôle, objectif, sortie</span></button>
+            <button class="btn" data-action="start-workflow" data-workflow="split"><strong>Découper</strong><span>Extraire des morceaux</span></button>
+          </div>
+        </section>
+        <section class="card home-lane">
+          ${dashboardList('Derniers éléments', latest, 'La bibliothèque est encore vide.')}
+          <button class="text-action" data-action="open-search">Voir toute la bibliothèque <span>→</span></button>
+        </section>
+        <section class="card home-lane">
+          ${dashboardList('À faire mûrir', todo, 'Rien à tester ou corriger pour l’instant.')}
+          <button class="text-action" data-space="audit">Ouvrir l’espace Améliorer <span>→</span></button>
+        </section>
+      </div>
     </section>`;
   }
+
   function dashboardStat(label, value, hint){
     return `<div class="statcard"><strong>${esc(value)}</strong><span>${esc(label)}</span><p class="hint">${esc(hint)}</p></div>`;
   }
@@ -1102,9 +1147,11 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const mode = ui.captureMode || 'paste';
     const draft = Object.assign(emptyCaptureDraftData(), ui.captureDraftData || {});
     const titleSuggestions = suggestTitles({content:ui.captureDraft || '', type:draft.type, role:draft.role, tags:parseTags(draft.tags)});
-    return `<section class="capture-split" ${panelLayoutAttr('capture')} style="--split-left:${Math.round(ui.captureSplit || 58)}%">
+    const hasSuggestions = ensureArray(ui.lastCaptureSuggestions).length > 0;
+    const captureLayout = hasSuggestions ? panelLayoutAttr('capture') : 'data-panel-layout="balanced"';
+    return `<section class="capture-split ${hasSuggestions?'has-suggestions':'capture-single'}" data-has-suggestions="${hasSuggestions?'true':'false'}" ${captureLayout} style="--split-left:${Math.round(ui.captureSplit || 58)}%">
       <div class="card">
-        <div class="section-title"><div><h2>Ajouter un élément</h2><p>Colle un contenu, choisis son type, puis sauvegarde localement.</p></div>${splitTools('capture')}</div>
+        <div class="section-title"><div><span class="eyebrow">Atelier · Ajouter</span><h2>Ajouter un élément</h2><p>Colle un contenu, choisis son type, puis sauvegarde localement.</p></div>${hasSuggestions?splitTools('capture'):''}</div>
         ${summaryLine()}
         <div class="form-section">
           <label>Ce que je veux faire</label>
@@ -1145,14 +1192,13 @@ body.is-resizing{user-select:none;cursor:col-resize}
           </details>
         </form>
       </div>
-      <div class="split-handle no-print" data-resize-split="capture" title="Glisser pour ajuster la largeur des panneaux"></div>
+      ${hasSuggestions ? `<div class="split-handle no-print" data-resize-split="capture" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card capture-suggestions-panel">
         <div class="panel-restore-tools no-print">${splitTools('capture')}</div>
-        <div class="section-title"><div><h2>Découpage proposé</h2><p>Les morceaux proposés restent modifiables avant sauvegarde.</p></div></div>
-        <p>Tu peux agrandir ce panneau, glisser la poignée centrale, éditer chaque morceau en grand, fusionner ou découper avant de valider.</p>
-        <div class="splitline"></div>
+        <div class="section-title"><div><span class="eyebrow">Découpage</span><h2>Morceaux proposés</h2><p>Chaque proposition reste modifiable avant sauvegarde.</p></div></div>
+        <p class="hint">Ajuste la largeur avec la poignée, édite un morceau en grand, fusionne-le ou redécoupe-le avant de le sauvegarder.</p>
         <div id="captureSuggestions">${suggestionList(ui.lastCaptureSuggestions, 'capture')}</div>
-      </aside>
+      </aside>` : ''}
     </section>`;
   }
 
@@ -1260,6 +1306,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
           ${ui.selectedCollectionId ? `<button class="btn small" data-action="clear-collection-filter">Toutes les collections</button>` : ''}
         </div>
         <div class="filters">
+          <label class="sr-only" for="librarySearch">Rechercher dans la bibliothèque</label>
           <input id="librarySearch" value="${esc(ui.query)}" placeholder="Rechercher titre, tag, outil, collection…">
           <div class="toolbar"><div class="togglebar">${kindFilterButtons()}</div><button class="btn small" data-action="clear-search">Effacer</button></div>
           ${quickSearchFilters()}
@@ -1289,6 +1336,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="card">
         <div class="section-title"><div><h2>Vignettes</h2><p>Parcourir les prompts par exemple visuel, image de référence ou résultat attendu.</p></div><button class="btn small primary" data-space="capture">+ Ajouter</button></div>
         <div class="gallery-tools">
+          <label class="sr-only" for="gallerySearch">Rechercher dans les vignettes</label>
           <input id="gallerySearch" value="${esc(ui.galleryQuery)}" placeholder="Rechercher dans les prompts visuels…">
           <div class="toolbar">
             <button class="btn small" data-action="clear-gallery-search">Effacer recherche</button>
@@ -1478,7 +1526,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const isRecipe = item._kind === 'recipe';
     const typeOrRole = isFrag ? item.role : item.type;
     return `<form class="editItemForm" data-kind="${item._kind}" data-id="${esc(item.id)}">
-      <div class="row"><div><label>Titre</label><input name="title" value="${esc(item.title)}"></div><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), item.status, 'wrap')}</div></div>
+      <div class="row"><div><label for="editItemTitle">Titre</label><input id="editItemTitle" name="title" value="${esc(item.title)}"></div><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), item.status, 'wrap')}</div></div>
       <div class="row"><div><label>${isFrag?'Rôle':'Type'}</label>${isFrag ? quickChoice('typeOrRole', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), typeOrRole, 'Plus de rôles') : quickChoice('typeOrRole', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), typeOrRole || 'générique', 'Autre')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(item.type), toolsForType(item.type), item.tool||'générique', 'Autre outil')}</div></div>
       ${!isFrag && !isRecipe ? `<label>Catégorie / précision</label>${quickChoice('promptRole', quickOptionList('roles', QUICK_ROLE_OPTIONS), optionList('roles'), item.role || 'personnage', 'Plus de catégories')}` : ''}
       <label>Tags</label><input name="tags" value="${esc(tagsText(item.tags))}">
@@ -1585,7 +1633,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="card">
         <div class="section-title"><div><h2>Composer un prompt</h2><p>Assemble un prompt final depuis des morceaux réutilisables, du texte libre et des variables.</p></div>${splitTools('compose')}</div>
         <form id="builderMeta" class="grid form-compact">
-          <div class="row"><div><label>Titre du modèle</label><input name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Usage</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), builder.type || 'image', 'Autre')}</div></div>
+          <div class="row"><div><label for="builderTitle">Titre du modèle</label><input id="builderTitle" name="title" value="${esc(builder.title)}" placeholder="Ex : Portrait vertical 9:16"></div><div><label>Usage</label>${quickChoice('type', quickOptionList('types', QUICK_TYPE_OPTIONS), optionList('types'), builder.type || 'image', 'Autre')}</div></div>
           <div><label>Format de sortie</label>${segmentedRadios('outputFormat', OUTPUT_FORMAT_OPTIONS, builder.outputFormat || ui.outputFormat || 'simple', 'wrap')}</div>
           <details class="details"><summary>Paramètres du modèle</summary>
             <div class="row"><div><label>Statut</label>${segmentedRadios('status', optionList('statuses'), builder.status, 'wrap')}</div><div><label>Outil</label>${quickChoice('tool', quickToolsForType(builder.type), toolsForType(builder.type), builder.tool, 'Autre outil')}</div></div>
@@ -1599,8 +1647,8 @@ body.is-resizing{user-select:none;cursor:col-resize}
         <div class="toolbar"><button class="btn" data-action="add-text-builder">+ Texte libre</button><button class="btn" data-action="sort-builder-roles">Ordonner par rôle</button><button class="btn" data-action="clear-builder">Vider</button><button class="btn" data-action="new-recipe">Nouveau modèle</button><button class="btn primary" data-action="save-recipe">Sauver modèle</button><button class="btn" data-action="save-built-prompt">Sauver comme prompt complet</button></div>
         <h3>Composition</h3>
         <div class="builder-list">${builder.items.length ? builder.items.map(builderItem).join('') : '<div class="empty">Ajoute des morceaux ou du texte libre. Le prompt final apparaîtra à droite.</div>'}</div>
-        <details class="details"><summary>Ajouter un morceau</summary><input id="fragmentPickerSearch" value="${esc(ui.fragmentPickerQuery)}" placeholder="Chercher un morceau : role:style tag:portrait validé…"><div class="list pickerlist">${fragList.length ? fragList.slice(0,80).map(f=>`<div class="item inlineitem"><div><h4>${esc(f.title)}</h4><p>${rolePill(f.role)} <span class="pill">${esc(f.tool)}</span> ${esc((f.tags||[]).join(', '))}</p></div><button class="btn small" data-action="add-fragment-builder" data-id="${esc(f.id)}">Ajouter</button></div>`).join('') : '<div class="empty">Aucun morceau.</div>'}</div></details>
-        <details class="details"><summary>Modèles sauvegardés</summary><input id="recipePickerSearch" value="${esc(ui.recipePickerQuery)}" placeholder="Chercher un modèle"><div class="list pickerlist">${recipeList.length ? recipeList.map(r=>`<div class="item inlineitem ${builder.id===r.id?'active':''}"><div><h4>${r.favorite?'★ ':''}${esc(r.title)}</h4><p>${esc(r.description || `${r.items.length} élément(s)`)}</p></div><button class="btn small" data-action="load-recipe-builder" data-id="${esc(r.id)}">Ouvrir</button></div>`).join('') : '<div class="empty">Aucun modèle sauvegardé.</div>'}</div></details>
+        <details class="details"><summary>Ajouter un morceau</summary><label class="sr-only" for="fragmentPickerSearch">Rechercher un morceau à ajouter</label><input id="fragmentPickerSearch" value="${esc(ui.fragmentPickerQuery)}" placeholder="Chercher un morceau : role:style tag:portrait validé…"><div class="list pickerlist">${fragList.length ? fragList.slice(0,80).map(f=>`<div class="item inlineitem"><div><h4>${esc(f.title)}</h4><p>${rolePill(f.role)} <span class="pill">${esc(f.tool)}</span> ${esc((f.tags||[]).join(', '))}</p></div><button class="btn small" data-action="add-fragment-builder" data-id="${esc(f.id)}">Ajouter</button></div>`).join('') : '<div class="empty">Aucun morceau.</div>'}</div></details>
+        <details class="details"><summary>Modèles sauvegardés</summary><label class="sr-only" for="recipePickerSearch">Rechercher un modèle sauvegardé</label><input id="recipePickerSearch" value="${esc(ui.recipePickerQuery)}" placeholder="Chercher un modèle"><div class="list pickerlist">${recipeList.length ? recipeList.map(r=>`<div class="item inlineitem ${builder.id===r.id?'active':''}"><div><h4>${r.favorite?'★ ':''}${esc(r.title)}</h4><p>${esc(r.description || `${r.items.length} élément(s)`)}</p></div><button class="btn small" data-action="load-recipe-builder" data-id="${esc(r.id)}">Ouvrir</button></div>`).join('') : '<div class="empty">Aucun modèle sauvegardé.</div>'}</div></details>
       </div>
       <div class="split-handle no-print" data-resize-split="compose" title="Glisser pour ajuster la largeur des panneaux"></div>
       <aside class="card viewer">
@@ -1815,6 +1863,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       fragment: active(state.fragments).filter(variableItemHasVariables).length
     };
     return `<div class="variables-tools">
+      <label class="sr-only" for="variableSearch">Rechercher dans les éléments à remplir</label>
       <input id="variableSearch" value="${esc(ui.variableQuery)}" placeholder="Rechercher un titre, variable, tag, outil…">
       <div class="filterbar">
         ${[['all','Tout',counts.all],['prompt','Prompts',counts.prompt],['fragment','Morceaux',counts.fragment]].map(([id,label,count])=>`<button class="btn small ${ui.variableKindFilter===id?'active':''}" data-action="set-variable-kind-filter" data-kind-filter="${id}">${label} · ${count}</button>`).join('')}
@@ -1980,7 +2029,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <div class="primary-actions"><button class="btn primary" data-action="export-json">Exporter ma bibliothèque complète</button><button class="btn" data-action="print-page">Imprimer / PDF</button></div>
       <details class="details"><summary>Options d’export avancées</summary><div class="toolbar"><button class="btn" data-action="export-selected-pack">Exporter collection filtrée</button><button class="btn" data-action="export-printable-collection">Exporter collection imprimable</button><button class="btn" data-action="export-markdown">Exporter Markdown</button><button class="btn" data-action="export-text">Exporter TXT</button></div></details>
       <div class="splitline"></div>
-      <label>Importer JSON</label><input type="file" id="importFile" accept="application/json,.json">
+      <label for="importFile">Importer JSON</label><input type="file" id="importFile" accept="application/json,.json">
       <div class="toolbar"><button class="btn" data-action="analyze-import-json">Analyser le JSON</button><button class="btn" data-action="import-json">Importer et fusionner</button></div>
       ${importPreviewBlock()}
       <details class="details danger-zone"><summary>Actions dangereuses</summary><p class="hint">Ces actions remplacent ou suppriment des données locales. Fais un export de sécurité avant de continuer.</p><div class="toolbar"><button class="btn warn" data-action="import-replace">Remplacer toute la bibliothèque</button><button class="btn danger" data-action="reset-library">Réinitialiser Promptarium</button></div></details>
@@ -2092,10 +2141,10 @@ body.is-resizing{user-select:none;cursor:col-resize}
       <details class="details suggestion-edit">
         <summary>Afficher / éditer le morceau complet</summary>
         <div class="row">
-          <div><label>Titre proposé</label><input id="sg_${source}_${i}_title" data-suggestion-field="title" data-source="${source}" data-index="${i}" value="${esc(s.title || titleForRole(s.role))}"></div>
-          <div><label>Étiquette</label><select id="sg_${source}_${i}_role" data-suggestion-field="role" data-source="${source}" data-index="${i}">${optionTags(ROLE_OPTIONS, s.role || 'autre')}</select></div>
+          <div><label for="sg_${source}_${i}_title">Titre proposé</label><input id="sg_${source}_${i}_title" data-suggestion-field="title" data-source="${source}" data-index="${i}" value="${esc(s.title || titleForRole(s.role))}"></div>
+          <div><label for="sg_${source}_${i}_role">Étiquette</label><select id="sg_${source}_${i}_role" data-suggestion-field="role" data-source="${source}" data-index="${i}">${optionTags(ROLE_OPTIONS, s.role || 'autre')}</select></div>
         </div>
-        <label>Texte complet du morceau</label>
+        <label for="sg_${source}_${i}_content">Texte complet du morceau</label>
         <textarea class="suggestion-textarea" id="sg_${source}_${i}_content" data-suggestion-field="content" data-source="${source}" data-index="${i}" placeholder="Vérifie, corrige ou complète avant sauvegarde…">${esc(content)}</textarea>
         <div class="suggestion-actions">
           <button class="btn small" data-action="split-suggestion" data-source="${source}" data-index="${i}">Découper en deux</button>
@@ -2659,15 +2708,15 @@ body.is-resizing{user-select:none;cursor:col-resize}
     state.meta.changesSinceExport = 0;
     await persist(false);
     const payload = JSON.stringify(state, null, 2);
-    downloadText(payload, 'promptarium_v0_4_alpha_export_' + new Date().toISOString().slice(0,10) + '.json', 'application/json');
+    downloadText(payload, 'promptarium_v0_5_alpha_export_' + new Date().toISOString().slice(0,10) + '.json', 'application/json');
     toast('Export JSON créé.'); render();
   }
   function exportMarkdown(){
-    downloadText(markdownLibrary(), 'promptarium_v0_4_alpha_export_' + new Date().toISOString().slice(0,10) + '.md', 'text/markdown');
+    downloadText(markdownLibrary(), 'promptarium_v0_5_alpha_export_' + new Date().toISOString().slice(0,10) + '.md', 'text/markdown');
     toast('Export Markdown créé.');
   }
   function exportText(){
-    downloadText(textLibrary(), 'promptarium_v0_4_alpha_export_' + new Date().toISOString().slice(0,10) + '.txt', 'text/plain');
+    downloadText(textLibrary(), 'promptarium_v0_5_alpha_export_' + new Date().toISOString().slice(0,10) + '.txt', 'text/plain');
     toast('Export TXT créé.');
   }
   async function exportCollectionPack(id=null){
@@ -3130,6 +3179,7 @@ body.is-resizing{user-select:none;cursor:col-resize}
     const btn = e.target.closest('[data-action]');
     if(!btn) return;
     const a = btn.dataset.action, id=btn.dataset.id, kind=btn.dataset.kind;
+    if(a==='open-search'){ syncCaptureDraftFromDOM(); ui.space='library'; resetLibraryPage(); render(); setTimeout(()=>{ const input=qs('#librarySearch'); if(input){ input.focus(); input.select(); } },0); return; }
     if(a==='start-workflow'){ syncCaptureDraftFromDOM(); startWorkflow(btn.dataset.workflow); render(); setTimeout(()=>qs('#captureContent')?.focus(),0); return; }
     if(a==='open-item'){ ui.space='library'; ui.selectedKind=kind; ui.selectedId=id; render(); return; }
     if(a==='set-capture-mode'){ syncCaptureDraftFromDOM(); ui.captureMode = btn.dataset.mode || 'paste'; if(ui.captureMode==='split') ui.captureKind='prompt'; render(); return; }

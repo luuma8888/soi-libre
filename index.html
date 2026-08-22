@@ -621,7 +621,8 @@
                 border-radius: 16px;
                 box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
             }
-            .card .triple-captures {
+            .card .triple-captures,
+            .card .promptarium-captures {
                 display: grid;
                 grid-template-columns: 1fr;
                 gap: 7px;
@@ -634,7 +635,8 @@
                 border: 0;
                 box-shadow: none;
             }
-            .card .triple-captures .capture-thumb {
+            .card .triple-captures .capture-thumb,
+            .card .promptarium-captures .capture-thumb {
                 width: 72px;
                 min-height: 0;
                 height: auto;
@@ -1113,26 +1115,31 @@
                 <span class="audience-line">Vous voulez organiser, tester et réutiliser vos prompts sans perdre vos variantes.</span>
                 <span class="audience-tag">Création IA</span>
             </div>
-            <div class="card-image-side"
-                style="background-image: url('assets/promptarium-preview.png'); background-position: center top;"
-                data-full="assets/promptarium-full.png"
-                title="Cliquez pour voir la capture plein écran">
+            <div class="card-image-side dual-captures promptarium-captures" title="Cliquez sur une capture pour l’agrandir">
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/promptarium-preview.png'); background-position: left top;"
+                    data-full="assets/promptarium-full.png"
+                    title="Agrandir Promptarium complet"><span>Complet</span></div>
+                <div class="capture-thumb zoomable-image"
+                    style="background-image: url('assets/promptarium-simple-preview.png'); background-position: left top;"
+                    data-full="assets/promptarium-simple-full.png"
+                    title="Agrandir Promptarium simple"><span>Simple</span></div>
             </div>
             <div class="card-content">
                 <div>
                     <div class="card-header">
                         <h2 class="card-title">Promptarium</h2>
-                        <span class="version-tag">v0.4.alpha</span>
+                        <span class="version-tag">v0.5.alpha / v1.7.0</span>
                     </div>
                     <p class="card-description">
-                        Classez vos prompts, fragments, recettes et variables. Composez, testez, copiez et exportez votre bibliothèque IA en local.
+                        Choisissez l’espace complet pour composer, tester et réutiliser fragments et variables, ou la version simple pour écrire, classer et retrouver rapidement.
                     </p>
                 </div>
                 <div class="card-actions wrap">
                     <a href="creations/promptarium.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/promptarium.html" download="promptarium-v0-4-alpha.html" class="btn btn-download">Télécharger</a>
+                    <a href="creations/promptarium.html" download="promptarium-v0-5-alpha.html" class="btn btn-download">Télécharger</a>
                     <a href="creations/promptarium-simple.html" class="btn btn-visit">Ouvrir la version simple</a>
-                    <a href="creations/promptarium-simple.html" download="promptarium-simple-v1-6-0.html" class="btn btn-download">Télécharger la version simple</a>
+                    <a href="creations/promptarium-simple.html" download="promptarium-simple-v1-7-0.html" class="btn btn-download">Télécharger la version simple</a>
                 </div>
             </div>
         </article>
