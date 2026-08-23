@@ -5,7 +5,7 @@ import { adaptCompactRuntime, sha256, validateCompactRuntime } from "./boussole-
 
 const ROOT = process.cwd();
 const APP_DIR = path.join(ROOT, "creations/boussolepro");
-const RUNTIME_DIR = path.join(APP_DIR, "data/generated/boussole-runtime");
+const RUNTIME_DIR = path.join(APP_DIR, "boussole-runtime");
 const REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1/boussole-runtime-validation-report.json");
 const EXPECTED_FILES = [
   "boussole-runtime-manifest.json",
@@ -50,6 +50,9 @@ assert("adapted_knowledge", adapted.knowledge.length === manifest.counts.knowled
 assert("all_knowledge_labels_human", adapted.knowledge.every(item => item.label && item.label !== item.id));
 assert("job_search", ["animateur", "documentaliste", "K2111", "M1805"].every(query => searchJobs(adapted.jobs, query).length > 0));
 assert("skill_search", ["animer", "écouter"].every(query => searchSkills(adapted.skillsEngine, query).length > 0));
+assert("mission_activities_contract", adapted.jobs.every(job => typeof job.mission === "string" && Array.isArray(job.activities)));
+assert("mission_not_duplicated_in_activities", adapted.jobs.every(job => !job.mission || !job.activities.includes(job.mission)));
+assert("localized_access_warnings", adapted.jobs.every(job => (job.accessSummary?.accessWarnings || []).every(label => !/^[a-z]+(?:[_-][a-z]+)+$/.test(label))));
 
 const marketRows = runtime.marche.jobs.flatMap(job => Object.entries(job.territories).map(([territoryId, value]) => ({ jobId: job.jobId, territoryId, ...value })));
 const marketExamples = {
@@ -65,6 +68,10 @@ assert("market_unavailable", Boolean(marketExamples.unavailable));
 assert("market_zero_distinct_from_absent", Boolean(marketExamples.zero) && Boolean(marketExamples.absent));
 assert("market_shared_family_warning_signal", Boolean(marketExamples.sharedFamily));
 assert("market_imputed_signal", Boolean(marketExamples.imputed));
+assert("market_fields_survive_adapter", ["national", "regional", "departmental"].every(level => adapted.jobs.some(job => {
+  const row = job.marketStats?.[level];
+  return row && "availability" in row && "offersLevel" in row && "tensionLevel" in row && "tensionImputed" in row && "recruitmentDifficultyRate" in row && "statisticalScope" in row && "sharedFamily" in row && "periods" in row && "sources" in row;
+})));
 
 const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
   readFile(path.join(APP_DIR, "boussole-pro.html"), "utf8"),
@@ -74,7 +81,9 @@ const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
 assert("online_shell_has_no_dataset", !("dataset" in onlinePayload) && onlinePayload.embeddedRuntime === null);
-assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "data/generated/boussole-runtime/");
+assert("app_version_v1_3", onlinePayload.appVersion === "1.3.0" && onlineHtml.includes("Boussole Pro v1.3.0"));
+assert("small_demo_profile", (onlinePayload.defaultProfile?.jobExperiences || []).length <= 2 && (onlinePayload.defaultProfile?.skillSelections || []).length <= 12 && (onlinePayload.defaultProfile?.skillSelections || []).every(item => item.currentLevel && item.futureWish));
+assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "boussole-runtime/");
 assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(key =>
   sha256(JSON.stringify(offlinePayload.embeddedRuntime?.[key])) === manifest.files[key].sha256
 ));
@@ -90,9 +99,9 @@ assert("runtime_mode_copy_explicit", [
 assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
 assert("index_exposes_both_editions", [
   'href="creations/boussolepro/boussole-pro.html"',
-  'download="boussole-pro-online-v1-2-1.html"',
+  'download="boussole-pro-online-v1-3-0.html"',
   'href="creations/boussolepro/boussole-pro-offline.html"',
-  'download="boussole-pro-offline-v1-2-1.html"'
+  'download="boussole-pro-offline-v1-3-0.html"'
 ].every(copy => indexHtml.includes(copy)));
 assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
 

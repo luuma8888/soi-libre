@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
-import { adaptCompactRuntime, buildCompactRuntime, sha256 } from "./boussole-runtime-compact.mjs";
+import { adaptCompactRuntime, buildCompactRuntime, enrichProfileOptionTags, sha256 } from "./boussole-runtime-compact.mjs";
 import { loadBoussoleEngine, loadGeneratedBundle } from "./validate-boussole-v073.mjs";
 
 const ROOT = process.cwd();
@@ -10,12 +10,12 @@ const APP_PATH = path.join(APP_DIR, "boussole-pro.html");
 const OFFLINE_PATH = path.join(APP_DIR, "boussole-pro-offline.html");
 const SOURCE_DIR = path.join(APP_DIR, "data/generated/rome1000-candidate");
 const MARKET_DIR = path.join(APP_DIR, "data/generated/market");
-const OUTPUT_DIR = path.join(APP_DIR, "data/generated/boussole-runtime");
+const OUTPUT_DIR = path.join(APP_DIR, "boussole-runtime");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "boussole-runtime-build-report.json");
 const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-provider.js");
-const APP_VERSION = "1.2.1";
-const BUILD_ID = "20260823-runtime-compacts-v1-02";
+const APP_VERSION = "1.3.0";
+const BUILD_ID = "20260823-audit-global-v1-3-01";
 
 const [appHtml, browserProvider] = await Promise.all([readFile(APP_PATH, "utf8"), readFile(BROWSER_PROVIDER_PATH, "utf8")]);
 const previousPayload = parsePayload(appHtml);
@@ -63,7 +63,8 @@ const directionByJobId = new Map(referenceResults.completeList.map(result => [re
   primaryDirectionLabel: result.primaryDirectionLabel,
   secondaryDirections: result.secondaryDirections || []
 }]));
-masterDataset.jobs = masterDataset.jobs.map(job => ({ ...job, ...(directionByJobId.get(job.id) || {}) }));
+masterDataset.jobs = masterDataset.jobs.map(job => ({ ...job, ...enrichProfileOptionTags(job), ...(directionByJobId.get(job.id) || {}) }));
+const defaultProfile = buildDemoProfile(previousPayload.defaultProfile, masterDataset);
 
 const built = buildCompactRuntime(masterDataset, { generatedAt, datasetVersion, sourceDate });
 const filePayloads = {
@@ -107,8 +108,8 @@ const shellPayload = {
   appVersion: APP_VERSION,
   buildId: BUILD_ID,
   classicReference: previousPayload.classicReference,
-  defaultProfile: previousPayload.defaultProfile,
-  runtimeBasePath: "data/generated/boussole-runtime/",
+  defaultProfile,
+  runtimeBasePath: "boussole-runtime/",
   embeddedRuntime: null
 };
 const onlineHtml = normalizeRuntimeShell(injectRuntimeProvider(
@@ -168,6 +169,28 @@ console.log(JSON.stringify({
   output: path.relative(ROOT, OUTPUT_DIR),
   report: path.relative(ROOT, REPORT_PATH)
 }, null, 2));
+
+function buildDemoProfile(previous = {}, dataset = {}) {
+  const skillIds = new Set((dataset.skillsEngine || []).map(item => item.id));
+  const experienceSource = (previous.jobExperiences || []).filter(item => item?.romeCode).slice(0, 2);
+  if (!experienceSource.length) ["G1203", "M1805"].forEach((romeCode, index) => { const job = dataset.jobs.find(item => item.romeCode === romeCode); if (job) experienceSource.push({ id: `demo-source-${index}`, jobId: job.id, romeCode, title: job.title, durationYears: index ? 3 : 8, recency: index ? "old" : "recent", isCurrent: false, masteryLevel: "autonomous", enjoymentLevel: index ? "dislike" : "like", wantsToContinue: index ? "no" : "yes", source: "user_direct" }); });
+  const selectedSkills = [...new Set(experienceSource.flatMap(experience => {
+    const job = dataset.jobs.find(item => item.romeCode === experience.romeCode) || {};
+    return [...(job.requiredSkills || job.matchableSkillIds || []), ...(job.optionalSkills || [])].map(item => typeof item === "string" ? item : item?.id);
+  }).filter(id => skillIds.has(id)))].slice(0, 12);
+  return {
+    id: "profile-demo-v1-3", schemaVersion: "1.3.0", profileName: "Profil de démonstration", ageRange: "36_45",
+    diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d’aptitude aux fonctions d’animateur" }], certifications: ["cert-bafa"],
+    jobExperiences: experienceSource.map((item, index) => ({ ...item, id: `demo-experience-${index + 1}` })),
+    skillSelections: selectedSkills.map((skillId, index) => ({ skillId, label: dataset.skillsEngine.find(item => item.id === skillId)?.label || skillId, currentLevel: index < 6 ? "mastered" : "practiced", futureWish: index < 8 ? "continue" : "develop", source: "user_direct", suggestedFromRomeCodes: [] })),
+    unresolvedCustomSkills: [], customSkills: [], interests: ["aider", "transmettre", "creer", "enfants"], values: ["meaning", "service", "team", "creativity"],
+    trainingFamilies: ["education_animation", "numerique"], desiredTrainingFamilies: ["education_animation"], trainingOpenness: "medium",
+    preferredWorkStyles: ["relational", "team", "creative"], preferredEnvironments: ["children", "public"], excludedDomains: ["petite_enfance"],
+    constraints: [], mobility: { radiusKm: 20, relocation: "maybe" }, driverLicenses: ["B"], driverLicenseBStatus: "yes", availability: { hoursPerWeek: "full_time", startDate: null },
+    marketPreference: previous.marketPreference, searchHorizon: "transition", completedBoussole: true, hasRequestedResults: true,
+    createdAt: "2026-08-23T00:00:00.000Z", updatedAt: "2026-08-23T00:00:00.000Z"
+  };
+}
 
 function runParityChecks({ appHtml: html, engine: baselineEngine, masterDataset: baselineDataset, runtime, manifest: runtimeManifest }) {
   const compactDataset = adaptCompactRuntime(runtime, runtimeManifest);

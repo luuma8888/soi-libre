@@ -94,7 +94,7 @@ try {
     const state = window.__BOUSSOLE_REFONTE_TEST_API__.getState();
     return { profile, state };
   })()`);
-  assert("legacy_visible_fields_imported", importPolicy.profile.profileName === "Profil ancien" && importPolicy.profile.interests.includes("creer") && importPolicy.profile.customSkills.includes("Animation d'atelier"), importPolicy.profile);
+  assert("legacy_visible_fields_imported", importPolicy.profile.profileName === "Profil ancien" && importPolicy.profile.interests.includes("creer") && importPolicy.profile.unresolvedCustomSkills.includes("Animation d'atelier") && importPolicy.profile.customSkills.length === 0, importPolicy.profile);
   assert("legacy_hidden_fields_ignored", importPolicy.profile.skills.length === 0 && importPolicy.profile.skillSignals.length === 0 && importPolicy.profile.needForMeaning === "not_specified" && !importPolicy.profile.futureHiddenField && !importPolicy.profile.interests.includes("interet-invisible") && !importPolicy.profile.constraints.some(item => item.value === "longTraining"), importPolicy.profile);
   assert("visible_experience_details_preserved", importPolicy.profile.jobExperiences[0]?.masteryLevel === "expert" && importPolicy.profile.jobExperiences[0]?.enjoymentLevel === "love" && importPolicy.profile.jobExperiences[0]?.wantsToContinue === "yes", importPolicy.profile.jobExperiences[0]);
   assert("missing_experience_details_stay_neutral", importPolicy.profile.jobExperiences[1]?.durationYears === null && importPolicy.profile.jobExperiences[1]?.recency === "not_specified" && importPolicy.profile.jobExperiences[1]?.masteryLevel === "not_specified" && importPolicy.profile.jobExperiences[1]?.enjoymentLevel === "not_specified" && importPolicy.profile.jobExperiences[1]?.wantsToContinue === "not_specified", importPolicy.profile.jobExperiences[1]);
@@ -136,6 +136,17 @@ try {
   assert("results_no_horizontal_overflow", resultUi.overflow <= 1, resultUi.overflow);
   assert("buttons_have_accessible_names", resultUi.unnamedButtons === 0, resultUi.unnamedButtons);
   assert("no_duplicate_ids", resultUi.duplicateIds.length === 0, resultUi.duplicateIds);
+  const v13Results = await evaluate(cdp, `(() => {
+    const vm=window.__BOUSSOLE_REFONTE_TEST_API__.getViewModel();
+    const familyIds=[...vm.topDirections.map(row=>row.representative.jobId),...vm.recommendedPaths.map(row=>row.jobId),...vm.dreamPaths.map(row=>row.jobId),...vm.skillsSupportedPaths.map(row=>row.jobId),...vm.exploratoryPaths.map(row=>row.jobId),...vm.excludedPaths.map(row=>row.jobId)];
+    const tabs=[...document.querySelectorAll('[data-action="results-tab"]')];
+    const states=tabs.map(tab=>{tab.click();return {selected:[...tabs].filter(item=>item.getAttribute('aria-selected')==='true').length,focused:document.activeElement===tab,page:RefonteApp.state.resultsPage};});
+    tabs.find(tab=>tab.dataset.tab==='all').click();
+    return {exclusive:new Set(familyIds).size===familyIds.length,states,pages:Math.ceil(vm.completeList.length/RefonteApp.config.pageSize),sorts:[...document.getElementById('resultSort').options].map(row=>row.textContent),marketCards:document.querySelectorAll('.market-card').length};
+  })()`);
+  assert("result_families_exclusive", v13Results.exclusive, v13Results);
+  assert("tabs_visual_aria_focus", v13Results.states.every(row => row.selected === 1 && row.focused && row.page === 1), v13Results.states);
+  assert("all_jobs_84_pages_and_exact_sorts", v13Results.pages === 84 && v13Results.sorts.length === 5 && !v13Results.sorts.some(label => label === "Opportunités"), v13Results);
   await capture(cdp, "03-resultats-bureau.png");
 
   const dialogOpen = await evaluate(cdp, `(() => {
@@ -173,7 +184,7 @@ try {
   }
   assert("nine_locked_step_titles", JSON.stringify(stepTitles) === JSON.stringify(["Départ", "Formation", "Contraintes", "Parcours professionnel", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"]), stepTitles);
   const validationText = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.setStep(7); return document.querySelector(".summary-blocks")?.innerText || ""; })()`);
-  assert("validation_uses_human_labels", !/open_exploration|not_specified|under_10|preferred|petite_enfance/.test(validationText) && validationText.includes("Explorer sans fermer trop vite"), validationText.slice(0, 500));
+  assert("validation_uses_human_labels", !/open_exploration|not_specified|under_10|preferred|petite_enfance|Niveau\s*:\s*\d/.test(validationText) && validationText.includes("Bac +2"), validationText.slice(0, 500));
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.setStep(0)`);
   const focusInput = await evaluate(cdp, `(() => { const input=document.getElementById("profileName"); input.focus(); input.value="Test focus"; input.dispatchEvent(new Event("input",{bubbles:true})); return document.activeElement===input; })()`);
   assert("profile_input_keeps_focus", focusInput === true, focusInput);
@@ -192,6 +203,8 @@ try {
   assert("job_suggestions_max_8", searchContracts.jobs.length > 0 && searchContracts.jobs.length <= 8, searchContracts.jobs);
   assert("skill_suggestions_max_8", searchContracts.skills.length > 0 && searchContracts.skills.length <= 8, searchContracts.skills);
   assert("rome1000_only_job_searchable", searchContracts.rome1000Only.includes("A1101"), searchContracts.rome1000Only);
+  const skillAxes = await evaluate(cdp, `(() => { const skill=RefonteApp.state.skillIndex[0]; RefonteApp.setSkillAxes(skill.id,"practiced","develop",[]); const stored=RefonteApp.state.profile.skillSelections.find(row=>row.skillId===skill.id); const engine=RefonteApp.profileForEngine(); return {stored,acquired:engine.skills.includes(skill.id),avoided:engine.avoidedSkills.includes(skill.id)}; })()`);
+  assert("skill_two_axes_practiced_develop", skillAxes.stored?.currentLevel === "practiced" && skillAxes.stored?.futureWish === "develop" && skillAxes.acquired && !skillAxes.avoided, skillAxes);
   const activeDom = await evaluate(cdp, `(() => ({ datalists: document.querySelectorAll("datalist").length, experienceDefaults: window.__BOUSSOLE_REFONTE_TEST_API__.getProfile().jobExperiences[0] }))()`);
   assert("no_active_datalist", activeDom.datalists === 0, activeDom.datalists);
   const comboboxKeyboard = await evaluate(cdp, `(() => {
@@ -218,10 +231,11 @@ try {
 
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("exploration")`);
   await waitForSelector(cdp, ".direction-grid");
-  const exploration = await evaluate(cdp, `(() => ({ directions: document.querySelectorAll(".direction-button").length, rows: document.querySelectorAll(".compact-row").length, queryResult: window.__BOUSSOLE_REFONTE_TEST_API__.search("animateur") }))()`);
+  const exploration = await evaluate(cdp, `(() => ({ directions: document.querySelectorAll(".direction-button").length, rows: document.querySelectorAll(".compact-row").length, queryResult: window.__BOUSSOLE_REFONTE_TEST_API__.search("animateur"), intro:document.querySelector("main").innerText, diploma:Boolean(document.getElementById("explorationDiploma")), titleButtons:document.querySelectorAll(".job-title-link").length, ficheButtons:[...document.querySelectorAll(".compact-row button")].filter(button=>button.textContent.includes("Voir la fiche")).length }))()`);
   assert("exploration_17_directions", exploration.directions === 17, exploration.directions);
   assert("exploration_paginated_rows", exploration.rows > 0 && exploration.rows <= 12, exploration.rows);
   assert("search_title_or_appellation", exploration.queryResult.length > 0, exploration.queryResult);
+  assert("exploration_v13_controls", exploration.intro.includes("1000 métiers") && exploration.diploma && exploration.titleButtons > 0 && exploration.ficheButtons > 0, exploration);
   await capture(cdp, "04-exploration-bureau.png");
 
   await evaluate(cdp, `(() => { RefonteApp.toggleFavorite("rome-G1202"); RefonteApp.toggleFavorite("rome-K1203"); RefonteApp.toggleCompare("rome-G1202"); RefonteApp.toggleCompare("rome-K1203"); window.__BOUSSOLE_REFONTE_TEST_API__.navigate("liste"); })()`);
@@ -235,6 +249,12 @@ try {
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("menu")`);
   await capture(cdp, "06-menu-bureau.png");
 
+  const responsive = [];
+  for (const width of [360, 768, 1024, 1440]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 768, screenWidth: width, screenHeight: 900 });
+    responsive.push({ width, overflow: await evaluate(cdp, "document.documentElement.scrollWidth-document.documentElement.clientWidth") });
+  }
+  assert("responsive_four_required_widths", responsive.every(row => row.overflow <= 1), responsive);
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true, screenWidth: 390, screenHeight: 844 });
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); window.__BOUSSOLE_REFONTE_TEST_API__.setStep(3)`);
   await capture(cdp, "etape-04-parcours-mobile.png");

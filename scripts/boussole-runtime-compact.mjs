@@ -9,7 +9,15 @@ export const RUNTIME_TERRITORIES = Object.freeze({
 
 const TERRITORY_KEYS = Object.freeze({ FR: "national", "REG-76": "regional", "DEP-11": "departmental" });
 const SOURCE_LEVELS = Object.freeze({ FR: "national", "REG-76": "regional", "DEP-11": "departmental" });
-const DIPLOMA_LABELS = Object.freeze({ 0: "Sans diplôme", 1: "Brevet", 2: "CAP/BEP", 3: "CAP/BEP", 4: "Bac", 5: "Bac +2", 6: "Bac +3", 7: "Bac +5" });
+const DIPLOMA_LABELS = Object.freeze({ 0: "Non renseigné ou sans diplôme", 3: "CAP / BEP", 4: "Bac", 5: "Bac +2", 6: "Bac +3 / Bac +4", 7: "Bac +5", 8: "Doctorat" });
+const ACCESS_WARNING_LABELS = Object.freeze({
+  "access-text-missing": "Conditions d’accès détaillées non disponibles.",
+  "context-specific-requirement": "Certaines exigences dépendent du poste ou de l’employeur.",
+  "contradictory-access-evidence": "Les sources disponibles donnent des indications contradictoires.",
+  "mixed-required-and-optional-wording": "Le texte mélange exigences obligatoires et recommandations.",
+  "multiple-diploma-mentions": "Plusieurs niveaux de diplôme sont mentionnés ; le parcours exact est à vérifier.",
+  "negated-obligation-detected": "Une absence d’obligation a été détectée ; vérifiez le détail des conditions d’accès."
+});
 const DIRECTION_LABELS = Object.freeze({
   accompagner_relier: "Accompagner et relier",
   accueillir_conseiller_vendre: "Accueillir, conseiller et vendre",
@@ -95,17 +103,21 @@ export function buildCompactRuntime(dataset, metadata) {
 }
 
 function compactCoreJob(job) {
+  const enriched = enrichProfileOptionTags(job);
+  const content = splitMissionAndActivities(job);
   const accessSummary = compactAccessSummary(job.accessSummary);
   const accessPaths = array(job.accessPaths || job.accessSummary?.accessPaths).map(compactAccessPath);
   const classification = {
     romeGrandDomainCode: job.romeGrandDomainCode || String(job.romeCode || "").slice(0, 1),
     romeProfessionalDomainCode: job.romeProfessionalDomainCode || String(job.romeCode || "").slice(0, 3),
   };
-  return omitEmpty({
+  const compact = omitEmpty({
     id: job.id || `rome-${job.romeCode}`,
     romeCode: job.romeCode,
     title: job.title,
-    description: job.description,
+    mission: content.mission,
+    description: content.mission,
+    activities: content.activities,
     appellations: unique(array(job.appellations).map(item => typeof item === "string" ? item : item?.label).filter(Boolean)),
     ...classification,
     domain: job.domain,
@@ -116,8 +128,8 @@ function compactCoreJob(job) {
     secondarySectorIds: unique(array(job.secondarySectorIds)),
     boussoleSectorIds: unique(array(job.boussoleSectorIds)),
     sectorMappingConfidence: numberOrNull(job.sectorMappingConfidence),
-    interestTags: unique(array(job.interestTags)),
-    valueTags: unique(array(job.valueTags)),
+    interestTags: enriched.interestTags,
+    valueTags: enriched.valueTags,
     transitionTags: unique(array(job.transitionTags)),
     workContexts: unique(array(job.workContexts).map(contextId)),
     confidence: numberOrNull(job.confidence),
@@ -126,6 +138,26 @@ function compactCoreJob(job) {
     accessPaths,
     constraints: compactConstraints(job)
   });
+  compact.activities = content.activities;
+  return compact;
+}
+
+export function enrichProfileOptionTags(job = {}) {
+  const text = slug([job.title, job.domain, job.family, job.description, ...(array(job.appellations)), ...(array(job.romeWorkContextLabels))].join(" ")).replaceAll("-", " ");
+  const interestTags = new Set(array(job.interestTags));
+  const valueTags = new Set(array(job.valueTags));
+  const add = (condition, target, values) => { if (condition) values.forEach(value => target.add(value)); };
+  add(/communication|accueil|relation|conseil|mediation|vente/.test(text), interestTags, ["communiquer"]);
+  add(/repar|maintenance|depann|mecan|electric/.test(text), interestTags, ["reparer"]);
+  add(/animal|elevage|veterinaire|canin/.test(text), interestTags, ["animaux"]);
+  add(/manuel|artisan|fabric|atelier|chantier|batiment/.test(text), interestTags, ["manuel"]);
+  add(/securite|prevention|protection|secour/.test(text), interestTags, ["proteger"]);
+  add(/cuisine|aliment|restauration|boulanger|patiss|agricultur/.test(text), interestTags, ["nourrir"]);
+  add(/creation|culture|artist|design|conception|graph/.test(text), interestTags, ["creer"]);
+  add(/social|accompagnement|entraide|association|mediation/.test(text), valueTags, ["solidarity"]);
+  add(/creation|culture|artist|design|conception|graph/.test(text), valueTags, ["creativity"]);
+  add(/administr|gestion|dossier|procedure|qualite|controle/.test(text), valueTags, ["clarity"]);
+  return { interestTags: [...interestTags], valueTags: [...valueTags] };
 }
 
 function compactAccessSummary(raw = null) {
@@ -351,11 +383,23 @@ function buildAccessWarningDictionary(jobs) {
   for (const job of jobs) {
     for (const warning of array(job.accessSummary?.warnings)) {
       const id = shortWarningCode(warning);
-      if (labels.has(id) && labels.get(id) !== warning) throw new Error(`Collision de codes d’avertissement d’accès : ${id}.`);
-      labels.set(id, warning);
+      const label = ACCESS_WARNING_LABELS[id] || String(warning || "").trim();
+      if (labels.has(id) && labels.get(id) !== label) throw new Error(`Collision de codes d’avertissement d’accès : ${id}.`);
+      labels.set(id, label);
     }
   }
   return [...labels].sort(([a], [b]) => a.localeCompare(b)).map(([id, label]) => ({ id, label }));
+}
+
+function splitMissionAndActivities(job = {}) {
+  const explicitMission = String(job.mission || "").trim();
+  const explicitActivities = unique(array(job.activities).map(item => String(item || "").trim()).filter(Boolean));
+  if (explicitMission || explicitActivities.length) return {
+    mission: explicitMission || String(job.description || "").split(/\r?\n/).map(line => line.trim()).find(Boolean) || "",
+    activities: explicitActivities
+  };
+  const lines = String(job.description || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  return { mission: lines[0] || "", activities: unique(lines.slice(1).filter(line => line !== lines[0])) };
 }
 
 function compactDiplomaLevels(raw) {
@@ -466,7 +510,9 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       workContexts: array(job.workContexts),
       romeWorkContextLabels: array(job.workContexts).map(id => contexts.get(id)?.label).filter(Boolean),
       missingFields: array(job.missingFields),
-      activities: [],
+      mission: job.mission || job.description || "",
+      description: [job.mission || job.description || "", ...array(job.activities)].filter(Boolean).join("\n"),
+      activities: array(job.activities),
       accessConditions: { text: null, source: "compact_structured_runtime", confidence: accessSummary?.confidence || 0 },
       accessSummary,
       accessPaths: array(job.accessPaths),
@@ -587,6 +633,7 @@ function expandMarketStats(row, marche) {
       sourceUpdatedAt: null,
       territoryId,
       territoryLabel: RUNTIME_TERRITORIES[territoryId],
+      availability: item.availability || "unavailable",
       marketDataKind: "offers_volume",
       marketInterpretationLabel: "Volume d’offres observé",
       latestPeriodCode: marche?.vintages?.offers || null,
@@ -596,6 +643,15 @@ function expandMarketStats(row, marche) {
       offers12m: item.offersCount,
       absoluteOfferSignal: item.offersLevel === "very_high" ? "high" : item.offersLevel,
       territorialOfferSignal: item.territorialSignal,
+      offersLevel: item.offersLevel || "unknown",
+      tensionClass: item.tensionClass ?? null,
+      tensionLevel: item.tensionLevel || "unknown",
+      tensionImputed: Boolean(item.tensionImputed),
+      recruitmentDifficultyRate: item.recruitmentDifficultyRate ?? null,
+      statisticalScope: item.statisticalScope || "unknown",
+      sharedFamily: Boolean(item.sharedFamily),
+      periods: { offers: marche?.vintages?.offers || null, bmo: marche?.vintages?.bmo || null, daresTension: marche?.vintages?.daresTension || null },
+      sources: [Number.isFinite(item.offersCount) ? "France Travail — offres observées" : null, item.tensionLevel !== "unknown" ? "Dares — tension" : null, Number.isFinite(item.recruitmentDifficultyRate) ? "France Travail — BMO" : null].filter(Boolean),
       marketFreshness: "unknown",
       confidence: item.confidence
     };
@@ -657,6 +713,7 @@ export function validateCompactRuntime(runtime, diagnostics = {}) {
   for (const job of jobs) {
     for (const id of array(job.workContexts)) if (!contexts.has(id)) failures.push(`orphan_context:${id}`);
     for (const signal of array(job.constraints?.officialSignals)) if (signal.contextId && !contexts.has(signal.contextId)) failures.push(`orphan_signal_context:${signal.contextId}`);
+    if (!Array.isArray(job.activities)) failures.push(`invalid_activities:${job.id}`);
   }
   if (array(competences?.items).some(item => !humanLabel(item.label, item.id))) failures.push("technical_item_label");
   if (diagnostics.unresolvedKnowledgeIds?.length) failures.push("unresolved_knowledge_labels");

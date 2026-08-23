@@ -43,6 +43,12 @@ jobs:
       - name: Valider les datasets et les deux distributions
         run: node scripts/validate-boussole-runtime.mjs
 
+      - name: Auditer la couverture des options de profil
+        run: node scripts/audit-boussole-profile-options.mjs
+
+      - name: Valider les règles fonctionnelles v1.3
+        run: node scripts/validate-boussole-v13.mjs
+
       - name: Tester l’application dans Chromium
         run: node scripts/measure-boussole-refonte-v1-browser.mjs
 
@@ -57,6 +63,7 @@ jobs:
             tmp/monde-pro/boussole-runtime-v1/*.json
             tmp/monde-pro/refonte-interface-v1/*.json
             tmp/monde-pro/refonte-interface-v1/captures/*.png
+            tmp/monde-pro/boussole-v1.3/*.json
 
       - name: Publier les fichiers générés sur la branche
         if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}
@@ -64,10 +71,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add creations/boussolepro/boussole-pro-offline.html
-          git add creations/boussolepro/data/generated/boussole-runtime/boussole-runtime-manifest.json
-          git add creations/boussolepro/data/generated/boussole-runtime/boussole-core.json
-          git add creations/boussolepro/data/generated/boussole-runtime/boussole-competences.json
-          git add creations/boussolepro/data/generated/boussole-runtime/boussole-marche.json
+          git add creations/boussolepro/boussole-runtime/boussole-runtime-manifest.json
+          git add creations/boussolepro/boussole-runtime/boussole-core.json
+          git add creations/boussolepro/boussole-runtime/boussole-competences.json
+          git add creations/boussolepro/boussole-runtime/boussole-marche.json
           git diff --cached --quiet || git commit -m "data(boussole-pro): regenerate compact runtime"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
