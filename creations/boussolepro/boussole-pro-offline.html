@@ -351,12 +351,23 @@
     @media (max-width: 520px) { .assessment-grid { grid-template-columns: 1fr; } }
     /* v1.5.1 - navigation reliée, accord personnel et climat du marché */
     .favorite-icon.is-favorite { fill: currentColor; }
-    .personal-agreement-panel { padding: 14px; border: 1px solid var(--line); border-left: 4px solid var(--brand); background: var(--surface-soft); }
-    .personal-agreement-panel.is-hard { border-left-color: var(--danger); }
-    .personal-agreement-panel.is-warning { border-left-color: var(--warning); }
+    .personal-agreement-panel { --agreement-tone: var(--brand); padding: 0 0 20px; border: 0; border-bottom: 1px solid var(--line); background: transparent; }
+    .personal-agreement-panel.is-hard { --agreement-tone: var(--danger); }
+    .personal-agreement-panel.is-warning { --agreement-tone: var(--warning); }
+    .personal-agreement-panel .detail-title { border-left-color: var(--agreement-tone); background: color-mix(in srgb, var(--agreement-tone) 12%, var(--surface)); }
+    .personal-agreement-panel .assessment-grid { margin: 14px 0 18px; overflow: hidden; gap: 0; border: 2px solid var(--agreement-tone); border-radius: 7px; background: var(--surface); box-shadow: 0 3px 0 color-mix(in srgb, var(--agreement-tone) 18%, transparent); }
+    .personal-agreement-panel .assessment-dimension { min-height: 72px; padding: 12px; border: 0; border-left: 1px solid var(--line); background: var(--surface); }
+    .personal-agreement-panel .assessment-dimension:nth-child(odd) { border-left: 0; }
+    .personal-agreement-panel .assessment-dimension:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .personal-agreement-panel .assessment-dimension strong { display: block; color: var(--agreement-tone); font-size: .84rem; }
+    .personal-agreement-panel .assessment-dimension span { margin-top: 7px; color: var(--ink); font-size: 1rem; font-weight: 700; }
     .agreement-status { display: inline-flex; margin-bottom: 10px; }
     .agreement-block { margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--danger); background: var(--danger-soft); }
     .agreement-warning { border-left-color: var(--warning); background: var(--warning-soft); }
+    @media (max-width: 520px) {
+      .personal-agreement-panel .assessment-dimension { min-height: 60px; border-left: 0; }
+      .personal-agreement-panel .assessment-dimension:nth-child(n+2) { border-top: 1px solid var(--line); }
+    }
     .related-panel { max-width: var(--content); margin: auto; padding: 24px 20px 70px; }
     .related-list { display: grid; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
     .related-list-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px; border-bottom: 1px solid var(--line); }
@@ -17788,11 +17799,19 @@ const BoussoleRuntimeProvider = {
       const dimensions = this.array(detail.personalAssessment?.dimensions);
       const panel = document.createElement("section");
       panel.className = `detail-section personal-agreement-panel${hard ? " is-hard" : warning ? " is-warning" : ""}`;
-      panel.innerHTML = `<h3 class="detail-title">Mon accord avec ce métier</h3>${status}${decisionBlock}<h4>Ce qui me rapproche de ce métier</h4>${this.listHtml(detail.personalFitReasons || detail.agreementReasons, "Les rapprochements seront précisés avec une boussole plus complète.")}${dimensions.length ? `<div class="assessment-grid">${dimensions.map(item => `<div class="assessment-dimension"><strong>${this.escape(item.label)}</strong><span>${item.score100 === null ? "Non évalué" : `${item.score100}/100`}</span></div>`).join("")}</div>` : ""}${supports ? `<h4>Mes appuis actuels</h4>${supports.querySelector("p")?.outerHTML || ""}${supports.querySelector("ul")?.outerHTML || ""}` : ""}`;
+      panel.innerHTML = `<h3 class="detail-title">Mon accord avec ce métier</h3>${status}${decisionBlock}${dimensions.length ? `<div class="assessment-grid agreement-matrix" aria-label="Quatre repères de l’accord personnel">${dimensions.map(item => `<div class="assessment-dimension"><strong>${this.escape(item.label)}</strong><span>${item.score100 === null ? "Non évalué" : `${item.score100}/100`}</span></div>`).join("")}</div>` : ""}<h4>Ce qui me rapproche de ce métier</h4>${this.listHtml(detail.personalFitReasons || detail.agreementReasons, "Les rapprochements seront précisés avec une boussole plus complète.")}${supports ? `<h4>Mes appuis actuels</h4>${supports.querySelector("p")?.outerHTML || ""}${supports.querySelector("ul")?.outerHTML || ""}` : ""}`;
       personal.before(panel);
       personal.remove();
       assessment?.remove();
       supports?.remove();
+    };
+    RefonteApp.balanceJobDetailColumns = function() {
+      const columns = [...this.dom.dialogContent.querySelectorAll(".dialog-body > div")];
+      if (columns.length !== 2) return;
+      const market = this.dom.dialogContent.querySelector(".market-detail");
+      const pointsToVerify = this.dom.dialogContent.querySelector(".warning-detail");
+      if (market) columns[0].append(market);
+      if (pointsToVerify) columns[0].append(pointsToVerify);
     };
 
     const openJobV151Base = RefonteApp.openJob;
@@ -17811,6 +17830,7 @@ const BoussoleRuntimeProvider = {
       const marketHeading = this.dom.dialogContent.querySelector(".market-detail > h3");
       if (marketHeading) marketHeading.textContent = "Climat du marché";
       this.renderPersonalAgreement(detail || {});
+      this.balanceJobDetailColumns();
       if (options.restore) requestAnimationFrame(() => { this.dom.dialog.scrollTop = options.scrollTop || 0; this.dom.dialogContent.scrollTop = options.scrollTop || 0; });
     };
     RefonteApp.openRelatedJobs = function(jobId, trigger, options = {}) {

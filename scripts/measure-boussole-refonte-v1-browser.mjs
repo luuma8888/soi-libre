@@ -180,6 +180,9 @@ try {
     document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); cardMarket.closes=firstCapsule?.getAttribute("aria-expanded")==="false"&&document.activeElement===firstCapsule;
     RefonteApp.openJob("rome-K1204", document.querySelector(".top-list button"));
     const marketText = document.querySelector(".market-detail")?.innerText || "";
+    const detailColumns=[...document.querySelectorAll(".dialog-body > div")];
+    const agreementPanel=document.querySelector(".personal-agreement-panel");
+    const agreementMatrix=document.querySelector(".agreement-matrix");
     const market = {
       title:document.querySelector(".market-detail .detail-title")?.textContent,
       detailCards:document.querySelectorAll(".market-detail .market-climate-territory").length,
@@ -189,6 +192,15 @@ try {
       oldVisuals:document.querySelectorAll(".market-wind-map,.market-main-plane,.market-marker,.market-quadrant,.market-axis-x,.market-axis-y").length,
       verdicts:[...document.querySelectorAll(".market-detail .market-climate-territory-heading strong")].map(item=>item.textContent.trim()),
       french: !/Very high|High|Low/.test(marketText)
+    };
+    const detailLayout={
+      marketLeft:document.querySelector(".market-detail")?.parentElement===detailColumns[0],
+      pointsLeft:document.querySelector(".warning-detail")?.parentElement===detailColumns[0],
+      agreementRight:agreementPanel?.parentElement===detailColumns[1],
+      matrixDimensions:agreementMatrix?.querySelectorAll(".assessment-dimension").length||0,
+      matrixBorder:parseFloat(getComputedStyle(agreementMatrix).borderTopWidth||"0"),
+      panelBackground:getComputedStyle(agreementPanel).backgroundColor,
+      matrixBackground:getComputedStyle(agreementMatrix).backgroundColor
     };
     document.getElementById("jobDialog").close();
     RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); const relatedTrigger=document.querySelector('[data-action="open-related"]'); const sourceId=relatedTrigger?.dataset.jobId; relatedTrigger?.click();
@@ -206,11 +218,12 @@ try {
     RefonteApp.state.profile.interests = ["animaux"];
     const graphAfter = JSON.stringify(RefonteApp.jobById(sourceId)?.relatedJobIds || []);
     const profileExists = RefonteApp.state.profileExists; RefonteApp.state.profileExists = false; const neutralCount = RefonteApp.detailForJob(sourceId).variants.length; RefonteApp.state.profileExists = profileExists;
-    return { cardMarket, marketText, market, relation: { before, after, stack, returned, relatedCount, expectedCount, restoredCount, neutralCount, stable: graphBefore === graphAfter } };
+    return { cardMarket, marketText, market, detailLayout, relation: { before, after, stack, returned, relatedCount, expectedCount, restoredCount, neutralCount, stable: graphBefore === graphAfter } };
   })()`);
   const allowedMarketVerdicts = ["Porteur", "Niche en tension", "Actif", "Limité", "Données partielles", "Indisponible"];
   assert("market_climate_card_compact_and_accessible", marketAndRelations.cardMarket.bands > 0 && marketAndRelations.cardMarket.capsules === 3 && marketAndRelations.cardMarket.bandHeight <= 44 && marketAndRelations.cardMarket.popovers === 3 && marketAndRelations.cardMarket.accessible && marketAndRelations.cardMarket.opens && marketAndRelations.cardMarket.closes && marketAndRelations.cardMarket.rawOfferHidden, marketAndRelations.cardMarket);
   assert("market_climate_detail_compact_without_old_visuals", marketAndRelations.market.title === "Climat du marché" && marketAndRelations.market.detailCards === 3 && marketAndRelations.market.detailHeight <= 120 && marketAndRelations.market.disclosure === 1 && marketAndRelations.market.dataItems === 3 && marketAndRelations.market.oldVisuals === 0 && marketAndRelations.market.verdicts.every(value => allowedMarketVerdicts.includes(value)) && marketAndRelations.market.french, marketAndRelations.market);
+  assert("job_detail_columns_balanced_and_agreement_matrix_emphasized", marketAndRelations.detailLayout.marketLeft && marketAndRelations.detailLayout.pointsLeft && marketAndRelations.detailLayout.agreementRight && marketAndRelations.detailLayout.matrixDimensions === 4 && marketAndRelations.detailLayout.matrixBorder >= 2 && marketAndRelations.detailLayout.panelBackground !== marketAndRelations.detailLayout.matrixBackground, marketAndRelations.detailLayout);
   assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before?.startsWith("Métiers proches de") && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.relatedCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.restoredCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.neutralCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.stable, marketAndRelations.relation);
 
   const marketCaptureMetrics = [];
