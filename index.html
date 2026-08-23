@@ -173,6 +173,35 @@
             transition: transform 0.5s ease;
         }
 
+        /* Icône d’application superposée à la vignette, sans modifier le PNG source */
+        .app-icon-overlay {
+            position: absolute;
+            right: 9px;
+            bottom: 9px;
+            z-index: 2;
+            width: 92px;
+            height: 92px;
+            padding: 2px;
+            border: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 50% 56%,
+                rgba(255, 253, 245, 0.96) 0 38%,
+                rgba(255, 243, 205, 0.68) 56%,
+                rgba(255, 255, 255, 0) 76%);
+            filter:
+                drop-shadow(0 7px 8px rgba(37, 52, 47, 0.24))
+                drop-shadow(0 0 9px rgba(255, 226, 145, 0.28));
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* Les blocs à plusieurs captures sont hauts : leur icône reste visible au milieu. */
+        .dual-captures > .app-icon-overlay {
+            top: 50%;
+            bottom: auto;
+            transform: translateY(-50%);
+        }
+
         .card:hover .card-image-side {
             filter: brightness(0.99); /* Rend l'image un peu plus lumineuse au survol */
         }
@@ -656,6 +685,16 @@
                 border: 1px solid rgba(142, 125, 196, 0.16);
                 box-shadow: 0 8px 18px rgba(142, 125, 196, 0.10);
             }
+            .app-icon-overlay {
+                right: 4px;
+                bottom: 4px;
+                width: 44px;
+                height: 44px;
+                padding: 1px;
+                filter:
+                    drop-shadow(0 4px 5px rgba(37, 52, 47, 0.24))
+                    drop-shadow(0 0 5px rgba(255, 226, 145, 0.28));
+            }
             .card-content {
                 grid-area: content;
                 flex: 1 1 auto;
@@ -749,7 +788,7 @@
 
     <main class="grid">
         <aside class="privacy-note" aria-label="Informations sur la sauvegarde locale">
-            <strong>Vos informations restent dans ce navigateur et ne sont pas envoyées.</strong>
+            <strong>Vos informations restent dans votre navigateur et ne sont pas envoyées.</strong>
             Elles peuvent cependant disparaître après un nettoyage, en navigation privée ou lors d’un changement de navigateur ou d’appareil. Exportez régulièrement une sauvegarde JSON et conservez-la dans un endroit sûr : c’est le moyen fiable de retrouver votre travail.
         </aside>
         <section class="app-group">
@@ -767,6 +806,7 @@
             <div class="card-image-side" style="background-image: url('assets/eveil-preview.png');"
                 data-full="assets/eveil-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/eveil.png" alt="" aria-hidden="true">
                 </div>
             <div class="card-content">
                 <div>
@@ -793,6 +833,7 @@
             <div class="card-image-side" style="background-image: url('assets/design-humain-offline-preview.png');"
                 data-full="assets/design-humain-offline-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/designhumain.png" alt="" aria-hidden="true">
                 </div>
             <div class="card-content">
                 <div>
@@ -819,6 +860,7 @@
             <div class="card-image-side" style="background-image: url('assets/espace-interieur-preview.png');"
                 data-full="assets/espace-interieur-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/espaceinterieur.png" alt="" aria-hidden="true">
                 </div>
             <div class="card-content">
                 <div>
@@ -844,6 +886,7 @@
             <div class="card-image-side" style="background-image: url('assets/souverainete-preview.png');"
                 data-full="assets/souverainete-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/souverainete.png" alt="" aria-hidden="true">
                 </div>
             <div class="card-content">
                 <div>
@@ -871,6 +914,7 @@
                 style="background-image: url('assets/feu-clair-preview.png'); background-position: center top;"
                 data-full="assets/feu-clair-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/feuclair.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -898,6 +942,7 @@
                 style="background-image: url('assets/lune-preview.png'); background-position: center top;"
                 data-full="assets/lune-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/lunedujour.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -925,6 +970,7 @@
                 style="background-image: url('assets/boussole-pro-preview.png'); background-position: left top;"
                 data-full="assets/boussole-pro-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/boussolepro.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -971,6 +1017,7 @@
                     data-full="assets/seve-full.png">
                     <span>Complet</span>
                 </div>
+                <img class="app-icon-overlay" src="assets/icones/seve.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1014,6 +1061,7 @@
                 style="background-image: url('assets/ucem-preview.png'); background-position: center top;"
                 data-full="assets/ucem-full.png"
                 title="Cliquez pour agrandir">
+                <img class="app-icon-overlay" src="assets/icones/ucem.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1051,6 +1099,7 @@
                 style="background-image: url('assets/autonomie-preview.png'); background-position: center top;"
                 data-full="assets/autonomie-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/autonomie.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1078,6 +1127,7 @@
                 style="background-image: url('assets/syncrostella-preview.png'); background-position: center top;"
                 data-full="assets/syncrostella-full.png"
                 title="Cliquez pour voir la capture grand écran">
+                <img class="app-icon-overlay" src="assets/icones/synchrostella.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1106,6 +1156,7 @@
                 style="background-image: url('assets/printpics-preview.png'); background-position: center top;"
                 data-full="assets/printpics-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/printpics.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1133,6 +1184,7 @@
                 style="background-image: url('assets/cardforge-preview.png'); background-position: left top;"
                 data-full="assets/cardforge-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/cardforge.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1166,6 +1218,7 @@
                 <div class="capture-thumb zoomable-image"
                     style="background-image: url('assets/ecritoire-traces-preview.png');"
                     data-full="assets/ecritoire-traces-full.png"><span>Traces</span></div>
+                <img class="app-icon-overlay" src="assets/icones/ecritoire.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1208,6 +1261,7 @@
                     style="background-image: url('assets/promptarium-simple-preview.png'); background-position: left top;"
                     data-full="assets/promptarium-simple-full.png"
                     title="Agrandir Promptarium simple"><span>Simple</span></div>
+                <img class="app-icon-overlay" src="assets/icones/promptarium.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1237,6 +1291,7 @@
                 style="background-image: url('assets/atelier-comedie-musicale-preview.png'); background-position: center top;"
                 data-full="assets/atelier-comedie-musicale-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/comediemusicale.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
@@ -1265,6 +1320,7 @@
                 style="background-image: url('assets/studio-histoires-pedagogiques-preview.png'); background-position: center top;"
                 data-full="assets/studio-histoires-pedagogiques-full.png"
                 title="Cliquez pour voir la capture plein écran">
+                <img class="app-icon-overlay" src="assets/icones/histoirespedagogiques.png" alt="" aria-hidden="true">
             </div>
             <div class="card-content">
                 <div>
