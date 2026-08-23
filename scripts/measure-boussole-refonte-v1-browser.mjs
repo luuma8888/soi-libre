@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
+const OFFLINE_HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-offline.html");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/refonte-interface-v1");
 const CAPTURE_DIR = path.join(REPORT_DIR, "captures");
 const REPORT_PATH = path.join(REPORT_DIR, "browser-accessibility-performance-report.json");
@@ -53,14 +54,15 @@ try {
 
   const initial = await evaluate(cdp, `(() => ({
     state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(),
+    build: window.__BOUSSOLE_REFONTE_TEST_API__.build(),
     mainText: document.querySelector("main")?.innerText || "",
     jobs: window.__BOUSSOLE_REFONTE_BUILD__.jobsCount,
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
   }))()`);
   assert("desktop_initial_profile_absent", initial.state.profileExists === false, initial.state);
-  assert("embedded_1000_jobs", initial.jobs === 1000 && initial.state.datasetMode === "embedded_rome1000", initial);
+  assert("external_runtime_1000_jobs", initial.jobs === 1000 && initial.state.datasetMode === "external_runtime", initial);
   assert("desktop_no_horizontal_overflow", initial.overflow <= 1, initial.overflow);
-  assert("home_state_visible", initial.mainText.includes("Boussole absente") && initial.mainText.includes("1000 métiers réels embarqués"));
+  assert("home_state_visible", initial.mainText.includes("Boussole absente") && initial.mainText.includes("1000 métiers réels disponibles"));
   await capture(cdp, "01-accueil-bureau.png");
 
   const noProfileSearch = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.search("G1202")`);
@@ -257,14 +259,16 @@ try {
   assert("informative_svg_has_text", a11y.svgInformativeWithoutText === 0, a11y.svgInformativeWithoutText);
   assert("reduced_motion_supported", a11y.reducedMotionQuerySupported === true);
 
-  const fallback = await evaluate(cdp, `(() => { const fallbackJobs=window.__BOUSSOLE_REFONTE_TEST_API__.activateFallback(); const invalidated=RefonteApp.state.results===null && RefonteApp.state.viewModel===null; const fallbackMode=window.__BOUSSOLE_REFONTE_TEST_API__.getState().datasetMode; const activeJobs=window.__BOUSSOLE_REFONTE_TEST_API__.activateEmbedded(); return { fallbackJobs, fallbackMode, invalidated, activeJobs, activeMode: window.__BOUSSOLE_REFONTE_TEST_API__.getState().datasetMode }; })()`);
-  assert("emergency_fallback_is_explicit_and_reversible", fallback.fallbackJobs === 100 && fallback.fallbackMode === "emergency_rome100_test" && fallback.invalidated && fallback.activeJobs === 1000 && fallback.activeMode === "embedded_rome1000", fallback);
-
   await cdp.send("Network.emulateNetworkConditions", { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
-  await navigate(cdp, pathToFileURL(HTML_PATH).href);
+  const cachedRuntime = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.reloadRuntime().then(() => window.__BOUSSOLE_REFONTE_TEST_API__.getState())`, true);
+  assert("network_failure_uses_validated_complete_cache", cachedRuntime.jobs === 1000 && cachedRuntime.datasetMode === "validated_cache", cachedRuntime);
+  await navigate(cdp, pathToFileURL(OFFLINE_HTML_PATH).href);
   await waitForApi(cdp, 240);
   const offline = await evaluate(cdp, `(() => ({ build: window.__BOUSSOLE_REFONTE_TEST_API__.build(), state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(), text: document.querySelector("main")?.innerText || "" }))()`);
-  assert("file_offline_boot", offline.build.jobsCount === 1000 && offline.text.length > 50, offline);
+  assert("file_offline_boot", offline.build.jobsCount === 1000 && offline.state.datasetMode === "offline_embedded" && offline.text.length > 50, offline);
+  const offlineTop = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.loadDemoProfile(); return window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5; })()`);
+  assert("online_offline_same_demo_top5", JSON.stringify(offlineTop) === JSON.stringify(resultUi.top), { online: resultUi.top, offline: offlineTop });
+  assert("online_offline_same_runtime_identity", offline.build.datasetVersion === initial.build.datasetVersion && offline.build.runtimeFingerprintSha256 === initial.build.runtimeFingerprintSha256, { online: initial.build, offline: offline.build });
   await capture(cdp, "10-hors-ligne-file-mobile.png");
   await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 
@@ -274,15 +278,15 @@ try {
     generatedAt: new Date().toISOString(),
     status: failures.length || runtimeErrors.length || consoleErrors.length ? "failed" : "passed",
     html: { path: path.relative(ROOT, HTML_PATH), bytes: html.length, sha256: sha256(html) },
-    browser: { chromium: CHROMIUM, desktop: "1440x1000", mobile: "390x844", httpUrl, offlineUrl: pathToFileURL(HTML_PATH).href },
+    browser: { chromium: CHROMIUM, desktop: "1440x1000", mobile: "390x844", httpUrl, offlineUrl: pathToFileURL(OFFLINE_HTML_PATH).href },
     performance: { calculationMs: calculation.calculationMs, searchJobAndSkill20IterationsMs: searchPerformance, navigation: await evaluate(cdp, `(() => { const n=performance.getEntriesByType("navigation")[0]; return n ? { domContentLoadedMs: Math.round(n.domContentLoadedEventEnd), loadMs: Math.round(n.loadEventEnd) } : null; })()`) },
-    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, dialogOpen, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, fallback, mobile, a11y, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists } },
+    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, dialogOpen, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, mobile, a11y, cachedRuntime, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists, datasetMode: offline.state.datasetMode, top5: offlineTop } },
     captures: (await listCaptureNames()).map(name => path.relative(ROOT, path.join(CAPTURE_DIR, name))),
     assertions,
     errors: { console: consoleErrors, runtime: runtimeErrors, network: networkErrors },
     failures: [...failures, ...runtimeErrors.map(() => "runtime_error"), ...consoleErrors.map(() => "console_error")]
   };
-  await writeFile(path.join(REPORT_DIR, "boussole-pro-refonte-profil-migre-v1.1-test.json"), `${JSON.stringify({ app: "boussole-pro-refonte-profile", version: "1.1.0", exportedAt: new Date().toISOString(), source: "browser_synthetic_migration_fixture", profile: roundTrip.profile, migration: { requestedReceptionProfileAvailable: false, activeProfilePolicy: "visible_editable_fields_only" } }, null, 2)}\n`);
+  await writeFile(path.join(REPORT_DIR, "boussole-pro-refonte-profil-migre-v1.2-test.json"), `${JSON.stringify({ app: "boussole-pro-refonte-profile", version: "1.2.0", exportedAt: new Date().toISOString(), source: "browser_synthetic_migration_fixture", profile: roundTrip.profile, migration: { requestedReceptionProfileAvailable: false, activeProfilePolicy: "visible_editable_fields_only" } }, null, 2)}\n`);
   await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ status: report.status, assertions: assertions.length, failures: report.failures, captures: report.captures.length, report: path.relative(ROOT, REPORT_PATH) }, null, 2));
   cdp.close();

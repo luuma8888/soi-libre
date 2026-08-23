@@ -1,0 +1,73 @@
+name: Build Boussole compact runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      publier_les_fichiers_generes:
+        description: "Publier les 4 datasets compacts et l’édition autonome sur la branche lancée"
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: boussole-compact-runtime-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CHROMIUM_PATH: /usr/bin/google-chrome
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Utiliser Node.js 24
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Construire les datasets compacts
+        run: node scripts/build-boussole-runtime.mjs
+
+      - name: Vérifier la séparation de la coquille connectée
+        run: git diff --exit-code -- creations/boussolepro/boussole-pro.html
+
+      - name: Valider les datasets et les deux distributions
+        run: node scripts/validate-boussole-runtime.mjs
+
+      - name: Tester l’application dans Chromium
+        run: node scripts/measure-boussole-refonte-v1-browser.mjs
+
+      - name: Publier les rapports de validation
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: boussole-runtime-validation-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 21
+          path: |
+            tmp/monde-pro/boussole-runtime-v1/*.json
+            tmp/monde-pro/refonte-interface-v1/*.json
+            tmp/monde-pro/refonte-interface-v1/captures/*.png
+
+      - name: Publier les fichiers générés sur la branche
+        if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add creations/boussolepro/boussole-pro-offline.html
+          git add creations/boussolepro/data/generated/boussole-runtime/boussole-runtime-manifest.json
+          git add creations/boussolepro/data/generated/boussole-runtime/boussole-core.json
+          git add creations/boussolepro/data/generated/boussole-runtime/boussole-competences.json
+          git add creations/boussolepro/data/generated/boussole-runtime/boussole-marche.json
+          git diff --cached --quiet || git commit -m "data(boussole-pro): regenerate compact runtime"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
