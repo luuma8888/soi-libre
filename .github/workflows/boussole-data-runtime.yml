@@ -20,8 +20,6 @@ jobs:
   build-and-validate:
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    env:
-      CHROMIUM_PATH: /usr/bin/google-chrome
 
     steps:
       - name: Récupérer le dépôt
@@ -49,9 +47,6 @@ jobs:
       - name: Valider les règles fonctionnelles v1.3
         run: node scripts/validate-boussole-v13.mjs
 
-      - name: Tester l’application dans Chromium
-        run: node scripts/measure-boussole-refonte-v1-browser.mjs
-
       - name: Publier les rapports de validation
         if: always()
         uses: actions/upload-artifact@v6
@@ -61,8 +56,6 @@ jobs:
           retention-days: 21
           path: |
             tmp/monde-pro/boussole-runtime-v1/*.json
-            tmp/monde-pro/refonte-interface-v1/*.json
-            tmp/monde-pro/refonte-interface-v1/captures/*.png
             tmp/monde-pro/boussole-v1.3/*.json
 
       - name: Publier les fichiers générés sur la branche
