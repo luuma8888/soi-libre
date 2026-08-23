@@ -44,8 +44,8 @@ jobs:
       - name: Auditer la couverture des options de profil
         run: node scripts/audit-boussole-profile-options.mjs
 
-      - name: Valider les règles fonctionnelles v1.3
-        run: node scripts/validate-boussole-v13.mjs
+      - name: Valider les règles fonctionnelles v1.4
+        run: node scripts/validate-boussole-v14.mjs
 
       - name: Publier les rapports de validation
         if: always()
@@ -56,7 +56,7 @@ jobs:
           retention-days: 21
           path: |
             tmp/monde-pro/boussole-runtime-v1/*.json
-            tmp/monde-pro/boussole-v1.3/*.json
+            tmp/monde-pro/boussole-v1.4/*.json
 
       - name: Publier les fichiers générés sur la branche
         if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}

@@ -39,7 +39,7 @@ for (const [key, descriptor] of Object.entries(manifest.files || {})) {
 const structural = validateCompactRuntime(runtime);
 assert("compact_structure", structural.failures.length === 0, structural.failures);
 assert("manifest_identity", [runtime.core, runtime.competences, runtime.marche].every(item =>
-  item.schemaVersion === manifest.schemaVersion && item.datasetVersion === manifest.datasetVersion && item.generatedAt === manifest.generatedAt
+  item.schemaVersion === manifest.resourceSchemaVersion && item.datasetVersion === manifest.datasetVersion && item.generatedAt === manifest.generatedAt
 ));
 assert("manifest_runtime_fingerprint", sha256(Object.values(manifest.files).map(file => file.sha256).join("|")) === manifest.runtimeFingerprintSha256);
 
@@ -53,6 +53,13 @@ assert("skill_search", ["animer", "écouter"].every(query => searchSkills(adapte
 assert("mission_activities_contract", adapted.jobs.every(job => typeof job.mission === "string" && Array.isArray(job.activities)));
 assert("mission_not_duplicated_in_activities", adapted.jobs.every(job => !job.mission || !job.activities.includes(job.mission)));
 assert("localized_access_warnings", adapted.jobs.every(job => (job.accessSummary?.accessWarnings || []).every(label => !/^[a-z]+(?:[_-][a-z]+)+$/.test(label))));
+assert("generated_tag_statistics", Array.isArray(runtime.core.tagStatistics) && runtime.core.tagStatistics.length > 0);
+assert("tag_limits", runtime.core.jobs.every(job => ["interestTags", "valueTags", "transitionTags"].every(key => (job[key] || []).length <= 6)));
+assert("related_graph_reciprocal", adapted.jobs.every(job => (job.relatedJobIds || []).every(id => {
+  const related = adapted.jobs.find(candidate => candidate.id === id);
+  return related && (related.relatedJobIds || []).includes(job.id);
+})));
+assert("related_graph_degree", adapted.jobs.every(job => (job.relatedJobIds || []).length <= 12));
 
 const marketRows = runtime.marche.jobs.flatMap(job => Object.entries(job.territories).map(([territoryId, value]) => ({ jobId: job.jobId, territoryId, ...value })));
 const marketExamples = {
@@ -81,7 +88,7 @@ const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
 assert("online_shell_has_no_dataset", !("dataset" in onlinePayload) && onlinePayload.embeddedRuntime === null);
-assert("app_version_v1_3", onlinePayload.appVersion === "1.3.0" && onlineHtml.includes("Boussole Pro v1.3.0"));
+assert("app_version_v1_4", onlinePayload.appVersion === "1.4.0" && onlineHtml.includes("Boussole Pro v1.4.0"));
 assert("small_demo_profile", (onlinePayload.defaultProfile?.jobExperiences || []).length <= 2 && (onlinePayload.defaultProfile?.skillSelections || []).length <= 12 && (onlinePayload.defaultProfile?.skillSelections || []).every(item => item.currentLevel && item.futureWish));
 assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "boussole-runtime/");
 assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(key =>
@@ -99,9 +106,9 @@ assert("runtime_mode_copy_explicit", [
 assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
 assert("index_exposes_both_editions", [
   'href="creations/boussolepro/boussole-pro.html"',
-  'download="boussole-pro-online-v1-3-0.html"',
+  'download="boussole-pro-online-v1-4-0.html"',
   'href="creations/boussolepro/boussole-pro-offline.html"',
-  'download="boussole-pro-offline-v1-3-0.html"'
+  'download="boussole-pro-offline-v1-4-0.html"'
 ].every(copy => indexHtml.includes(copy)));
 assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
 

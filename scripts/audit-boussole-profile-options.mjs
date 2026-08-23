@@ -3,7 +3,7 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const RUNTIME_DIR = path.join(ROOT, "creations/boussolepro/boussole-runtime");
-const OUTPUT = path.join(ROOT, "tmp/monde-pro/boussole-v1.3/profile-options-coverage.json");
+const OUTPUT = path.join(ROOT, "tmp/monde-pro/boussole-v1.4/profile-options-coverage.json");
 const core = JSON.parse(await readFile(path.join(RUNTIME_DIR, "boussole-core.json"), "utf8"));
 const jobs = core.jobs || [];
 

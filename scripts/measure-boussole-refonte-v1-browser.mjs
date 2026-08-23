@@ -160,6 +160,34 @@ try {
   await capture(cdp, "07-fiche-metier-bureau.png");
   const focusRestored = await evaluate(cdp, `new Promise(resolve => { document.getElementById("jobDialog").close(); requestAnimationFrame(() => requestAnimationFrame(() => resolve(document.activeElement?.matches(".top-list button") || false))); })`, true);
   assert("dialog_focus_restored", focusRestored === true, focusRestored);
+  const marketAndRelations = await evaluate(cdp, `(() => {
+    RefonteApp.openJob("rome-K1204", document.querySelector(".top-list button"));
+    const marketText = document.querySelector(".market-detail")?.innerText || "";
+    const market = {
+      cards: document.querySelectorAll(".market-detail .market-card").length,
+      gauges: document.querySelectorAll(".market-detail .market-gauge").length,
+      volumes: document.querySelectorAll(".market-detail .market-volume").length,
+      bmo: document.querySelectorAll(".market-detail .market-bmo").length,
+      described: [...document.querySelectorAll(".market-detail .market-card")].every(card => card.tabIndex === 0 && document.getElementById(card.getAttribute("aria-describedby"))),
+      french: !/Very high|High|Low/.test(marketText)
+    };
+    document.getElementById("jobDialog").close();
+    RefonteApp.openJob("rome-G1203", document.querySelector(".top-list button"));
+    const before = document.getElementById("jobDialogTitle")?.textContent;
+    const related = document.querySelector(".related-jobs .job-title-link");
+    related?.click();
+    const after = document.getElementById("jobDialogTitle")?.textContent;
+    const stack = RefonteApp.state.dialogStack.length;
+    document.querySelector('[data-action="back-job"]')?.click();
+    const returned = document.getElementById("jobDialogTitle")?.textContent;
+    document.getElementById("jobDialog").close();
+    const graphBefore = JSON.stringify(RefonteApp.jobById("rome-G1203")?.relatedJobIds || []);
+    RefonteApp.state.profile.interests = ["animaux"];
+    const graphAfter = JSON.stringify(RefonteApp.jobById("rome-G1203")?.relatedJobIds || []);
+    return { marketText, market, relation: { before, after, stack, returned, stable: graphBefore === graphAfter } };
+  })()`);
+  assert("market_visual_french_and_accessible", marketAndRelations.market.cards === 3 && marketAndRelations.market.gauges === 3 && marketAndRelations.market.volumes === 3 && marketAndRelations.market.bmo === 3 && marketAndRelations.market.described && marketAndRelations.market.french, marketAndRelations);
+  assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.stable, marketAndRelations.relation);
 
   const modeInvariant = await evaluate(cdp, `(() => {
     const before = window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5;
@@ -185,7 +213,9 @@ try {
   assert("nine_locked_step_titles", JSON.stringify(stepTitles) === JSON.stringify(["Départ", "Formation", "Contraintes", "Parcours professionnel", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"]), stepTitles);
   const validationText = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.setStep(7); return document.querySelector(".summary-blocks")?.innerText || ""; })()`);
   assert("validation_uses_human_labels", !/open_exploration|not_specified|under_10|preferred|petite_enfance|Niveau\s*:\s*\d/.test(validationText) && validationText.includes("Bac +2"), validationText.slice(0, 500));
-  await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.setStep(0)`);
+  const completionState = await evaluate(cdp, `(() => { document.querySelector('[data-action="next-step"]').click(); document.querySelector('[data-view-link="resultats"]').click(); return { completed: RefonteApp.state.profile.completedBoussole, requested: RefonteApp.state.profile.hasRequestedResults }; })()`);
+  assert("completion_and_results_request_persisted", completionState.completed === true && completionState.requested === true, completionState);
+  await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); window.__BOUSSOLE_REFONTE_TEST_API__.setStep(0)`);
   const focusInput = await evaluate(cdp, `(() => { const input=document.getElementById("profileName"); input.focus(); input.value="Test focus"; input.dispatchEvent(new Event("input",{bubbles:true})); return document.activeElement===input; })()`);
   assert("profile_input_keeps_focus", focusInput === true, focusInput);
   await capture(cdp, "02-ma-boussole-bureau.png");
@@ -250,11 +280,23 @@ try {
   await capture(cdp, "06-menu-bureau.png");
 
   const responsive = [];
-  for (const width of [360, 768, 1024, 1440]) {
-    await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: width < 768, screenWidth: width, screenHeight: 900 });
-    responsive.push({ width, overflow: await evaluate(cdp, "document.documentElement.scrollWidth-document.documentElement.clientWidth") });
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: false });
+    responsive.push({ width, ...await evaluate(cdp, `(() => {
+      const viewport = document.documentElement.clientWidth;
+      return {
+        overflow: document.documentElement.scrollWidth - viewport,
+        root: { clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, rectWidth: Math.round(document.documentElement.getBoundingClientRect().width) },
+        body: { clientWidth: document.body.clientWidth, scrollWidth: document.body.scrollWidth, rectWidth: Math.round(document.body.getBoundingClientRect().width) },
+        offenders: [...document.querySelectorAll("body *")].map(node => {
+          const rect = node.getBoundingClientRect();
+          return { tag: node.tagName, className: String(node.className || "").slice(0, 80), width: Math.round(rect.width), left: Math.round(rect.left), right: Math.round(rect.right), text: (node.textContent || "").trim().slice(0, 80) };
+        }).filter(row => row.right > viewport + 1 || row.left < -1).sort((a, b) => b.right - a.right).slice(0, 8),
+        internalScrollers: [...document.querySelectorAll("body *")].filter(node => node.scrollWidth > node.clientWidth + 1).map(node => ({ tag: node.tagName, className: String(node.className || "").slice(0, 80), clientWidth: node.clientWidth, scrollWidth: node.scrollWidth })).slice(0, 8)
+      };
+    })()`) });
   }
-  assert("responsive_four_required_widths", responsive.every(row => row.overflow <= 1), responsive);
+  assert("responsive_five_required_widths", responsive.every(row => row.overflow <= 1), responsive);
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true, screenWidth: 390, screenHeight: 844 });
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); window.__BOUSSOLE_REFONTE_TEST_API__.setStep(3)`);
   await capture(cdp, "etape-04-parcours-mobile.png");

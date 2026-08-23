@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const RUNTIME_SCHEMA_VERSION = "1.0.0";
+export const RUNTIME_SCHEMA_VERSION = "1.1.0";
 export const RUNTIME_TERRITORIES = Object.freeze({
   FR: "France",
   "REG-76": "Occitanie",
@@ -43,7 +43,7 @@ export function sha256(value) {
 }
 
 export function buildCompactRuntime(dataset, metadata) {
-  const jobs = array(dataset?.jobs);
+  const jobs = array(dataset?.jobs).map(job => ({ ...job, ...enrichProfileOptionTags(job) }));
   if (jobs.length !== 1000) throw new Error(`Le corpus maître doit contenir 1000 métiers, reçu : ${jobs.length}.`);
   const generatedAt = requiredText(metadata.generatedAt, "generatedAt");
   const datasetVersion = requiredText(metadata.datasetVersion, "datasetVersion");
@@ -59,13 +59,17 @@ export function buildCompactRuntime(dataset, metadata) {
   const sectorDictionary = buildSectorDictionary(jobs);
   const romeDomains = buildRomeDomainDictionaries(jobs);
   const accessWarnings = buildAccessWarningDictionary(jobs);
+  const relatedGraph = buildRelatedJobGraph(jobs);
+  const coreJobs = jobs.map(job => compactCoreJob(job, relatedGraph.byJobId.get(job.id) || []));
+  const tagStatistics = buildTagStatistics(coreJobs);
 
   const core = {
     schemaVersion: RUNTIME_SCHEMA_VERSION,
     datasetVersion,
     generatedAt,
     sourceDate,
-    jobs: jobs.map(job => compactCoreJob(job)),
+    jobs: coreJobs,
+    tagStatistics,
     workContexts: contextDictionary.items,
     diplomaLevels: compactDiplomaLevels(dataset.diplomaLevels),
     dictionaries: { directions: directionDictionary, sectors: sectorDictionary, accessWarnings, ...romeDomains }
@@ -95,15 +99,16 @@ export function buildCompactRuntime(dataset, metadata) {
     droppedNonScoringMobilizedIds: relations.droppedMobilizedIds.size,
     groupOccurrences: jobs.reduce((sum, job) => sum + array(job.skillGroups).length, 0),
     contextReferences: contextDictionary.references,
-    accessPaths: jobs.reduce((sum, job) => sum + array(job.accessPaths || job.accessSummary?.accessPaths).length, 0)
+    accessPaths: jobs.reduce((sum, job) => sum + array(job.accessPaths || job.accessSummary?.accessPaths).length, 0),
+    tagStatistics,
+    relationGraph: relatedGraph.diagnostics
   };
   const validation = validateCompactRuntime({ core, competences, marche }, diagnostics);
   if (validation.failures.length) throw new Error(`Projection runtime invalide : ${validation.failures.join(", ")}`);
   return { core, competences, marche, diagnostics, validation };
 }
 
-function compactCoreJob(job) {
-  const enriched = enrichProfileOptionTags(job);
+function compactCoreJob(job, relatedJobIds = []) {
   const content = splitMissionAndActivities(job);
   const accessSummary = compactAccessSummary(job.accessSummary);
   const accessPaths = array(job.accessPaths || job.accessSummary?.accessPaths).map(compactAccessPath);
@@ -128,12 +133,14 @@ function compactCoreJob(job) {
     secondarySectorIds: unique(array(job.secondarySectorIds)),
     boussoleSectorIds: unique(array(job.boussoleSectorIds)),
     sectorMappingConfidence: numberOrNull(job.sectorMappingConfidence),
-    interestTags: enriched.interestTags,
-    valueTags: enriched.valueTags,
-    transitionTags: unique(array(job.transitionTags)),
+    interestTags: unique(array(job.interestTags)).slice(0, 6),
+    valueTags: unique(array(job.valueTags)).slice(0, 6),
+    transitionTags: unique(array(job.transitionTags)).slice(0, 6),
+    relatedJobIds: unique(relatedJobIds).slice(0, 12),
+    primaryAudiencePetiteEnfance: Boolean(job.primaryAudiencePetiteEnfance),
     workContexts: unique(array(job.workContexts).map(contextId)),
     confidence: numberOrNull(job.confidence),
-    missingFields: unique(array(job.missingFields)),
+    missingFields: recalculateMissingFields(job, content),
     accessSummary,
     accessPaths,
     constraints: compactConstraints(job)
@@ -143,21 +150,189 @@ function compactCoreJob(job) {
 }
 
 export function enrichProfileOptionTags(job = {}) {
-  const text = slug([job.title, job.domain, job.family, job.description, ...(array(job.appellations)), ...(array(job.romeWorkContextLabels))].join(" ")).replaceAll("-", " ");
-  const interestTags = new Set(array(job.interestTags));
-  const valueTags = new Set(array(job.valueTags));
-  const add = (condition, target, values) => { if (condition) values.forEach(value => target.add(value)); };
-  add(/communication|accueil|relation|conseil|mediation|vente/.test(text), interestTags, ["communiquer"]);
-  add(/repar|maintenance|depann|mecan|electric/.test(text), interestTags, ["reparer"]);
-  add(/animal|elevage|veterinaire|canin/.test(text), interestTags, ["animaux"]);
-  add(/manuel|artisan|fabric|atelier|chantier|batiment/.test(text), interestTags, ["manuel"]);
-  add(/securite|prevention|protection|secour/.test(text), interestTags, ["proteger"]);
-  add(/cuisine|aliment|restauration|boulanger|patiss|agricultur/.test(text), interestTags, ["nourrir"]);
-  add(/creation|culture|artist|design|conception|graph/.test(text), interestTags, ["creer"]);
-  add(/social|accompagnement|entraide|association|mediation/.test(text), valueTags, ["solidarity"]);
-  add(/creation|culture|artist|design|conception|graph/.test(text), valueTags, ["creativity"]);
-  add(/administr|gestion|dossier|procedure|qualite|controle/.test(text), valueTags, ["clarity"]);
-  return { interestTags: [...interestTags], valueTags: [...valueTags] };
+  const title = normalizedEvidence(job.title);
+  const direct = normalizedEvidence([job.title, job.mission, job.description, ...array(job.activities)].join(" "));
+  const contexts = normalizedEvidence(array(job.romeWorkContextLabels).join(" "));
+  const sectorIds = unique([job.primarySectorId, ...array(job.secondarySectorIds)]);
+  const scored = rules => rules.flatMap(rule => {
+    const titleMatch = rule.pattern.test(title);
+    rule.pattern.lastIndex = 0;
+    const directMatch = rule.pattern.test(direct);
+    rule.pattern.lastIndex = 0;
+    const contextMatch = rule.contextPattern ? rule.contextPattern.test(contexts) : false;
+    if (!titleMatch && !directMatch && !contextMatch && !array(rule.sectors).some(id => sectorIds.includes(id))) return [];
+    return [{ id: rule.id, score: (titleMatch ? 8 : 0) + (directMatch ? 4 : 0) + (contextMatch ? 2 : 0) + (array(rule.sectors).some(id => sectorIds.includes(id)) ? 3 : 0) + (rule.specificity || 0) }];
+  }).sort((a, b) => b.score - a.score || a.id.localeCompare(b.id, "fr")).slice(0, 6).map(row => row.id);
+
+  const interestTags = scored([
+    { id: "petite_enfance", pattern: /petite enfance|creche|nourrisson|moins de trois ans/, sectors: [], specificity: 5 },
+    { id: "enfants", pattern: /enfant|jeunesse|mineur|scolaire|eleve/, sectors: ["education_enfance"], specificity: 4 },
+    { id: "animaux", pattern: /animal|elevage|veterinaire|canin|felin/, sectors: ["animaux"], specificity: 5 },
+    { id: "accompagner", pattern: /accompagn|soutien|mediation|insertion|autonomie/, sectors: ["social_insertion"], specificity: 4 },
+    { id: "transmettre", pattern: /enseign|format|pedagog|educat|transmet|animation/, sectors: ["education_enfance"], specificity: 3 },
+    { id: "creer", pattern: /crea|artist|concep|design|graph|atelier|ludique/, sectors: ["culture_communication"], specificity: 3 },
+    { id: "proteger", pattern: /protec|securit|prevention|secour|surveill/, sectors: ["securite_prevention"], specificity: 3 },
+    { id: "nature", pattern: /nature|environnement|biodivers|paysag|agric|foret/, sectors: ["nature_agriculture"], specificity: 4 },
+    { id: "nourrir", pattern: /cuisine|aliment|restauration|boulanger|patiss|repas/, sectors: ["restauration_alimentation"], specificity: 4 },
+    { id: "reparer", pattern: /repar|maintenance|depann|mecan|electric/, sectors: ["maintenance"], specificity: 4 },
+    { id: "fabriquer", pattern: /fabric|production|assembl|usin|constru/, sectors: ["industrie_production"], specificity: 3 },
+    { id: "communiquer", pattern: /communication|accueil|relation|conseil|informer/, sectors: ["culture_communication"], specificity: 2 },
+    { id: "organiser", pattern: /organis|coordonn|planif|gestion/, sectors: ["administratif_support"], specificity: 1 },
+    { id: "analyser", pattern: /analys|recherche|diagnostic|etude/, sectors: ["recherche_analyse"], specificity: 2 },
+    { id: "manuel", pattern: /manuel|artisan|chantier|outillage/, sectors: ["batiment_construction"], specificity: 2 },
+    { id: "aider", pattern: /aide|service aux personnes|assistance/, sectors: [], specificity: 0 }
+  ]);
+  const valueTags = scored([
+    { id: "care", pattern: /soin|prendre soin|sante|bien etre/, sectors: ["sante_soin"], specificity: 4 },
+    { id: "solidarity", pattern: /solidarit|social|insertion|entraide|mediation|accompagn/, sectors: ["social_insertion"], specificity: 3 },
+    { id: "creativity", pattern: /crea|artist|design|concep|atelier|ludique/, sectors: ["culture_communication"], specificity: 3 },
+    { id: "ecology", pattern: /ecolog|environnement|nature|biodivers|durable/, sectors: ["nature_agriculture"], specificity: 4 },
+    { id: "security", pattern: /securit|prevention|protection|controle/, sectors: ["securite_prevention"], specificity: 3 },
+    { id: "team", pattern: /equipe|collectif|coordonn|collabor/, sectors: [], specificity: 2 },
+    { id: "autonomy", pattern: /autonom|independant|responsabil/, sectors: [], specificity: 2 },
+    { id: "concrete", pattern: /terrain|manuel|fabric|repar|production/, sectors: ["maintenance", "batiment_construction"], specificity: 2 },
+    { id: "clarity", pattern: /procedure|dossier|reglement|qualite|document/, sectors: ["administratif_support"], specificity: 1 },
+    { id: "precision", pattern: /precision|controle|mesure|qualite|diagnostic/, sectors: [], specificity: 1 },
+    { id: "service", pattern: /service|accueil|conseil|accompagn|aide/, sectors: [], specificity: 0 },
+    { id: "meaning", pattern: /educat|social|sante|protection|environnement|transmission/, sectors: ["education_enfance", "social_insertion"], specificity: 1 },
+    { id: "stability", pattern: /gestion|administr|controle|maintenance/, sectors: [], specificity: 0 }
+  ]);
+  const transitionTags = scored([
+    { id: "enfance", pattern: /enfant|jeunesse|scolaire|eleve|educat/, sectors: ["education_enfance"], specificity: 4 },
+    { id: "social", pattern: /social|insertion|mediation|accompagn/, sectors: ["social_insertion"], specificity: 4 },
+    { id: "nature", pattern: /nature|agric|environnement|animal|paysag/, sectors: ["nature_agriculture", "animaux"], specificity: 4 },
+    { id: "commerce", pattern: /vente|commerce|boutique|client/, sectors: ["commerce_vente"], specificity: 3 },
+    { id: "numerique", pattern: /numerique|informat|logiciel|data|reseau/, sectors: ["numerique"], specificity: 3 },
+    { id: "sante", pattern: /sante|soin|medical|therap/, sectors: ["sante_soin"], specificity: 3 },
+    { id: "batiment", pattern: /batiment|chantier|construction/, sectors: ["batiment_construction"], specificity: 3 },
+    { id: "industrie", pattern: /industrie|usine|production|fabrication/, sectors: ["industrie_production"], specificity: 3 },
+    { id: "logistique", pattern: /logistique|transport|stock|livraison/, sectors: ["logistique_transport"], specificity: 3 },
+    { id: "administratif", pattern: /administr|gestion|dossier|procedure/, sectors: ["administratif_support"], specificity: 2 },
+    { id: "animation", pattern: /animation|animateur|ludique|loisir/, sectors: [], specificity: 3 },
+    { id: "relationnel", pattern: /public|accueil|relation|accompagn|conseil/, sectors: [], specificity: 1 },
+    { id: "manuel", pattern: /manuel|atelier|outillage|repar|fabric/, sectors: [], specificity: 1 },
+    { id: "analyse", pattern: /analys|recherche|diagnostic|etude/, sectors: ["recherche_analyse"], specificity: 2 },
+    { id: "securite", pattern: /securit|prevention|protection|surveill/, sectors: ["securite_prevention"], specificity: 2 }
+  ]);
+  const primaryAudiencePetiteEnfance = inferPrimaryAudiencePetiteEnfance(job, title, direct);
+  return { interestTags, valueTags, transitionTags, primaryAudiencePetiteEnfance };
+}
+
+export function buildTagStatistics(jobs = []) {
+  const rows = [];
+  const count = array(jobs).length || 1;
+  for (const [kind, field] of [["interest", "interestTags"], ["value", "valueTags"], ["transition", "transitionTags"]]) {
+    const frequencies = new Map();
+    for (const job of array(jobs)) for (const id of new Set(array(job[field]))) frequencies.set(id, (frequencies.get(id) || 0) + 1);
+    for (const [id, df] of frequencies) {
+      const prevalence = df / count;
+      const raw = Math.log((count + 1) / (df + 1));
+      const maximum = Math.log(count + 1);
+      const normalized = 0.1 + (maximum ? raw / maximum : 0) * 0.9;
+      rows.push({ kind, id, df, prevalence: Number(prevalence.toFixed(6)), weight: Number(Math.min(prevalence > 0.7 ? 0.15 : 1, Math.max(0.1, normalized)).toFixed(6)) });
+    }
+  }
+  return rows.sort((a, b) => a.kind.localeCompare(b.kind) || a.id.localeCompare(b.id));
+}
+
+function normalizedEvidence(value) {
+  return slug(String(value || "")).replaceAll("-", " ");
+}
+
+function inferPrimaryAudiencePetiteEnfance(job, title, direct) {
+  const code = String(job.romeCode || "").toUpperCase();
+  if (code === "K1309") return false;
+  if (["K1303", "K1304"].includes(code)) return true;
+  return /petite enfance|auxiliaire de puericulture|assistant maternel|garde d enfant|creche/.test(title) && /nourrisson|bebe|moins de trois ans|petite enfance|creche/.test(direct);
+}
+
+function recalculateMissingFields(job, content) {
+  const fields = unique(array(job.missingFields)).filter(field => field !== "activities");
+  if (!array(content.activities).length) fields.push("activities");
+  return unique(fields);
+}
+
+function buildRelatedJobGraph(jobs) {
+  const maximumDegree = 10;
+  const features = new Map(jobs.map(job => [job.id, relationFeatures(job)]));
+  const candidates = [];
+  for (let leftIndex = 0; leftIndex < jobs.length; leftIndex += 1) {
+    const left = jobs[leftIndex];
+    for (let rightIndex = leftIndex + 1; rightIndex < jobs.length; rightIndex += 1) {
+      const right = jobs[rightIndex];
+      if (relationBlocked(left, right)) continue;
+      const metrics = relationSimilarity(features.get(left.id), features.get(right.id));
+      if (metrics.score >= 0.17) candidates.push({ leftId: left.id, rightId: right.id, leftCode: left.romeCode, rightCode: right.romeCode, ...metrics });
+    }
+  }
+  candidates.sort((a, b) => b.score - a.score || a.leftCode.localeCompare(b.leftCode) || a.rightCode.localeCompare(b.rightCode));
+  const byJobId = new Map(jobs.map(job => [job.id, []]));
+  const selected = [];
+  for (const edge of candidates) {
+    const left = byJobId.get(edge.leftId);
+    const right = byJobId.get(edge.rightId);
+    if (left.length >= maximumDegree || right.length >= maximumDegree) continue;
+    left.push(edge.rightId);
+    right.push(edge.leftId);
+    selected.push(edge);
+  }
+  const candidateByPair = new Map(candidates.map(edge => [[edge.leftCode, edge.rightCode].sort().join("|"), edge]));
+  const references = [["G1203", "G1235"], ["G1203", "G1202"], ["K1208", "K1207"], ["K1206", "K1209"], ["K1206", "K1217"], ["K2110", "K2138"], ["K2110", "K2116"], ["K2110", "K2113"], ["K1206", "K1212"], ["G1203", "G1206"]]
+    .map(([leftCode, rightCode]) => ({ leftCode, rightCode, candidate: candidateByPair.get([leftCode, rightCode].sort().join("|")) || null, selected: selected.some(edge => [edge.leftCode, edge.rightCode].sort().join("|") === [leftCode, rightCode].sort().join("|")) }));
+  return {
+    byJobId,
+    diagnostics: {
+      maximumDegree,
+      candidateEdges: candidates.length,
+      selectedEdges: selected.length,
+      reciprocalRate: 1,
+      isolatedJobs: [...byJobId.values()].filter(values => !values.length).length,
+      minimumDegree: Math.min(...[...byJobId.values()].map(values => values.length)),
+      averageDegree: Number((selected.length * 2 / jobs.length).toFixed(3)),
+      references
+    }
+  };
+}
+
+function relationFeatures(job) {
+  const groups = array(job.skillGroups).map(group => slug(group.issueLabel || group.groupId || "")).filter(id => id && id !== "savoir-etre-professionnels");
+  const skills = relationIds(job.requiredSkills?.length ? job.requiredSkills : job.matchableSkillIds);
+  const contexts = array(job.workContexts).map(contextId).filter(Boolean);
+  const sectors = unique([job.primarySectorId, ...array(job.secondarySectorIds)].filter(Boolean));
+  const titleTokens = normalizedEvidence(job.title).split(" ").filter(token => token.length >= 5 && !["animatrice", "educatrice", "assistant", "assistante", "responsable"].includes(token));
+  return { groups, skills, contexts, sectors, titleTokens, primarySectorId: job.primarySectorId, professionalDomain: String(job.romeCode || "").slice(0, 3), title: normalizedEvidence(job.title) };
+}
+
+function relationSimilarity(left, right) {
+  const skill = jaccardIndex(left.skills, right.skills);
+  const group = jaccardIndex(left.groups, right.groups);
+  const context = jaccardIndex(left.contexts, right.contexts);
+  const sector = jaccardIndex(left.sectors, right.sectors);
+  const title = jaccardIndex(left.titleTokens, right.titleTokens);
+  const samePrimarySector = left.primarySectorId && left.primarySectorId === right.primarySectorId ? 1 : 0;
+  const sameProfessionalDomain = left.professionalDomain && left.professionalDomain === right.professionalDomain ? 1 : 0;
+  const sameSpecificFamily = (/animat/.test(left.title) && /animat/.test(right.title)) || (/educateur/.test(left.title) && /educateur/.test(right.title)) ? 1 : 0;
+  const score = skill * 0.38 + group * 0.20 + context * 0.12 + sector * 0.10 + title * 0.08 + samePrimarySector * 0.06 + sameProfessionalDomain * 0.02 + sameSpecificFamily * 0.14;
+  return { score: Number(score.toFixed(6)), skill: Number(skill.toFixed(6)), group: Number(group.toFixed(6)), context: Number(context.toFixed(6)), sector: Number(sector.toFixed(6)), title: Number(title.toFixed(6)), samePrimarySector, sameProfessionalDomain, sameSpecificFamily };
+}
+
+function relationBlocked(left, right) {
+  const a = normalizedEvidence(left.title);
+  const b = normalizedEvidence(right.title);
+  const pair = `${a} | ${b}`;
+  if (/croupier|casino|jeux d argent/.test(pair) && /jeunesse|enfant|educat|socioculturel/.test(pair)) return true;
+  if (/conduite|routiere|auto ecole/.test(pair) && /eleve|handicap|scolaire/.test(pair)) return true;
+  if (/culte|religieux/.test(pair) && /socioculturel|socioeducatif|animation/.test(pair)) return true;
+  return false;
+}
+
+function jaccardIndex(left, right) {
+  const a = new Set(array(left));
+  const b = new Set(array(right));
+  if (!a.size && !b.size) return 0;
+  let shared = 0;
+  for (const item of a) if (b.has(item)) shared += 1;
+  return shared / new Set([...a, ...b]).size;
 }
 
 function compactAccessSummary(raw = null) {
@@ -507,6 +682,8 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       interestTags: array(job.interestTags),
       valueTags: array(job.valueTags),
       transitionTags: array(job.transitionTags),
+      relatedJobIds: array(job.relatedJobIds),
+      primaryAudiencePetiteEnfance: Boolean(job.primaryAudiencePetiteEnfance),
       workContexts: array(job.workContexts),
       romeWorkContextLabels: array(job.workContexts).map(id => contexts.get(id)?.label).filter(Boolean),
       missingFields: array(job.missingFields),
@@ -543,7 +720,7 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       recommendedDiplomaLevel: null,
       requiredCertifications: [],
       recommendedCertifications: [],
-      relatedJobs: [],
+      relatedJobs: array(job.relatedJobIds),
       market: { status: "unknown", source: "unknown", confidence: 0 },
       marketIndicators: [],
       marketStats: expandMarketStats(marketRows.get(job.id), marche)
@@ -563,6 +740,7 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
     matchableSkills: skills.filter(item => item.classification === "skill_action"),
     knowledge,
     workContexts: array(core.workContexts).map(item => ({ ...item, constraintTags: array(item.constraintTags) })),
+    tagStatistics: array(core.tagStatistics),
     jobAppellations: [],
     diplomaLevels: array(core.diplomaLevels),
     marketTrends: { schemaVersion: marche.schemaVersion, generatedAt: marche.generatedAt, jobs: [] },
@@ -714,7 +892,16 @@ export function validateCompactRuntime(runtime, diagnostics = {}) {
     for (const id of array(job.workContexts)) if (!contexts.has(id)) failures.push(`orphan_context:${id}`);
     for (const signal of array(job.constraints?.officialSignals)) if (signal.contextId && !contexts.has(signal.contextId)) failures.push(`orphan_signal_context:${signal.contextId}`);
     if (!Array.isArray(job.activities)) failures.push(`invalid_activities:${job.id}`);
+    if ([job.interestTags, job.valueTags, job.transitionTags].some(tags => array(tags).length > 6)) failures.push(`tag_limit:${job.id}`);
+    if (array(job.missingFields).includes("activities") !== !array(job.activities).length) failures.push(`activity_missing_metadata:${job.id}`);
+    if (array(job.relatedJobIds).length > 12) failures.push(`related_degree:${job.id}`);
+    for (const relatedId of array(job.relatedJobIds)) {
+      const related = jobs.find(candidate => candidate.id === relatedId);
+      if (!related) failures.push(`orphan_related_job:${job.id}:${relatedId}`);
+      else if (!array(related.relatedJobIds).includes(job.id)) failures.push(`asymmetric_related_job:${job.id}:${relatedId}`);
+    }
   }
+  if (!array(core?.tagStatistics).length || array(core?.tagStatistics).some(row => !Number.isFinite(row.df) || !Number.isFinite(row.prevalence) || !Number.isFinite(row.weight))) failures.push("tag_statistics");
   if (array(competences?.items).some(item => !humanLabel(item.label, item.id))) failures.push("technical_item_label");
   if (diagnostics.unresolvedKnowledgeIds?.length) failures.push("unresolved_knowledge_labels");
   const forbidden = [];

@@ -68,12 +68,12 @@ const BoussoleRuntimeProvider = {
   validateCore(core, manifest) {
     const jobs = Array.isArray(core?.jobs) ? core.jobs : [];
     const codes = jobs.map(job => job.romeCode);
-    if (core?.schemaVersion !== manifest.schemaVersion || core?.datasetVersion !== manifest.datasetVersion || core?.generatedAt !== manifest.generatedAt) throw new Error("Identité du core incohérente.");
+    if (core?.schemaVersion !== manifest.resourceSchemaVersion || core?.datasetVersion !== manifest.datasetVersion || core?.generatedAt !== manifest.generatedAt) throw new Error("Identité du core incohérente.");
     if (jobs.length !== 1000 || new Set(codes).size !== 1000 || codes.some(code => !/^[A-Z][0-9]{4}$/.test(code || ""))) throw new Error("Corpus core invalide.");
   },
 
   validateCompetences(data, core, manifest) {
-    if (data?.schemaVersion !== manifest.schemaVersion || data?.datasetVersion !== manifest.datasetVersion || data?.generatedAt !== manifest.generatedAt) throw new Error("Identité des compétences incohérente.");
+    if (data?.schemaVersion !== manifest.resourceSchemaVersion || data?.datasetVersion !== manifest.datasetVersion || data?.generatedAt !== manifest.generatedAt) throw new Error("Identité des compétences incohérente.");
     const jobIds = new Set(core.jobs.map(job => job.id));
     const itemIds = new Set((data.items || []).map(item => item.id));
     const groupIds = new Set((data.groups || []).map(group => group.id));
@@ -89,7 +89,7 @@ const BoussoleRuntimeProvider = {
   },
 
   validateMarket(data, core, manifest) {
-    if (data?.schemaVersion !== manifest.schemaVersion || data?.datasetVersion !== manifest.datasetVersion || data?.generatedAt !== manifest.generatedAt) throw new Error("Identité du marché incohérente.");
+    if (data?.schemaVersion !== manifest.resourceSchemaVersion || data?.datasetVersion !== manifest.datasetVersion || data?.generatedAt !== manifest.generatedAt) throw new Error("Identité du marché incohérente.");
     if ((data.jobs || []).length !== core.jobs.length) throw new Error("Relations métier-marché incomplètes.");
     if (Object.keys(data.territories || {}).join("|") !== "FR|REG-76|DEP-11") throw new Error("Territoires marché incohérents.");
   },
