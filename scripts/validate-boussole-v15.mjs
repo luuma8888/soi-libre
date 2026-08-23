@@ -165,8 +165,9 @@ assert("market_presence_percentiles", marketRows.some(row => Number.isFinite(row
 
 assert("exploration_sort_contract_in_source", html.includes("explorationSort") && html.includes("Accord personnel — du plus élevé") && html.includes("Intitulé — Z à A"), null);
 assert("dynamic_rosette_contract_in_source", html.includes("maxBranchLength") && html.includes("branchRadius") && html.includes("DIRECTION_STYLE"), null);
-assert("market_popover_contract_in_source", html.includes("market-popover") && html.includes("aria-expanded"), null);
-assert("market_wind_map_contract_in_source", html.includes("Carte des vents du marché") && html.includes("Tension non disponible") && html.includes("Présence non disponible"), null);
+assert("market_climate_popover_contract_in_source", html.includes("market-climate-capsule") && html.includes("market-popover") && html.includes("aria-expanded"), null);
+assert("market_climate_verdict_contract_in_source", ["Porteur", "Niche en tension", "Actif", "Limité", "Données partielles", "Indisponible"].every(label => html.includes(label)) && html.includes("Voir les données utilisées") && html.includes("marketRankingWeight: 0"), null);
+assert("market_wind_visual_removed_from_source", !/Carte des vents du marché|market-wind-map|market-main-plane|market-marker|market-quadrant|market-axis-[xy]/.test(html), null);
 assert("related_panel_contract_in_source", html.includes("Métiers proches de «") && html.includes("openRelatedJobs") && html.includes("back-dialog-state"), null);
 assert("favorite_icon_contract_in_source", html.includes("favoriteIcon") && html.includes('fill="currentColor"'), null);
 assert("version_v1_5_1", html.includes("Boussole Pro v1.5.1"), null);

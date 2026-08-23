@@ -321,22 +321,6 @@
     .result-sort { max-width: 440px; margin-bottom: 16px; }
     .job-title-link { border: 0; padding: 0; background: transparent; color: var(--brand-strong); font: inherit; font-weight: 700; text-align: left; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer; }
     .job-title-link:hover { text-decoration-thickness: 2px; }
-    .market-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
-    .market-card { display: grid; min-height: 92px; padding: 10px; border: 1px solid color-mix(in srgb, var(--warning) 42%, var(--line)); border-radius: 8px; background: color-mix(in srgb, var(--warning-soft) 58%, var(--surface)); gap: 7px; }
-    .market-card:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
-    .market-card-header, .market-signal { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .market-card-header small, .market-signal-label, .market-details { color: var(--muted); }
-    .market-signal-label { font-size: .76rem; }
-    .market-volume { display: flex; align-items: end; gap: 2px; height: 22px; }
-    .market-volume i { display: block; width: 5px; min-height: 3px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: .2; }
-    .market-volume i.active { opacity: 1; }
-    .market-gauge { display: grid; grid-template-columns: repeat(5, 9px); gap: 2px; }
-    .market-gauge i { height: 8px; border: 1px solid var(--line); border-radius: 2px; background: transparent; }
-    .market-gauge i.active { border-color: var(--warning); background: var(--warning); }
-    .market-gauge.unavailable i { border-style: dashed; }
-    .market-bmo { height: 7px; overflow: hidden; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
-    .market-bmo > i { display: block; height: 100%; background: var(--accent); }
-    .market-details { font-size: .72rem; line-height: 1.35; }
     .detail-title { margin: 18px 0 12px; padding: 9px 12px; border-left: 4px solid var(--brand); border-radius: 0 6px 6px 0; background: var(--brand-soft); }
     .market-detail .detail-title { border-left-color: var(--warning); background: var(--warning-soft); }
     .warning-detail .detail-title { border-left-color: var(--danger); background: var(--danger-soft); }
@@ -351,7 +335,6 @@
     .goto-page input { width: 76px; min-height: 38px; }
     .related-jobs button { min-height: 44px; }
     @media (max-width: 760px) {
-      .market-cards { grid-template-columns: 1fr; }
       .skill-axes { grid-template-columns: 1fr; }
       .goto-page { width: 100%; justify-content: center; }
     }
@@ -361,18 +344,12 @@
     .rose-node:focus .branch, .rose-node:hover .branch, .rose-node.is-active .branch { opacity: 1; stroke-width: 16; }
     .rose-node:focus-visible circle { stroke: var(--ink); stroke-width: 4; }
     .top-list li.is-active button { border-color: var(--brand); background: var(--brand-soft); }
-    .market-card-wrap { position: relative; min-width: 0; }
-    button.market-card { width: 100%; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-    button.market-card:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-    .market-popover { position: absolute; z-index: 18; top: calc(100% + 6px); left: 0; width: min(330px, calc(100vw - 44px)); padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); font-size: .86rem; }
-    .market-popover[hidden] { display: none; }
-    .market-card:hover + .market-popover, .market-card:focus-visible + .market-popover { display: block; }
     .assessment-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
     .assessment-dimension { padding: 10px; border-left: 3px solid var(--brand); background: var(--surface-soft); }
     .assessment-dimension span { display: block; color: var(--muted); font-size: .8rem; }
     .exploration-sort { max-width: 330px; margin: 0 0 18px; }
     @media (max-width: 520px) { .assessment-grid { grid-template-columns: 1fr; } }
-    /* v1.5.1 - navigation reliée, accord personnel et carte des vents */
+    /* v1.5.1 - navigation reliée, accord personnel et climat du marché */
     .favorite-icon.is-favorite { fill: currentColor; }
     .personal-agreement-panel { padding: 14px; border: 1px solid var(--line); border-left: 4px solid var(--brand); background: var(--surface-soft); }
     .personal-agreement-panel.is-hard { border-left-color: var(--danger); }
@@ -384,51 +361,48 @@
     .related-list { display: grid; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
     .related-list-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px; border-bottom: 1px solid var(--line); }
     .related-list-item p { margin: 4px 0 0; color: var(--muted); }
-    .market-wind-map { min-width: 0; margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); }
-    .market-wind-heading h4 { margin: 0; font-size: 1rem; }
-    .market-wind-heading p { margin: 4px 0 10px; color: var(--muted); font-size: .78rem; }
-    .market-wind-layout { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 6px; }
-    .market-main-plane { position: relative; min-height: 180px; border: 1px solid var(--line); background: linear-gradient(90deg, transparent 49.7%, var(--line) 50%, transparent 50.3%), linear-gradient(0deg, transparent 49.7%, var(--line) 50%, transparent 50.3%), var(--surface); }
-    .market-wind-map.is-full .market-main-plane { min-height: 300px; }
-    .market-quadrant { position: absolute; width: 50%; height: 50%; padding: 8px; color: var(--muted); font-size: .72rem; pointer-events: none; }
-    .market-wind-map.is-mini .market-quadrant span { display: none; }
-    .market-quadrant.top-left { top: 0; left: 0; }
-    .market-quadrant.top-right { top: 0; right: 0; text-align: right; }
-    .market-quadrant.bottom-left { bottom: 0; left: 0; display: flex; align-items: end; }
-    .market-quadrant.bottom-right { right: 0; bottom: 0; display: flex; align-items: end; justify-content: end; text-align: right; }
-    .market-axis-x, .market-axis-y { position: absolute; color: var(--muted); font-size: .68rem; pointer-events: none; }
-    .market-axis-x { right: 6px; bottom: 4px; }
-    .market-axis-y { top: 6px; left: 6px; }
-    .market-presence-unavailable, .market-tension-unavailable { position: relative; border: 1px dashed var(--line); background: var(--surface); }
-    .market-presence-unavailable { min-height: 180px; }
-    .market-wind-map.is-full .market-presence-unavailable { min-height: 300px; }
-    .market-tension-unavailable { grid-column: 1; min-height: 52px; }
-    .market-band-label { position: absolute; inset: 4px; color: var(--muted); font-size: .62rem; text-align: center; writing-mode: vertical-rl; }
-    .market-tension-unavailable .market-band-label { writing-mode: horizontal-tb; text-align: left; }
-    .market-marker-wrap { position: absolute; z-index: 4; transform: translate(-50%, 50%); }
-    .market-marker { display: grid; width: 29px; height: 29px; place-items: center; border: 3px solid var(--ink); background: var(--surface); color: var(--ink); font-size: .58rem; font-weight: 800; cursor: pointer; }
-    .market-marker.france { border-radius: 50%; border-color: #253b61; }
-    .market-marker.occitanie { border-color: #9a6b16; transform: rotate(45deg); }
-    .market-marker.occitanie span { transform: rotate(-45deg); }
-    .market-marker.aude { border-radius: 50%; border-color: #c45f52; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px #c45f52; }
-    .market-marker.has-bmo { outline: 2px dotted var(--warning); outline-offset: 4px; }
-    .market-marker:focus-visible { outline: 3px solid var(--focus); outline-offset: 5px; }
-    .market-marker-wrap .market-popover { top: calc(100% + 8px); left: 0; width: min(320px, calc(100vw - 48px)); text-align: left; }
-    .market-marker-wrap.popover-left .market-popover { right: 0; left: auto; }
-    .market-marker:hover + .market-popover, .market-marker:focus-visible + .market-popover { display: block; }
-    .market-neutral { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 7px; color: var(--muted); font-size: .76rem; }
-    .market-shape-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--muted); font-size: .72rem; }
-    .market-shape-legend span::before { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border: 2px solid currentColor; content: ""; }
-    .market-shape-legend .legend-fr::before { border-radius: 50%; }
-    .market-shape-legend .legend-reg::before { transform: rotate(45deg); }
-    .market-shape-legend .legend-dep::before { border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px currentColor; }
+    .market-climate-band { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 7px; min-height: 38px; max-height: 44px; margin-top: 10px; }
+    .market-climate-label { color: var(--muted); font-size: .72rem; font-weight: 700; }
+    .market-climate-capsules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; min-width: 0; }
+    .market-climate-capsule-wrap { position: relative; min-width: 0; }
+    .market-climate-capsule { --market-tone: #52655d; display: flex; width: 100%; min-width: 0; min-height: 34px; align-items: center; justify-content: center; gap: 4px; padding: 4px 6px; border: 1px solid color-mix(in srgb, var(--market-tone) 38%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--market-tone) 8%, var(--surface)); color: var(--market-tone); font: inherit; font-size: .68rem; line-height: 1.12; text-align: center; cursor: pointer; }
+    .market-climate-capsule span { min-width: 0; overflow-wrap: anywhere; }
+    .market-climate-capsule strong { color: currentColor; font-weight: 700; }
+    .market-climate-capsule:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .market-climate-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+    .market-verdict-porteur { --market-tone: #236346; }
+    .market-verdict-niche { --market-tone: #7651a8; }
+    .market-verdict-actif { --market-tone: #245fa8; }
+    .market-verdict-limite { --market-tone: #66796f; }
+    .market-verdict-partiel { --market-tone: #9a6814; }
+    .market-verdict-indisponible { --market-tone: #70767a; }
+    .market-popover { position: absolute; z-index: 18; top: calc(100% + 6px); left: 0; display: grid; width: min(280px, calc(100vw - 32px)); gap: 4px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); font-size: .8rem; line-height: 1.3; text-align: left; }
+    .market-popover[hidden] { display: none; }
+    .market-climate-capsule-wrap.popover-left .market-popover { right: 0; left: auto; }
+    .market-climate-capsule:hover + .market-popover, .market-climate-capsule:focus-visible + .market-popover { display: grid; }
+    .market-popover strong { font-size: .88rem; }
+    .market-popover-verdict { color: var(--market-tone, var(--ink)); font-weight: 700; }
+    .market-climate-detail { min-width: 0; }
+    .market-climate-territories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+    .market-climate-territory { --market-tone: #52655d; display: grid; grid-template-columns: 22px minmax(0, 1fr); align-items: center; gap: 4px 8px; min-height: 66px; padding: 8px 9px; border: 1px solid color-mix(in srgb, var(--market-tone) 30%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--market-tone) 7%, var(--surface)); }
+    .market-climate-territory .market-climate-icon { grid-row: 1 / 3; width: 20px; height: 20px; }
+    .market-climate-territory-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; min-width: 0; }
+    .market-climate-territory-heading span { color: var(--muted); font-size: .7rem; }
+    .market-climate-territory-heading strong { color: var(--market-tone); font-size: .82rem; }
+    .market-climate-secondary { color: var(--muted); font-size: .7rem; line-height: 1.25; }
+    .market-data-disclosure { margin-top: 6px; color: var(--muted); font-size: .72rem; }
+    .market-data-disclosure > summary { width: max-content; max-width: 100%; color: var(--brand-strong); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .market-data-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+    .market-data-item { padding: 8px; border-left: 2px solid var(--line); background: var(--surface-soft); }
+    .market-data-item p { margin: 3px 0; font-size: .72rem; line-height: 1.35; }
     @media (max-width: 520px) {
       .related-list-item { grid-template-columns: 1fr; }
-      .market-wind-map { padding: 8px; }
-      .market-wind-layout { grid-template-columns: minmax(0, 1fr) 46px; }
-      .market-main-plane, .market-presence-unavailable { min-height: 170px; }
-      .market-wind-map.is-full .market-main-plane, .market-wind-map.is-full .market-presence-unavailable { min-height: 230px; }
-      .market-marker { width: 27px; height: 27px; }
+      .market-climate-band { align-items: start; min-height: 54px; max-height: 72px; }
+      .market-climate-label { padding-top: 10px; }
+      .market-climate-capsule { min-height: 46px; padding: 4px; font-size: .64rem; }
+      .market-climate-capsule .market-climate-icon { width: 16px; height: 16px; flex-basis: 16px; }
+      .market-climate-territories, .market-data-grid { grid-template-columns: 1fr; }
+      .market-climate-territory { min-height: 54px; }
     }
   </style>
 </head>
@@ -17718,51 +17692,65 @@ const BoussoleRuntimeProvider = {
       return `<article class="job-card"><header><div><div class="job-meta">${this.escape(item.romeCode)} · ${this.escape(item.primaryDirectionLabel)}</div><h3><button class="job-title-link" data-action="open-job" data-job-id="${item.jobId}">${this.escape(item.title)}</button></h3></div><div class="score" aria-label="Accord personnel ${Math.round(item.personalFitScore || 0)} sur 100">${Math.round(item.personalFitScore || 0)}</div></header><p class="job-mission">${this.escape(item.shortMission || "Mission détaillée dans la fiche métier.")}</p><div class="indicator-grid"><div class="indicator"><span>Appuis actuels</span><strong>${this.escape(supports)}</strong></div><div class="indicator"><span>Chemin d’accès</span><strong>${this.escape(access)}</strong></div><div class="indicator"><span>Qualité des données</span><strong>${this.humanize(item.dataConfidence || "à vérifier")}</strong></div></div>${this.marketCards(item.marketSummaryByTerritory, false)}<footer><button class="button compact primary" data-action="open-job" data-job-id="${item.jobId}">Voir la fiche</button><button class="button compact" data-action="toggle-favorite" data-job-id="${item.jobId}" aria-pressed="${favorite.favorite}" aria-label="${this.escape(favorite.label)}">${favorite.html}</button>${item.relatedDirectionCount ? `<button class="button compact" data-action="open-related" data-job-id="${item.jobId}">${item.relatedDirectionCount} métier${item.relatedDirectionCount > 1 ? "s" : ""} proche${item.relatedDirectionCount > 1 ? "s" : ""}</button>` : ""}</footer></article>`;
     };
 
-    RefonteApp.marketPresenceBand = function(percentile) {
-      if (!Number.isFinite(percentile)) return "Présence non disponible";
-      if (percentile === 0) return "aucune offre observée sur la période";
-      if (percentile < 20) return "très rare";
-      if (percentile < 40) return "peu présente";
-      if (percentile < 60) return "présence intermédiaire";
-      if (percentile < 80) return "présente";
-      return "très présente";
+    RefonteApp.marketClimateIcon = function(key) {
+      const paths = {
+        porteur: '<path d="M4 17h16M7 14a5 5 0 0 1 10 0M12 4v3M5.6 7.6l2.1 2.1M18.4 7.6l-2.1 2.1"/>',
+        niche: '<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 3v3M21 12h-3M12 21v-3M3 12h3"/>',
+        actif: '<path d="M3 14c3.2 0 3.2-4 6.4-4s3.2 4 6.4 4 3.2-4 5.2-4M3 18c3.2 0 3.2-3 6.4-3s3.2 3 6.4 3 3.2-3 5.2-3"/>',
+        limite: '<path d="M3 17h18M12 17v-5M12 13c-3 0-4.5-1.8-4.5-4.5 3 0 4.5 1.8 4.5 4.5Zm0-2c0-2.7 1.5-4.5 4.5-4.5 0 2.7-1.5 4.5-4.5 4.5Z"/>',
+        partiel: '<path d="M5 16a7 7 0 0 1 14 0" stroke-dasharray="2.4 2.4"/><path d="M12 5V3M5.6 8.6 4.2 7.2M18.4 8.6l1.4-1.4M3 16h18"/>',
+        indisponible: '<path d="M7 17h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.4 8.5 4.3 4.3 0 0 0 7 17Z" stroke-dasharray="5 2"/>'
+      };
+      return `<svg class="market-climate-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[key] || paths.indisponible}</svg>`;
     };
-    RefonteApp.marketWindPoint = function(row = {}) {
-      const presence = Number.isFinite(row.presencePercentile) ? Math.max(0, Math.min(100, row.presencePercentile)) : null;
-      const tensionClass = Number.isFinite(row.tensionClass) ? Math.max(1, Math.min(5, Number(row.tensionClass))) : null;
+    RefonteApp.marketClimate = function(row = {}) {
+      const presenceKnown = row.presencePercentile !== null && row.presencePercentile !== undefined && Number.isFinite(Number(row.presencePercentile));
+      const tensionKnown = row.tensionClass !== null && row.tensionClass !== undefined && Number.isFinite(Number(row.tensionClass));
+      const presence = presenceKnown ? Math.max(0, Math.min(100, Number(row.presencePercentile))) : null;
+      const tensionClass = tensionKnown ? Math.max(1, Math.min(5, Number(row.tensionClass))) : null;
       const tension = tensionClass === null ? null : 100 * (tensionClass - 1) / 4;
-      const tensionLabel = tensionClass === null ? "non disponible" : ({ 1: "très faible", 2: "faible", 3: "moyenne", 4: "forte", 5: "très forte" })[tensionClass];
-      const quadrant = presence === null || tension === null ? null : presence >= 60 && tension >= 60 ? "Terrain porteur" : presence < 60 && tension >= 60 ? "Niche en tension" : presence >= 60 ? "Marché actif" : "Signal limité";
-      return { presence, tension, tensionClass, tensionLabel, quadrant, presenceBand: this.marketPresenceBand(presence) };
+      const presenceText = presence === null ? "Présence inconnue" : presence === 0 ? "Aucune présence observée" : presence < 20 ? "Très peu présent" : presence < 40 ? "Peu présent" : presence < 60 ? "Présence modérée" : presence < 80 ? "Présent" : "Très présent";
+      const tensionText = tensionClass === null ? "tension inconnue" : `tension ${{ 1: "très faible", 2: "faible", 3: "moyenne", 4: "forte", 5: "très forte" }[tensionClass]}`;
+      if (presence === null && tension === null) return { key: "indisponible", verdict: "Indisponible", popoverVerdict: "Indisponible", presence, tension, tensionClass, presenceText, tensionText };
+      if (presence === null || tension === null) return { key: "partiel", verdict: "Données partielles", popoverVerdict: "Données partielles", presence, tension, tensionClass, presenceText, tensionText };
+      if (presence >= 60 && tension >= 60) return { key: "porteur", verdict: "Porteur", popoverVerdict: "Marché porteur", presence, tension, tensionClass, presenceText, tensionText };
+      if (presence < 60 && tension >= 60) return { key: "niche", verdict: "Niche en tension", popoverVerdict: "Niche en tension", presence, tension, tensionClass, presenceText, tensionText };
+      if (presence >= 60) return { key: "actif", verdict: "Actif", popoverVerdict: "Marché actif", presence, tension, tensionClass, presenceText, tensionText };
+      return { key: "limite", verdict: "Limité", popoverVerdict: "Marché limité", presence, tension, tensionClass, presenceText, tensionText };
     };
-    RefonteApp.marketMarkerDetails = function(label, row, point) {
-      const presence = point.presence === null ? "Présence relative : non disponible" : `Présence relative : ${point.presenceBand} (${Math.round(point.presence)}e percentile)`;
-      const bmo = Number.isFinite(row.recruitmentDifficultyRate) ? `<p>Difficulté BMO : ${Math.round(row.recruitmentDifficultyRate)} %</p>` : "";
-      const observed = Number.isFinite(row.offersCount) ? `${Number(row.offersCount).toLocaleString("fr-FR")} offres` : "donnée non disponible";
-      const sources = this.array(row.sources).length ? this.array(row.sources).join(" ; ") : row.source || "source non précisée";
-      return `<strong>${this.escape(label)}</strong><p>${this.escape(presence)}</p><p>Tension : ${this.escape(point.tensionLabel)}</p>${point.quadrant ? `<p>${this.escape(point.quadrant)}</p>` : ""}${bmo}<p class="market-details">Donnée observée : ${this.escape(observed)} sur ${this.escape(row.period || row.periods?.offers || "une période à vérifier")}.</p><p class="market-details">Portée : ${this.escape(row.statisticalScope || "à vérifier")} · Confiance : ${Math.round(Number(row.confidence || 0) * 100)} % · Sources : ${this.escape(sources)}.</p>${row.sharedFamily ? "<p>Repère partagé à l'échelle d'une famille de métiers.</p>" : ""}`;
+    RefonteApp.marketClimateLines = function(label, climate) {
+      const place = { France: "en France", Occitanie: "dans la région", Aude: "dans le département" }[label] || `sur le territoire ${label}`;
+      const presenceDegree = climate.presence !== null && climate.presence >= 40 && climate.presence < 60 ? "modérément présent" : climate.presenceText.toLocaleLowerCase("fr");
+      const presence = climate.presence === null ? "Présence territoriale non disponible" : climate.presence === 0 ? `Aucune présence observée ${place}` : `Métier ${presenceDegree} ${place}`;
+      const tension = climate.tensionClass === null ? "Tension locale non disponible" : `Tension de recrutement ${{ 1: "très faible", 2: "faible", 3: "moyenne", 4: "forte", 5: "très forte" }[climate.tensionClass]}`;
+      return { presence, tension, secondary: `${climate.presenceText} · ${climate.tensionText}` };
+    };
+    RefonteApp.marketDataDetails = function(label, row = {}) {
+      const offerCandidates = [row.offersCount, row.offersAll12m, row.offersFranceTravail12m];
+      const offerValue = offerCandidates.find(value => value !== null && value !== undefined && Number.isFinite(Number(value)));
+      const offers = offerValue === undefined ? "Non disponible" : `${Number(offerValue).toLocaleString("fr-FR")} offres`;
+      const period = row.latestPeriodLabel || row.period || row.periods?.offers || "À vérifier";
+      const sources = this.array(row.sources).length ? this.array(row.sources).join(" ; ") : row.sourceName || row.source || "Source non précisée";
+      const scope = row.statisticalScope && row.statisticalScope !== "unknown" ? this.humanize(row.statisticalScope) : "À vérifier";
+      const bmo = row.recruitmentDifficultyRate !== null && row.recruitmentDifficultyRate !== undefined && Number.isFinite(Number(row.recruitmentDifficultyRate)) ? `${Math.round(Number(row.recruitmentDifficultyRate))} %` : "Non disponible";
+      return `<article class="market-data-item"><strong>${this.escape(label)}</strong><p>Offres observées : ${this.escape(offers)}</p><p>Période : ${this.escape(period)}</p><p>Source : ${this.escape(sources)}</p><p>Portée statistique : ${this.escape(scope)}</p><p>Difficulté BMO : ${this.escape(bmo)}</p>${row.sharedFamily ? "<p>Attention : ce repère est partagé à l’échelle d’une famille de métiers.</p>" : ""}</article>`;
     };
     RefonteApp.marketCards = function(summary = {}, detailed = false) {
-      const rows = [["national", "France", "FR", "france"], ["regional", "Occitanie", "OC", "occitanie"], ["departmental", "Aude", "11", "aude"]];
+      const rows = [["national", "France"], ["regional", "Occitanie"], ["departmental", "Aude"]];
       this.state.marketDescriptionSequence = (this.state.marketDescriptionSequence || 0) + 1;
       const instance = this.state.marketDescriptionSequence;
-      const groups = { main: [], side: [], bottom: [], neutral: [] };
-      const summaries = [];
-      for (const [key, label, short, shape] of rows) {
+      const climates = rows.map(([key, label]) => {
         const row = summary[key] || {};
-        const point = this.marketWindPoint(row);
-        const id = `market-popover-${instance}-${key}`;
-        const summaryId = `market-summary-${instance}-${key}`;
-        const hasBmo = detailed && Number.isFinite(row.recruitmentDifficultyRate);
-        const marker = `<div class="market-marker-wrap${point.presence !== null && point.presence > 55 ? " popover-left" : ""}" style="left:${point.presence ?? 50}%;bottom:${point.tension ?? 50}%"><button type="button" class="market-marker ${shape}${hasBmo ? " has-bmo" : ""}" data-action="market-popover" aria-expanded="false" aria-controls="${id}" aria-describedby="${summaryId}" aria-label="Détails marché pour ${label}"><span>${short}</span></button><div class="market-popover" id="${id}" role="note" hidden>${this.marketMarkerDetails(label, row, point)}</div></div>`;
-        if (point.presence !== null && point.tension !== null) groups.main.push(marker);
-        else if (point.presence === null && point.tension !== null) groups.side.push(marker.replace(`left:50%;bottom:${point.tension}%`, `left:50%;bottom:${point.tension}%`));
-        else if (point.presence !== null) groups.bottom.push(marker.replace(`bottom:50%`, "bottom:8px"));
-        else groups.neutral.push(`<span>${label} : Données insuffisantes</span>`);
-        const text = point.presence === null && point.tension === null ? `${label} : Données insuffisantes.` : `${label} : ${point.presence === null ? "présence non disponible" : `${point.presenceBand}, ${Math.round(point.presence)}e percentile`} ; tension ${point.tensionLabel}${point.quadrant ? ` ; ${point.quadrant}` : ""}.`;
-        summaries.push(`<li id="${summaryId}">${this.escape(text)}</li>`);
+        const climate = this.marketClimate(row);
+        return { key, label, row, climate, lines: this.marketClimateLines(label, climate) };
+      });
+      if (detailed) {
+        return `<div class="market-climate-detail"><div class="market-climate-territories" aria-label="Climat du marché par territoire">${climates.map(({ label, climate, lines }) => `<article class="market-climate-territory market-verdict-${climate.key}">${this.marketClimateIcon(climate.key)}<div class="market-climate-territory-heading"><span>${this.escape(label)}</span><strong>${this.escape(climate.verdict)}</strong></div><div class="market-climate-secondary">${this.escape(lines.secondary)}</div></article>`).join("")}</div><details class="market-data-disclosure"><summary>Voir les données utilisées</summary><div class="market-data-grid">${climates.map(({ label, row }) => this.marketDataDetails(label, row)).join("")}</div></details></div>`;
       }
-      return `<section class="market-wind-map ${detailed ? "is-full" : "is-mini"}" aria-labelledby="market-wind-title-${instance}" aria-describedby="market-wind-subtitle-${instance}"><header class="market-wind-heading"><h4 id="market-wind-title-${instance}">Carte des vents du marché</h4><p id="market-wind-subtitle-${instance}">Plus un repère va vers la droite, plus le métier est présent dans le territoire. Plus il monte, plus les recrutements sont tendus.</p></header><div class="market-wind-layout"><div class="market-main-plane"><span class="market-quadrant top-left"><span>Niche en tension</span></span><span class="market-quadrant top-right"><span>Terrain porteur</span></span><span class="market-quadrant bottom-left"><span>Signal limité</span></span><span class="market-quadrant bottom-right"><span>Marché actif</span></span><span class="market-axis-y">Tension</span><span class="market-axis-x">Présence</span>${groups.main.join("")}</div><div class="market-presence-unavailable"><span class="market-band-label">Présence non disponible</span>${groups.side.join("")}</div><div class="market-tension-unavailable"><span class="market-band-label">Tension non disponible</span>${groups.bottom.join("")}</div>${groups.neutral.length ? `<div class="market-neutral">${groups.neutral.join("")}</div>` : ""}</div><div class="market-shape-legend" aria-hidden="true"><span class="legend-fr">France</span><span class="legend-reg">Occitanie</span><span class="legend-dep">Aude</span>${detailed ? '<span>Halo pointillé : difficulté BMO disponible</span>' : ""}</div><ul class="visually-hidden">${summaries.join("")}</ul></section>`;
+      return `<div class="market-climate-band" aria-label="Climat du marché"><span class="market-climate-label">Marché</span><div class="market-climate-capsules">${climates.map(({ key, label, climate, lines }, index) => {
+        const id = `market-popover-${instance}-${key}`;
+        return `<div class="market-climate-capsule-wrap market-verdict-${climate.key}${index > 0 ? " popover-left" : ""}"><button type="button" class="market-climate-capsule market-verdict-${climate.key}" data-action="market-popover" aria-expanded="false" aria-controls="${id}" aria-label="${this.escape(`${label}, ${climate.verdict}. Afficher le détail du climat du marché`)}">${this.marketClimateIcon(climate.key)}<span>${this.escape(label)} · <strong>${this.escape(climate.verdict)}</strong></span></button><div class="market-popover" id="${id}" role="note" hidden><strong>${this.escape(label)}</strong><span class="market-popover-verdict">${this.escape(climate.popoverVerdict)}</span><span>${this.escape(lines.presence)}</span><span>${this.escape(lines.tension)}</span></div></div>`;
+      }).join("")}</div></div>`;
     };
     RefonteApp.marketBars = function(summary = {}) { return this.marketCards(summary, false); };
 
@@ -17821,7 +17809,7 @@ const BoussoleRuntimeProvider = {
       const button = this.dom.dialogContent.querySelector('[data-action="toggle-favorite"]');
       if (button) { button.innerHTML = favorite.html; button.setAttribute("aria-pressed", String(favorite.favorite)); button.setAttribute("aria-label", favorite.label); }
       const marketHeading = this.dom.dialogContent.querySelector(".market-detail > h3");
-      if (marketHeading) marketHeading.textContent = "Marché et territoire";
+      if (marketHeading) marketHeading.textContent = "Climat du marché";
       this.renderPersonalAgreement(detail || {});
       if (options.restore) requestAnimationFrame(() => { this.dom.dialog.scrollTop = options.scrollTop || 0; this.dom.dialogContent.scrollTop = options.scrollTop || 0; });
     };
@@ -17869,7 +17857,7 @@ const BoussoleRuntimeProvider = {
       if (["Enter", " "].includes(event.key) && event.target.matches(".rose-node")) { event.preventDefault(); event.target.click(); return; }
       if (event.key === "Escape") closeMarketPopovers(true);
     });
-    document.addEventListener("click", event => { if (!event.target.closest(".market-card-wrap, .market-marker-wrap")) closeMarketPopovers(true); });
+    document.addEventListener("click", event => { if (!event.target.closest(".market-climate-capsule-wrap")) closeMarketPopovers(true); });
     function highlightRose(target) {
       if (!target) return; const index = target.dataset.roseIndex;
       document.querySelectorAll("[data-rose-index]").forEach(item => item.classList.toggle("is-active", item.dataset.roseIndex === index));

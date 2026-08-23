@@ -142,7 +142,7 @@ try {
     const tabs=[...document.querySelectorAll('[data-action="results-tab"]')];
     const states=tabs.map(tab=>{tab.click();return {selected:[...tabs].filter(item=>item.getAttribute('aria-selected')==='true').length,focused:document.activeElement===tab,page:RefonteApp.state.resultsPage};});
     tabs.find(tab=>tab.dataset.tab==='all').click();
-    return {independent:topIds.some(id=>vm.skillsSupportedPaths.some(row=>row.jobId===id)||vm.dreamPaths.some(row=>row.jobId===id)),recommendedExcludesTop:vm.recommendedPaths.every(row=>!topIds.includes(row.jobId)),complete:vm.completeList.length===1000,states,pages:Math.ceil(vm.completeList.length/RefonteApp.config.pageSize),sorts:[...document.getElementById('resultSort').options].map(row=>row.textContent),marketCards:document.querySelectorAll('.market-card').length};
+    return {independent:topIds.some(id=>vm.skillsSupportedPaths.some(row=>row.jobId===id)||vm.dreamPaths.some(row=>row.jobId===id)),recommendedExcludesTop:vm.recommendedPaths.every(row=>!topIds.includes(row.jobId)),complete:vm.completeList.length===1000,states,pages:Math.ceil(vm.completeList.length/RefonteApp.config.pageSize),sorts:[...document.getElementById('resultSort').options].map(row=>row.textContent),marketCapsules:document.querySelectorAll('.market-climate-capsule').length};
   })()`);
   assert("result_families_independent", v13Results.independent && v13Results.recommendedExcludesTop && v13Results.complete, v13Results);
   assert("tabs_visual_aria_focus", v13Results.states.every(row => row.selected === 1 && row.focused && row.page === 1), v13Results.states);
@@ -161,17 +161,35 @@ try {
   const focusRestored = await evaluate(cdp, `new Promise(resolve => { document.getElementById("jobDialog").close(); requestAnimationFrame(() => requestAnimationFrame(() => resolve(document.activeElement?.matches(".top-list button") || false))); })`, true);
   assert("dialog_focus_restored", focusRestored === true, focusRestored);
   const marketAndRelations = await evaluate(cdp, `(() => {
+    RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent();
+    const band=document.querySelector(".job-card .market-climate-band");
+    const capsuleButtons=[...document.querySelectorAll(".job-card:first-of-type .market-climate-capsule")];
+    const firstCapsule=capsuleButtons[0]; firstCapsule?.focus(); firstCapsule?.click();
+    const firstPopover=document.getElementById(firstCapsule?.getAttribute("aria-controls"));
+    const cardMarket={
+      bands:document.querySelectorAll(".job-card .market-climate-band").length,
+      capsules:capsuleButtons.length,
+      bandHeight:Math.round(band?.getBoundingClientRect().height||0),
+      popovers:document.querySelectorAll(".job-card:first-of-type .market-popover").length,
+      labels:capsuleButtons.map(item=>item.innerText.trim()),
+      accessible:capsuleButtons.every(item=>item.tagName==="BUTTON"&&item.getAttribute("aria-expanded")!==null&&document.getElementById(item.getAttribute("aria-controls"))),
+      opens:firstCapsule?.getAttribute("aria-expanded")==="true",
+      firstPopoverText:firstPopover?.innerText||"",
+      rawOfferHidden:!/[0-9][0-9 .]* offres observées/.test(firstPopover?.innerText||"")
+    };
+    document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); cardMarket.closes=firstCapsule?.getAttribute("aria-expanded")==="false"&&document.activeElement===firstCapsule;
     RefonteApp.openJob("rome-K1204", document.querySelector(".top-list button"));
     const marketText = document.querySelector(".market-detail")?.innerText || "";
     const market = {
-      maps: document.querySelectorAll(".market-detail .market-wind-map").length,
-      markers: document.querySelectorAll(".market-detail .market-marker").length,
-      shapes: [...document.querySelectorAll(".market-detail .market-marker")].map(item => item.className),
-      popovers: document.querySelectorAll(".market-detail .market-popover").length,
-      accessible: [...document.querySelectorAll(".market-detail .market-marker")].every(card => card.tagName === "BUTTON" && card.getAttribute("aria-expanded") === "false" && document.getElementById(card.getAttribute("aria-controls")) && document.getElementById(card.getAttribute("aria-describedby"))),
+      title:document.querySelector(".market-detail .detail-title")?.textContent,
+      detailCards:document.querySelectorAll(".market-detail .market-climate-territory").length,
+      detailHeight:Math.round(document.querySelector(".market-climate-detail")?.getBoundingClientRect().height||0),
+      disclosure:document.querySelectorAll(".market-detail .market-data-disclosure").length,
+      dataItems:document.querySelectorAll(".market-detail .market-data-item").length,
+      oldVisuals:document.querySelectorAll(".market-wind-map,.market-main-plane,.market-marker,.market-quadrant,.market-axis-x,.market-axis-y").length,
+      verdicts:[...document.querySelectorAll(".market-detail .market-climate-territory-heading strong")].map(item=>item.textContent.trim()),
       french: !/Very high|High|Low/.test(marketText)
     };
-    const firstMarketCard=document.querySelector(".market-detail .market-marker"); firstMarketCard?.focus(); firstMarketCard?.click(); market.opens=firstMarketCard?.getAttribute("aria-expanded")==="true"; document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); market.closes=firstMarketCard?.getAttribute("aria-expanded")==="false" && document.activeElement===firstMarketCard;
     document.getElementById("jobDialog").close();
     RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); const relatedTrigger=document.querySelector('[data-action="open-related"]'); const sourceId=relatedTrigger?.dataset.jobId; relatedTrigger?.click();
     const before = document.getElementById("jobDialogTitle")?.textContent;
@@ -188,10 +206,25 @@ try {
     RefonteApp.state.profile.interests = ["animaux"];
     const graphAfter = JSON.stringify(RefonteApp.jobById(sourceId)?.relatedJobIds || []);
     const profileExists = RefonteApp.state.profileExists; RefonteApp.state.profileExists = false; const neutralCount = RefonteApp.detailForJob(sourceId).variants.length; RefonteApp.state.profileExists = profileExists;
-    return { marketText, market, relation: { before, after, stack, returned, relatedCount, expectedCount, restoredCount, neutralCount, stable: graphBefore === graphAfter } };
+    return { cardMarket, marketText, market, relation: { before, after, stack, returned, relatedCount, expectedCount, restoredCount, neutralCount, stable: graphBefore === graphAfter } };
   })()`);
-  assert("market_wind_map_french_and_accessible", marketAndRelations.market.maps === 1 && marketAndRelations.market.markers === 3 && marketAndRelations.market.popovers === 3 && marketAndRelations.market.shapes.some(row => row.includes("france")) && marketAndRelations.market.shapes.some(row => row.includes("occitanie")) && marketAndRelations.market.shapes.some(row => row.includes("aude")) && marketAndRelations.market.accessible && marketAndRelations.market.opens && marketAndRelations.market.closes && marketAndRelations.market.french, marketAndRelations);
+  const allowedMarketVerdicts = ["Porteur", "Niche en tension", "Actif", "Limité", "Données partielles", "Indisponible"];
+  assert("market_climate_card_compact_and_accessible", marketAndRelations.cardMarket.bands > 0 && marketAndRelations.cardMarket.capsules === 3 && marketAndRelations.cardMarket.bandHeight <= 44 && marketAndRelations.cardMarket.popovers === 3 && marketAndRelations.cardMarket.accessible && marketAndRelations.cardMarket.opens && marketAndRelations.cardMarket.closes && marketAndRelations.cardMarket.rawOfferHidden, marketAndRelations.cardMarket);
+  assert("market_climate_detail_compact_without_old_visuals", marketAndRelations.market.title === "Climat du marché" && marketAndRelations.market.detailCards === 3 && marketAndRelations.market.detailHeight <= 120 && marketAndRelations.market.disclosure === 1 && marketAndRelations.market.dataItems === 3 && marketAndRelations.market.oldVisuals === 0 && marketAndRelations.market.verdicts.every(value => allowedMarketVerdicts.includes(value)) && marketAndRelations.market.french, marketAndRelations.market);
   assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before?.startsWith("Métiers proches de") && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.relatedCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.restoredCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.neutralCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.stable, marketAndRelations.relation);
+
+  const marketCaptureMetrics = [];
+  for (const viewport of [{ width: 1440, height: 1000, mobile: false }, { width: 375, height: 900, mobile: true }]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: viewport.width, height: viewport.height, deviceScaleFactor: 1, mobile: viewport.mobile, screenWidth: viewport.width, screenHeight: viewport.height });
+    await evaluate(cdp, `new Promise(resolve => { RefonteApp.setTheme("light"); RefonteApp.navigate("resultats"); RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); requestAnimationFrame(() => requestAnimationFrame(() => { document.querySelector(".job-card")?.scrollIntoView({block:"center"}); resolve(); })); })`, true);
+    marketCaptureMetrics.push(await evaluate(cdp, `(() => ({ width:${viewport.width}, bandHeight:Math.round(document.querySelector(".job-card .market-climate-band")?.getBoundingClientRect().height||0), overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth }))()`));
+    await captureElement(cdp, ".job-card", `climat-marche-carte-${viewport.width}.png`);
+    await evaluate(cdp, `new Promise(resolve => { document.querySelector(".job-card .job-title-link")?.click(); requestAnimationFrame(() => requestAnimationFrame(() => { document.querySelector(".market-detail")?.scrollIntoView({block:"center"}); resolve(); })); })`, true);
+    await capture(cdp, `climat-marche-fiche-${viewport.width}.png`);
+    await evaluate(cdp, `document.getElementById("jobDialog").close()`);
+  }
+  assert("market_climate_capture_sizes", marketCaptureMetrics.length === 2 && marketCaptureMetrics.every(row => row.overflow <= 1 && row.bandHeight <= (row.width === 375 ? 72 : 44)), marketCaptureMetrics);
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 1000 });
 
   const exclusionAndFavorites = await evaluate(cdp, `(() => {
     const readAgreement = code => { RefonteApp.openJob("rome-"+code, document.querySelector(".top-list button")); const panel=document.querySelector(".personal-agreement-panel"); const value={text:panel?.innerText||"",dimensions:panel?.querySelectorAll(".assessment-dimension").length||0}; document.getElementById("jobDialog").close(); return value; };
@@ -201,8 +234,16 @@ try {
   })()`);
   assert("exclusion_explanations_in_job_details", exclusionAndFavorites.hard.text.includes("Écarté pour l'instant") && exclusionAndFavorites.hard.text.includes("Ce qui bloque") && exclusionAndFavorites.hard.text.includes("Petite enfance (0–3 ans)") && exclusionAndFavorites.hard.dimensions === 4 && exclusionAndFavorites.warning.text.includes("À vérifier selon le poste") && !exclusionAndFavorites.warning.text.includes("Écarté") && exclusionAndFavorites.warning.dimensions === 4 && !exclusionAndFavorites.none.text.includes("À vérifier selon le poste") && !exclusionAndFavorites.none.text.includes("Écarté"), exclusionAndFavorites);
   assert("favorite_shape_aria_and_storage_sync", exclusionAndFavorites.favorite.before.pressed === "false" && !exclusionAndFavorites.favorite.before.filled && exclusionAndFavorites.favorite.after.pressed === "true" && exclusionAndFavorites.favorite.after.filled && exclusionAndFavorites.favorite.after.stored && exclusionAndFavorites.favorite.final.pressed === "false" && !exclusionAndFavorites.favorite.final.filled && !exclusionAndFavorites.favorite.final.stored, exclusionAndFavorites.favorite);
-  const marketMissingStates = await evaluate(cdp, `(() => { const zero=RefonteApp.marketWindPoint({presencePercentile:0,tensionClass:null}); const absent=RefonteApp.marketWindPoint({presencePercentile:null,tensionClass:null}); const side=RefonteApp.marketWindPoint({presencePercentile:null,tensionClass:4}); const known=RefonteApp.marketWindPoint({presencePercentile:72.5,tensionClass:4}); const repeated=RefonteApp.marketWindPoint({presencePercentile:72.5,tensionClass:4}); return {zero,absent,side,known,repeated}; })()`);
-  assert("market_zero_absent_and_positions_distinct", marketMissingStates.zero.presence === 0 && marketMissingStates.zero.presenceBand.includes("aucune offre") && marketMissingStates.zero.tension === null && marketMissingStates.absent.presence === null && marketMissingStates.absent.tension === null && marketMissingStates.side.presence === null && marketMissingStates.side.tension === 75 && JSON.stringify(marketMissingStates.known) === JSON.stringify(marketMissingStates.repeated), marketMissingStates);
+  const marketMissingStates = await evaluate(cdp, `(() => ({
+    partialPresence:RefonteApp.marketClimate({presencePercentile:0,tensionClass:null}),
+    unavailable:RefonteApp.marketClimate({presencePercentile:null,tensionClass:null}),
+    partialTension:RefonteApp.marketClimate({presencePercentile:null,tensionClass:4}),
+    porteur:RefonteApp.marketClimate({presencePercentile:60,tensionClass:4}),
+    niche:RefonteApp.marketClimate({presencePercentile:59.9,tensionClass:4}),
+    actif:RefonteApp.marketClimate({presencePercentile:60,tensionClass:3}),
+    limite:RefonteApp.marketClimate({presencePercentile:59.9,tensionClass:3})
+  }))()`);
+  assert("market_climate_six_verdict_rules_and_missing_data", marketMissingStates.partialPresence.verdict === "Données partielles" && marketMissingStates.partialTension.verdict === "Données partielles" && marketMissingStates.unavailable.verdict === "Indisponible" && marketMissingStates.porteur.verdict === "Porteur" && marketMissingStates.niche.verdict === "Niche en tension" && marketMissingStates.actif.verdict === "Actif" && marketMissingStates.limite.verdict === "Limité", marketMissingStates);
 
   const modeInvariant = await evaluate(cdp, `(() => {
     const before = window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5;
@@ -352,6 +393,8 @@ try {
   const offlineTop = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.loadDemoProfile(); return window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5; })()`);
   assert("online_offline_same_demo_top5", JSON.stringify(offlineTop) === JSON.stringify(resultUi.top), { online: resultUi.top, offline: offlineTop });
   assert("online_offline_same_runtime_identity", offline.build.datasetVersion === initial.build.datasetVersion && offline.build.runtimeFingerprintSha256 === initial.build.runtimeFingerprintSha256, { online: initial.build, offline: offline.build });
+  const offlineMarketClimate = await evaluate(cdp, `(() => { RefonteApp.navigate("resultats"); RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); const labels=[...document.querySelectorAll(".job-card:first-of-type .market-climate-capsule")].map(item=>item.innerText.trim()); document.querySelector(".job-card .job-title-link")?.click(); const detailCards=document.querySelectorAll(".market-detail .market-climate-territory").length; const oldVisuals=document.querySelectorAll(".market-wind-map,.market-main-plane,.market-marker,.market-quadrant").length; document.getElementById("jobDialog").close(); return {labels,detailCards,oldVisuals}; })()`);
+  assert("online_offline_same_market_climate", JSON.stringify(offlineMarketClimate.labels) === JSON.stringify(marketAndRelations.cardMarket.labels) && offlineMarketClimate.detailCards === 3 && offlineMarketClimate.oldVisuals === 0, { online: marketAndRelations.cardMarket.labels, offline: offlineMarketClimate });
   await capture(cdp, "10-hors-ligne-file-mobile.png");
   await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 
@@ -363,7 +406,7 @@ try {
     html: { path: path.relative(ROOT, HTML_PATH), bytes: html.length, sha256: sha256(html) },
     browser: { chromium: CHROMIUM, desktop: "1440x1000", mobile: "390x844", httpUrl, offlineUrl: pathToFileURL(OFFLINE_HTML_PATH).href },
     performance: { calculationMs: calculation.calculationMs, searchJobAndSkill20IterationsMs: searchPerformance, navigation: await evaluate(cdp, `(() => { const n=performance.getEntriesByType("navigation")[0]; return n ? { domContentLoadedMs: Math.round(n.domContentLoadedEventEnd), loadMs: Math.round(n.loadEventEnd) } : null; })()`) },
-    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, dialogOpen, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, mobile, a11y, cachedRuntime, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists, datasetMode: offline.state.datasetMode, top5: offlineTop } },
+    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, dialogOpen, marketAndRelations, marketCaptureMetrics, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, mobile, a11y, cachedRuntime, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists, datasetMode: offline.state.datasetMode, top5: offlineTop, marketClimate: offlineMarketClimate } },
     captures: (await listCaptureNames()).map(name => path.relative(ROOT, path.join(CAPTURE_DIR, name))),
     assertions,
     errors: { console: consoleErrors, runtime: runtimeErrors, network: networkErrors },
@@ -382,6 +425,14 @@ try {
 async function capture(cdp, name) {
   await evaluate(cdp, `(() => { const toast=document.getElementById("toast"); if(toast){ toast.classList.remove("visible"); toast.style.display="none"; } })()`);
   const result = await cdp.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
+  await writeFile(path.join(CAPTURE_DIR, name), Buffer.from(result.data, "base64"));
+}
+
+async function captureElement(cdp, selector, name) {
+  await evaluate(cdp, `(() => { const toast=document.getElementById("toast"); if(toast){ toast.classList.remove("visible"); toast.style.display="none"; } })()`);
+  const box = await evaluate(cdp, `(() => { const node=document.querySelector(${JSON.stringify(selector)}); if(!node) return null; const rect=node.getBoundingClientRect(); return {x:Math.max(0,rect.left+scrollX),y:Math.max(0,rect.top+scrollY),width:rect.width,height:rect.height}; })()`);
+  if (!box) throw new Error(`Élément absent pour la capture : ${selector}`);
+  const result = await cdp.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: true, clip: { ...box, scale: 1 } });
   await writeFile(path.join(CAPTURE_DIR, name), Buffer.from(result.data, "base64"));
 }
 
