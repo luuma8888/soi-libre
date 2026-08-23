@@ -198,6 +198,7 @@ const BoussoleRuntimeProvider = {
         marketStats: this.expandMarket(marketRows.get(job.id), marche)
       };
     });
+    this.applyMarketPresencePercentiles(jobs);
     return {
       schemaVersion: core.schemaVersion,
       datasetName: "Boussole Pro - runtime compact ROME1000",
@@ -217,6 +218,37 @@ const BoussoleRuntimeProvider = {
       marketTrends: { schemaVersion: marche.schemaVersion, generatedAt: marche.generatedAt, jobs: [] },
       runtimeBundleIdentity: { inputMode: "compact_runtime_v1", runtimeBundleRevision: core.datasetVersion, fingerprintSha256: manifest.runtimeFingerprintSha256, sourceDatasetVersion: core.datasetVersion, status: "validated_compact_runtime", counts: { jobs: jobs.length, skillsEngine: skills.length, knowledge: knowledge.length } }
     };
+  },
+
+  applyMarketPresencePercentiles(jobs) {
+    const fallback = { zero: 0, low: 25, medium: 55, high: 82, very_high: 95 };
+    for (const key of ["national", "regional", "departmental"]) {
+      const positives = jobs.map(job => job.marketStats?.[key]?.offersFranceTravail12m ?? job.marketStats?.[key]?.offers12m)
+        .filter(value => Number.isFinite(value) && value > 0);
+      for (const job of jobs) {
+        const row = job.marketStats?.[key];
+        if (!row) continue;
+        const offers = row.offersFranceTravail12m ?? row.offers12m;
+        let presencePercentile = null;
+        let presenceSource = "unavailable";
+        if (Number.isFinite(offers)) {
+          if (offers === 0) {
+            presencePercentile = 0;
+            presenceSource = "observed_zero";
+          } else if (offers > 0 && positives.length) {
+            const less = positives.filter(value => value < offers).length;
+            const equal = positives.filter(value => value === offers).length;
+            presencePercentile = 100 * (less + 0.5 * equal) / positives.length;
+            presenceSource = "territory_percentile";
+          } else if (fallback[row.offersLevel] !== undefined) {
+            presencePercentile = fallback[row.offersLevel];
+            presenceSource = "offers_level_fallback";
+          }
+        }
+        row.presencePercentile = presencePercentile;
+        row.presenceSource = presenceSource;
+      }
+    }
   },
 
   expandAccess(summary, paths, diplomaLevels, warningLabels = new Map()) {

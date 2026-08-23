@@ -13,12 +13,12 @@ const MARKET_DIR = path.join(APP_DIR, "data/generated/market");
 const OUTPUT_DIR = path.join(APP_DIR, "boussole-runtime");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "boussole-runtime-build-report.json");
-const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5/tag-relations-quality-report.json");
+const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1/tag-relations-quality-report.json");
 const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-provider.js");
 const AUDIENCE_CONFIG_PATH = path.join(APP_DIR, "config/audience-overrides.json");
 const TAXONOMY_CONFIG_PATH = path.join(APP_DIR, "config/taxonomy-overrides.json");
-const APP_VERSION = "1.5.0";
-const BUILD_ID = "20260823-universal-visual-v1-5-01";
+const APP_VERSION = "1.5.1";
+const BUILD_ID = "20260823-consolidation-v1-5-1-01";
 
 const [appHtml, browserProvider, audienceConfig, taxonomyConfig] = await Promise.all([
   readFile(APP_PATH, "utf8"),
@@ -44,7 +44,7 @@ const sourceFiles = [
 ];
 const sourceBuffers = await Promise.all(sourceFiles.map(file => readFile(file)));
 const sourceFingerprintSha256 = sha256(sourceBuffers.map((buffer, index) => `${path.basename(sourceFiles[index])}:${sha256(buffer)}`).join("|"));
-const datasetVersion = `boussole-runtime-v1.5-${sourceFingerprintSha256.slice(0, 12)}`;
+const datasetVersion = `boussole-runtime-v1.5.1-${sourceFingerprintSha256.slice(0, 12)}`;
 
 const bundle = await loadGeneratedBundle(SOURCE_DIR, {
   accessSummaryFile: "access-summary.rome1000.json",
@@ -235,7 +235,7 @@ function buildDemoProfile(previous = {}, dataset = {}) {
     return [...(job.requiredSkills || job.matchableSkillIds || []), ...(job.optionalSkills || [])].map(item => typeof item === "string" ? item : item?.id);
   }).filter(id => skillIds.has(id)))].slice(0, 12);
   return {
-    id: "profile-demo-v1-5", schemaVersion: "1.5.0", profileName: "Profil de démonstration", ageRange: "36_45",
+    id: "profile-demo-v1-5-1", schemaVersion: "1.5.1", profileName: "Profil de démonstration", ageRange: "36_45",
     diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d’aptitude aux fonctions d’animateur" }], certifications: ["cert-bafa"],
     jobExperiences: experienceSource.map((item, index) => ({ ...item, id: `demo-experience-${index + 1}` })),
     skillSelections: selectedSkills.map((skillId, index) => ({ skillId, label: dataset.skillsEngine.find(item => item.id === skillId)?.label || skillId, currentLevel: index < 6 ? "mastered" : "practiced", futureWish: index < 8 ? "continue" : "develop", source: "user_direct", suggestedFromRomeCodes: [] })),
@@ -363,6 +363,7 @@ function normalizeRuntimeShell(source) {
     .replaceAll("REFONTE_DATA.dataset", "this.state.dataset")
     .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2.1 -")
     .replaceAll("Boussole Pro v1.2 -", "Boussole Pro v1.2.1 -")
+    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.5.1 -")
     .replaceAll('${this.state.dataset.jobs.length} métiers réels disponibles', '${this.runtimePresentation().title}')
     .replaceAll(
       "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation.",

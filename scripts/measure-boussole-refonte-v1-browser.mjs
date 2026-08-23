@@ -8,9 +8,9 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
 const OFFLINE_HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-offline.html");
-const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/refonte-interface-v1");
+const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1");
 const CAPTURE_DIR = path.join(REPORT_DIR, "captures");
-const REPORT_PATH = path.join(REPORT_DIR, "browser-accessibility-performance-report.json");
+const REPORT_PATH = path.join(REPORT_DIR, "browser-interaction-report.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
 const html = await readFile(HTML_PATH);
 
@@ -164,31 +164,45 @@ try {
     RefonteApp.openJob("rome-K1204", document.querySelector(".top-list button"));
     const marketText = document.querySelector(".market-detail")?.innerText || "";
     const market = {
-      cards: document.querySelectorAll(".market-detail .market-card").length,
-      gauges: document.querySelectorAll(".market-detail .market-gauge").length,
-      volumes: document.querySelectorAll(".market-detail .market-volume").length,
+      maps: document.querySelectorAll(".market-detail .market-wind-map").length,
+      markers: document.querySelectorAll(".market-detail .market-marker").length,
+      shapes: [...document.querySelectorAll(".market-detail .market-marker")].map(item => item.className),
       popovers: document.querySelectorAll(".market-detail .market-popover").length,
-      accessible: [...document.querySelectorAll(".market-detail .market-card")].every(card => card.tagName === "BUTTON" && card.getAttribute("aria-expanded") === "false" && document.getElementById(card.getAttribute("aria-controls"))),
+      accessible: [...document.querySelectorAll(".market-detail .market-marker")].every(card => card.tagName === "BUTTON" && card.getAttribute("aria-expanded") === "false" && document.getElementById(card.getAttribute("aria-controls")) && document.getElementById(card.getAttribute("aria-describedby"))),
       french: !/Very high|High|Low/.test(marketText)
     };
-    const firstMarketCard=document.querySelector(".market-detail .market-card"); firstMarketCard?.click(); market.opens=firstMarketCard?.getAttribute("aria-expanded")==="true"; document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); market.closes=firstMarketCard?.getAttribute("aria-expanded")==="false";
+    const firstMarketCard=document.querySelector(".market-detail .market-marker"); firstMarketCard?.focus(); firstMarketCard?.click(); market.opens=firstMarketCard?.getAttribute("aria-expanded")==="true"; document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); market.closes=firstMarketCard?.getAttribute("aria-expanded")==="false" && document.activeElement===firstMarketCard;
     document.getElementById("jobDialog").close();
-    RefonteApp.openJob("rome-G1203", document.querySelector(".top-list button"));
+    RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); const relatedTrigger=document.querySelector('[data-action="open-related"]'); const sourceId=relatedTrigger?.dataset.jobId; relatedTrigger?.click();
     const before = document.getElementById("jobDialogTitle")?.textContent;
-    const related = document.querySelector(".related-jobs .job-title-link");
-    related?.click();
+    const relatedCount = document.querySelectorAll(".related-list-item").length;
+    const expectedCount = RefonteApp.detailForJob(sourceId).variants.length;
+    const related = document.querySelector(".related-list .job-title-link"); related?.click();
     const after = document.getElementById("jobDialogTitle")?.textContent;
     const stack = RefonteApp.state.dialogStack.length;
-    document.querySelector('[data-action="back-job"]')?.click();
+    document.querySelector('[data-action="back-dialog-state"]')?.click();
     const returned = document.getElementById("jobDialogTitle")?.textContent;
+    const restoredCount = document.querySelectorAll(".related-list-item").length;
     document.getElementById("jobDialog").close();
-    const graphBefore = JSON.stringify(RefonteApp.jobById("rome-G1203")?.relatedJobIds || []);
+    const graphBefore = JSON.stringify(RefonteApp.jobById(sourceId)?.relatedJobIds || []);
     RefonteApp.state.profile.interests = ["animaux"];
-    const graphAfter = JSON.stringify(RefonteApp.jobById("rome-G1203")?.relatedJobIds || []);
-    return { marketText, market, relation: { before, after, stack, returned, stable: graphBefore === graphAfter } };
+    const graphAfter = JSON.stringify(RefonteApp.jobById(sourceId)?.relatedJobIds || []);
+    const profileExists = RefonteApp.state.profileExists; RefonteApp.state.profileExists = false; const neutralCount = RefonteApp.detailForJob(sourceId).variants.length; RefonteApp.state.profileExists = profileExists;
+    return { marketText, market, relation: { before, after, stack, returned, relatedCount, expectedCount, restoredCount, neutralCount, stable: graphBefore === graphAfter } };
   })()`);
-  assert("market_visual_french_and_accessible", marketAndRelations.market.cards === 3 && marketAndRelations.market.gauges === 3 && marketAndRelations.market.volumes === 3 && marketAndRelations.market.popovers === 3 && marketAndRelations.market.accessible && marketAndRelations.market.opens && marketAndRelations.market.closes && marketAndRelations.market.french, marketAndRelations);
-  assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.stable, marketAndRelations.relation);
+  assert("market_wind_map_french_and_accessible", marketAndRelations.market.maps === 1 && marketAndRelations.market.markers === 3 && marketAndRelations.market.popovers === 3 && marketAndRelations.market.shapes.some(row => row.includes("france")) && marketAndRelations.market.shapes.some(row => row.includes("occitanie")) && marketAndRelations.market.shapes.some(row => row.includes("aude")) && marketAndRelations.market.accessible && marketAndRelations.market.opens && marketAndRelations.market.closes && marketAndRelations.market.french, marketAndRelations);
+  assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before?.startsWith("Métiers proches de") && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.relatedCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.restoredCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.neutralCount === marketAndRelations.relation.expectedCount && marketAndRelations.relation.stable, marketAndRelations.relation);
+
+  const exclusionAndFavorites = await evaluate(cdp, `(() => {
+    const readAgreement = code => { RefonteApp.openJob("rome-"+code, document.querySelector(".top-list button")); const panel=document.querySelector(".personal-agreement-panel"); const value={text:panel?.innerText||"",dimensions:panel?.querySelectorAll(".assessment-dimension").length||0}; document.getElementById("jobDialog").close(); return value; };
+    const hard=readAgreement("K1202"), warning=readAgreement("K1303"), none=readAgreement("K1308");
+    RefonteApp.navigate("resultats"); const card=document.querySelector('[data-action="toggle-favorite"]'); const id=card?.dataset.jobId; const before={pressed:card?.getAttribute("aria-pressed"),filled:Boolean(card?.querySelector('.favorite-icon.is-favorite'))}; card?.click(); const afterButton=document.querySelector('[data-action="toggle-favorite"][data-job-id="'+id+'"]'); const after={pressed:afterButton?.getAttribute("aria-pressed"),filled:Boolean(afterButton?.querySelector('.favorite-icon.is-favorite')),stored:RefonteApp.state.favorites.has(id)}; afterButton?.click(); const finalButton=document.querySelector('[data-action="toggle-favorite"][data-job-id="'+id+'"]'); const final={pressed:finalButton?.getAttribute("aria-pressed"),filled:Boolean(finalButton?.querySelector('.favorite-icon.is-favorite')),stored:RefonteApp.state.favorites.has(id)};
+    return {hard,warning,none,favorite:{before,after,final}};
+  })()`);
+  assert("exclusion_explanations_in_job_details", exclusionAndFavorites.hard.text.includes("Écarté pour l'instant") && exclusionAndFavorites.hard.text.includes("Ce qui bloque") && exclusionAndFavorites.hard.text.includes("Petite enfance (0–3 ans)") && exclusionAndFavorites.hard.dimensions === 4 && exclusionAndFavorites.warning.text.includes("À vérifier selon le poste") && !exclusionAndFavorites.warning.text.includes("Écarté") && exclusionAndFavorites.warning.dimensions === 4 && !exclusionAndFavorites.none.text.includes("À vérifier selon le poste") && !exclusionAndFavorites.none.text.includes("Écarté"), exclusionAndFavorites);
+  assert("favorite_shape_aria_and_storage_sync", exclusionAndFavorites.favorite.before.pressed === "false" && !exclusionAndFavorites.favorite.before.filled && exclusionAndFavorites.favorite.after.pressed === "true" && exclusionAndFavorites.favorite.after.filled && exclusionAndFavorites.favorite.after.stored && exclusionAndFavorites.favorite.final.pressed === "false" && !exclusionAndFavorites.favorite.final.filled && !exclusionAndFavorites.favorite.final.stored, exclusionAndFavorites.favorite);
+  const marketMissingStates = await evaluate(cdp, `(() => { const zero=RefonteApp.marketWindPoint({presencePercentile:0,tensionClass:null}); const absent=RefonteApp.marketWindPoint({presencePercentile:null,tensionClass:null}); const side=RefonteApp.marketWindPoint({presencePercentile:null,tensionClass:4}); const known=RefonteApp.marketWindPoint({presencePercentile:72.5,tensionClass:4}); const repeated=RefonteApp.marketWindPoint({presencePercentile:72.5,tensionClass:4}); return {zero,absent,side,known,repeated}; })()`);
+  assert("market_zero_absent_and_positions_distinct", marketMissingStates.zero.presence === 0 && marketMissingStates.zero.presenceBand.includes("aucune offre") && marketMissingStates.zero.tension === null && marketMissingStates.absent.presence === null && marketMissingStates.absent.tension === null && marketMissingStates.side.presence === null && marketMissingStates.side.tension === 75 && JSON.stringify(marketMissingStates.known) === JSON.stringify(marketMissingStates.repeated), marketMissingStates);
 
   const modeInvariant = await evaluate(cdp, `(() => {
     const before = window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5;
@@ -268,6 +282,8 @@ try {
   assert("search_title_or_appellation", exploration.queryResult.length > 0, exploration.queryResult);
   assert("exploration_v13_controls", exploration.intro.includes("1000 métiers") && exploration.diploma && exploration.titleButtons > 0 && exploration.ficheButtons > 0, exploration);
   assert("exploration_v15_sort", exploration.sorts.join("|") === "fit_desc|title_asc|title_desc" && exploration.persisted === "title_desc" && exploration.page === 1, exploration);
+  const explorationFavorite = await evaluate(cdp, `(() => { RefonteApp.state.explorationQuery=""; RefonteApp.renderExploration(); const button=document.querySelector('.compact-row [data-action="toggle-favorite"]'); const id=button?.dataset.jobId; const before={pressed:button?.getAttribute('aria-pressed'),filled:Boolean(button?.querySelector('.favorite-icon.is-favorite'))}; button?.click(); const afterButton=document.querySelector('.compact-row [data-action="toggle-favorite"][data-job-id="'+id+'"]'); const after={pressed:afterButton?.getAttribute('aria-pressed'),filled:Boolean(afterButton?.querySelector('.favorite-icon.is-favorite'))}; RefonteApp.openJob(id,afterButton); const detailButton=document.querySelector('#jobDialog [data-action="toggle-favorite"]'); const detail={pressed:detailButton?.getAttribute('aria-pressed'),filled:Boolean(detailButton?.querySelector('.favorite-icon.is-favorite'))}; detailButton?.click(); const detailAfter=document.querySelector('#jobDialog [data-action="toggle-favorite"]'); const removed={pressed:detailAfter?.getAttribute('aria-pressed'),filled:Boolean(detailAfter?.querySelector('.favorite-icon.is-favorite')),stored:RefonteApp.state.favorites.has(id)}; document.getElementById('jobDialog').close(); return {before,after,detail,removed}; })()`);
+  assert("favorite_sync_exploration_and_detail", explorationFavorite.before.pressed === "false" && !explorationFavorite.before.filled && explorationFavorite.after.pressed === "true" && explorationFavorite.after.filled && explorationFavorite.detail.pressed === "true" && explorationFavorite.detail.filled && explorationFavorite.removed.pressed === "false" && !explorationFavorite.removed.filled && !explorationFavorite.removed.stored, explorationFavorite);
   await capture(cdp, "04-exploration-bureau.png");
 
   await evaluate(cdp, `(() => { RefonteApp.toggleFavorite("rome-G1202"); RefonteApp.toggleFavorite("rome-K1203"); RefonteApp.toggleCompare("rome-G1202"); RefonteApp.toggleCompare("rome-K1203"); window.__BOUSSOLE_REFONTE_TEST_API__.navigate("liste"); })()`);
@@ -341,7 +357,7 @@ try {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_refonte_v1_browser_accessibility_performance",
+    reportKind: "boussole_v1_5_1_browser_interaction_accessibility_performance",
     generatedAt: new Date().toISOString(),
     status: failures.length || runtimeErrors.length || consoleErrors.length ? "failed" : "passed",
     html: { path: path.relative(ROOT, HTML_PATH), bytes: html.length, sha256: sha256(html) },

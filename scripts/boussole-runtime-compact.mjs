@@ -37,6 +37,12 @@ const DIRECTION_LABELS = Object.freeze({
   soigner_soutenir: "Soigner et soutenir",
   transporter_organiser_flux: "Transporter et organiser les flux"
 });
+const AUDIENCE_LABELS = Object.freeze({
+  petite_enfance: "Petite enfance (0–3 ans)",
+  children_preschool_3_6: "Enfants de maternelle (3–6 ans)",
+  children_multi_age: "Enfants de plusieurs âges",
+  youth: "Jeunesse"
+});
 
 export function sha256(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -72,7 +78,7 @@ export function buildCompactRuntime(dataset, metadata) {
     tagStatistics,
     workContexts: contextDictionary.items,
     diplomaLevels: compactDiplomaLevels(dataset.diplomaLevels),
-    dictionaries: { directions: directionDictionary, sectors: sectorDictionary, accessWarnings, ...romeDomains }
+    dictionaries: { directions: directionDictionary, sectors: sectorDictionary, audiences: buildAudienceDictionary(jobs), accessWarnings, ...romeDomains }
   };
   const competences = {
     schemaVersion: RUNTIME_SCHEMA_VERSION,
@@ -581,6 +587,11 @@ function buildSectorDictionary(jobs) {
   return [...labels].sort(([a], [b]) => a.localeCompare(b)).map(([id, label]) => ({ id, label }));
 }
 
+function buildAudienceDictionary(jobs) {
+  const ids = unique(jobs.flatMap(job => array(job.audienceSignals).map(signal => signal.id))).sort();
+  return ids.map(id => ({ id, label: AUDIENCE_LABELS[id] || id.replaceAll("_", " ") }));
+}
+
 function buildRomeDomainDictionaries(jobs) {
   const grand = new Map();
   const professional = new Map();
@@ -768,6 +779,7 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       marketStats: expandMarketStats(marketRows.get(job.id), marche)
     };
   });
+  applyMarketPresencePercentiles(jobs);
   return {
     schemaVersion: core.schemaVersion,
     datasetName: "Boussole Pro - runtime compact ROME1000",
@@ -795,6 +807,39 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       counts: { jobs: jobs.length, skillsEngine: skills.length, knowledge: knowledge.length }
     }
   };
+}
+
+export function applyMarketPresencePercentiles(jobs = []) {
+  const territoryKeys = ["national", "regional", "departmental"];
+  const fallback = { zero: 0, low: 25, medium: 55, high: 82, very_high: 95 };
+  for (const key of territoryKeys) {
+    const positives = jobs.map(job => job.marketStats?.[key]?.offersFranceTravail12m ?? job.marketStats?.[key]?.offers12m)
+      .filter(value => Number.isFinite(value) && value > 0);
+    for (const job of jobs) {
+      const row = job.marketStats?.[key];
+      if (!row) continue;
+      const offers = row.offersFranceTravail12m ?? row.offers12m;
+      let presencePercentile = null;
+      let presenceSource = "unavailable";
+      if (Number.isFinite(offers)) {
+        if (offers === 0) {
+          presencePercentile = 0;
+          presenceSource = "observed_zero";
+        } else if (offers > 0 && positives.length) {
+          const less = positives.filter(value => value < offers).length;
+          const equal = positives.filter(value => value === offers).length;
+          presencePercentile = 100 * (less + 0.5 * equal) / positives.length;
+          presenceSource = "territory_percentile";
+        } else if (fallback[row.offersLevel] !== undefined) {
+          presencePercentile = fallback[row.offersLevel];
+          presenceSource = "offers_level_fallback";
+        }
+      }
+      row.presencePercentile = presencePercentile;
+      row.presenceSource = presenceSource;
+    }
+  }
+  return jobs;
 }
 
 function expandAccessSummary(summary, paths, diplomaLevels, warningLabels = new Map()) {

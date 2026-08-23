@@ -85,7 +85,7 @@ assert("g1203_exact_experience_support", g1203?.skillsReadinessEvidence?.some(la
 assert("m1805_negative_intent_explained", m1805?.personalFitReasons?.some(label => /ne pas souhait|ne souhaitez pas|écart/i.test(label)), m1805?.personalFitReasons);
 assert("k2113_above_k2110", k2113?.personalFitTieBreakScore > k2110?.personalFitTieBreakScore, { k2113: summarize(k2113), k2110: summarize(k2110) });
 assert("k1309_not_childcare_excluded", !k1309?.exclusionReasons?.some(item => item.code === "voluntary_domain_petite_enfance"), k1309?.exclusionReasons);
-assert("k1303_childcare_excluded", k1303?.exclusionReasons?.some(item => ["voluntary_domain_petite_enfance", "voluntary_audience_petite_enfance"].includes(item.code)), k1303?.exclusionReasons);
+assert("k1303_childcare_warning_v151", k1303?.exclusionDecision?.status === "warning" && !k1303?.exclusionReasons?.some(item => ["voluntary_domain_petite_enfance", "voluntary_audience_petite_enfance"].includes(item.code)), k1303?.exclusionDecision);
 assert("d1302_commerce_excluded", d1302?.status === "excluded_for_now", d1302?.exclusionReasons);
 assert("skills_absence_does_not_penalize_fit", results.completeList.every(result => Number.isFinite(result.personalFitScore)), { skills: profile.skills?.length, skillSelections: profile.skillSelections?.length });
 

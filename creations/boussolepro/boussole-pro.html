@@ -372,6 +372,64 @@
     .assessment-dimension span { display: block; color: var(--muted); font-size: .8rem; }
     .exploration-sort { max-width: 330px; margin: 0 0 18px; }
     @media (max-width: 520px) { .assessment-grid { grid-template-columns: 1fr; } }
+    /* v1.5.1 - navigation reliée, accord personnel et carte des vents */
+    .favorite-icon.is-favorite { fill: currentColor; }
+    .personal-agreement-panel { padding: 14px; border: 1px solid var(--line); border-left: 4px solid var(--brand); background: var(--surface-soft); }
+    .personal-agreement-panel.is-hard { border-left-color: var(--danger); }
+    .personal-agreement-panel.is-warning { border-left-color: var(--warning); }
+    .agreement-status { display: inline-flex; margin-bottom: 10px; }
+    .agreement-block { margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--danger); background: var(--danger-soft); }
+    .agreement-warning { border-left-color: var(--warning); background: var(--warning-soft); }
+    .related-panel { max-width: var(--content); margin: auto; padding: 24px 20px 70px; }
+    .related-list { display: grid; gap: 10px; margin: 20px 0 0; padding: 0; list-style: none; }
+    .related-list-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px; border-bottom: 1px solid var(--line); }
+    .related-list-item p { margin: 4px 0 0; color: var(--muted); }
+    .market-wind-map { min-width: 0; margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); }
+    .market-wind-heading h4 { margin: 0; font-size: 1rem; }
+    .market-wind-heading p { margin: 4px 0 10px; color: var(--muted); font-size: .78rem; }
+    .market-wind-layout { display: grid; grid-template-columns: minmax(0, 1fr) 58px; gap: 6px; }
+    .market-main-plane { position: relative; min-height: 180px; border: 1px solid var(--line); background: linear-gradient(90deg, transparent 49.7%, var(--line) 50%, transparent 50.3%), linear-gradient(0deg, transparent 49.7%, var(--line) 50%, transparent 50.3%), var(--surface); }
+    .market-wind-map.is-full .market-main-plane { min-height: 300px; }
+    .market-quadrant { position: absolute; width: 50%; height: 50%; padding: 8px; color: var(--muted); font-size: .72rem; pointer-events: none; }
+    .market-wind-map.is-mini .market-quadrant span { display: none; }
+    .market-quadrant.top-left { top: 0; left: 0; }
+    .market-quadrant.top-right { top: 0; right: 0; text-align: right; }
+    .market-quadrant.bottom-left { bottom: 0; left: 0; display: flex; align-items: end; }
+    .market-quadrant.bottom-right { right: 0; bottom: 0; display: flex; align-items: end; justify-content: end; text-align: right; }
+    .market-axis-x, .market-axis-y { position: absolute; color: var(--muted); font-size: .68rem; pointer-events: none; }
+    .market-axis-x { right: 6px; bottom: 4px; }
+    .market-axis-y { top: 6px; left: 6px; }
+    .market-presence-unavailable, .market-tension-unavailable { position: relative; border: 1px dashed var(--line); background: var(--surface); }
+    .market-presence-unavailable { min-height: 180px; }
+    .market-wind-map.is-full .market-presence-unavailable { min-height: 300px; }
+    .market-tension-unavailable { grid-column: 1; min-height: 52px; }
+    .market-band-label { position: absolute; inset: 4px; color: var(--muted); font-size: .62rem; text-align: center; writing-mode: vertical-rl; }
+    .market-tension-unavailable .market-band-label { writing-mode: horizontal-tb; text-align: left; }
+    .market-marker-wrap { position: absolute; z-index: 4; transform: translate(-50%, 50%); }
+    .market-marker { display: grid; width: 29px; height: 29px; place-items: center; border: 3px solid var(--ink); background: var(--surface); color: var(--ink); font-size: .58rem; font-weight: 800; cursor: pointer; }
+    .market-marker.france { border-radius: 50%; border-color: #253b61; }
+    .market-marker.occitanie { border-color: #9a6b16; transform: rotate(45deg); }
+    .market-marker.occitanie span { transform: rotate(-45deg); }
+    .market-marker.aude { border-radius: 50%; border-color: #c45f52; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px #c45f52; }
+    .market-marker.has-bmo { outline: 2px dotted var(--warning); outline-offset: 4px; }
+    .market-marker:focus-visible { outline: 3px solid var(--focus); outline-offset: 5px; }
+    .market-marker-wrap .market-popover { top: calc(100% + 8px); left: 0; width: min(320px, calc(100vw - 48px)); text-align: left; }
+    .market-marker-wrap.popover-left .market-popover { right: 0; left: auto; }
+    .market-marker:hover + .market-popover, .market-marker:focus-visible + .market-popover { display: block; }
+    .market-neutral { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 7px; color: var(--muted); font-size: .76rem; }
+    .market-shape-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; color: var(--muted); font-size: .72rem; }
+    .market-shape-legend span::before { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border: 2px solid currentColor; content: ""; }
+    .market-shape-legend .legend-fr::before { border-radius: 50%; }
+    .market-shape-legend .legend-reg::before { transform: rotate(45deg); }
+    .market-shape-legend .legend-dep::before { border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px currentColor; }
+    @media (max-width: 520px) {
+      .related-list-item { grid-template-columns: 1fr; }
+      .market-wind-map { padding: 8px; }
+      .market-wind-layout { grid-template-columns: minmax(0, 1fr) 46px; }
+      .market-main-plane, .market-presence-unavailable { min-height: 170px; }
+      .market-wind-map.is-full .market-main-plane, .market-wind-map.is-full .market-presence-unavailable { min-height: 230px; }
+      .market-marker { width: 27px; height: 27px; }
+    }
   </style>
 </head>
 <body data-theme="light">
@@ -396,7 +454,7 @@
   </main>
 
   <nav class="mobile-nav" aria-label="Navigation principale mobile" id="mobileNav"></nav>
-  <footer class="app-footer">Boussole Pro v1.5.0 - données personnelles conservées sur cet appareil.</footer>
+  <footer class="app-footer">Boussole Pro v1.5.1 - données personnelles conservées sur cet appareil.</footer>
 
   <dialog id="jobDialog" aria-labelledby="jobDialogTitle">
     <div id="jobDialogContent"></div>
@@ -998,7 +1056,7 @@ const EXPERIENCE_DOMAIN_OPTIONS = [
   ["education", "Éducation / transmission"],
   ["social", "Social / accompagnement"],
   ["soin", "Soin / aide à la personne"],
-  ["petite_enfance", "Petite enfance"],
+  ["petite_enfance", "Petite enfance (0–3 ans)"],
   ["proprete", "Propreté / ménage / hygiène"],
   ["hotellerie", "Hôtellerie / hébergement"],
   ["cuisine", "Cuisine / alimentation"],
@@ -1046,7 +1104,7 @@ const TRAINING_FAMILY_OPTIONS = [
   ["numerique", "Numérique / informatique"],
   ["social", "Social / insertion"],
   ["education", "Éducation / animation"],
-  ["petite_enfance", "Petite enfance"],
+  ["petite_enfance", "Petite enfance (0–3 ans)"],
   ["soin", "Santé / soin"],
   ["proprete", "Propreté / hygiène"],
   ["hotellerie", "Hôtellerie / tourisme"],
@@ -1068,7 +1126,7 @@ const EXCLUDED_DOMAIN_OPTIONS = [
   ["soin", "Soin"],
   ["social", "Social / accompagnement"],
   ["education", "Éducation"],
-  ["petite_enfance", "Petite enfance"],
+  ["petite_enfance", "Petite enfance (0–3 ans)"],
   ["proprete", "Propreté / entretien"],
   ["hotellerie", "Hôtellerie / hébergement"],
   ["industrie", "Industrie"],
@@ -1606,7 +1664,7 @@ const DIAGNOSTIC_TEST_PROFILES_V052 = [
     id: "enfance-relation",
     title: "Enfance et relation",
     description: "Teste les pistes d’animation, transmission et soin avec attention à la charge physique.",
-    expectedFamilies: ["Petite enfance", "Transmission et enfance", "Social et accompagnement"],
+    expectedFamilies: ["Petite enfance (0–3 ans)", "Transmission et enfance", "Social et accompagnement"],
     expectedRomeCodes: ["G1202", "K1303", "J1304", "K2106", "K1204"],
     unexpectedFamilies: ["Bâtiment", "Industrie lourde", "Logistique et transport"],
     mustNotContain: ["Soudeur", "Maçon", "Préparateur de commandes"],
@@ -2086,7 +2144,7 @@ const SKILL_SECTOR_OPTIONS_V051 = [
   ["social", "Social / accompagnement"],
   ["education", "Éducation / transmission"],
   ["care", "Soin / aide à la personne"],
-  ["children", "Petite enfance"],
+  ["children", "Petite enfance (0–3 ans)"],
   ["cleaning", "Propreté / hygiène"],
   ["digital", "Numérique / informatique"],
   ["administrative", "Administratif / dossiers"],
@@ -4124,6 +4182,8 @@ function buildMarketSummaryByTerritory(job = {}, datasets = App.state.dataset) {
       value: offers,
       offersCount: offers,
       offersLevel: row.offersLevel || signal,
+      presencePercentile: Number.isFinite(row.presencePercentile) ? row.presencePercentile : null,
+      presenceSource: row.presenceSource || "unavailable",
       territorialSignal: row.territorialOfferSignal || "unknown",
       tensionClass: row.tensionClass ?? null,
       tensionLevel: row.tensionLevel || "unknown",
@@ -4173,7 +4233,9 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
   const presentationMode = ({ essential: "user", detailed: "companion", diagnostic: "debug" })[App.state.displayMode] || "user";
   const complete = toArray(resultSet.completeList);
   const variantsByJob = resultSet.variantsByJob || {};
-  const summaries = complete.map(result => buildResultJobSummary(result, datasets, toArray(result.job?.relatedJobIds || result.job?.relatedJobs).length));
+  const validJobIds = new Set(complete.map(result => result.jobId));
+  const relatedIds = result => unique(toArray(result.job?.relatedJobIds || result.job?.relatedJobs)).filter(id => validJobIds.has(id));
+  const summaries = complete.map(result => buildResultJobSummary(result, datasets, relatedIds(result).length));
   const byId = new Map(summaries.map(item => [item.jobId, item]));
   const topIds = new Set(toArray(resultSet.top5).map(item => item.jobId));
   const notHardExcluded = item => item.exclusionDecision?.status !== "hard" && item.status !== "excluded_for_now";
@@ -4212,8 +4274,9 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     skillsReadinessEvidence: toArray(result.skillsReadinessEvidence),
     marketSummaryByTerritory: result.marketSummaryByTerritory || buildMarketSummaryByTerritory(result.job, datasets),
     personalAssessment: buildPersonalAssessment(result),
+    exclusionDecision: result.exclusionDecision || { status: "none", hardExclusion: false, reasons: [], warnings: [] },
     pointsToVerify: unique([...toArray(result.missingData).map(item => item.message || item.field), ...toArray(result.accessSummaryV1?.accessWarnings)]).filter(Boolean),
-    variants: toArray(result.job?.relatedJobIds || result.job?.relatedJobs),
+    variants: relatedIds(result),
     sources: toArray(result.sourceRefs)
   }]));
   return {
@@ -5364,9 +5427,9 @@ function applyHardExclusions(criteria, job) {
   }
   const excludedDomains = toArray(exclusions.domains);
   if (excludedDomains.includes("petite_enfance") && isPetiteEnfanceJob(job)) {
-    confirmed.push({ ...exclusion("voluntary_audience_petite_enfance", "Petite enfance exclue volontairement.", "audience", "La petite enfance est un public essentiel ou dominant de ce métier."), evidenceLevel: audienceCentrality(job, "petite_enfance"), decisionScope: "audience" });
+    confirmed.push({ ...exclusion("voluntary_audience_petite_enfance", "Petite enfance (0–3 ans) exclue volontairement.", "audience", "Vous avez exclu « Petite enfance (0–3 ans) » et ce public est incontournable dans ce métier."), evidenceLevel: audienceCentrality(job, "petite_enfance"), decisionScope: "audience" });
   } else if (excludedDomains.includes("petite_enfance") && ["possible", "unknown"].includes(audienceCentrality(job, "petite_enfance"))) {
-    unknown.push(missing("job.audience.petite_enfance", "medium", "La petite enfance peut faire partie du public selon le poste : point à vérifier, sans exclusion automatique."));
+    unknown.push(missing("job.audience.petite_enfance", "medium", "Des enfants de 0 à 3 ans peuvent être concernés selon le poste, sans être un public systématique."));
   }
   const domainDecisions = excludedDomains.filter(domain => domain !== "petite_enfance").map(domain => evaluateDomainExclusionDecision(domain, job, criteria));
   const confirmedDomain = domainDecisions.find(decision => decision.status === "confirmed_sector_exclusion");
@@ -15649,7 +15712,7 @@ if (typeof window !== "undefined") {
 /* CLASSIC_ENGINE_END */
   </script>
   <script>
-    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.0","buildId":"20260823-universal-visual-v1-5-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5","schemaVersion":"1.5.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d’aptitude aux fonctions d’animateur"}],"certifications":["cert-bafa"],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
+    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.1","buildId":"20260823-consolidation-v1-5-1-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5-1","schemaVersion":"1.5.1","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d’aptitude aux fonctions d’animateur"}],"certifications":["cert-bafa"],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
   </script>
   <script>
 /* RUNTIME_PROVIDER_START */
@@ -15853,6 +15916,7 @@ const BoussoleRuntimeProvider = {
         marketStats: this.expandMarket(marketRows.get(job.id), marche)
       };
     });
+    this.applyMarketPresencePercentiles(jobs);
     return {
       schemaVersion: core.schemaVersion,
       datasetName: "Boussole Pro - runtime compact ROME1000",
@@ -15872,6 +15936,37 @@ const BoussoleRuntimeProvider = {
       marketTrends: { schemaVersion: marche.schemaVersion, generatedAt: marche.generatedAt, jobs: [] },
       runtimeBundleIdentity: { inputMode: "compact_runtime_v1", runtimeBundleRevision: core.datasetVersion, fingerprintSha256: manifest.runtimeFingerprintSha256, sourceDatasetVersion: core.datasetVersion, status: "validated_compact_runtime", counts: { jobs: jobs.length, skillsEngine: skills.length, knowledge: knowledge.length } }
     };
+  },
+
+  applyMarketPresencePercentiles(jobs) {
+    const fallback = { zero: 0, low: 25, medium: 55, high: 82, very_high: 95 };
+    for (const key of ["national", "regional", "departmental"]) {
+      const positives = jobs.map(job => job.marketStats?.[key]?.offersFranceTravail12m ?? job.marketStats?.[key]?.offers12m)
+        .filter(value => Number.isFinite(value) && value > 0);
+      for (const job of jobs) {
+        const row = job.marketStats?.[key];
+        if (!row) continue;
+        const offers = row.offersFranceTravail12m ?? row.offers12m;
+        let presencePercentile = null;
+        let presenceSource = "unavailable";
+        if (Number.isFinite(offers)) {
+          if (offers === 0) {
+            presencePercentile = 0;
+            presenceSource = "observed_zero";
+          } else if (offers > 0 && positives.length) {
+            const less = positives.filter(value => value < offers).length;
+            const equal = positives.filter(value => value === offers).length;
+            presencePercentile = 100 * (less + 0.5 * equal) / positives.length;
+            presenceSource = "territory_percentile";
+          } else if (fallback[row.offersLevel] !== undefined) {
+            presencePercentile = fallback[row.offersLevel];
+            presenceSource = "offers_level_fallback";
+          }
+        }
+        row.presencePercentile = presencePercentile;
+        row.presenceSource = presenceSource;
+      }
+    }
   },
 
   expandAccess(summary, paths, diplomaLevels, warningLabels = new Map()) {
@@ -16662,7 +16757,8 @@ const BoussoleRuntimeProvider = {
         if (!job) return null;
         const direction = this.directionForJob(job);
         const access = job.accessSummary || {};
-        return { jobId: job.id, romeCode: job.romeCode, title: job.title, shortMission: this.mission(job), description: job.description || this.mission(job), activities: job.activities || [], primaryDirection: direction.id, primaryDirectionLabel: direction.label, secondaryDirections: [], personalFitScore: null, personalFitReasons: [], skillsReadiness: { label: "Non calculé sans profil" }, accessSummary: access, marketSummaryByTerritory: this.neutralMarket(job), dataConfidence: job.confidence, variantCount: 0, exclusionReasons: [], pointsToVerify: job.missingFields || [] };
+        const variants = this.array(job.relatedJobIds || job.relatedJobs).filter(id => this.jobById(id));
+        return { jobId: job.id, romeCode: job.romeCode, title: job.title, shortMission: this.mission(job), description: job.description || this.mission(job), activities: job.activities || [], primaryDirection: direction.id, primaryDirectionLabel: direction.label, secondaryDirections: [], personalFitScore: null, personalFitReasons: [], skillsReadiness: { label: "Non calculé sans profil" }, accessSummary: access, marketSummaryByTerritory: this.neutralMarket(job), dataConfidence: job.confidence, variantCount: variants.length, relatedDirectionCount: variants.length, variants, exclusionDecision: { status: "none", hardExclusion: false, reasons: [], warnings: [] }, exclusionReasons: [], pointsToVerify: job.missingFields || [] };
       },
       jobById(id) { return this.state.dataset.jobs.find(job => job.id === id); },
       directionForJob(job) { const id = job.primaryDirection || "unclassified"; return { id, label: this.directionLabel(id) }; },
@@ -16883,7 +16979,7 @@ const BoussoleRuntimeProvider = {
         };
         const pick = (key, fallback) => sets[key].includes(source[key]) ? source[key] : fallback;
         const picks = key => [...new Set(this.array(source[key]).filter(value => sets[key].includes(value)))];
-        profile.schemaVersion = "1.5.0";
+        profile.schemaVersion = "1.5.1";
         profile.id = typeof source.id === "string" && source.id ? source.id : profile.id;
         profile.createdAt = typeof source.createdAt === "string" ? source.createdAt : profile.createdAt;
         profile.updatedAt = typeof source.updatedAt === "string" ? source.updatedAt : profile.updatedAt;
@@ -17175,7 +17271,7 @@ const BoussoleRuntimeProvider = {
       },
       skillStateLabel(value) { return ({ known: "Je sais faire", practiced: "Je l’ai déjà pratiqué", develop: "J’aimerais le développer", avoid: "Je préfère éviter" })[value] || "Non renseigné"; },
       renderEnvironmentsStep() {
-        return `<h3 id="stepTitle" tabindex="-1">Environnements</h3><p class="help">Indiquez les cadres où vous vous projetez le plus facilement, puis les domaines que vous ne souhaitez réellement pas exercer.</p><section class="form-block"><fieldset><legend>Styles de travail</legend>${this.arrayChoices("preferredWorkStyles", [["relational", "Relationnel"], ["team", "En équipe"], ["autonomous", "Autonome"], ["creative", "Créatif"], ["manual", "Manuel"], ["structured", "Structuré"], ["movement", "En mouvement"]])}</fieldset></section><section class="form-block"><fieldset><legend>Cadres préférés</legend>${this.arrayChoices("preferredEnvironments", [["office", "Bureau"], ["field", "Terrain"], ["outdoor", "Extérieur"], ["public", "Contact avec le public"], ["children", "Enfants"], ["workshop", "Atelier"], ["quiet", "Environnement calme"], ["remote", "Télétravail possible"]])}</fieldset></section><section class="form-block"><fieldset><legend>Domaines que je préfère éviter</legend><p class="help">Facultatif. Ne cochez ici que les domaines que vous ne souhaitez réellement pas exercer. Une case non cochée reste neutre.</p>${this.arrayChoices("excludedDomains", [["commerce", "Commerce, vente ou marketing"], ["restauration", "Restauration ou alimentation"], ["securite", "Sécurité ou défense"], ["soin", "Santé ou soin"], ["social", "Social ou accompagnement"], ["education", "Éducation ou enseignement"], ["petite_enfance", "Petite enfance"], ["proprete", "Propreté ou entretien"], ["hotellerie", "Hôtellerie ou tourisme"], ["industrie", "Industrie ou production"], ["batiment", "Bâtiment ou chantier"], ["logistique", "Logistique ou transport"], ["animaux", "Métiers auprès des animaux"], ["numerique", "Numérique ou informatique"]])}</fieldset></section>`;
+        return `<h3 id="stepTitle" tabindex="-1">Environnements</h3><p class="help">Indiquez les cadres où vous vous projetez le plus facilement, puis les domaines que vous ne souhaitez réellement pas exercer.</p><section class="form-block"><fieldset><legend>Styles de travail</legend>${this.arrayChoices("preferredWorkStyles", [["relational", "Relationnel"], ["team", "En équipe"], ["autonomous", "Autonome"], ["creative", "Créatif"], ["manual", "Manuel"], ["structured", "Structuré"], ["movement", "En mouvement"]])}</fieldset></section><section class="form-block"><fieldset><legend>Cadres préférés</legend>${this.arrayChoices("preferredEnvironments", [["office", "Bureau"], ["field", "Terrain"], ["outdoor", "Extérieur"], ["public", "Contact avec le public"], ["children", "Enfants"], ["workshop", "Atelier"], ["quiet", "Environnement calme"], ["remote", "Télétravail possible"]])}</fieldset></section><section class="form-block"><fieldset><legend>Domaines que je préfère éviter</legend><p class="help">Facultatif. Ne cochez ici que les domaines que vous ne souhaitez réellement pas exercer. Une case non cochée reste neutre.</p>${this.arrayChoices("excludedDomains", [["commerce", "Commerce, vente ou marketing"], ["restauration", "Restauration ou alimentation"], ["securite", "Sécurité ou défense"], ["soin", "Santé ou soin"], ["social", "Social ou accompagnement"], ["education", "Éducation ou enseignement"], ["petite_enfance", "Petite enfance (0–3 ans)"], ["proprete", "Propreté ou entretien"], ["hotellerie", "Hôtellerie ou tourisme"], ["industrie", "Industrie ou production"], ["batiment", "Bâtiment ou chantier"], ["logistique", "Logistique ou transport"], ["animaux", "Métiers auprès des animaux"], ["numerique", "Numérique ou informatique"]])}</fieldset></section>`;
       },
       renderValidationStep() {
         const p = this.state.profile;
@@ -17194,7 +17290,7 @@ const BoussoleRuntimeProvider = {
           value: { meaning: "Sens", service: "Utilité", solidarity: "Solidarité", autonomy: "Autonomie", stability: "Stabilité", ecology: "Écologie", creativity: "Créativité", clarity: "Cadre clair" },
           style: { relational: "Relationnel", team: "En équipe", autonomous: "Autonome", creative: "Créatif", manual: "Manuel", structured: "Structuré", movement: "En mouvement" },
           environment: { office: "Bureau", field: "Terrain", outdoor: "Extérieur", public: "Contact avec le public", children: "Enfants", workshop: "Atelier", quiet: "Environnement calme", remote: "Télétravail possible" },
-          excluded: { commerce: "Commerce, vente ou marketing", restauration: "Restauration ou alimentation", securite: "Sécurité ou défense", soin: "Santé ou soin", social: "Social ou accompagnement", education: "Éducation ou enseignement", petite_enfance: "Petite enfance", proprete: "Propreté ou entretien", hotellerie: "Hôtellerie ou tourisme", industrie: "Industrie ou production", batiment: "Bâtiment ou chantier", logistique: "Logistique ou transport", animaux: "Métiers auprès des animaux", numerique: "Numérique ou informatique" }
+          excluded: { commerce: "Commerce, vente ou marketing", restauration: "Restauration ou alimentation", securite: "Sécurité ou défense", soin: "Santé ou soin", social: "Social ou accompagnement", education: "Éducation ou enseignement", petite_enfance: "Petite enfance (0–3 ans)", proprete: "Propreté ou entretien", hotellerie: "Hôtellerie ou tourisme", industrie: "Industrie ou production", batiment: "Bâtiment ou chantier", logistique: "Logistique ou transport", animaux: "Métiers auprès des animaux", numerique: "Numérique ou informatique" }
         };
         const value = (group, entry, fallback = "Non précisé") => entry === "" || entry === null || entry === undefined ? fallback : (labels[group]?.[entry] || this.humanize(entry));
         const list = (values, group = "") => this.array(values).length ? this.array(values).map(item => labels[group]?.[item] || this.humanize(item)).join(", ") : "Aucun élément renseigné";
@@ -17221,7 +17317,7 @@ const BoussoleRuntimeProvider = {
 
     // Audit global v1.3 : profil canonique, deux axes de compétences et vues explicables.
     const PROFILE_OPTIONS_V13 = Object.freeze({
-      trainingFamilies: [["administratif_gestion", "Administratif, gestion et droit public"], ["numerique", "Numérique et informatique"], ["social", "Social et accompagnement"], ["education_animation", "Éducation, enseignement et animation"], ["petite_enfance", "Petite enfance"], ["sante_soin", "Santé et soin"], ["culture_communication", "Culture, communication et création"], ["commerce_relation_client", "Commerce et relation client"], ["hotellerie_restauration", "Hôtellerie, tourisme et restauration"], ["nature_agriculture_animaux", "Nature, agriculture et animaux"], ["artisanat_batiment_maintenance", "Artisanat, bâtiment et maintenance"], ["industrie_qualite", "Industrie, production et qualité"], ["logistique_transport_securite", "Logistique, transport et sécurité"], ["proprete_services", "Propreté et entretien"], ["recherche_analyse", "Recherche et analyse"]],
+      trainingFamilies: [["administratif_gestion", "Administratif, gestion et droit public"], ["numerique", "Numérique et informatique"], ["social", "Social et accompagnement"], ["education_animation", "Éducation, enseignement et animation"], ["petite_enfance", "Petite enfance (0–3 ans)"], ["sante_soin", "Santé et soin"], ["culture_communication", "Culture, communication et création"], ["commerce_relation_client", "Commerce et relation client"], ["hotellerie_restauration", "Hôtellerie, tourisme et restauration"], ["nature_agriculture_animaux", "Nature, agriculture et animaux"], ["artisanat_batiment_maintenance", "Artisanat, bâtiment et maintenance"], ["industrie_qualite", "Industrie, production et qualité"], ["logistique_transport_securite", "Logistique, transport et sécurité"], ["proprete_services", "Propreté et entretien"], ["recherche_analyse", "Recherche et analyse"]],
       interests: [["aider", "Aider"], ["accompagner", "Accompagner"], ["creer", "Créer"], ["transmettre", "Transmettre"], ["organiser", "Organiser"], ["analyser", "Analyser"], ["fabriquer", "Fabriquer"], ["reparer", "Réparer"], ["nature", "Agir avec le vivant"], ["animaux", "S’occuper d’animaux"], ["enfants", "Agir auprès d’enfants"], ["technique", "Résoudre des problèmes techniques"], ["manuel", "Travailler manuellement"], ["communiquer", "Communiquer"], ["proteger", "Protéger ou prévenir"], ["nourrir", "Préparer ou nourrir"]],
       values: [["meaning", "Sens"], ["service", "Utilité / rendre service"], ["solidarity", "Solidarité / entraide"], ["autonomy", "Autonomie"], ["stability", "Stabilité"], ["precision", "Précision / qualité"], ["ecology", "Écologie / respect du vivant"], ["team", "Travail collectif"], ["concrete", "Résultats concrets"], ["security", "Sécurité / prévention"], ["creativity", "Créativité"], ["clarity", "Cadre clair"]],
       preferredWorkStyles: [["relational", "Relationnel"], ["team", "En équipe"], ["autonomous", "Autonome"], ["creative", "Créatif"], ["manual", "Manuel"], ["structured", "Structuré"], ["analytical", "Analytique"], ["movement", "En mouvement / sur le terrain"]],
@@ -17252,7 +17348,7 @@ const BoussoleRuntimeProvider = {
         const profile = oldProfileForCurrentInterfaceV13.call(this, source);
         const allowed = key => new Set(this.optionRows(key).map(([id]) => id));
         const keep = key => [...new Set(this.array(source[key]).filter(id => allowed(key).has(id)))];
-        profile.schemaVersion = "1.5.0";
+        profile.schemaVersion = "1.5.1";
         const migration = this.state.profileMigrationSource;
         const oldRefonte = !source.diplomaScaleRevision && migration?.app === "boussole-pro-refonte-profile" && /^1\.(?:0|1|2)(?:\.|$)/.test(String(migration.version || ""));
         const oldLevel = Number(source.diplomaLevel || 0);
@@ -17594,19 +17690,195 @@ const BoussoleRuntimeProvider = {
       if (relatedHeading) relatedHeading.textContent = "Métiers reliés par compétences et contextes";
     };
 
+    /* Consolidation v1.5.1 */
+    RefonteApp.config.version = "1.5.1";
+    Object.assign(RefonteApp.state, { dialogViewState: null, lastMarketTrigger: null });
+
+    RefonteApp.favoriteIcon = function(isFavorite) {
+      return `<svg class="icon favorite-icon${isFavorite ? " is-favorite" : ""}" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"${isFavorite ? ' fill="currentColor"' : ' fill="none"'}/></svg>`;
+    };
+    RefonteApp.favoriteButtonContent = function(jobId, title, compact = false) {
+      const favorite = this.state.favorites.has(jobId);
+      const action = favorite ? "Retirer de Ma liste" : "Ajouter à Ma liste";
+      return {
+        favorite,
+        label: `${action} : ${title}`,
+        html: `${this.favoriteIcon(favorite)}${compact ? "" : ` ${action}`}`
+      };
+    };
+
+    RefonteApp.compactJobRow = function(item) {
+      const favorite = this.favoriteButtonContent(item.jobId, item.title, true);
+      return `<article class="compact-row"><strong>${this.escape(item.romeCode)}</strong><div><button class="job-title-link" data-action="open-job" data-job-id="${item.jobId}">${this.escape(item.title)}</button><div class="job-meta">Accord ${Math.round(item.personalFitScore || 0)}/100${item.exclusionReasons?.length ? " · écarté pour l’instant" : ""}${this.escape(this.marketSortLine(item))}</div></div><span class="row-direction">${this.escape(item.primaryDirectionLabel)}</span><div class="actions"><button class="button compact" data-action="open-job" data-job-id="${item.jobId}">Voir la fiche</button><button class="icon-button" data-action="toggle-favorite" data-job-id="${item.jobId}" aria-pressed="${favorite.favorite}" aria-label="${this.escape(favorite.label)}" title="${this.escape(favorite.label)}">${favorite.html}</button></div></article>`;
+    };
+    RefonteApp.jobCard = function(item) {
+      const access = item.accessSummary?.accessStatusLabel || item.accessSummary?.displayLabel || "À vérifier";
+      const supports = item.skillsReadiness?.label || "Informations insuffisantes";
+      const favorite = this.favoriteButtonContent(item.jobId, item.title);
+      return `<article class="job-card"><header><div><div class="job-meta">${this.escape(item.romeCode)} · ${this.escape(item.primaryDirectionLabel)}</div><h3><button class="job-title-link" data-action="open-job" data-job-id="${item.jobId}">${this.escape(item.title)}</button></h3></div><div class="score" aria-label="Accord personnel ${Math.round(item.personalFitScore || 0)} sur 100">${Math.round(item.personalFitScore || 0)}</div></header><p class="job-mission">${this.escape(item.shortMission || "Mission détaillée dans la fiche métier.")}</p><div class="indicator-grid"><div class="indicator"><span>Appuis actuels</span><strong>${this.escape(supports)}</strong></div><div class="indicator"><span>Chemin d’accès</span><strong>${this.escape(access)}</strong></div><div class="indicator"><span>Qualité des données</span><strong>${this.humanize(item.dataConfidence || "à vérifier")}</strong></div></div>${this.marketCards(item.marketSummaryByTerritory, false)}<footer><button class="button compact primary" data-action="open-job" data-job-id="${item.jobId}">Voir la fiche</button><button class="button compact" data-action="toggle-favorite" data-job-id="${item.jobId}" aria-pressed="${favorite.favorite}" aria-label="${this.escape(favorite.label)}">${favorite.html}</button>${item.relatedDirectionCount ? `<button class="button compact" data-action="open-related" data-job-id="${item.jobId}">${item.relatedDirectionCount} métier${item.relatedDirectionCount > 1 ? "s" : ""} proche${item.relatedDirectionCount > 1 ? "s" : ""}</button>` : ""}</footer></article>`;
+    };
+
+    RefonteApp.marketPresenceBand = function(percentile) {
+      if (!Number.isFinite(percentile)) return "Présence non disponible";
+      if (percentile === 0) return "aucune offre observée sur la période";
+      if (percentile < 20) return "très rare";
+      if (percentile < 40) return "peu présente";
+      if (percentile < 60) return "présence intermédiaire";
+      if (percentile < 80) return "présente";
+      return "très présente";
+    };
+    RefonteApp.marketWindPoint = function(row = {}) {
+      const presence = Number.isFinite(row.presencePercentile) ? Math.max(0, Math.min(100, row.presencePercentile)) : null;
+      const tensionClass = Number.isFinite(row.tensionClass) ? Math.max(1, Math.min(5, Number(row.tensionClass))) : null;
+      const tension = tensionClass === null ? null : 100 * (tensionClass - 1) / 4;
+      const tensionLabel = tensionClass === null ? "non disponible" : ({ 1: "très faible", 2: "faible", 3: "moyenne", 4: "forte", 5: "très forte" })[tensionClass];
+      const quadrant = presence === null || tension === null ? null : presence >= 60 && tension >= 60 ? "Terrain porteur" : presence < 60 && tension >= 60 ? "Niche en tension" : presence >= 60 ? "Marché actif" : "Signal limité";
+      return { presence, tension, tensionClass, tensionLabel, quadrant, presenceBand: this.marketPresenceBand(presence) };
+    };
+    RefonteApp.marketMarkerDetails = function(label, row, point) {
+      const presence = point.presence === null ? "Présence relative : non disponible" : `Présence relative : ${point.presenceBand} (${Math.round(point.presence)}e percentile)`;
+      const bmo = Number.isFinite(row.recruitmentDifficultyRate) ? `<p>Difficulté BMO : ${Math.round(row.recruitmentDifficultyRate)} %</p>` : "";
+      const observed = Number.isFinite(row.offersCount) ? `${Number(row.offersCount).toLocaleString("fr-FR")} offres` : "donnée non disponible";
+      const sources = this.array(row.sources).length ? this.array(row.sources).join(" ; ") : row.source || "source non précisée";
+      return `<strong>${this.escape(label)}</strong><p>${this.escape(presence)}</p><p>Tension : ${this.escape(point.tensionLabel)}</p>${point.quadrant ? `<p>${this.escape(point.quadrant)}</p>` : ""}${bmo}<p class="market-details">Donnée observée : ${this.escape(observed)} sur ${this.escape(row.period || row.periods?.offers || "une période à vérifier")}.</p><p class="market-details">Portée : ${this.escape(row.statisticalScope || "à vérifier")} · Confiance : ${Math.round(Number(row.confidence || 0) * 100)} % · Sources : ${this.escape(sources)}.</p>${row.sharedFamily ? "<p>Repère partagé à l'échelle d'une famille de métiers.</p>" : ""}`;
+    };
+    RefonteApp.marketCards = function(summary = {}, detailed = false) {
+      const rows = [["national", "France", "FR", "france"], ["regional", "Occitanie", "OC", "occitanie"], ["departmental", "Aude", "11", "aude"]];
+      this.state.marketDescriptionSequence = (this.state.marketDescriptionSequence || 0) + 1;
+      const instance = this.state.marketDescriptionSequence;
+      const groups = { main: [], side: [], bottom: [], neutral: [] };
+      const summaries = [];
+      for (const [key, label, short, shape] of rows) {
+        const row = summary[key] || {};
+        const point = this.marketWindPoint(row);
+        const id = `market-popover-${instance}-${key}`;
+        const summaryId = `market-summary-${instance}-${key}`;
+        const hasBmo = detailed && Number.isFinite(row.recruitmentDifficultyRate);
+        const marker = `<div class="market-marker-wrap${point.presence !== null && point.presence > 55 ? " popover-left" : ""}" style="left:${point.presence ?? 50}%;bottom:${point.tension ?? 50}%"><button type="button" class="market-marker ${shape}${hasBmo ? " has-bmo" : ""}" data-action="market-popover" aria-expanded="false" aria-controls="${id}" aria-describedby="${summaryId}" aria-label="Détails marché pour ${label}"><span>${short}</span></button><div class="market-popover" id="${id}" role="note" hidden>${this.marketMarkerDetails(label, row, point)}</div></div>`;
+        if (point.presence !== null && point.tension !== null) groups.main.push(marker);
+        else if (point.presence === null && point.tension !== null) groups.side.push(marker.replace(`left:50%;bottom:${point.tension}%`, `left:50%;bottom:${point.tension}%`));
+        else if (point.presence !== null) groups.bottom.push(marker.replace(`bottom:50%`, "bottom:8px"));
+        else groups.neutral.push(`<span>${label} : Données insuffisantes</span>`);
+        const text = point.presence === null && point.tension === null ? `${label} : Données insuffisantes.` : `${label} : ${point.presence === null ? "présence non disponible" : `${point.presenceBand}, ${Math.round(point.presence)}e percentile`} ; tension ${point.tensionLabel}${point.quadrant ? ` ; ${point.quadrant}` : ""}.`;
+        summaries.push(`<li id="${summaryId}">${this.escape(text)}</li>`);
+      }
+      return `<section class="market-wind-map ${detailed ? "is-full" : "is-mini"}" aria-labelledby="market-wind-title-${instance}" aria-describedby="market-wind-subtitle-${instance}"><header class="market-wind-heading"><h4 id="market-wind-title-${instance}">Carte des vents du marché</h4><p id="market-wind-subtitle-${instance}">Plus un repère va vers la droite, plus le métier est présent dans le territoire. Plus il monte, plus les recrutements sont tendus.</p></header><div class="market-wind-layout"><div class="market-main-plane"><span class="market-quadrant top-left"><span>Niche en tension</span></span><span class="market-quadrant top-right"><span>Terrain porteur</span></span><span class="market-quadrant bottom-left"><span>Signal limité</span></span><span class="market-quadrant bottom-right"><span>Marché actif</span></span><span class="market-axis-y">Tension</span><span class="market-axis-x">Présence</span>${groups.main.join("")}</div><div class="market-presence-unavailable"><span class="market-band-label">Présence non disponible</span>${groups.side.join("")}</div><div class="market-tension-unavailable"><span class="market-band-label">Tension non disponible</span>${groups.bottom.join("")}</div>${groups.neutral.length ? `<div class="market-neutral">${groups.neutral.join("")}</div>` : ""}</div><div class="market-shape-legend" aria-hidden="true"><span class="legend-fr">France</span><span class="legend-reg">Occitanie</span><span class="legend-dep">Aude</span>${detailed ? '<span>Halo pointillé : difficulté BMO disponible</span>' : ""}</div><ul class="visually-hidden">${summaries.join("")}</ul></section>`;
+    };
+    RefonteApp.marketBars = function(summary = {}) { return this.marketCards(summary, false); };
+
+    RefonteApp.captureDialogViewState = function() {
+      if (!this.state.dialogViewState) return null;
+      return { ...this.state.dialogViewState, scrollTop: this.dom.dialog.scrollTop || this.dom.dialogContent.scrollTop || 0 };
+    };
+    RefonteApp.prepareDialogNavigation = function(trigger, options = {}) {
+      if (!this.dom.dialog.open) {
+        this.state.dialogStack = [];
+        this.state.lastDialogTrigger = trigger || document.activeElement;
+        this.state.lastDialogContext = { view: this.state.view, scrollY: window.scrollY, resultsTab: this.state.resultsTab, resultsPage: this.state.resultsPage, explorationPage: this.state.explorationPage };
+      } else if (!options.restore) {
+        const current = this.captureDialogViewState();
+        if (current) this.state.dialogStack.push(current);
+      }
+    };
+    RefonteApp.updateDialogBackButton = function() {
+      const back = this.dom.dialogContent.querySelector(".dialog-header > button:first-child");
+      if (back) back.dataset.action = this.state.dialogStack.length ? "back-dialog-state" : "close-dialog";
+    };
+    RefonteApp.renderPersonalAgreement = function(detail) {
+      const sections = [...this.dom.dialogContent.querySelectorAll(".detail-section")];
+      const personal = sections.find(section => section.querySelector("h3")?.textContent.includes("Pourquoi cette piste") || section.querySelector("h3")?.textContent.includes("Lecture neutre"));
+      const assessment = this.dom.dialogContent.querySelector(".personalized-assessment");
+      const supports = sections.find(section => section.querySelector("h3")?.textContent === "Mes appuis actuels");
+      if (!personal) return;
+      if (!this.state.profileExists) return;
+      const decision = detail.exclusionDecision || { status: "none", reasons: [], warnings: [] };
+      const hard = decision.status === "hard";
+      const warning = decision.status === "warning";
+      const reasonRows = hard ? this.array(decision.reasons) : this.array(decision.warnings).slice(0, 2);
+      const status = hard ? '<span class="badge agreement-status">Écarté pour l\'instant</span>' : warning ? '<span class="badge agreement-status">À vérifier selon le poste</span>' : "";
+      const decisionBlock = reasonRows.length ? `<div class="agreement-block${warning ? " agreement-warning" : ""}"><strong>${hard ? "Ce qui bloque" : "Point à vérifier"}</strong>${this.listHtml(reasonRows.map(item => item.message).filter(Boolean), "")}</div>` : "";
+      const dimensions = this.array(detail.personalAssessment?.dimensions);
+      const panel = document.createElement("section");
+      panel.className = `detail-section personal-agreement-panel${hard ? " is-hard" : warning ? " is-warning" : ""}`;
+      panel.innerHTML = `<h3 class="detail-title">Mon accord avec ce métier</h3>${status}${decisionBlock}<h4>Ce qui me rapproche de ce métier</h4>${this.listHtml(detail.personalFitReasons || detail.agreementReasons, "Les rapprochements seront précisés avec une boussole plus complète.")}${dimensions.length ? `<div class="assessment-grid">${dimensions.map(item => `<div class="assessment-dimension"><strong>${this.escape(item.label)}</strong><span>${item.score100 === null ? "Non évalué" : `${item.score100}/100`}</span></div>`).join("")}</div>` : ""}${supports ? `<h4>Mes appuis actuels</h4>${supports.querySelector("p")?.outerHTML || ""}${supports.querySelector("ul")?.outerHTML || ""}` : ""}`;
+      personal.before(panel);
+      personal.remove();
+      assessment?.remove();
+      supports?.remove();
+    };
+
+    const openJobV151Base = RefonteApp.openJob;
+    RefonteApp.openJob = function(jobId, trigger, options = {}) {
+      const current = this.state.dialogViewState;
+      const sameJob = current?.type === "job" && current.jobId === jobId;
+      if (!sameJob || options.restore) this.prepareDialogNavigation(trigger, options);
+      openJobV151Base.call(this, jobId, trigger, { ...options, fromBack: true });
+      const detail = this.detailForJob(jobId);
+      this.state.currentDialogJobId = jobId;
+      this.state.dialogViewState = { type: "job", jobId, scrollTop: 0 };
+      this.updateDialogBackButton();
+      const favorite = this.favoriteButtonContent(jobId, detail?.title || "ce métier");
+      const button = this.dom.dialogContent.querySelector('[data-action="toggle-favorite"]');
+      if (button) { button.innerHTML = favorite.html; button.setAttribute("aria-pressed", String(favorite.favorite)); button.setAttribute("aria-label", favorite.label); }
+      const marketHeading = this.dom.dialogContent.querySelector(".market-detail > h3");
+      if (marketHeading) marketHeading.textContent = "Marché et territoire";
+      this.renderPersonalAgreement(detail || {});
+      if (options.restore) requestAnimationFrame(() => { this.dom.dialog.scrollTop = options.scrollTop || 0; this.dom.dialogContent.scrollTop = options.scrollTop || 0; });
+    };
+    RefonteApp.openRelatedJobs = function(jobId, trigger, options = {}) {
+      if (this.state.profileExists) this.ensureResults();
+      const detail = this.detailForJob(jobId);
+      if (!detail) return;
+      this.prepareDialogNavigation(trigger, options);
+      const related = this.array(detail.variants).map(id => this.detailForJob(id)).filter(Boolean);
+      this.state.currentDialogJobId = null;
+      this.state.dialogViewState = { type: "related", sourceJobId: jobId, scrollTop: 0 };
+      this.dom.dialogContent.innerHTML = `<header class="dialog-header"><button class="button compact dialog-close" data-action="${this.state.dialogStack.length ? "back-dialog-state" : "close-dialog"}">${this.icon("retour")} Retour</button><div class="dialog-title"><div class="job-meta">${this.escape(detail.romeCode)} · ${this.escape(detail.title)}</div><h2 id="jobDialogTitle">Métiers proches de « ${this.escape(detail.title)} »</h2></div><button class="icon-button dialog-close" data-action="close-dialog" aria-label="Fermer la liste des métiers proches">${this.icon("fermer")}</button></header><section class="related-panel"><p>${related.length} métier${related.length > 1 ? "s" : ""} relié${related.length > 1 ? "s" : ""} par les compétences et contextes du métier source.</p>${related.length ? `<ul class="related-list">${related.map(item => `<li class="related-list-item"><div><button class="job-title-link" data-action="open-job" data-job-id="${item.jobId}">${this.escape(item.title)}</button><p>${this.escape(item.romeCode)} · ${this.escape(item.primaryDirectionLabel)}</p></div><button class="button compact" data-action="open-job" data-job-id="${item.jobId}">Voir la fiche</button></li>`).join("")}</ul>` : "<p>Aucun métier proche résolu.</p>"}</section>`;
+      if (!this.dom.dialog.open) this.dom.dialog.showModal();
+      document.body.classList.add("dialog-open");
+      this.dom.dialog.querySelector(".dialog-close")?.focus();
+      if (options.restore) requestAnimationFrame(() => { this.dom.dialog.scrollTop = options.scrollTop || 0; this.dom.dialogContent.scrollTop = options.scrollTop || 0; });
+    };
+    RefonteApp.restoreDialogState = function() {
+      const previous = this.state.dialogStack.pop();
+      if (!previous) return;
+      if (previous.type === "related") this.openRelatedJobs(previous.sourceJobId, this.state.lastDialogTrigger, { restore: true, scrollTop: previous.scrollTop });
+      else this.openJob(previous.jobId, this.state.lastDialogTrigger, { restore: true, scrollTop: previous.scrollTop });
+    };
+
+    const handleClickV151Base = RefonteApp.handleClick;
+    RefonteApp.handleClick = function(event) {
+      const action = event.target.closest("[data-action]");
+      if (action?.dataset.action === "open-related") { this.openRelatedJobs(action.dataset.jobId, action); return; }
+      if (action?.dataset.action === "back-dialog-state" || action?.dataset.action === "back-job") { this.restoreDialogState(); return; }
+      if (action?.dataset.action === "market-popover") {
+        const popover = document.getElementById(action.getAttribute("aria-controls"));
+        const opening = action.getAttribute("aria-expanded") !== "true";
+        closeMarketPopovers(false);
+        action.setAttribute("aria-expanded", String(opening));
+        if (popover) popover.hidden = !opening;
+        if (opening) this.state.lastMarketTrigger = action;
+        return;
+      }
+      return handleClickV151Base.call(this, event);
+    };
+
     document.addEventListener("mouseover", event => highlightRose(event.target.closest("[data-rose-index]")));
     document.addEventListener("focusin", event => highlightRose(event.target.closest("[data-rose-index]")));
     document.addEventListener("keydown", event => {
       if (["Enter", " "].includes(event.key) && event.target.matches(".rose-node")) { event.preventDefault(); event.target.click(); return; }
-      if (event.key === "Escape") closeMarketPopovers();
+      if (event.key === "Escape") closeMarketPopovers(true);
     });
-    document.addEventListener("click", event => { if (!event.target.closest(".market-card-wrap")) closeMarketPopovers(); });
+    document.addEventListener("click", event => { if (!event.target.closest(".market-card-wrap, .market-marker-wrap")) closeMarketPopovers(true); });
     function highlightRose(target) {
       if (!target) return; const index = target.dataset.roseIndex;
       document.querySelectorAll("[data-rose-index]").forEach(item => item.classList.toggle("is-active", item.dataset.roseIndex === index));
     }
-    function closeMarketPopovers() {
+    function closeMarketPopovers(restoreFocus = false) {
+      const trigger = RefonteApp.state.lastMarketTrigger;
       document.querySelectorAll('[data-action="market-popover"][aria-expanded="true"]').forEach(button => { button.setAttribute("aria-expanded", "false"); document.getElementById(button.getAttribute("aria-controls"))?.setAttribute("hidden", ""); });
+      if (restoreFocus && trigger?.isConnected) trigger.focus({ preventScroll: true });
+      if (restoreFocus) RefonteApp.state.lastMarketTrigger = null;
     }
 
     document.addEventListener("DOMContentLoaded", () => { RefonteApp.init().catch(error => { document.getElementById("mainContent").innerHTML = `<div class="view"><div class="notice error"><strong>Initialisation impossible.</strong><p>${RefonteApp.escape(error.message)}</p></div></div>`; }); });
