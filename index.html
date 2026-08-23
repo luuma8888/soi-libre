@@ -78,6 +78,207 @@
             color: var(--text-main);
         }
 
+        /* Navigation visuelle vers les applications */
+        .app-jump-nav {
+            position: relative;
+            z-index: 20;
+            padding: 16px 18px 18px;
+            border: 1px solid rgba(142, 125, 196, 0.16);
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(250, 248, 255, 0.98), rgba(255, 252, 246, 0.98));
+            box-shadow: 0 10px 28px rgba(142, 125, 196, 0.08);
+        }
+
+        .app-jump-heading {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 14px;
+            margin: 0 2px 12px;
+        }
+
+        .app-jump-heading strong {
+            color: var(--text-main);
+            font-size: 0.92rem;
+            font-weight: 650;
+        }
+
+        .app-jump-heading span {
+            color: var(--text-light);
+            font-size: 0.76rem;
+        }
+
+        .app-jump-groups {
+            display: grid;
+            gap: 10px;
+        }
+
+        .app-jump-group {
+            display: grid;
+            grid-template-columns: 155px minmax(0, 1fr);
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            padding: 8px 10px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .app-jump-group-label {
+            color: var(--primary);
+            font-size: 0.76rem;
+            font-weight: 750;
+            letter-spacing: 0.05em;
+            line-height: 1.3;
+            text-transform: uppercase;
+        }
+
+        .app-jump-list {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .app-jump-item {
+            position: relative;
+            flex: 0 0 58px;
+            min-width: 58px;
+        }
+
+        .app-jump-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-width: 44px;
+            height: 58px;
+            border: 1px solid rgba(142, 125, 196, 0.12);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: 0 4px 12px rgba(73, 62, 108, 0.06);
+            text-decoration: none;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .app-jump-link:hover,
+        .app-jump-link:focus-visible {
+            z-index: 2;
+            transform: translateY(-3px);
+            border-color: rgba(142, 125, 196, 0.42);
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(86, 71, 134, 0.16);
+            outline: none;
+        }
+
+        .app-jump-link:focus-visible {
+            box-shadow: 0 0 0 3px rgba(142, 125, 196, 0.22), 0 10px 22px rgba(86, 71, 134, 0.16);
+        }
+
+        .app-jump-icon {
+            display: block;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 5px rgba(37, 52, 47, 0.18));
+            pointer-events: none;
+        }
+
+        .app-jump-tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            z-index: 30;
+            width: min(250px, calc(100vw - 48px));
+            padding: 11px 13px;
+            border: 1px solid rgba(142, 125, 196, 0.2);
+            border-radius: 13px;
+            background: rgba(44, 62, 80, 0.97);
+            color: #ffffff;
+            box-shadow: 0 14px 30px rgba(36, 42, 54, 0.24);
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, -5px);
+            transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+            pointer-events: none;
+        }
+
+        .app-jump-tooltip::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: -6px;
+            width: 12px;
+            height: 12px;
+            background: rgba(44, 62, 80, 0.97);
+            transform: translateX(-50%) rotate(45deg);
+        }
+
+        .app-jump-tooltip strong,
+        .app-jump-tooltip span {
+            position: relative;
+            display: block;
+        }
+
+        .app-jump-tooltip strong {
+            margin-bottom: 3px;
+            color: #fff7dd;
+            font-size: 0.85rem;
+        }
+
+        .app-jump-tooltip span {
+            color: rgba(255, 255, 255, 0.84);
+            font-size: 0.74rem;
+            line-height: 1.4;
+        }
+
+        .app-jump-item:hover .app-jump-tooltip,
+        .app-jump-item.is-tooltip-visible .app-jump-tooltip,
+        .app-jump-item:focus-within .app-jump-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0);
+        }
+
+        .app-jump-item.is-tooltip-visible .app-jump-tooltip {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .app-jump-item:first-child .app-jump-tooltip {
+            left: 0;
+            transform: translate(0, -5px);
+        }
+
+        .app-jump-item:first-child:hover .app-jump-tooltip,
+        .app-jump-item:first-child.is-tooltip-visible .app-jump-tooltip,
+        .app-jump-item:first-child:focus-within .app-jump-tooltip {
+            transform: translate(0, 0);
+        }
+
+        .app-jump-item:first-child .app-jump-tooltip::before {
+            left: 26px;
+        }
+
+        .app-jump-item:last-child .app-jump-tooltip {
+            right: 0;
+            left: auto;
+            transform: translate(0, -5px);
+        }
+
+        .app-jump-item:last-child:hover .app-jump-tooltip,
+        .app-jump-item:last-child.is-tooltip-visible .app-jump-tooltip,
+        .app-jump-item:last-child:focus-within .app-jump-tooltip {
+            transform: translate(0, 0);
+        }
+
+        .app-jump-item:last-child .app-jump-tooltip::before {
+            right: 20px;
+            left: auto;
+        }
+
         .app-group {
             display: flex;
             flex-direction: column;
@@ -134,6 +335,7 @@
 
         /* Cartes horizontales */
         .card {
+            position: relative;
             background: var(--bg-card);
             border-radius: var(--radius);
             display: flex; /* Format horizontal */
@@ -143,6 +345,45 @@
             border: 1px solid #f0f0f0;
             box-shadow: var(--shadow);
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            scroll-margin-block: 24px;
+        }
+
+        .card:focus {
+            outline: none;
+        }
+
+        .card:focus-visible {
+            outline: 3px solid rgba(142, 125, 196, 0.58);
+            outline-offset: 5px;
+        }
+
+        .card.is-navigation-target {
+            animation: app-target-halo 5s ease-out;
+        }
+
+        .card.is-navigation-target::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 12;
+            border: 3px solid rgba(255, 203, 92, 0.92);
+            border-radius: inherit;
+            box-shadow: inset 0 0 26px rgba(255, 216, 124, 0.46);
+            pointer-events: none;
+            animation: app-target-inner-halo 5s ease-out;
+        }
+
+        @keyframes app-target-halo {
+            0%, 18% { box-shadow: 0 0 0 7px rgba(142, 125, 196, 0.25), 0 0 34px rgba(255, 201, 91, 0.58); }
+            38% { box-shadow: 0 0 0 3px rgba(142, 125, 196, 0.18), 0 0 24px rgba(255, 201, 91, 0.34); }
+            58% { box-shadow: 0 0 0 7px rgba(142, 125, 196, 0.20), 0 0 30px rgba(255, 201, 91, 0.45); }
+            100% { box-shadow: var(--shadow); }
+        }
+
+        @keyframes app-target-inner-halo {
+            0%, 22% { opacity: 1; }
+            55% { opacity: 0.72; }
+            100% { opacity: 0; }
         }
 
         .card,
@@ -196,7 +437,8 @@
         }
 
         /* Les blocs à plusieurs captures sont hauts : leur icône reste visible au milieu. */
-        .dual-captures > .app-icon-overlay {
+        .dual-captures > .app-icon-overlay,
+        #app-boussole-pro .app-icon-overlay {
             top: 50%;
             bottom: auto;
             transform: translateY(-50%);
@@ -644,6 +886,66 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         }
 
+        @media (max-width: 760px) {
+            .app-jump-nav {
+                padding: 15px 12px 12px;
+            }
+
+            .app-jump-heading {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 2px;
+                margin-inline: 4px;
+            }
+
+            .app-jump-group {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 5px;
+                padding: 8px 6px 2px;
+            }
+
+            .app-jump-group-label {
+                padding-inline: 4px;
+            }
+
+            .app-jump-list {
+                overflow-x: auto;
+                padding: 4px 4px 10px;
+                scroll-snap-type: x proximity;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(142, 125, 196, 0.38) transparent;
+            }
+
+            .app-jump-item {
+                scroll-snap-align: start;
+            }
+
+            /* Sur petit écran, le libellé accessible et l'attribut title remplacent le survol. */
+            .app-jump-tooltip {
+                display: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .app-jump-link,
+            .app-jump-tooltip,
+            .card {
+                scroll-behavior: auto;
+                transition-duration: 0.01ms !important;
+            }
+
+            .card.is-navigation-target {
+                animation: none;
+                outline: 4px solid rgba(142, 125, 196, 0.58);
+                outline-offset: 5px;
+            }
+
+            .card.is-navigation-target::before {
+                animation: none;
+                opacity: 1;
+            }
+        }
+
         /* Mobile */
         @media (max-width: 600px) {
             .grid {
@@ -791,6 +1093,129 @@
             <strong>Vos informations restent dans votre navigateur et ne sont pas envoyées.</strong>
             Elles peuvent cependant disparaître après un nettoyage, en navigation privée ou lors d’un changement de navigateur ou d’appareil. Exportez régulièrement une sauvegarde JSON et conservez-la dans un endroit sûr : c’est le moyen fiable de retrouver votre travail.
         </aside>
+
+        <nav class="app-jump-nav" aria-label="Accès direct aux applications">
+            <div class="app-jump-heading">
+                <strong>Accès direct aux applications</strong>
+                <span>Survolez une icône pour la découvrir, puis sélectionnez-la.</span>
+            </div>
+            <div class="app-jump-groups">
+                <div class="app-jump-group">
+                    <span class="app-jump-group-label">Exploration intérieure</span>
+                    <ul class="app-jump-list">
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-eveil" aria-label="Aller à Éveil" aria-describedby="tip-eveil" title="Éveil">
+                                <img class="app-jump-icon" src="assets/icones/eveil.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-eveil" role="tooltip"><strong>Éveil</strong><span>Un compagnon doux pour avancer dans votre chemin intérieur.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-design-humain" aria-label="Aller à Design Humain et Clés Génétiques" aria-describedby="tip-design-humain" title="Design Humain & Clés Génétiques">
+                                <img class="app-jump-icon" src="assets/icones/designhumain.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-design-humain" role="tooltip"><strong>Design Humain & Clés Génétiques</strong><span>Explorez vos dynamiques et gardez vos lectures personnelles.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-espace-interieur" aria-label="Aller à Espace Intérieur" aria-describedby="tip-espace-interieur" title="Espace Intérieur">
+                                <img class="app-jump-icon" src="assets/icones/espaceinterieur.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-espace-interieur" role="tooltip"><strong>Espace Intérieur</strong><span>Déposez ce qui vous traverse et retrouvez un peu d’espace.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-souverainete-interieure" aria-label="Aller à Souveraineté Intérieure" aria-describedby="tip-souverainete" title="Souveraineté Intérieure">
+                                <img class="app-jump-icon" src="assets/icones/souverainete.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-souverainete" role="tooltip"><strong>Souveraineté Intérieure</strong><span>Clarifiez vos limites, vos choix et votre position intérieure.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-feu-clair" aria-label="Aller à Feu Clair" aria-describedby="tip-feu-clair" title="Feu Clair">
+                                <img class="app-jump-icon" src="assets/icones/feuclair.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-feu-clair" role="tooltip"><strong>Feu Clair</strong><span>Traversez une charge émotionnelle sans vous y perdre.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-lune-du-jour" aria-label="Aller à Lune du jour" aria-describedby="tip-lune" title="Lune du jour">
+                                <img class="app-jump-icon" src="assets/icones/lunedujour.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-lune" role="tooltip"><strong>Lune du jour</strong><span>Observez le rythme lunaire et ses pistes symboliques.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-boussole-pro" aria-label="Aller à Boussole Pro" aria-describedby="tip-boussole" title="Boussole Pro">
+                                <img class="app-jump-icon" src="assets/icones/boussolepro.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-boussole" role="tooltip"><strong>Boussole Pro</strong><span>Explorez des pistes professionnelles reliées à votre manière d’être.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-seve" aria-label="Aller à Sève" aria-describedby="tip-seve" title="Sève">
+                                <img class="app-jump-icon" src="assets/icones/seve.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-seve" role="tooltip"><strong>Sève</strong><span>Aide les enseignants à organiser et transmettre les valeurs humaines aux enfants de leur classe.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-ucem" aria-label="Aller à UCEM Compagnon" aria-describedby="tip-ucem" title="UCEM Compagnon">
+                                <img class="app-jump-icon" src="assets/icones/ucem.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-ucem" role="tooltip"><strong>UCEM Compagnon</strong><span>Lisez, pratiquez et annotez Un Cours En Miracles localement.</span></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="app-jump-group">
+                    <span class="app-jump-group-label">Créativité</span>
+                    <ul class="app-jump-list">
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-autonomie" aria-label="Aller à Joyeuse Autonomie Collective" aria-describedby="tip-autonomie" title="Joyeuse Autonomie Collective">
+                                <img class="app-jump-icon" src="assets/icones/autonomie.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-autonomie" role="tooltip"><strong>Joyeuse Autonomie Collective</strong><span>Préparez un collectif avec clarté, paix et réalisme.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-syncrostella" aria-label="Aller à SyncroStella" aria-describedby="tip-syncrostella" title="SyncroStella">
+                                <img class="app-jump-icon" src="assets/icones/synchrostella.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-syncrostella" role="tooltip"><strong>SyncroStella</strong><span>Synchronisez des paroles et préparez karaokés et sous-titres.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-printpics" aria-label="Aller à PrintPics" aria-describedby="tip-printpics" title="PrintPics">
+                                <img class="app-jump-icon" src="assets/icones/printpics.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-printpics" role="tooltip"><strong>PrintPics</strong><span>Composez et optimisez des planches de plusieurs images.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-cardforge" aria-label="Aller à CardForge" aria-describedby="tip-cardforge" title="CardForge — Atelier de cartes">
+                                <img class="app-jump-icon" src="assets/icones/cardforge.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-cardforge" role="tooltip"><strong>CardForge</strong><span>Créez des supports visuels adaptés et prêts à imprimer.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-ecritoire" aria-label="Aller à Écritoire" aria-describedby="tip-ecritoire" title="Écritoire">
+                                <img class="app-jump-icon" src="assets/icones/ecritoire.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-ecritoire" role="tooltip"><strong>Écritoire</strong><span>Écrivez en Markdown : document, fiction, roman ou récit de vie.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-promptarium" aria-label="Aller à Promptarium" aria-describedby="tip-promptarium" title="Promptarium">
+                                <img class="app-jump-icon" src="assets/icones/promptarium.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-promptarium" role="tooltip"><strong>Promptarium</strong><span>Organisez, testez et réutilisez vos prompts et variantes.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-comedie-musicale" aria-label="Aller à Atelier Comédie Musicale" aria-describedby="tip-comedie" title="Atelier Comédie Musicale">
+                                <img class="app-jump-icon" src="assets/icones/comediemusicale.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-comedie" role="tooltip"><strong>Atelier Comédie Musicale</strong><span>Faites mûrir une idée scénique jusqu’au dossier jouable.</span></span>
+                        </li>
+                        <li class="app-jump-item">
+                            <a class="app-jump-link" href="#app-histoires-pedagogiques" aria-label="Aller au Studio d’histoires pédagogiques" aria-describedby="tip-histoires" title="Studio d’histoires pédagogiques">
+                                <img class="app-jump-icon" src="assets/icones/histoirespedagogiques.png" alt="">
+                            </a>
+                            <span class="app-jump-tooltip" id="tip-histoires" role="tooltip"><strong>Studio d’histoires pédagogiques</strong><span>Composez des récits, activités et scènes pédagogiques.</span></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
         <section class="app-group">
             <div class="group-heading">
                 <p class="group-kicker">Exploration intérieure</p>
@@ -798,7 +1223,7 @@
                 <p class="group-description">Les outils placés ici accompagnent l’écoute de soi, la stabilisation et les éclairages personnels.</p>
             </div>
             <div class="group-grid">
-        <article class="card card-theme-introspection">
+        <article class="card card-theme-introspection" id="app-eveil" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez avancer avec douceur dans votre chemin intérieur.</span>
                 <span class="audience-tag">Introspection</span>
@@ -825,7 +1250,7 @@
             </div>
         </article>
 
-        <article class="card card-theme-self">
+        <article class="card card-theme-self" id="app-design-humain" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez explorer vos mécaniques intérieures et vos potentiels symboliques.</span>
                 <span class="audience-tag">Lecture de soi</span>
@@ -852,7 +1277,7 @@
             </div>
         </article>
 
-        <article class="card card-theme-soothing">
+        <article class="card card-theme-soothing" id="app-espace-interieur" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez traverser un moment sensible sans vous perdre.</span>
                 <span class="audience-tag">Apaisement</span>
@@ -878,7 +1303,7 @@
                 </div>
             </div>
         </article>
-        <article class="card card-theme-spirituality">
+        <article class="card card-theme-spirituality" id="app-souverainete-interieure" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez formuler votre loi intérieure, vos refus et vos engagements vivants.</span>
                 <span class="audience-tag">Souveraineté</span>
@@ -905,7 +1330,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-spirituality">
+        <article class="card compact-card card-theme-spirituality" id="app-feu-clair" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez traverser une colère, rendre la charge et garder la force utile.</span>
                 <span class="audience-tag">Soin intérieur</span>
@@ -933,7 +1358,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-astrology">
+        <article class="card compact-card card-theme-astrology" id="app-lune-du-jour" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez lire la journée à travers les rythmes lunaires.</span>
                 <span class="audience-tag">Astrologie</span>
@@ -961,7 +1386,7 @@
             </div>
         </article>
 
-        <article class="card tall-card card-theme-introspection">
+        <article class="card tall-card card-theme-introspection" id="app-boussole-pro" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez explorer des pistes professionnelles sans perdre votre rythme, vos contraintes et vos valeurs.</span>
                 <span class="audience-tag">Orientation</span>
@@ -1001,9 +1426,9 @@
             </div>
         </article>
 
-        <article class="card tall-card card-theme-teaching">
+        <article class="card tall-card card-theme-teaching" id="app-seve" tabindex="-1">
             <div class="card-audience">
-                <span class="audience-line">Vous accompagnez des enfants et voulez nourrir valeurs, discernement et relation.</span>
+                <span class="audience-line">Vous enseignez et voulez faire vivre les valeurs humaines avec les enfants de votre classe.</span>
                 <span class="audience-tag">Enseignement</span>
             </div>
             <div class="card-image-side dual-captures" title="Cliquez sur une capture pour agrandir">
@@ -1026,7 +1451,7 @@
                         <span class="version-tag">v0.2-alpha</span>
                     </div>
                     <p class="card-description">
-                        Deux espaces pédagogiques hors ligne : une porte d’entrée essentielle et un atelier complet avec packs, observations et préparation.
+                        Deux espaces pédagogiques hors ligne pour aider les enseignants à organiser et transmettre les valeurs humaines aux enfants de leur classe : une version essentielle et un atelier complet enrichi de packs.
                     </p>
                 </div>
                 <div class="card-actions wrap">
@@ -1052,7 +1477,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation">
+        <article class="card compact-card card-theme-creation" id="app-ucem" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez pratiquer Un Cours En Miracles avec régularité et notes personnelles.</span>
                 <span class="audience-tag">Spiritualité</span>
@@ -1090,7 +1515,7 @@
                 <p class="group-description">Ces outils soutiennent les ateliers, les dossiers, les supports et les projets à façonner.</p>
             </div>
             <div class="group-grid">
-        <article class="card compact-card card-theme-autonomy">
+        <article class="card compact-card card-theme-autonomy" id="app-autonomie" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez préparer un collectif avec clarté, paix et réalisme.</span>
                 <span class="audience-tag">Autonomie</span>
@@ -1118,7 +1543,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation">
+        <article class="card compact-card card-theme-creation" id="app-syncrostella" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez synchroniser des paroles, préparer un karaoké et exporter des sous-titres ou une vidéo.</span>
                 <span class="audience-tag">Audio & vidéo</span>
@@ -1147,7 +1572,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation card-theme-printpics">
+        <article class="card compact-card card-theme-creation card-theme-printpics" id="app-printpics" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez imprimer plusieurs images sur une planche claire, optimisée et ajustable.</span>
                 <span class="audience-tag">Impression</span>
@@ -1175,7 +1600,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation card-theme-cardforge">
+        <article class="card compact-card card-theme-creation card-theme-cardforge" id="app-cardforge" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez créer des supports visuels utiles, imprimables et adaptés.</span>
                 <span class="audience-tag">Création</span>
@@ -1203,7 +1628,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation card-theme-ecritoire">
+        <article class="card compact-card card-theme-creation card-theme-ecritoire" id="app-ecritoire" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez écrire, structurer et publier différents projets en Markdown.</span>
                 <span class="audience-tag">Écriture</span>
@@ -1247,7 +1672,7 @@
         </article>
 
         <div class="card-column-stack">
-        <article class="card compact-card card-theme-creation card-theme-promptarium">
+        <article class="card compact-card card-theme-creation card-theme-promptarium" id="app-promptarium" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez organiser, tester et réutiliser vos prompts sans perdre vos variantes.</span>
                 <span class="audience-tag">Création IA</span>
@@ -1282,7 +1707,7 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation">
+        <article class="card compact-card card-theme-creation" id="app-comedie-musicale" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez transformer une idée scénique en dossier jouable.</span>
                 <span class="audience-tag">Création</span>
@@ -1311,7 +1736,7 @@
         </article>
         </div>
 
-        <article class="card compact-card card-theme-teaching">
+        <article class="card compact-card card-theme-teaching" id="app-histoires-pedagogiques" tabindex="-1">
             <div class="card-audience">
                 <span class="audience-line">Vous voulez créer des histoires pédagogiques porteuses de valeurs, d'activités et de scènes imprimables.</span>
                 <span class="audience-tag">Pédagogie</span>
@@ -1377,6 +1802,85 @@
     document.addEventListener('keydown', (e) => {
         if (e.key === "Escape") modal.style.display = 'none';
     });
+
+    // Navigation par icônes : recentre la carte et la signale pendant cinq secondes.
+    const appJumpLinks = document.querySelectorAll('.app-jump-link');
+    const cardHighlightTimers = new WeakMap();
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function highlightAppCard(target) {
+        const previousTimer = cardHighlightTimers.get(target);
+        if (previousTimer) window.clearTimeout(previousTimer);
+
+        target.classList.remove('is-navigation-target');
+        // Force le redémarrage de l'animation lorsqu'une même icône est sélectionnée deux fois.
+        void target.offsetWidth;
+        target.classList.add('is-navigation-target');
+
+        const timer = window.setTimeout(() => {
+            target.classList.remove('is-navigation-target');
+            cardHighlightTimers.delete(target);
+        }, 5000);
+        cardHighlightTimers.set(target, timer);
+    }
+
+    function navigateToApp(link) {
+        const targetId = link.hash.slice(1);
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        highlightAppCard(target);
+        try {
+            target.focus({ preventScroll: true });
+        } catch (error) {
+            target.focus();
+        }
+        target.scrollIntoView({
+            behavior: reducedMotionQuery.matches ? 'auto' : 'smooth',
+            block: 'center'
+        });
+
+        try {
+            const method = window.location.hash === link.hash ? 'replaceState' : 'pushState';
+            window.history[method](null, '', link.hash);
+        } catch (error) {
+            // La navigation et le halo restent fonctionnels si l'historique est indisponible.
+        }
+    }
+
+    appJumpLinks.forEach(link => {
+        const item = link.closest('.app-jump-item');
+        const tooltip = item?.querySelector('.app-jump-tooltip');
+        const setTooltipVisible = visible => {
+            if (!item || !tooltip) return;
+            item.classList.toggle('is-tooltip-visible', visible);
+            tooltip.style.opacity = visible ? '1' : '';
+            tooltip.style.visibility = visible ? 'visible' : '';
+            if (visible) {
+                const edgeItem = item.matches(':first-child, :last-child');
+                tooltip.style.transform = edgeItem ? 'translate(0, 0)' : 'translate(-50%, 0)';
+            } else {
+                tooltip.style.removeProperty('transform');
+            }
+        };
+        link.addEventListener('pointerenter', () => setTooltipVisible(true));
+        link.addEventListener('pointerleave', () => setTooltipVisible(false));
+        link.addEventListener('focus', () => setTooltipVisible(true));
+        link.addEventListener('blur', () => setTooltipVisible(false));
+        link.addEventListener('click', event => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            navigateToApp(link);
+        });
+    });
+
+    // Conserve le repère visuel lors d'une arrivée directe avec une ancre dans l'URL.
+    if (window.location.hash) {
+        const initialTarget = document.getElementById(window.location.hash.slice(1));
+        if (initialTarget && initialTarget.classList.contains('card')) {
+            window.setTimeout(() => highlightAppCard(initialTarget), 120);
+        }
+    }
 </script>
 
 </body>
