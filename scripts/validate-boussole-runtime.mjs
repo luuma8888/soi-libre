@@ -88,7 +88,7 @@ const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
 assert("online_shell_has_no_dataset", !("dataset" in onlinePayload) && onlinePayload.embeddedRuntime === null);
-assert("app_version_v1_4", onlinePayload.appVersion === "1.4.0" && onlineHtml.includes("Boussole Pro v1.4.0"));
+assert("app_version_v1_5", onlinePayload.appVersion === "1.5.0" && onlineHtml.includes("Boussole Pro v1.5.0"));
 assert("small_demo_profile", (onlinePayload.defaultProfile?.jobExperiences || []).length <= 2 && (onlinePayload.defaultProfile?.skillSelections || []).length <= 12 && (onlinePayload.defaultProfile?.skillSelections || []).every(item => item.currentLevel && item.futureWish));
 assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "boussole-runtime/");
 assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(key =>
@@ -106,9 +106,9 @@ assert("runtime_mode_copy_explicit", [
 assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
 assert("index_exposes_both_editions", [
   'href="creations/boussolepro/boussole-pro.html"',
-  'download="boussole-pro-online-v1-4-0.html"',
+  'download="boussole-pro-online-v1-5-0.html"',
   'href="creations/boussolepro/boussole-pro-offline.html"',
-  'download="boussole-pro-offline-v1-4-0.html"'
+  'download="boussole-pro-offline-v1-5-0.html"'
 ].every(copy => indexHtml.includes(copy)));
 assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
 

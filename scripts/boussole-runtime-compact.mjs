@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const RUNTIME_SCHEMA_VERSION = "1.1.0";
+export const RUNTIME_SCHEMA_VERSION = "1.2.0";
 export const RUNTIME_TERRITORIES = Object.freeze({
   FR: "France",
   "REG-76": "Occitanie",
@@ -137,7 +137,7 @@ function compactCoreJob(job, relatedJobIds = []) {
     valueTags: unique(array(job.valueTags)).slice(0, 6),
     transitionTags: unique(array(job.transitionTags)).slice(0, 6),
     relatedJobIds: unique(relatedJobIds).slice(0, 12),
-    primaryAudiencePetiteEnfance: Boolean(job.primaryAudiencePetiteEnfance),
+    audienceSignals: compactAudienceSignals(job.audienceSignals),
     workContexts: unique(array(job.workContexts).map(contextId)),
     confidence: numberOrNull(job.confidence),
     missingFields: recalculateMissingFields(job, content),
@@ -149,7 +149,7 @@ function compactCoreJob(job, relatedJobIds = []) {
   return compact;
 }
 
-export function enrichProfileOptionTags(job = {}) {
+export function enrichProfileOptionTags(job = {}, options = {}) {
   const title = normalizedEvidence(job.title);
   const direct = normalizedEvidence([job.title, job.mission, job.description, ...array(job.activities)].join(" "));
   const contexts = normalizedEvidence(array(job.romeWorkContextLabels).join(" "));
@@ -214,8 +214,18 @@ export function enrichProfileOptionTags(job = {}) {
     { id: "analyse", pattern: /analys|recherche|diagnostic|etude/, sectors: ["recherche_analyse"], specificity: 2 },
     { id: "securite", pattern: /securit|prevention|protection|surveill/, sectors: ["securite_prevention"], specificity: 2 }
   ]);
-  const primaryAudiencePetiteEnfance = inferPrimaryAudiencePetiteEnfance(job, title, direct);
-  return { interestTags, valueTags, transitionTags, primaryAudiencePetiteEnfance };
+  const deniedInterestTags = new Set(array(job.deniedInterestTags));
+  const deniedTransitionTags = new Set(array(job.deniedTransitionTags));
+  const audienceOverride = options.audienceOverrides?.[String(job.romeCode || "").toUpperCase()];
+  const audienceSignals = audienceOverride !== undefined
+    ? normalizeAudienceSignals(audienceOverride)
+    : normalizeAudienceSignals(job.audienceSignals?.length ? job.audienceSignals : inferAudienceSignals(job, title, direct));
+  return {
+    interestTags: interestTags.filter(id => !deniedInterestTags.has(id)),
+    valueTags,
+    transitionTags: transitionTags.filter(id => !deniedTransitionTags.has(id)),
+    audienceSignals
+  };
 }
 
 export function buildTagStatistics(jobs = []) {
@@ -239,11 +249,42 @@ function normalizedEvidence(value) {
   return slug(String(value || "")).replaceAll("-", " ");
 }
 
-function inferPrimaryAudiencePetiteEnfance(job, title, direct) {
-  const code = String(job.romeCode || "").toUpperCase();
-  if (code === "K1309") return false;
-  if (["K1303", "K1304"].includes(code)) return true;
-  return /petite enfance|auxiliaire de puericulture|assistant maternel|garde d enfant|creche/.test(title) && /nourrisson|bebe|moins de trois ans|petite enfance|creche/.test(direct);
+function inferAudienceSignals(job, title, direct) {
+  const evidence = normalizedEvidence([title, direct, ...array(job.romeWorkContextLabels)].join(" "));
+  const output = [];
+  const add = (id, centrality, proof) => output.push({ id, centrality, evidence: proof, source: "rome_semantic_inference" });
+  if (/petite enfance|creche|nourrisson|bebe|moins de trois ans|assistant maternel|auxiliaire de puericulture/.test(evidence)) {
+    const centrality = /petite enfance|assistant maternel|auxiliaire de puericulture/.test(title) ? "essential" : "dominant";
+    add("petite_enfance", centrality, "Public de petite enfance explicitement mentionné dans le titre ou la mission.");
+  }
+  if (/enfant|scolaire|eleve|mineur/.test(evidence) && !/film d animation|image 2d|image 3d|effets visuels/.test(evidence)) {
+    add("children_multi_age", /enfant/.test(title) ? "dominant" : "possible", "Public enfant explicitement mentionné dans la fiche métier.");
+  }
+  if (/jeunesse|adolescent|jeune public/.test(evidence)) add("youth", /jeunesse/.test(title) ? "essential" : "dominant", "Public jeune explicitement mentionné dans la fiche métier.");
+  return output;
+}
+
+function normalizeAudienceSignals(values) {
+  const centralities = new Set(["essential", "dominant", "possible", "unknown"]);
+  const rank = { essential: 4, dominant: 3, possible: 2, unknown: 1 };
+  const byId = new Map();
+  for (const raw of array(values)) {
+    if (!raw?.id) continue;
+    const signal = {
+      id: String(raw.id),
+      centrality: centralities.has(raw.centrality) ? raw.centrality : "unknown",
+      evidence: String(raw.evidence || "Signal d'audience à vérifier."),
+      source: raw.source || "reviewed_override",
+      reviewedAt: raw.reviewedAt || null
+    };
+    const previous = byId.get(signal.id);
+    if (!previous || rank[signal.centrality] > rank[previous.centrality]) byId.set(signal.id, signal);
+  }
+  return [...byId.values()].sort((a, b) => rank[b.centrality] - rank[a.centrality] || a.id.localeCompare(b.id)).slice(0, 3);
+}
+
+function compactAudienceSignals(values) {
+  return normalizeAudienceSignals(values).map(({ id, centrality }) => ({ id, centrality }));
 }
 
 function recalculateMissingFields(job, content) {
@@ -262,7 +303,7 @@ function buildRelatedJobGraph(jobs) {
       const right = jobs[rightIndex];
       if (relationBlocked(left, right)) continue;
       const metrics = relationSimilarity(features.get(left.id), features.get(right.id));
-      if (metrics.score >= 0.17) candidates.push({ leftId: left.id, rightId: right.id, leftCode: left.romeCode, rightCode: right.romeCode, ...metrics });
+      if (metrics.evidenceFamilyCount >= 2 && metrics.score >= 0.14) candidates.push({ leftId: left.id, rightId: right.id, leftCode: left.romeCode, rightCode: right.romeCode, ...metrics });
     }
   }
   candidates.sort((a, b) => b.score - a.score || a.leftCode.localeCompare(b.leftCode) || a.rightCode.localeCompare(b.rightCode));
@@ -277,7 +318,7 @@ function buildRelatedJobGraph(jobs) {
     selected.push(edge);
   }
   const candidateByPair = new Map(candidates.map(edge => [[edge.leftCode, edge.rightCode].sort().join("|"), edge]));
-  const references = [["G1203", "G1235"], ["G1203", "G1202"], ["K1208", "K1207"], ["K1206", "K1209"], ["K1206", "K1217"], ["K2110", "K2138"], ["K2110", "K2116"], ["K2110", "K2113"], ["K1206", "K1212"], ["G1203", "G1206"]]
+  const references = [["G1203", "G1235"], ["G1203", "G1202"], ["K1208", "K1207"], ["K1206", "K1209"], ["K1206", "K1217"], ["K2110", "K2138"], ["K2110", "K2116"], ["K2110", "K2113"], ["K1206", "K1212"], ["G1203", "G1206"], ["G1203", "L1510"]]
     .map(([leftCode, rightCode]) => ({ leftCode, rightCode, candidate: candidateByPair.get([leftCode, rightCode].sort().join("|")) || null, selected: selected.some(edge => [edge.leftCode, edge.rightCode].sort().join("|") === [leftCode, rightCode].sort().join("|")) }));
   return {
     byJobId,
@@ -311,9 +352,9 @@ function relationSimilarity(left, right) {
   const title = jaccardIndex(left.titleTokens, right.titleTokens);
   const samePrimarySector = left.primarySectorId && left.primarySectorId === right.primarySectorId ? 1 : 0;
   const sameProfessionalDomain = left.professionalDomain && left.professionalDomain === right.professionalDomain ? 1 : 0;
-  const sameSpecificFamily = (/animat/.test(left.title) && /animat/.test(right.title)) || (/educateur/.test(left.title) && /educateur/.test(right.title)) ? 1 : 0;
-  const score = skill * 0.38 + group * 0.20 + context * 0.12 + sector * 0.10 + title * 0.08 + samePrimarySector * 0.06 + sameProfessionalDomain * 0.02 + sameSpecificFamily * 0.14;
-  return { score: Number(score.toFixed(6)), skill: Number(skill.toFixed(6)), group: Number(group.toFixed(6)), context: Number(context.toFixed(6)), sector: Number(sector.toFixed(6)), title: Number(title.toFixed(6)), samePrimarySector, sameProfessionalDomain, sameSpecificFamily };
+  const evidenceFamilies = [skill > 0, group > 0, context > 0, sector > 0 || samePrimarySector > 0, sameProfessionalDomain > 0].filter(Boolean);
+  const score = skill * 0.42 + group * 0.24 + context * 0.14 + sector * 0.12 + title * 0.03 + samePrimarySector * 0.03 + sameProfessionalDomain * 0.02;
+  return { score: Number(score.toFixed(6)), evidenceFamilyCount: evidenceFamilies.length, skill: Number(skill.toFixed(6)), group: Number(group.toFixed(6)), context: Number(context.toFixed(6)), sector: Number(sector.toFixed(6)), title: Number(title.toFixed(6)), samePrimarySector, sameProfessionalDomain };
 }
 
 function relationBlocked(left, right) {
@@ -321,6 +362,7 @@ function relationBlocked(left, right) {
   const b = normalizedEvidence(right.title);
   const pair = `${a} | ${b}`;
   if (/croupier|casino|jeux d argent/.test(pair) && /jeunesse|enfant|educat|socioculturel/.test(pair)) return true;
+  if (/film d animation|image 2d|image 3d|effets visuels|infograph/.test(pair) && /jeunesse|enfant|educat|socioculturel|centre de loisirs/.test(pair)) return true;
   if (/conduite|routiere|auto ecole/.test(pair) && /eleve|handicap|scolaire/.test(pair)) return true;
   if (/culte|religieux/.test(pair) && /socioculturel|socioeducatif|animation/.test(pair)) return true;
   return false;
@@ -683,7 +725,7 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
       valueTags: array(job.valueTags),
       transitionTags: array(job.transitionTags),
       relatedJobIds: array(job.relatedJobIds),
-      primaryAudiencePetiteEnfance: Boolean(job.primaryAudiencePetiteEnfance),
+      audienceSignals: normalizeAudienceSignals(job.audienceSignals),
       workContexts: array(job.workContexts),
       romeWorkContextLabels: array(job.workContexts).map(id => contexts.get(id)?.label).filter(Boolean),
       missingFields: array(job.missingFields),

@@ -85,7 +85,7 @@ assert("g1203_exact_experience_support", g1203?.skillsReadinessEvidence?.some(la
 assert("m1805_negative_intent_explained", m1805?.personalFitReasons?.some(label => /ne pas souhait|ne souhaitez pas|écart/i.test(label)), m1805?.personalFitReasons);
 assert("k2113_above_k2110", k2113?.personalFitTieBreakScore > k2110?.personalFitTieBreakScore, { k2113: summarize(k2113), k2110: summarize(k2110) });
 assert("k1309_not_childcare_excluded", !k1309?.exclusionReasons?.some(item => item.code === "voluntary_domain_petite_enfance"), k1309?.exclusionReasons);
-assert("k1303_childcare_excluded", k1303?.exclusionReasons?.some(item => item.code === "voluntary_domain_petite_enfance"), k1303?.exclusionReasons);
+assert("k1303_childcare_excluded", k1303?.exclusionReasons?.some(item => ["voluntary_domain_petite_enfance", "voluntary_audience_petite_enfance"].includes(item.code)), k1303?.exclusionReasons);
 assert("d1302_commerce_excluded", d1302?.status === "excluded_for_now", d1302?.exclusionReasons);
 assert("skills_absence_does_not_penalize_fit", results.completeList.every(result => Number.isFinite(result.personalFitScore)), { skills: profile.skills?.length, skillSelections: profile.skillSelections?.length });
 
@@ -127,15 +127,10 @@ const marketByCode = code => marche.jobs.find(row => row.jobId === byCode(code)?
 assert("partial_market_offers_preserved", marketByCode("A1206")?.FR?.availability === "partial" && marketByCode("A1206")?.FR?.offersCount === 230, marketByCode("A1206"));
 assert("k1204_market_reference", marketByCode("K1204")?.FR?.offersCount === 2330 && marketByCode("K1204")?.FR?.tensionLevel === "high" && marketByCode("K1204")?.["REG-76"]?.offersCount === 140 && marketByCode("K1204")?.["DEP-11"]?.tensionLevel === "very_high", marketByCode("K1204"));
 
-const familyIds = results.resultsViewModel ? [
-  ...results.resultsViewModel.topDirections.map(row => row.representative.jobId),
-  ...results.resultsViewModel.recommendedPaths.map(row => row.jobId),
-  ...results.resultsViewModel.dreamPaths.map(row => row.jobId),
-  ...results.resultsViewModel.skillsSupportedPaths.map(row => row.jobId),
-  ...results.resultsViewModel.exploratoryPaths.map(row => row.jobId),
-  ...results.resultsViewModel.excludedPaths.map(row => row.jobId)
-] : [];
-assert("result_families_cover_1000_exclusively", familyIds.length === 1000 && new Set(familyIds).size === 1000, { total: familyIds.length, unique: new Set(familyIds).size });
+const completeIds = results.resultsViewModel?.completeList.map(row => row.jobId) || [];
+const topIds = new Set(results.resultsViewModel?.topDirections.map(row => row.representative.jobId) || []);
+const recommendedExcludesTop = results.resultsViewModel?.recommendedPaths.every(row => !topIds.has(row.jobId));
+assert("result_families_keep_complete_catalog", completeIds.length === 1000 && new Set(completeIds).size === 1000 && recommendedExcludesTop, { total: completeIds.length, unique: new Set(completeIds).size, recommendedExcludesTop });
 
 const report = {
   schemaVersion: "1.0.0",

@@ -355,6 +355,23 @@
       .skill-axes { grid-template-columns: 1fr; }
       .goto-page { width: 100%; justify-content: center; }
     }
+    /* v1.5 - composants universels et accessibles */
+    .rose-node { cursor: pointer; outline: none; }
+    .rose-node .branch { transition: opacity .15s ease, stroke-width .15s ease; }
+    .rose-node:focus .branch, .rose-node:hover .branch, .rose-node.is-active .branch { opacity: 1; stroke-width: 16; }
+    .rose-node:focus-visible circle { stroke: var(--ink); stroke-width: 4; }
+    .top-list li.is-active button { border-color: var(--brand); background: var(--brand-soft); }
+    .market-card-wrap { position: relative; min-width: 0; }
+    button.market-card { width: 100%; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    button.market-card:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .market-popover { position: absolute; z-index: 18; top: calc(100% + 6px); left: 0; width: min(330px, calc(100vw - 44px)); padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); font-size: .86rem; }
+    .market-popover[hidden] { display: none; }
+    .market-card:hover + .market-popover, .market-card:focus-visible + .market-popover { display: block; }
+    .assessment-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .assessment-dimension { padding: 10px; border-left: 3px solid var(--brand); background: var(--surface-soft); }
+    .assessment-dimension span { display: block; color: var(--muted); font-size: .8rem; }
+    .exploration-sort { max-width: 330px; margin: 0 0 18px; }
+    @media (max-width: 520px) { .assessment-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body data-theme="light">
@@ -379,7 +396,7 @@
   </main>
 
   <nav class="mobile-nav" aria-label="Navigation principale mobile" id="mobileNav"></nav>
-  <footer class="app-footer">Boussole Pro v1.4.0 - données personnelles conservées sur cet appareil.</footer>
+  <footer class="app-footer">Boussole Pro v1.5.0 - données personnelles conservées sur cet appareil.</footer>
 
   <dialog id="jobDialog" aria-labelledby="jobDialogTitle">
     <div id="jobDialogContent"></div>
@@ -1068,7 +1085,6 @@ const DOMAIN_EXCLUSION_MAP = {
   soin: ["sante_soin"],
   social: ["social_insertion"],
   education: ["education_enfance"],
-  petite_enfance: ["education_enfance"],
   proprete: ["proprete_entretien"],
   hotellerie: ["hotellerie_hebergement"],
   industrie: ["industrie_production"],
@@ -4160,13 +4176,16 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
   const summaries = complete.map(result => buildResultJobSummary(result, datasets, toArray(result.job?.relatedJobIds || result.job?.relatedJobs).length));
   const byId = new Map(summaries.map(item => [item.jobId, item]));
   const topIds = new Set(toArray(resultSet.top5).map(item => item.jobId));
-  const assigned = new Set(topIds);
-  const take = predicate => complete.filter(item => !assigned.has(item.jobId) && predicate(item)).filter(item => (assigned.add(item.jobId), true));
-  const excluded = take(item => item.status === "excluded_for_now");
-  const dream = take(item => item.status !== "excluded_for_now" && item.personalFitScore >= 65 && ["long_path", "current_blocker", "qualification_or_competition", "regulated_access"].includes(item.accessStatus));
-  const skillSupported = take(item => item.status !== "excluded_for_now" && item.personalFitScore >= 45 && toArray(item.skillsReadinessEvidence).some(Boolean));
-  const recommended = take(item => item.status !== "excluded_for_now" && item.personalFitScore >= 60);
-  const exploratory = take(item => item.status !== "excluded_for_now");
+  const notHardExcluded = item => item.exclusionDecision?.status !== "hard" && item.status !== "excluded_for_now";
+  const excluded = complete.filter(item => !notHardExcluded(item));
+  const dream = complete.filter(item => notHardExcluded(item) && item.personalFitScore >= 65 && ["long_path", "current_blocker", "qualification_or_competition", "regulated_access"].includes(item.accessStatus));
+  const skillSupported = complete.filter(item => notHardExcluded(item) && item.personalFitScore >= 45 && (
+    toArray(item.skillsReadinessEvidence).some(Boolean) ||
+    item.scoreDetails?.experience?.exactExperienceRecognized ||
+    item.coreProfileMatch?.confirmedConceptMatch
+  ));
+  const recommended = complete.filter(item => notHardExcluded(item) && !topIds.has(item.jobId) && item.personalFitScore >= 60);
+  const exploratory = complete.filter(item => notHardExcluded(item) && (item.personalFitScore < 60 || item.skillsReadinessLevel === "insufficient_information"));
   const topDirections = toArray(resultSet.top5).map(result => ({
     directionId: result.primaryDirection,
     directionLabel: result.primaryDirectionLabel,
@@ -4192,6 +4211,7 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     transferableSupports: toArray(result.skillsReadinessEvidence),
     skillsReadinessEvidence: toArray(result.skillsReadinessEvidence),
     marketSummaryByTerritory: result.marketSummaryByTerritory || buildMarketSummaryByTerritory(result.job, datasets),
+    personalAssessment: buildPersonalAssessment(result),
     pointsToVerify: unique([...toArray(result.missingData).map(item => item.message || item.field), ...toArray(result.accessSummaryV1?.accessWarnings)]).filter(Boolean),
     variants: toArray(result.job?.relatedJobIds || result.job?.relatedJobs),
     sources: toArray(result.sourceRefs)
@@ -4218,6 +4238,29 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     explorationCatalog: CAREER_DIRECTIONS_V1.map(direction => ({ ...direction, jobCount: jobsByPrimaryDirection[direction.id].length })),
     explorationSearchIndex,
     jobsByPrimaryDirection
+  };
+}
+
+function buildPersonalAssessment(result = {}) {
+  const components = result.personalFitComponents || {};
+  const dimension = (id, label, evidence = []) => ({
+    id,
+    label,
+    score100: components[id] === "not_evaluated" ? null : Math.round(Number(components[id] || 0)),
+    evidence: toArray(evidence).filter(Boolean).slice(0, 4)
+  });
+  return {
+    status: "personalized",
+    score100: result.personalFitScore,
+    level: result.personalFitLevel,
+    dimensions: [
+      dimension("aspiration", "Aspirations", result.personalFitReasons),
+      dimension("values", "Valeurs", result.scoreDetails?.values?.matched),
+      dimension("context", "Cadre de travail", result.contextAlignment?.matchedEnvironments),
+      dimension("dailyReality", "Réalité quotidienne", result.scoreDetails?.constraints?.warnings)
+    ],
+    contextAlignment: result.contextAlignment || null,
+    interpretation: "Cette lecture dépend uniquement des éléments déclarés dans Ma Boussole."
   };
 }
 
@@ -4303,8 +4346,8 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     const exactExperience = evaluateExactJobExperience(criteria, job);
     const core = calculateCoreProfileMatchScore(criteria, job, datasets, { skill, value, context, affinity, exactExperience });
     const weightAdjustment = adaptWeightsForMarketReliability(criteria.criterionWeights, market, criteria.marketContext);
-    const constraint = { score: 0, warnings: hardCheck.confirmed.map(item => item.message || item.label || item.code), missingData: [], activeCount: hardCheck.confirmed.length, unknownCount: 0 };
-    const scores = { skills: skill.score, training: training.score, constraints: 0, values: value.score, context: context.score, market: market.score };
+    const constraint = calculateConstraintScore(criteria, job, datasets);
+    const scores = { skills: skill.score, training: training.score, constraints: constraint.score, values: value.score, context: context.score, market: market.score };
     const relevanceScore = weightedGlobalScore({ ...scores, constraints: 15 }, weightAdjustment.weights);
     const confidence = calculateConfidence(criteria, job, [skill, training, value, context, market, affinity, core], hardCheck.unknown);
     const personalFit = calculatePersonalFitMetrics(criteria, job, { value, context, constraint, exactExperience });
@@ -4324,6 +4367,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       globalScore: personalFitScore,
       scorePertinence: personalFitScore,
       relevanceWithoutExclusion: personalFitScore,
+      contextAlignment: context.contextAlignment,
       coreProfileMatchScore: core.score,
       coreProfileMatch: core,
       personalFitScore,
@@ -4350,6 +4394,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       positiveReasons: [],
       negativeReasons: [],
       exclusionReasons: hardCheck.confirmed,
+      exclusionDecision: buildExclusionDecision(hardCheck),
       missingData: hardCheck.unknown,
       actionsToImprove: ["Modifier la contrainte excluante si elle est negociable, ou explorer une variante proche."],
       suggestedTrainings: findSuggestedTrainings(job, datasets),
@@ -4410,6 +4455,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     globalScore,
     rawGlobalScore,
     scorePertinence: globalScore,
+    relevanceWithoutExclusion: personalFitScore,
     coreProfileMatchScore: core.score,
     coreProfileMatch: core,
     personalFitScore,
@@ -4422,6 +4468,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     personalFitDesiredSectorPoints: personalFit.desiredSectorPoints,
     personalFitInterestSignalScore: personalFit.interestSignalScore,
     personalFitDiagnostics: personalFit.diagnostics,
+    contextAlignment: context.contextAlignment,
     feasibilityScore,
     marketOpportunityLevel: marketOpportunityLevelValue,
     marketOpportunityNormalized,
@@ -4436,6 +4483,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     positiveReasons: explanation.positive,
     negativeReasons: explanation.negative,
     exclusionReasons: [],
+    exclusionDecision: buildExclusionDecision(hardCheck),
     missingData: uniqueObjectsBy([...skill.missingData, ...training.missingData, ...constraint.missingData, ...context.missingData, ...market.missingData, ...hardCheck.unknown], "field"),
     actionsToImprove: explanation.actions,
     suggestedTrainings: findSuggestedTrainings(job, datasets),
@@ -5316,9 +5364,11 @@ function applyHardExclusions(criteria, job) {
   }
   const excludedDomains = toArray(exclusions.domains);
   if (excludedDomains.includes("petite_enfance") && isPetiteEnfanceJob(job)) {
-    confirmed.push(exclusion("voluntary_domain_petite_enfance", "Petite enfance exclue volontairement.", "secteur", "Ce métier relève explicitement de la petite enfance, que vous avez choisie comme domaine à éviter."));
+    confirmed.push({ ...exclusion("voluntary_audience_petite_enfance", "Petite enfance exclue volontairement.", "audience", "La petite enfance est un public essentiel ou dominant de ce métier."), evidenceLevel: audienceCentrality(job, "petite_enfance"), decisionScope: "audience" });
+  } else if (excludedDomains.includes("petite_enfance") && ["possible", "unknown"].includes(audienceCentrality(job, "petite_enfance"))) {
+    unknown.push(missing("job.audience.petite_enfance", "medium", "La petite enfance peut faire partie du public selon le poste : point à vérifier, sans exclusion automatique."));
   }
-  const domainDecisions = excludedDomains.map(domain => evaluateDomainExclusionDecision(domain, job, criteria));
+  const domainDecisions = excludedDomains.filter(domain => domain !== "petite_enfance").map(domain => evaluateDomainExclusionDecision(domain, job, criteria));
   const confirmedDomain = domainDecisions.find(decision => decision.status === "confirmed_sector_exclusion");
   if (confirmedDomain) {
     confirmed.push({ ...exclusion("voluntary_domain", "Domaine exclu volontairement.", "secteur", `Le secteur ${optionLabel(EXCLUDED_DOMAIN_OPTIONS, confirmedDomain.domainId)} fait partie de vos exclusions.`), sectorDecision: confirmedDomain });
@@ -5353,9 +5403,32 @@ function applyHardExclusions(criteria, job) {
 }
 
 function isPetiteEnfanceJob(job = {}) {
-  if (typeof job.primaryAudiencePetiteEnfance === "boolean") return job.primaryAudiencePetiteEnfance;
-  const code = String(job.romeCode || "").toUpperCase();
-  return ["K1303", "K1304"].includes(code);
+  return ["essential", "dominant"].includes(audienceCentrality(job, "petite_enfance"));
+}
+
+function audienceCentrality(job = {}, audienceId = "") {
+  return toArray(job.audienceSignals).find(signal => signal?.id === audienceId)?.centrality || "absent";
+}
+
+function buildExclusionDecision(hardCheck = {}) {
+  const reasons = toArray(hardCheck.confirmed).map(item => ({
+    code: item.code || "exclusion",
+    scope: item.decisionScope || item.category || "condition",
+    evidenceLevel: item.evidenceLevel || "exact",
+    message: item.message || item.label || "Exclusion confirmée."
+  }));
+  const warnings = toArray(hardCheck.unknown).map(item => ({
+    code: item.field || "warning",
+    scope: item.field?.includes("audience") ? "audience" : item.field?.includes("sector") ? "sector" : "condition",
+    evidenceLevel: item.field?.includes("audience") ? "possible" : "unknown",
+    message: item.message || item.label || "Point à vérifier."
+  }));
+  return {
+    status: reasons.length ? "hard" : warnings.length ? "warning" : "none",
+    hardExclusion: reasons.length > 0,
+    reasons,
+    warnings
+  };
 }
 
 function domainExclusionMatchesJob(domainId, job) {
@@ -6799,42 +6872,64 @@ function inferJobValueInterestTags(job = {}) {
 }
 
 function calculateContextScore(criteria, job) {
-  const preferences = unique([...toArray(criteria.preferredWorkStyles), ...toArray(criteria.preferredEnvironments), ...Object.keys(criteria.contextPreferences || {})]);
-  if (criteria.preferredSchedule === "day") preferences.push("day");
-  if (criteria.preferredSchedule === "flexible") preferences.push("flexible");
-  if (criteria.needForAutonomy === "high") preferences.push("autonomous");
-  if (criteria.needForSecurity === "high") preferences.push("structured");
+  const environments = unique(toArray(criteria.preferredEnvironments));
+  const workStyles = unique([
+    ...toArray(criteria.preferredWorkStyles),
+    ...(criteria.needForAutonomy === "high" ? ["autonomous"] : []),
+    ...(criteria.needForSecurity === "high" ? ["structured"] : [])
+  ]);
+  const rhythms = ["day", "flexible"].includes(criteria.preferredSchedule) ? [criteria.preferredSchedule] : [];
   const jobContextTags = unique([...collectJobContextTags(job), ...inferJobContextTags(job)]);
-  if (!toArray(job.workContexts).length && isGeneratedRomeJob(job)) {
-    return {
-      score: 5,
-      missingData: [missing("job.workContexts", "medium", "Contextes de travail officiels non reliés au métier.")],
-      matched: [],
-      profilePreferences: preferences,
-      unmatchedPreferences: preferences,
-      jobContextTags,
-      evidenceAvailable: false
-    };
-  }
-  if (!preferences.length) return { score: 5, missingData: [], matched: [], profilePreferences: [], unmatchedPreferences: [], jobContextTags, evidenceAvailable: Boolean(toArray(job.workContexts).length) };
-  let score = 0;
-  const matched = [];
-  preferences.forEach(pref => {
-    const ok = contextPreferenceMatches(pref, job, jobContextTags);
-    if (ok) {
-      score += contextPreferenceWeight(criteria.contextPreferences?.[pref]);
-      matched.push(pref);
-    }
-  });
-  return {
-    score: Math.round(clamp(saturatingTagScore(score, 10, 3), 0, 10)),
-    missingData: job.workContexts.length ? [] : [missing("job.workContexts", "medium", "Contextes de travail absents du corpus.")],
-    matched,
-    profilePreferences: preferences,
-    unmatchedPreferences: preferences.filter(pref => !matched.includes(pref)),
-    jobContextTags,
-    evidenceAvailable: Boolean(toArray(job.workContexts).length)
+  const evidenceAvailable = Boolean(toArray(job.workContexts).length || jobContextTags.length);
+  const assess = preferences => {
+    if (!preferences.length) return { answered: false, score100: null, matched: [], unmatched: [], unknown: [] };
+    if (!evidenceAvailable) return { answered: true, score100: 50, matched: [], unmatched: [], unknown: preferences };
+    const matched = preferences.filter(pref => contextPreferenceMatches(pref, job, jobContextTags));
+    const unknown = preferences.filter(pref => !matched.includes(pref) && !contextPreferenceHasContraryEvidence(pref, jobContextTags));
+    const unmatched = preferences.filter(pref => !matched.includes(pref) && !unknown.includes(pref));
+    return { answered: true, score100: Math.round((matched.length + unknown.length * 0.5) / preferences.length * 100), matched, unmatched, unknown };
   };
+  const environment = assess(environments);
+  const workStyle = assess(workStyles);
+  const rhythm = assess(rhythms);
+  const dimensions = [[environment, 0.5], [workStyle, 0.3], [rhythm, 0.2]].filter(([row]) => row.answered);
+  const activeWeight = dimensions.reduce((sum, [, weight]) => sum + weight, 0);
+  const score100 = activeWeight ? Math.round(dimensions.reduce((sum, [row, weight]) => sum + row.score100 * weight, 0) / activeWeight) : 50;
+  const unknownCount = environment.unknown.length + workStyle.unknown.length + rhythm.unknown.length;
+  const preferenceCount = environments.length + workStyles.length + rhythms.length;
+  const contextAlignment = {
+    score100,
+    environmentScore100: environment.score100,
+    workStyleScore100: workStyle.score100,
+    rhythmScore100: rhythm.score100,
+    matchedEnvironments: environment.matched,
+    unmatchedEnvironments: environment.unmatched,
+    unknownEnvironments: environment.unknown,
+    matchedWorkStyles: workStyle.matched,
+    unmatchedWorkStyles: workStyle.unmatched,
+    matchedRhythms: rhythm.matched,
+    unmatchedRhythms: rhythm.unmatched,
+    confidence: preferenceCount ? clamp((preferenceCount - unknownCount * 0.5) / preferenceCount, 0.2, 1) : 0,
+    weighting: { environment: 50, workStyle: 30, rhythm: 20, renormalized: true }
+  };
+  return {
+    score: Number((score100 / 10).toFixed(2)),
+    missingData: evidenceAvailable ? [] : [missing("job.workContexts", "medium", "Contextes de travail officiels non reliés au métier.")],
+    matched: unique([...environment.matched, ...workStyle.matched, ...rhythm.matched]),
+    profilePreferences: unique([...environments, ...workStyles, ...rhythms]),
+    unmatchedPreferences: unique([...environment.unmatched, ...workStyle.unmatched, ...rhythm.unmatched]),
+    jobContextTags,
+    evidenceAvailable,
+    contextAlignment
+  };
+}
+
+function contextPreferenceHasContraryEvidence(preference, tags = []) {
+  const opposites = {
+    quiet: ["public", "relational", "movement"], office: ["field", "outdoor"], outdoor: ["office"], field: ["office"],
+    autonomous: ["team"], team: ["autonomous"], day: ["irregular", "night"], structured: ["flexible"], flexible: ["structured"]
+  };
+  return toArray(opposites[preference]).some(tag => tags.includes(tag));
 }
 
 function contextPreferenceWeight(level = "preferred") {
@@ -6844,7 +6939,8 @@ function contextPreferenceWeight(level = "preferred") {
 function inferJobContextTags(job = {}) {
   const text = normalizeText([job.title, job.domain, job.family, ...toArray(job.appellations), ...toArray(job.romeWorkContextLabels)].join(" "));
   const tags = [];
-  if (/enfant|jeunesse|scolaire|ecole|college|lycee|centre de loisirs|animation/.test(text)) tags.push("children", "public", "relational", "team");
+  const hasChildAudience = toArray(job.audienceSignals).some(signal => ["petite_enfance", "children_multi_age", "youth"].includes(signal.id) && ["essential", "dominant"].includes(signal.centrality));
+  if (hasChildAudience || /enfant|jeunesse|scolaire|ecole|college|lycee|centre de loisirs/.test(text)) tags.push("children", "public", "relational", "team");
   if (/atelier|artistique|ludique|creation|culture|loisir/.test(text)) tags.push("creative");
   if (/association|collectivite|mairie|service public/.test(text)) tags.push("association", "structured");
   if (/terrain|exterieur|plein air|espace vert|nature/.test(text)) tags.push("field", "outdoor");
@@ -7870,9 +7966,13 @@ function comparePersonalFitVectors(a = {}, b = {}) {
 }
 
 function comparePersonalFitCandidates(a = {}, b = {}) {
-  return personalFitCandidateScore(b) - personalFitCandidateScore(a) ||
+  return Math.round(personalFitCandidateScore(b)) - Math.round(personalFitCandidateScore(a)) ||
+    Number(b.contextAlignment?.environmentScore100 ?? -1) - Number(a.contextAlignment?.environmentScore100 ?? -1) ||
     personalFitCandidateTieBreakScore(b) - personalFitCandidateTieBreakScore(a) ||
-    comparePersonalFitVectors(a, b) ||
+    Number(b.personalFitIntentAdjustment || 0) - Number(a.personalFitIntentAdjustment || 0) ||
+    Number(b.personalFitDesiredSectorPoints || 0) - Number(a.personalFitDesiredSectorPoints || 0) ||
+    Number(b.personalFitInterestSignalScore || 0) - Number(a.personalFitInterestSignalScore || 0) ||
+    String(a.title || a.job?.title || "").localeCompare(String(b.title || b.job?.title || ""), "fr") ||
     String(a.romeCode || a.job?.romeCode || a.jobId || "").localeCompare(String(b.romeCode || b.job?.romeCode || b.jobId || ""), "fr");
 }
 
@@ -15549,7 +15649,7 @@ if (typeof window !== "undefined") {
 /* CLASSIC_ENGINE_END */
   </script>
   <script>
-    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.4.0","buildId":"20260823-scoring-relations-market-v1-4-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-4","schemaVersion":"1.4.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d’aptitude aux fonctions d’animateur"}],"certifications":["cert-bafa"],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
+    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.0","buildId":"20260823-universal-visual-v1-5-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5","schemaVersion":"1.5.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d’aptitude aux fonctions d’animateur"}],"certifications":["cert-bafa"],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
   </script>
   <script>
 /* RUNTIME_PROVIDER_START */
@@ -16625,7 +16725,7 @@ const BoussoleRuntimeProvider = {
     };
 
     // Adaptation v1.1 de Ma Boussole. Le moteur et les vues de résultats restent inchangés.
-    RefonteApp.config.version = "1.4.0";
+    RefonteApp.config.version = "1.5.0";
     RefonteApp.config.steps = ["Départ", "Formation", "Contraintes", "Parcours professionnel", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"];
     Object.assign(RefonteApp.state, {
       dataset: null, datasetMode: "", datasetError: "", dataManifest: null, jobIndex: [], skillIndex: [], domainIndex: [],
@@ -16783,7 +16883,7 @@ const BoussoleRuntimeProvider = {
         };
         const pick = (key, fallback) => sets[key].includes(source[key]) ? source[key] : fallback;
         const picks = key => [...new Set(this.array(source[key]).filter(value => sets[key].includes(value)))];
-        profile.schemaVersion = "1.4.0";
+        profile.schemaVersion = "1.5.0";
         profile.id = typeof source.id === "string" && source.id ? source.id : profile.id;
         profile.createdAt = typeof source.createdAt === "string" ? source.createdAt : profile.createdAt;
         profile.updatedAt = typeof source.updatedAt === "string" ? source.updatedAt : profile.updatedAt;
@@ -17136,7 +17236,7 @@ const BoussoleRuntimeProvider = {
     const oldHandleSubmitV13 = RefonteApp.handleSubmit;
     const oldFilteredExplorationV13 = RefonteApp.filteredExploration;
 
-    RefonteApp.config.version = "1.4.0";
+    RefonteApp.config.version = "1.5.0";
     Object.assign(RefonteApp.state, { explorationDiploma: "", dialogStack: [], profileMigrationSource: null });
 
     Object.assign(RefonteApp, {
@@ -17152,7 +17252,7 @@ const BoussoleRuntimeProvider = {
         const profile = oldProfileForCurrentInterfaceV13.call(this, source);
         const allowed = key => new Set(this.optionRows(key).map(([id]) => id));
         const keep = key => [...new Set(this.array(source[key]).filter(id => allowed(key).has(id)))];
-        profile.schemaVersion = "1.4.0";
+        profile.schemaVersion = "1.5.0";
         const migration = this.state.profileMigrationSource;
         const oldRefonte = !source.diplomaScaleRevision && migration?.app === "boussole-pro-refonte-profile" && /^1\.(?:0|1|2)(?:\.|$)/.test(String(migration.version || ""));
         const oldLevel = Number(source.diplomaLevel || 0);
@@ -17379,6 +17479,135 @@ const BoussoleRuntimeProvider = {
       if (action?.dataset.action === "remove-filter" && action.dataset.filter === "explorationDiploma") { this.state.explorationDiploma = ""; this.state.explorationPage = 1; this.render(); return; }
       return handleClickV13Base.call(this, event);
     };
+
+    /* Consolidation universelle visuelle v1.5 */
+    const DIRECTION_STYLE = Object.freeze([
+      ["var(--brand)", "var(--brand-soft)"], ["var(--coral)", "var(--coral-soft)"],
+      ["var(--blue)", "var(--blue-soft)"], ["var(--gold)", "var(--gold-soft)"],
+      ["var(--violet)", "var(--surface-soft)"]
+    ]);
+    RefonteApp.config.version = "1.5.0";
+    RefonteApp.state.explorationSort = "";
+
+    RefonteApp.renderTopSection = function() {
+      const top = this.state.viewModel?.topDirections || [];
+      const center = 180;
+      const innerRadius = 52;
+      const maxBranchLength = 118;
+      const branches = top.map((entry, index) => {
+        const score = Math.max(0, Math.min(100, Number(entry.representative.personalFitScore || 0)));
+        const branchRadius = innerRadius + maxBranchLength * score / 100;
+        const angle = -Math.PI / 2 + index * (Math.PI * 2 / Math.max(top.length, 1));
+        const x1 = center + Math.cos(angle) * innerRadius;
+        const y1 = center + Math.sin(angle) * innerRadius;
+        const x2 = center + Math.cos(angle) * branchRadius;
+        const y2 = center + Math.sin(angle) * branchRadius;
+        const style = DIRECTION_STYLE[index % DIRECTION_STYLE.length];
+        return `<g class="rose-node" tabindex="0" role="button" data-action="open-job" data-job-id="${entry.representative.jobId}" data-rose-index="${index}" aria-label="${this.escape(entry.directionLabel)}, ${score} sur 100, ouvrir ${entry.representative.title}"><title>${this.escape(`${entry.directionLabel} : ${entry.representative.title}, accord ${score} sur 100`)}</title><line class="branch" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:${style[0]}"/><circle cx="${x2}" cy="${y2}" r="${10 + score * .05}" fill="${style[1]}" stroke="${style[0]}" stroke-width="3"/><text x="${x2}" y="${y2 + 4}" text-anchor="middle">${score}</text></g>`;
+      }).join("");
+      return `<section class="top-layout" aria-labelledby="topTitle"><div><svg class="rose" viewBox="0 0 360 360" role="group" aria-labelledby="roseTitle roseDesc"><title id="roseTitle">Boussole dynamique des directions les plus accordées</title><desc id="roseDesc">La longueur de chaque branche représente l’accord personnel. Chaque branche peut recevoir le focus et ouvre la fiche métier.</desc><circle class="ring" cx="180" cy="180" r="170"/>${branches}<circle cx="180" cy="180" r="${innerRadius - 8}" fill="var(--brand-soft)" stroke="var(--brand)"/><text x="180" y="176" text-anchor="middle">Votre</text><text x="180" y="192" text-anchor="middle">Top</text></svg></div><div><p class="eyebrow">Jusqu’à cinq directions distinctes</p><h3 id="topTitle">Votre Top en un regard</h3><ol class="top-list">${top.map((entry, index) => `<li data-rose-index="${index}"><button data-action="open-job" data-job-id="${entry.representative.jobId}"><span class="top-rank">${index + 1}</span><span><strong>${this.escape(entry.directionLabel)}</strong><br><span class="job-meta">${this.escape(entry.representative.title)}</span></span><strong>${entry.representative.personalFitScore}/100</strong></button></li>`).join("")}</ol></div></section>`;
+    };
+
+    const filteredExplorationV15Base = RefonteApp.filteredExploration;
+    RefonteApp.filteredExploration = function() {
+      const rows = filteredExplorationV15Base.call(this);
+      const mode = this.state.profileExists ? (this.state.explorationSort || "fit_desc") : (this.state.explorationSort === "title_desc" ? "title_desc" : "title_asc");
+      return [...rows].sort((a, b) => {
+        if (mode === "title_desc") return b.title.localeCompare(a.title, "fr") || a.romeCode.localeCompare(b.romeCode);
+        if (mode === "title_asc") return a.title.localeCompare(b.title, "fr") || a.romeCode.localeCompare(b.romeCode);
+        const left = this.summaryForJob(a.id); const right = this.summaryForJob(b.id);
+        return Number(right?.personalFitScore || 0) - Number(left?.personalFitScore || 0) || a.title.localeCompare(b.title, "fr") || a.romeCode.localeCompare(b.romeCode);
+      });
+    };
+
+    const renderExplorationV15Base = RefonteApp.renderExploration;
+    RefonteApp.renderExploration = function() {
+      if (!this.state.explorationSort) {
+        const saved = this.state.storageAvailable ? localStorage.getItem(`${this.config.storageKey}_exploration_sort`) : null;
+        this.state.explorationSort = this.state.profileExists && saved === "fit_desc" ? saved : ["title_asc", "title_desc"].includes(saved) ? saved : this.state.profileExists ? "fit_desc" : "title_asc";
+      }
+      renderExplorationV15Base.call(this);
+      const count = document.getElementById("explorationCount");
+      if (!count) return;
+      const options = [
+        ...(this.state.profileExists ? [["fit_desc", "Accord personnel — du plus élevé"]] : []),
+        ["title_asc", "Intitulé — A à Z"], ["title_desc", "Intitulé — Z à A"]
+      ];
+      count.insertAdjacentHTML("beforebegin", `<div class="field exploration-sort"><label for="explorationSort">Trier les métiers</label><select id="explorationSort">${this.options(options, this.state.explorationSort)}</select></div>`);
+    };
+
+    RefonteApp.marketCards = function(summary = {}, detailed = false) {
+      const rows = [["national", "France"], ["regional", "Occitanie"], ["departmental", "Aude"]];
+      const tensionLabels = { very_high: "très forte", high: "forte", medium: "moyenne", moderate: "moyenne", low: "faible", very_low: "très faible", unknown: "indisponible" };
+      const levels = { zero: 0, very_low: 1, low: 2, medium: 3, moderate: 3, high: 4, very_high: 5, unknown: 0 };
+      const segments = (count, className) => `<span class="${className}${count ? "" : " unavailable"}" aria-hidden="true">${Array.from({ length: 5 }, (_, index) => `<i class="${index < count ? "active" : ""}"></i>`).join("")}</span>`;
+      this.state.marketDescriptionSequence = (this.state.marketDescriptionSequence || 0) + 1;
+      const instance = this.state.marketDescriptionSequence;
+      return `<div class="market-cards" aria-label="Marché par territoire">${rows.map(([key, label]) => {
+        const row = summary[key] || {};
+        const offers = Number.isFinite(Number(row.offersCount)) ? Number(row.offersCount) : null;
+        const offerCount = offers === null ? 0 : (levels[row.offersLevel] ?? 0);
+        const tension = tensionLabels[row.tensionLevel || "unknown"] || "indisponible";
+        const tensionCount = levels[row.tensionLevel || "unknown"] || 0;
+        const bmo = Number.isFinite(Number(row.recruitmentDifficultyRate)) ? Number(row.recruitmentDifficultyRate) : null;
+        const caution = row.availability === "ambiguous" || row.sharedFamily;
+        const id = `market-popover-${instance}-${key}`;
+        const details = `Volume : ${offers === null ? "indisponible" : `${offers.toLocaleString("fr-FR")} offres observées`}. Niveau publié : ${row.offersLevel || "indisponible"}. Tension DARES : ${tension}. Difficulté BMO : ${bmo === null ? "indisponible" : `${bmo} %`}. Période : ${row.period || row.periods?.offers || "à vérifier"}. Portée : ${row.statisticalScope || "à vérifier"}.${caution ? " Repère partagé à l’échelle d’une famille de métiers." : ""}`;
+        return `<div class="market-card-wrap"><button type="button" class="market-card" data-action="market-popover" aria-expanded="false" aria-controls="${id}"><div class="market-card-header"><strong>${label}</strong>${caution ? "<small>À interpréter</small>" : ""}</div><div class="market-signal"><span class="market-signal-label">${offers === null ? "Offres indisponibles" : `${offers.toLocaleString("fr-FR")} offres`}</span>${segments(offerCount, "market-volume")}</div><div class="market-signal"><span class="market-signal-label">Tension ${tension}</span>${segments(tensionCount, "market-gauge")}</div>${detailed && bmo !== null ? `<small>Difficulté BMO ${bmo} %</small>` : ""}</button><div class="market-popover" id="${id}" role="note" hidden>${this.escape(details)}</div></div>`;
+      }).join("")}</div>`;
+    };
+
+    const handleChangeV15Base = RefonteApp.handleChange;
+    RefonteApp.handleChange = function(event) {
+      if (event.target.id === "explorationSort") {
+        this.state.explorationSort = event.target.value; this.state.explorationPage = 1;
+        if (this.state.storageAvailable) localStorage.setItem(`${this.config.storageKey}_exploration_sort`, this.state.explorationSort);
+        this.renderExplorationList(); return;
+      }
+      return handleChangeV15Base.call(this, event);
+    };
+
+    const handleClickV15Base = RefonteApp.handleClick;
+    RefonteApp.handleClick = function(event) {
+      const action = event.target.closest("[data-action]");
+      if (action?.dataset.action === "market-popover") {
+        const popover = document.getElementById(action.getAttribute("aria-controls"));
+        const opening = action.getAttribute("aria-expanded") !== "true";
+        document.querySelectorAll('[data-action="market-popover"][aria-expanded="true"]').forEach(button => { button.setAttribute("aria-expanded", "false"); document.getElementById(button.getAttribute("aria-controls"))?.setAttribute("hidden", ""); });
+        action.setAttribute("aria-expanded", String(opening)); if (popover) popover.hidden = !opening; return;
+      }
+      return handleClickV15Base.call(this, event);
+    };
+
+    const openJobV15Base = RefonteApp.openJob;
+    RefonteApp.openJob = function(jobId, trigger, options = {}) {
+      openJobV15Base.call(this, jobId, trigger, options);
+      const detail = this.detailForJob(jobId);
+      const sections = [...this.dom.dialogContent.querySelectorAll(".detail-section")];
+      const personal = sections.find(section => section.querySelector("h3")?.textContent.includes("Pourquoi cette piste"));
+      if (!this.state.profileExists && personal) {
+        personal.innerHTML = '<h3 class="detail-title">Lecture neutre du métier</h3><p>Créez Ma Boussole pour comparer ce métier à vos aspirations, valeurs et cadres de travail.</p>';
+      } else if (personal && detail?.personalAssessment?.dimensions?.length) {
+        personal.insertAdjacentHTML("afterend", `<section class="detail-section personalized-assessment"><h3 class="detail-title">Mon accord personnel en quatre repères</h3><div class="assessment-grid">${detail.personalAssessment.dimensions.map(item => `<div class="assessment-dimension"><strong>${this.escape(item.label)}</strong><span>${item.score100 === null ? "Non évalué" : `${item.score100}/100`}</span></div>`).join("")}</div></section>`);
+      }
+      const relatedHeading = [...this.dom.dialogContent.querySelectorAll("h3")].find(item => item.textContent === "Métiers proches");
+      if (relatedHeading) relatedHeading.textContent = "Métiers reliés par compétences et contextes";
+    };
+
+    document.addEventListener("mouseover", event => highlightRose(event.target.closest("[data-rose-index]")));
+    document.addEventListener("focusin", event => highlightRose(event.target.closest("[data-rose-index]")));
+    document.addEventListener("keydown", event => {
+      if (["Enter", " "].includes(event.key) && event.target.matches(".rose-node")) { event.preventDefault(); event.target.click(); return; }
+      if (event.key === "Escape") closeMarketPopovers();
+    });
+    document.addEventListener("click", event => { if (!event.target.closest(".market-card-wrap")) closeMarketPopovers(); });
+    function highlightRose(target) {
+      if (!target) return; const index = target.dataset.roseIndex;
+      document.querySelectorAll("[data-rose-index]").forEach(item => item.classList.toggle("is-active", item.dataset.roseIndex === index));
+    }
+    function closeMarketPopovers() {
+      document.querySelectorAll('[data-action="market-popover"][aria-expanded="true"]').forEach(button => { button.setAttribute("aria-expanded", "false"); document.getElementById(button.getAttribute("aria-controls"))?.setAttribute("hidden", ""); });
+    }
 
     document.addEventListener("DOMContentLoaded", () => { RefonteApp.init().catch(error => { document.getElementById("mainContent").innerHTML = `<div class="view"><div class="notice error"><strong>Initialisation impossible.</strong><p>${RefonteApp.escape(error.message)}</p></div></div>`; }); });
   </script>

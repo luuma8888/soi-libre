@@ -13,12 +13,19 @@ const MARKET_DIR = path.join(APP_DIR, "data/generated/market");
 const OUTPUT_DIR = path.join(APP_DIR, "boussole-runtime");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "boussole-runtime-build-report.json");
-const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.4/tag-relations-quality-report.json");
+const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5/tag-relations-quality-report.json");
 const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-provider.js");
-const APP_VERSION = "1.4.0";
-const BUILD_ID = "20260823-scoring-relations-market-v1-4-01";
+const AUDIENCE_CONFIG_PATH = path.join(APP_DIR, "config/audience-overrides.json");
+const TAXONOMY_CONFIG_PATH = path.join(APP_DIR, "config/taxonomy-overrides.json");
+const APP_VERSION = "1.5.0";
+const BUILD_ID = "20260823-universal-visual-v1-5-01";
 
-const [appHtml, browserProvider] = await Promise.all([readFile(APP_PATH, "utf8"), readFile(BROWSER_PROVIDER_PATH, "utf8")]);
+const [appHtml, browserProvider, audienceConfig, taxonomyConfig] = await Promise.all([
+  readFile(APP_PATH, "utf8"),
+  readFile(BROWSER_PROVIDER_PATH, "utf8"),
+  readFile(AUDIENCE_CONFIG_PATH, "utf8").then(JSON.parse),
+  readFile(TAXONOMY_CONFIG_PATH, "utf8").then(JSON.parse)
+]);
 const previousPayload = parsePayload(appHtml);
 if (!previousPayload?.defaultProfile) throw new Error("Le profil de démonstration embarqué est absent de la coquille applicative.");
 
@@ -37,7 +44,7 @@ const sourceFiles = [
 ];
 const sourceBuffers = await Promise.all(sourceFiles.map(file => readFile(file)));
 const sourceFingerprintSha256 = sha256(sourceBuffers.map((buffer, index) => `${path.basename(sourceFiles[index])}:${sha256(buffer)}`).join("|"));
-const datasetVersion = `boussole-runtime-v1.4-${sourceFingerprintSha256.slice(0, 12)}`;
+const datasetVersion = `boussole-runtime-v1.5-${sourceFingerprintSha256.slice(0, 12)}`;
 
 const bundle = await loadGeneratedBundle(SOURCE_DIR, {
   accessSummaryFile: "access-summary.rome1000.json",
@@ -52,11 +59,15 @@ engine.markDatasetAsOfficialRome(engine.App.state.dataset, bundle.manifest);
 const masterDataset = engine.App.state.dataset;
 const sourceJobs = JSON.parse(sourceBuffers[0].toString("utf8"));
 const sourceJobsById = new Map(sourceJobs.map(job => [job.id, job]));
-masterDataset.jobs = masterDataset.jobs.map(job => ({
-  ...job,
-  romeKnowledgeRefs: sourceJobsById.get(job.id)?.romeKnowledgeRefs || job.romeKnowledgeRefs || [],
-  ...enrichProfileOptionTags(job)
-}));
+masterDataset.jobs = masterDataset.jobs.map(job => {
+  const taxonomy = taxonomyConfig.jobs?.[job.romeCode] || {};
+  const adjusted = {
+    ...job,
+    ...taxonomy,
+    romeKnowledgeRefs: sourceJobsById.get(job.id)?.romeKnowledgeRefs || job.romeKnowledgeRefs || []
+  };
+  return { ...adjusted, ...enrichProfileOptionTags(adjusted, { audienceOverrides: audienceConfig.jobs }) };
+});
 masterDataset.tagStatistics = buildTagStatistics(masterDataset.jobs);
 const referenceProfile = engine.normalizeProfile(clone(previousPayload.defaultProfile));
 engine.App.state.profile = referenceProfile;
@@ -174,7 +185,7 @@ const taggedJobs = built.core.jobs.map(job => {
 });
 const tagRelationQuality = {
   schemaVersion: "1.0.0",
-  reportKind: "boussole_v1_4_tag_relations_quality",
+  reportKind: "boussole_v1_5_tag_relations_quality",
   generatedAt,
   datasetVersion,
   tagStatistics: built.core.tagStatistics,
@@ -184,6 +195,19 @@ const tagRelationQuality = {
     const job = built.core.jobs.find(item => item.romeCode === code);
     return [code, job ? { jobId: job.id, title: job.title, interestTags: job.interestTags || [], valueTags: job.valueTags || [], transitionTags: job.transitionTags || [], relatedJobIds: job.relatedJobIds || [] } : null];
   })),
+  audienceSignalAudit: Object.fromEntries(Object.keys(audienceConfig.jobs).map(code => {
+    const job = masterDataset.jobs.find(item => item.romeCode === code);
+    return [code, { title: job?.title || null, signals: job?.audienceSignals || [], override: audienceConfig.jobs[code] }];
+  })),
+  lexicalCollisionAudit: ["animation", "animateur", "assistant", "educateur", "conseiller", "technicien"].map(term => {
+    const affected = masterDataset.jobs.filter(job => `${job.title} ${job.mission || job.description || ""}`.toLocaleLowerCase("fr").includes(term));
+    const corrected = affected.filter(job => taxonomyConfig.jobs?.[job.romeCode]);
+    return {
+      term,
+      affectedJobs: affected.length,
+      reviewedOverrides: corrected.map(job => ({ romeCode: job.romeCode, title: job.title, sectorAfter: job.primarySectorId, audienceAfter: job.audienceSignals || [], decision: taxonomyConfig.jobs[job.romeCode]?.justification }))
+    };
+  }),
   relationGraph: built.diagnostics.relationGraph
 };
 await mkdir(path.dirname(TAG_RELATION_REPORT_PATH), { recursive: true });
@@ -211,7 +235,7 @@ function buildDemoProfile(previous = {}, dataset = {}) {
     return [...(job.requiredSkills || job.matchableSkillIds || []), ...(job.optionalSkills || [])].map(item => typeof item === "string" ? item : item?.id);
   }).filter(id => skillIds.has(id)))].slice(0, 12);
   return {
-    id: "profile-demo-v1-4", schemaVersion: "1.4.0", profileName: "Profil de démonstration", ageRange: "36_45",
+    id: "profile-demo-v1-5", schemaVersion: "1.5.0", profileName: "Profil de démonstration", ageRange: "36_45",
     diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d’aptitude aux fonctions d’animateur" }], certifications: ["cert-bafa"],
     jobExperiences: experienceSource.map((item, index) => ({ ...item, id: `demo-experience-${index + 1}` })),
     skillSelections: selectedSkills.map((skillId, index) => ({ skillId, label: dataset.skillsEngine.find(item => item.id === skillId)?.label || skillId, currentLevel: index < 6 ? "mastered" : "practiced", futureWish: index < 8 ? "continue" : "develop", source: "user_direct", suggestedFromRomeCodes: [] })),

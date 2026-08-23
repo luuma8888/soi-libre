@@ -138,13 +138,13 @@ try {
   assert("no_duplicate_ids", resultUi.duplicateIds.length === 0, resultUi.duplicateIds);
   const v13Results = await evaluate(cdp, `(() => {
     const vm=window.__BOUSSOLE_REFONTE_TEST_API__.getViewModel();
-    const familyIds=[...vm.topDirections.map(row=>row.representative.jobId),...vm.recommendedPaths.map(row=>row.jobId),...vm.dreamPaths.map(row=>row.jobId),...vm.skillsSupportedPaths.map(row=>row.jobId),...vm.exploratoryPaths.map(row=>row.jobId),...vm.excludedPaths.map(row=>row.jobId)];
+    const topIds=vm.topDirections.map(row=>row.representative.jobId);
     const tabs=[...document.querySelectorAll('[data-action="results-tab"]')];
     const states=tabs.map(tab=>{tab.click();return {selected:[...tabs].filter(item=>item.getAttribute('aria-selected')==='true').length,focused:document.activeElement===tab,page:RefonteApp.state.resultsPage};});
     tabs.find(tab=>tab.dataset.tab==='all').click();
-    return {exclusive:new Set(familyIds).size===familyIds.length,states,pages:Math.ceil(vm.completeList.length/RefonteApp.config.pageSize),sorts:[...document.getElementById('resultSort').options].map(row=>row.textContent),marketCards:document.querySelectorAll('.market-card').length};
+    return {independent:topIds.some(id=>vm.skillsSupportedPaths.some(row=>row.jobId===id)||vm.dreamPaths.some(row=>row.jobId===id)),recommendedExcludesTop:vm.recommendedPaths.every(row=>!topIds.includes(row.jobId)),complete:vm.completeList.length===1000,states,pages:Math.ceil(vm.completeList.length/RefonteApp.config.pageSize),sorts:[...document.getElementById('resultSort').options].map(row=>row.textContent),marketCards:document.querySelectorAll('.market-card').length};
   })()`);
-  assert("result_families_exclusive", v13Results.exclusive, v13Results);
+  assert("result_families_independent", v13Results.independent && v13Results.recommendedExcludesTop && v13Results.complete, v13Results);
   assert("tabs_visual_aria_focus", v13Results.states.every(row => row.selected === 1 && row.focused && row.page === 1), v13Results.states);
   assert("all_jobs_84_pages_and_exact_sorts", v13Results.pages === 84 && v13Results.sorts.length === 5 && !v13Results.sorts.some(label => label === "Opportunités"), v13Results);
   await capture(cdp, "03-resultats-bureau.png");
@@ -167,10 +167,11 @@ try {
       cards: document.querySelectorAll(".market-detail .market-card").length,
       gauges: document.querySelectorAll(".market-detail .market-gauge").length,
       volumes: document.querySelectorAll(".market-detail .market-volume").length,
-      bmo: document.querySelectorAll(".market-detail .market-bmo").length,
-      described: [...document.querySelectorAll(".market-detail .market-card")].every(card => card.tabIndex === 0 && document.getElementById(card.getAttribute("aria-describedby"))),
+      popovers: document.querySelectorAll(".market-detail .market-popover").length,
+      accessible: [...document.querySelectorAll(".market-detail .market-card")].every(card => card.tagName === "BUTTON" && card.getAttribute("aria-expanded") === "false" && document.getElementById(card.getAttribute("aria-controls"))),
       french: !/Very high|High|Low/.test(marketText)
     };
+    const firstMarketCard=document.querySelector(".market-detail .market-card"); firstMarketCard?.click(); market.opens=firstMarketCard?.getAttribute("aria-expanded")==="true"; document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true})); market.closes=firstMarketCard?.getAttribute("aria-expanded")==="false";
     document.getElementById("jobDialog").close();
     RefonteApp.openJob("rome-G1203", document.querySelector(".top-list button"));
     const before = document.getElementById("jobDialogTitle")?.textContent;
@@ -186,7 +187,7 @@ try {
     const graphAfter = JSON.stringify(RefonteApp.jobById("rome-G1203")?.relatedJobIds || []);
     return { marketText, market, relation: { before, after, stack, returned, stable: graphBefore === graphAfter } };
   })()`);
-  assert("market_visual_french_and_accessible", marketAndRelations.market.cards === 3 && marketAndRelations.market.gauges === 3 && marketAndRelations.market.volumes === 3 && marketAndRelations.market.bmo === 3 && marketAndRelations.market.described && marketAndRelations.market.french, marketAndRelations);
+  assert("market_visual_french_and_accessible", marketAndRelations.market.cards === 3 && marketAndRelations.market.gauges === 3 && marketAndRelations.market.volumes === 3 && marketAndRelations.market.popovers === 3 && marketAndRelations.market.accessible && marketAndRelations.market.opens && marketAndRelations.market.closes && marketAndRelations.market.french, marketAndRelations);
   assert("related_jobs_stable_and_back_navigation", marketAndRelations.relation.before && marketAndRelations.relation.after && marketAndRelations.relation.before !== marketAndRelations.relation.after && marketAndRelations.relation.stack === 1 && marketAndRelations.relation.returned === marketAndRelations.relation.before && marketAndRelations.relation.stable, marketAndRelations.relation);
 
   const modeInvariant = await evaluate(cdp, `(() => {
@@ -261,11 +262,12 @@ try {
 
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("exploration")`);
   await waitForSelector(cdp, ".direction-grid");
-  const exploration = await evaluate(cdp, `(() => ({ directions: document.querySelectorAll(".direction-button").length, rows: document.querySelectorAll(".compact-row").length, queryResult: window.__BOUSSOLE_REFONTE_TEST_API__.search("animateur"), intro:document.querySelector("main").innerText, diploma:Boolean(document.getElementById("explorationDiploma")), titleButtons:document.querySelectorAll(".job-title-link").length, ficheButtons:[...document.querySelectorAll(".compact-row button")].filter(button=>button.textContent.includes("Voir la fiche")).length }))()`);
+  const exploration = await evaluate(cdp, `(() => { const sort=document.getElementById("explorationSort"); sort.value="title_desc"; sort.dispatchEvent(new Event("change",{bubbles:true})); return { directions: document.querySelectorAll(".direction-button").length, rows: document.querySelectorAll(".compact-row").length, queryResult: window.__BOUSSOLE_REFONTE_TEST_API__.search("animateur"), intro:document.querySelector("main").innerText, diploma:Boolean(document.getElementById("explorationDiploma")), titleButtons:document.querySelectorAll(".job-title-link").length, ficheButtons:[...document.querySelectorAll(".compact-row button")].filter(button=>button.textContent.includes("Voir la fiche")).length, sorts:[...sort.options].map(row=>row.value), persisted:localStorage.getItem(RefonteApp.config.storageKey+"_exploration_sort"), page:RefonteApp.state.explorationPage }; })()`);
   assert("exploration_17_directions", exploration.directions === 17, exploration.directions);
   assert("exploration_paginated_rows", exploration.rows > 0 && exploration.rows <= 12, exploration.rows);
   assert("search_title_or_appellation", exploration.queryResult.length > 0, exploration.queryResult);
   assert("exploration_v13_controls", exploration.intro.includes("1000 métiers") && exploration.diploma && exploration.titleButtons > 0 && exploration.ficheButtons > 0, exploration);
+  assert("exploration_v15_sort", exploration.sorts.join("|") === "fit_desc|title_asc|title_desc" && exploration.persisted === "title_desc" && exploration.page === 1, exploration);
   await capture(cdp, "04-exploration-bureau.png");
 
   await evaluate(cdp, `(() => { RefonteApp.toggleFavorite("rome-G1202"); RefonteApp.toggleFavorite("rome-K1203"); RefonteApp.toggleCompare("rome-G1202"); RefonteApp.toggleCompare("rome-K1203"); window.__BOUSSOLE_REFONTE_TEST_API__.navigate("liste"); })()`);
@@ -280,9 +282,10 @@ try {
   await capture(cdp, "06-menu-bureau.png");
 
   const responsive = [];
-  for (const width of [320, 375, 768, 1024, 1440]) {
+  for (const themeName of ["light", "dark"]) for (const width of [320, 375, 768, 1024, 1440]) {
     await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: false });
-    responsive.push({ width, ...await evaluate(cdp, `(() => {
+    await evaluate(cdp, `RefonteApp.setTheme("${themeName}")`);
+    responsive.push({ width, theme: themeName, ...await evaluate(cdp, `(() => {
       const viewport = document.documentElement.clientWidth;
       return {
         overflow: document.documentElement.scrollWidth - viewport,
@@ -296,7 +299,7 @@ try {
       };
     })()`) });
   }
-  assert("responsive_five_required_widths", responsive.every(row => row.overflow <= 1), responsive);
+  assert("responsive_five_required_widths_two_themes", responsive.length === 10 && responsive.every(row => row.overflow <= 1), responsive);
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true, screenWidth: 390, screenHeight: 844 });
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); window.__BOUSSOLE_REFONTE_TEST_API__.setStep(3)`);
   await capture(cdp, "etape-04-parcours-mobile.png");

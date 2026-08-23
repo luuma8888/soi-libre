@@ -47,6 +47,9 @@ jobs:
       - name: Valider les règles fonctionnelles v1.4
         run: node scripts/validate-boussole-v14.mjs
 
+      - name: Valider la consolidation universelle v1.5
+        run: node scripts/validate-boussole-v15.mjs
+
       - name: Publier les rapports de validation
         if: always()
         uses: actions/upload-artifact@v6
@@ -57,6 +60,7 @@ jobs:
           path: |
             tmp/monde-pro/boussole-runtime-v1/*.json
             tmp/monde-pro/boussole-v1.4/*.json
+            tmp/monde-pro/boussole-v1.5/*.json
 
       - name: Publier les fichiers générés sur la branche
         if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}
