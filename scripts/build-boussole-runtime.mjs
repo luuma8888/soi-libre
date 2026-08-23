@@ -14,8 +14,8 @@ const OUTPUT_DIR = path.join(APP_DIR, "data/generated/boussole-runtime");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "boussole-runtime-build-report.json");
 const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-provider.js");
-const APP_VERSION = "1.2.0";
-const BUILD_ID = "20260823-runtime-compacts-v1-01";
+const APP_VERSION = "1.2.1";
+const BUILD_ID = "20260823-runtime-compacts-v1-02";
 
 const [appHtml, browserProvider] = await Promise.all([readFile(APP_PATH, "utf8"), readFile(BROWSER_PROVIDER_PATH, "utf8")]);
 const previousPayload = parsePayload(appHtml);
@@ -282,7 +282,13 @@ function injectRuntimeProvider(source, content) {
 function normalizeRuntimeShell(source) {
   return source
     .replaceAll("REFONTE_DATA.dataset", "this.state.dataset")
-    .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2 -")
+    .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2.1 -")
+    .replaceAll("Boussole Pro v1.2 -", "Boussole Pro v1.2.1 -")
+    .replaceAll('${this.state.dataset.jobs.length} métiers réels disponibles', '${this.runtimePresentation().title}')
+    .replaceAll(
+      "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation.",
+      "${this.runtimePresentation().description}"
+    )
     .replaceAll("métiers réels embarqués", "métiers réels disponibles")
     .replaceAll("ROME100 stratifié", "ROME1000 actif")
     .replaceAll(
@@ -299,11 +305,15 @@ function normalizeRuntimeShell(source) {
     )
     .replaceAll(
       'this.state.datasetMode === "emergency_rome100" ? "secours ROME100" : "ROME1000 actif"',
-      'this.state.datasetMode === "offline_embedded" ? "ROME1000 autonome" : this.state.datasetMode === "validated_cache" ? "ROME1000 en cache" : "ROME1000 actif"'
+      'this.runtimePresentation().badge'
     )
     .replaceAll(
       'this.state.datasetMode === "emergency_rome100" ? "ROME100 de secours" : "ROME1000 actif"',
-      'this.state.datasetMode === "offline_embedded" ? "ROME1000 autonome" : this.state.datasetMode === "validated_cache" ? "ROME1000 en cache" : "ROME1000 actif"'
+      'this.runtimePresentation().badge'
+    )
+    .replaceAll(
+      'this.state.datasetMode === "offline_embedded" ? "ROME1000 autonome" : this.state.datasetMode === "validated_cache" ? "ROME1000 en cache" : "ROME1000 actif"',
+      'this.runtimePresentation().badge'
     );
 }
 

@@ -56,13 +56,15 @@ try {
     state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(),
     build: window.__BOUSSOLE_REFONTE_TEST_API__.build(),
     mainText: document.querySelector("main")?.innerText || "",
+    runtimeStatus: document.getElementById("runtimeStatus")?.innerText || "",
     jobs: window.__BOUSSOLE_REFONTE_BUILD__.jobsCount,
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
   }))()`);
   assert("desktop_initial_profile_absent", initial.state.profileExists === false, initial.state);
   assert("external_runtime_1000_jobs", initial.jobs === 1000 && initial.state.datasetMode === "external_runtime", initial);
   assert("desktop_no_horizontal_overflow", initial.overflow <= 1, initial.overflow);
-  assert("home_state_visible", initial.mainText.includes("Boussole absente") && initial.mainText.includes("1000 métiers réels disponibles"));
+  assert("home_state_visible", initial.mainText.includes("Boussole absente") && initial.mainText.includes("1000 métiers chargés en ligne"));
+  assert("online_runtime_clearly_identified", initial.mainText.includes("ont été téléchargés") && initial.runtimeStatus.includes("Données en ligne validées"), initial);
   await capture(cdp, "01-accueil-bureau.png");
 
   const noProfileSearch = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.search("G1202")`);
@@ -260,12 +262,12 @@ try {
   assert("reduced_motion_supported", a11y.reducedMotionQuerySupported === true);
 
   await cdp.send("Network.emulateNetworkConditions", { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
-  const cachedRuntime = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.reloadRuntime().then(() => window.__BOUSSOLE_REFONTE_TEST_API__.getState())`, true);
-  assert("network_failure_uses_validated_complete_cache", cachedRuntime.jobs === 1000 && cachedRuntime.datasetMode === "validated_cache", cachedRuntime);
+  const cachedRuntime = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.reloadRuntime().then(() => ({ ...window.__BOUSSOLE_REFONTE_TEST_API__.getState(), runtimeStatus: RefonteApp.runtimePresentation().status }))`, true);
+  assert("network_failure_uses_validated_complete_cache", cachedRuntime.jobs === 1000 && cachedRuntime.datasetMode === "validated_cache" && cachedRuntime.runtimeStatus.includes("Cache local validé"), cachedRuntime);
   await navigate(cdp, pathToFileURL(OFFLINE_HTML_PATH).href);
   await waitForApi(cdp, 240);
-  const offline = await evaluate(cdp, `(() => ({ build: window.__BOUSSOLE_REFONTE_TEST_API__.build(), state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(), text: document.querySelector("main")?.innerText || "" }))()`);
-  assert("file_offline_boot", offline.build.jobsCount === 1000 && offline.state.datasetMode === "offline_embedded" && offline.text.length > 50, offline);
+  const offline = await evaluate(cdp, `(() => ({ build: window.__BOUSSOLE_REFONTE_TEST_API__.build(), state: window.__BOUSSOLE_REFONTE_TEST_API__.getState(), text: document.querySelector("main")?.innerText || "", runtimeStatus: RefonteApp.runtimePresentation().status }))()`);
+  assert("file_offline_boot", offline.build.jobsCount === 1000 && offline.state.datasetMode === "offline_embedded" && offline.text.includes("1000 métiers inclus dans cette édition autonome") && offline.runtimeStatus.includes("Édition autonome"), offline);
   const offlineTop = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.loadDemoProfile(); return window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5; })()`);
   assert("online_offline_same_demo_top5", JSON.stringify(offlineTop) === JSON.stringify(resultUi.top), { online: resultUi.top, offline: offlineTop });
   assert("online_offline_same_runtime_identity", offline.build.datasetVersion === initial.build.datasetVersion && offline.build.runtimeFingerprintSha256 === initial.build.runtimeFingerprintSha256, { online: initial.build, offline: offline.build });

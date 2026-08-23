@@ -63,6 +63,21 @@
             gap: 54px;
         }
 
+        .privacy-note {
+            padding: 15px 18px;
+            border: 1px solid #dcebdc;
+            border-left: 4px solid var(--accent);
+            border-radius: 12px;
+            background: #f7fbf7;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .privacy-note strong {
+            color: var(--text-main);
+        }
+
         .app-group {
             display: flex;
             flex-direction: column;
@@ -348,6 +363,30 @@
             flex: 1 1 180px;
         }
 
+        .edition-options {
+            display: grid;
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        .edition-option {
+            padding: 12px;
+            border: 1px solid #eee9f5;
+            border-radius: 12px;
+            background: #fcfaff;
+        }
+
+        .edition-option p {
+            margin: 0 0 10px;
+            color: var(--text-light);
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        .edition-option strong {
+            color: var(--text-main);
+        }
+
         .btn {
             flex: 1;
             text-align: center;
@@ -598,6 +637,13 @@
                 align-items: start;
             }
             .card.tall-card { grid-row: auto; }
+            .edition-option {
+                padding: 10px;
+            }
+            .edition-option .card-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
             .card-image-side {
                 grid-area: preview;
                 flex: 0 0 auto;
@@ -690,18 +736,22 @@
         
         <div class="manifesto">
             <p>
-                Découvrez des compagnons numériques conçus pour le <strong>plein air</strong>. 
-                Simples, gratuits et 100% autonomes, ces outils respectent votre silence et votre vie privée.
+                Découvrez des compagnons numériques conçus pour vous accompagner librement.
+                Simples et gratuits, ils proposent des éditions autonomes et respectent votre vie privée.
             </p>
             <div class="badges">
-                <span class="badge">🍃 100% Offline</span>
+                <span class="badge">🍃 Versions hors ligne</span>
                 <span class="badge">🤝 Libre & Gratuit</span>
-                <span class="badge">🔒 Zéro Donnée</span>
+                <span class="badge">🔒 Aucune donnée personnelle envoyée</span>
             </div>
         </div>
     </header>
 
     <main class="grid">
+        <aside class="privacy-note" aria-label="Informations sur la sauvegarde locale">
+            <strong>Vos informations restent dans ce navigateur et ne sont pas envoyées.</strong>
+            Elles peuvent cependant disparaître après un nettoyage, en navigation privée ou lors d’un changement de navigateur ou d’appareil. Exportez régulièrement une sauvegarde JSON et conservez-la dans un endroit sûr : c’est le moyen fiable de retrouver votre travail.
+        </aside>
         <section class="app-group">
             <div class="group-heading">
                 <p class="group-kicker">Exploration intérieure</p>
@@ -866,29 +916,41 @@
             </div>
         </article>
 
-        <article class="card compact-card card-theme-creation">
+        <article class="card tall-card card-theme-introspection">
             <div class="card-audience">
-                <span class="audience-line">Vous voulez pratiquer Un Cours En Miracles avec régularité et notes personnelles.</span>
-                <span class="audience-tag">Spiritualité</span>
+                <span class="audience-line">Vous voulez explorer des pistes professionnelles sans perdre votre rythme, vos contraintes et vos valeurs.</span>
+                <span class="audience-tag">Orientation</span>
             </div>
             <div class="card-image-side"
-                style="background-image: url('assets/ucem-preview.png'); background-position: center top;"
-                data-full="assets/ucem-full.png"
+                style="background-image: url('assets/boussole-pro-preview.png'); background-position: left top;"
+                data-full="assets/boussole-pro-full.png"
                 title="Cliquez pour agrandir">
             </div>
             <div class="card-content">
                 <div>
                     <div class="card-header">
-                        <h2 class="card-title">UCEM Compagnon</h2>
-                        <span class="version-tag">v0.2-alpha</span>
+                        <h2 class="card-title">Boussole Pro</h2>
+                        <span class="version-tag">v1.2.1</span>
                     </div>
                     <p class="card-description">
-                        Lisez le corpus, suivez les 360 leçons, pratiquez, recherchez et gardez vos notes dans un parcours entièrement local.
+                        Une boussole métier pour explorer des pistes compatibles avec vos compétences, contraintes, envies et prochaines marches.
                     </p>
                 </div>
-                <div class="card-actions">
-                    <a href="creations/ucem-compagnon.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/ucem-compagnon.html" download="soi-libre-ucem-compagnon-v0-2-alpha.html" class="btn btn-download">Télécharger</a>
+                <div class="edition-options" aria-label="Éditions de Boussole Pro">
+                    <div class="edition-option">
+                        <p><strong>Version en ligne :</strong> plus légère, elle charge les données métiers distantes à l’ouverture et nécessite une connexion.</p>
+                        <div class="card-actions">
+                            <a href="creations/boussolepro/boussole-pro.html" class="btn btn-visit">Ouvrir en ligne</a>
+                            <a href="creations/boussolepro/boussole-pro.html" download="boussole-pro-online-v1-2-1.html" class="btn btn-download">Télécharger en ligne</a>
+                        </div>
+                    </div>
+                    <div class="edition-option">
+                        <p><strong>Version autonome :</strong> plus volumineuse, elle inclut les données et fonctionne hors connexion dans un seul fichier.</p>
+                        <div class="card-actions">
+                            <a href="creations/boussolepro/boussole-pro-offline.html" class="btn btn-visit">Ouvrir autonome</a>
+                            <a href="creations/boussolepro/boussole-pro-offline.html" download="boussole-pro-offline-v1-2-1.html" class="btn btn-download">Télécharger autonome</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </article>
@@ -943,29 +1005,29 @@
             </div>
         </article>
 
-        <article class="card card-theme-introspection">
+        <article class="card compact-card card-theme-creation">
             <div class="card-audience">
-                <span class="audience-line">Vous voulez explorer des pistes professionnelles sans perdre votre rythme, vos contraintes et vos valeurs.</span>
-                <span class="audience-tag">Orientation</span>
+                <span class="audience-line">Vous voulez pratiquer Un Cours En Miracles avec régularité et notes personnelles.</span>
+                <span class="audience-tag">Spiritualité</span>
             </div>
             <div class="card-image-side"
-                style="background-image: url('assets/boussole-pro-preview.png'); background-position: left top;"
-                data-full="assets/boussole-pro-full.png"
+                style="background-image: url('assets/ucem-preview.png'); background-position: center top;"
+                data-full="assets/ucem-full.png"
                 title="Cliquez pour agrandir">
             </div>
             <div class="card-content">
                 <div>
                     <div class="card-header">
-                        <h2 class="card-title">Boussole Pro</h2>
-                        <span class="version-tag">v1.2.0</span>
+                        <h2 class="card-title">UCEM Compagnon</h2>
+                        <span class="version-tag">v0.2-alpha</span>
                     </div>
                     <p class="card-description">
-                        Une boussole métier offline pour explorer des métiers compatibles avec vos compétences, contraintes, envies et prochaines marches.
+                        Lisez le corpus, suivez les 360 leçons, pratiquez, recherchez et gardez vos notes dans un parcours entièrement local.
                     </p>
                 </div>
                 <div class="card-actions">
-                    <a href="creations/boussolepro/boussole-pro.html" class="btn btn-visit">Ouvrir</a>
-                    <a href="creations/boussolepro/boussole-pro-offline.html" download="boussole-pro-v1-2-0.html" class="btn btn-download">Télécharger</a>
+                    <a href="creations/ucem-compagnon.html" class="btn btn-visit">Ouvrir</a>
+                    <a href="creations/ucem-compagnon.html" download="soi-libre-ucem-compagnon-v0-2-alpha.html" class="btn btn-download">Télécharger</a>
                 </div>
             </div>
         </article>

@@ -15,7 +15,9 @@ const EXPECTED_FILES = [
 ].sort();
 
 const failures = [];
+let assertionCount = 0;
 const assert = (id, condition, detail = null) => {
+  assertionCount += 1;
   if (!condition) failures.push({ id, detail });
 };
 
@@ -64,9 +66,10 @@ assert("market_zero_distinct_from_absent", Boolean(marketExamples.zero) && Boole
 assert("market_shared_family_warning_signal", Boolean(marketExamples.sharedFamily));
 assert("market_imputed_signal", Boolean(marketExamples.imputed));
 
-const [onlineHtml, offlineHtml] = await Promise.all([
+const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
   readFile(path.join(APP_DIR, "boussole-pro.html"), "utf8"),
-  readFile(path.join(APP_DIR, "boussole-pro-offline.html"), "utf8")
+  readFile(path.join(APP_DIR, "boussole-pro-offline.html"), "utf8"),
+  readFile(path.join(ROOT, "index.html"), "utf8")
 ]);
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
@@ -78,6 +81,20 @@ assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(k
 assert("offline_manifest_exact", JSON.stringify(offlinePayload.embeddedRuntime?.manifest) === JSON.stringify(manifest));
 assert("same_shell_outside_payload", stripPayload(onlineHtml) === stripPayload(offlineHtml));
 assert("no_rome100_runtime_fallback", !/emergency_rome100|fallbackDataset|activateFallback/.test(stripPayload(onlineHtml)));
+assert("runtime_mode_copy_explicit", [
+  "Chargement des données métiers en ligne",
+  "métiers chargés en ligne",
+  "métiers chargés depuis le cache local",
+  "métiers inclus dans cette édition autonome"
+].every(copy => onlineHtml.includes(copy)));
+assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
+assert("index_exposes_both_editions", [
+  'href="creations/boussolepro/boussole-pro.html"',
+  'download="boussole-pro-online-v1-2-1.html"',
+  'href="creations/boussolepro/boussole-pro-offline.html"',
+  'download="boussole-pro-offline-v1-2-1.html"'
+].every(copy => indexHtml.includes(copy)));
+assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
 
 const rawBytes = Object.values(texts).reduce((sum, text) => sum + Buffer.byteLength(text), 0);
 const gzipBytes = Object.values(texts).reduce((sum, text) => sum + gzipSync(text, { level: 9 }).byteLength, 0);
@@ -90,7 +107,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   status: failures.length ? "failed" : "passed",
   datasetVersion: manifest.datasetVersion,
-  assertions: 25,
+  assertions: assertionCount,
   failures,
   counts: structural.counts,
   sizes: { rawBytes, gzipBytes, rawTargetMet: rawBytes <= 10_000_000, gzipTargetMet: gzipBytes <= 1_500_000 },
