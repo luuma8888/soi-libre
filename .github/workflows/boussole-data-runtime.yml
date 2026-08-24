@@ -44,11 +44,8 @@ jobs:
       - name: Auditer la couverture des options de profil
         run: node scripts/audit-boussole-profile-options.mjs
 
-      - name: Valider les règles fonctionnelles v1.4
-        run: node scripts/validate-boussole-v14.mjs
-
-      - name: Valider la consolidation v1.5.2
-        run: node scripts/validate-boussole-v15.mjs
+      - name: Valider le scoring personnel v2 et la persistance v1.6.0
+        run: node scripts/validate-boussole-v16.mjs
 
       - name: Publier les rapports de validation
         if: always()
@@ -63,6 +60,7 @@ jobs:
             tmp/monde-pro/boussole-v1.5/*.json
             tmp/monde-pro/boussole-v1.5.1/*.json
             tmp/monde-pro/boussole-v1.5.2/*.json
+            tmp/monde-pro/boussole-v1.6.0/*.json
 
       - name: Publier les fichiers générés sur la branche
         if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}

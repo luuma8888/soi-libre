@@ -430,6 +430,18 @@
     .results-export-menu button { width:100%; margin-bottom:6px; text-align:left; }
     .results-export-menu p { margin:8px 2px 2px; color:var(--muted); font-size:.88rem; }
     @media (max-width: 600px) { .results-actions { width:100%; display:flex; flex-wrap:wrap; gap:8px; } .results-export { flex:1; } .results-export > summary { width:100%; } }
+    .job-skill-profile { min-width: 0; }
+    .job-skill-list { display: grid; gap: 8px; }
+    .job-skill-profile-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .job-skill-profile-row small { display: block; margin-top: 3px; color: var(--muted); }
+    .job-skill-editor { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 10px; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; }
+    .job-skill-editor label { display: grid; gap: 5px; font-weight: 650; }
+    .job-skill-editor .actions { grid-column: 1 / -1; }
+    .job-skill-undo { margin-top: 10px; padding: 8px 10px; background: var(--warning-soft, #fff5d8); border-radius: 6px; }
+    @media (max-width: 600px) {
+      .job-skill-profile-row { grid-template-columns: 1fr; }
+      .job-skill-editor { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body data-theme="light">
@@ -454,7 +466,7 @@
   </main>
 
   <nav class="mobile-nav" aria-label="Navigation principale mobile" id="mobileNav"></nav>
-  <footer class="app-footer">Boussole Pro v1.5.2 - données personnelles conservées sur cet appareil.</footer>
+  <footer class="app-footer">Boussole Pro v1.6.0 - données personnelles conservées sur cet appareil.</footer>
 
   <dialog id="jobDialog" aria-labelledby="jobDialogTitle">
     <div id="jobDialogContent"></div>
@@ -4078,9 +4090,16 @@ function mapUserProfileToCriteria(profile) {
   toArray(profile.constraints).forEach(constraint => {
     constraints[constraint.value] = constraint.severity || "open";
   });
+  const skillSelections = toArray(profile.skillSelections).filter(item => item?.skillId);
+  const acquiredSkillLevels = Object.fromEntries(skillSelections
+    .filter(item => ["notions", "practiced", "mastered"].includes(item.currentLevel))
+    .map(item => [item.skillId, item.currentLevel]));
+  const desiredSkillWishes = Object.fromEntries(skillSelections
+    .filter(item => ["discover", "develop", "continue", "avoid"].includes(item.futureWish))
+    .map(item => [item.skillId, item.futureWish]));
   const derivedSkillIds = getSkillIdsFromSignals(profile);
-  const directSkillIds = unique([...toArray(profile.skills), ...derivedSkillIds]);
-  const weakSkillIds = unique([...toArray(profile.weakSkills), ...toArray(profile.exclusions?.skills), ...toArray(profile.avoidedSkills)]);
+  const directSkillIds = unique([...Object.keys(acquiredSkillLevels), ...toArray(profile.skills), ...derivedSkillIds]);
+  const weakSkillIds = unique([...toArray(profile.weakSkills), ...toArray(profile.exclusions?.skills)]);
   const absentSkillIds = unique([...toArray(profile.absentSkills), ...toArray(profile.exclusions?.absentSkills)]);
   const skillEvidence = {
     strong: directSkillIds,
@@ -4123,6 +4142,9 @@ function mapUserProfileToCriteria(profile) {
       domainOrientation: normalizeDomainOrientation(profile.domainOrientation, profile.experienceDomains, profile.experienceDomainDetails)
     },
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
+    acquiredSkillLevels,
+    desiredSkillWishes,
+    skillSelections,
     skillEvidence,
     skillConceptEvidence: profile.skillConceptEvidence || {},
     hasEnoughSkillEvidence: directSkillIds.length + getSkillSignalCount(profile) >= 3,
@@ -4215,6 +4237,8 @@ function buildResultJobSummary(result = {}, datasets = App.state.dataset, relate
     primaryDirectionLabel: result.primaryDirectionLabel || getCareerDirection(job).primaryDirectionLabel,
     secondaryDirections: toArray(result.secondaryDirections),
     personalFitScore: result.personalFitScore,
+    personalFitScoreRaw: result.personalFitScoreRaw,
+    scoringVersion: result.scoringVersion,
     personalFitLevel: result.personalFitLevel,
     personalFitReasons: toArray(result.personalFitReasons),
     skillsReadiness: {
@@ -4269,6 +4293,12 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     personalFitReasons: toArray(result.personalFitReasons),
     agreementReasons: toArray(result.personalFitReasons),
     dailyReality: result.scoreDetails?.constraints || null,
+    dailyRealityEvidenceConfidence: result.dailyRealityEvidenceConfidence,
+    desiredSkillsDiagnostic: result.desiredSkillsDiagnostic,
+    experiencedJobsRelationshipDiagnostic: result.experiencedJobsRelationshipDiagnostic,
+    configuredWeights: result.configuredWeights,
+    appliedWeights: result.appliedWeights,
+    notEvaluatedComponents: result.notEvaluatedComponents,
     accessRoutes: result.accessSummaryV1,
     namedRoutes: toArray(result.namedRoutes || result.accessSummaryV1?.namedRoutes),
     accessEvidence: toArray(result.accessEvidence || result.accessSummaryV1?.accessEvidence),
@@ -4311,7 +4341,7 @@ function buildPersonalAssessment(result = {}) {
   const dimension = (id, label, evidence = []) => ({
     id,
     label,
-    score100: components[id] === "not_evaluated" ? null : Math.round(Number(components[id] || 0)),
+    score100: components[id] === "not_evaluated" ? null : Number(Number(components[id] || 0).toFixed(1)),
     evidence: toArray(evidence).filter(Boolean).slice(0, 4)
   });
   return {
@@ -4350,6 +4380,7 @@ function calculateAllMatches(profile = App.state.profile, datasets = App.state.d
     generatedAt: new Date().toISOString(),
     profileId: profile.id,
     datasetVersion: datasets.datasetVersion,
+    scoringVersion: PERSONAL_FIT_SCORING_VERSION,
     engineIntent: criteria.engineIntent,
     engineIntentLabel: ENGINE_INTENTS[criteria.engineIntent] || ENGINE_INTENTS.balanced,
     weightMode: criteria.weightMode,
@@ -4436,9 +4467,18 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       coreProfileMatchScore: core.score,
       coreProfileMatch: core,
       personalFitScore,
+      personalFitScoreRaw: personalFit.rawScore,
+      scoringVersion: personalFit.scoringVersion,
       personalFitTieBreakScore: personalFit.tieBreakScore,
       personalFitTieBreakVector: personalFit.tieBreakVector,
       personalFitComponents: personalFit.components,
+      personalFitDetailedComponents: personalFit.detailedComponents,
+      configuredWeights: personalFit.configuredWeights,
+      appliedWeights: personalFit.appliedWeights,
+      notEvaluatedComponents: personalFit.notEvaluatedComponents,
+      desiredSkillsDiagnostic: personalFit.desiredSkills,
+      experiencedJobsRelationshipDiagnostic: personalFit.experiencedJobsRelationship,
+      dailyRealityEvidenceConfidence: constraint.dailyRealityEvidenceConfidence,
       personalFitIntentAdjustment: personalFit.intentAdjustment,
       personalFitIntentReason: personalFit.intentReason,
       personalFitDesiredSectorMatch: personalFit.desiredSectorMatch,
@@ -4524,9 +4564,18 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     coreProfileMatchScore: core.score,
     coreProfileMatch: core,
     personalFitScore,
+    personalFitScoreRaw: personalFit.rawScore,
+    scoringVersion: personalFit.scoringVersion,
     personalFitTieBreakScore: personalFit.tieBreakScore,
     personalFitTieBreakVector: personalFit.tieBreakVector,
     personalFitComponents: personalFit.components,
+    personalFitDetailedComponents: personalFit.detailedComponents,
+    configuredWeights: personalFit.configuredWeights,
+    appliedWeights: personalFit.appliedWeights,
+    notEvaluatedComponents: personalFit.notEvaluatedComponents,
+    desiredSkillsDiagnostic: personalFit.desiredSkills,
+    experiencedJobsRelationshipDiagnostic: personalFit.experiencedJobsRelationship,
+    dailyRealityEvidenceConfidence: constraint.dailyRealityEvidenceConfidence,
     personalFitIntentAdjustment: personalFit.intentAdjustment,
     personalFitIntentReason: personalFit.intentReason,
     personalFitDesiredSectorMatch: personalFit.desiredSectorMatch,
@@ -4650,17 +4699,20 @@ function calculateAspirationalAlignmentScore(criteria = {}, job = {}) {
 }
 
 function buildSkillsReadiness(criteria = {}, skill = {}) {
+  const coefficients = { notions: 0.35, practiced: 0.7, mastered: 1 };
+  const evidence = [];
+  let supportWeight = 0;
+  const matchedIds = unique([...toArray(skill.matchedRequiredSkills), ...toArray(skill.matchedOptionalSkills)]);
+  matchedIds.forEach(id => {
+    const coefficient = coefficients[criteria.acquiredSkillLevels?.[id]];
+    if (!coefficient) return;
+    supportWeight += coefficient;
+    evidence.push(id);
+  });
   const exactExperience = skill.exactExperience?.hasExactExperience ? skill.exactExperience : null;
-  const evidence = unique([
-    ...toArray(skill.matchedRequiredSkills),
-    ...toArray(skill.matchedOptionalSkills),
-    ...(exactExperience ? [`${exactExperience.experience.durationYears || "Durée non précisée"} an(s) d’expérience déclarée comme ${exactExperience.experience.title}`] : [])
-  ]);
-  if (!criteria.hasEnoughSkillEvidence && !exactExperience) {
-    return { score: null, level: "insufficient_information", label: "Informations insuffisantes", evidence: [], confidence: 0.25 };
-  }
-  if (!evidence.length) return { score: 0, level: "no_identified_support", label: "Aucun appui identifié pour ce métier", evidence: [], confidence: 0.45 };
-  const score = Math.round(clamp(Number(skill.score || 0) / 25 * 100, 0, 100));
+  if (exactExperience) evidence.push(`${exactExperience.experience.durationYears || "Durée non précisée"} an(s) d’expérience déclarée comme ${exactExperience.experience.title}`);
+  if (!evidence.length) return { score: null, level: "insufficient_information", label: "Informations insuffisantes", evidence: [], confidence: 0.25 };
+  const score = Math.round(clamp(100 * (1 - Math.exp(-(supportWeight + (exactExperience ? 0.7 : 0)) / 2.5)), 0, 100));
   const level = score >= 80 ? "solid_support" : score >= 60 ? "several_supports" : score >= 35 ? "some_supports" : "few_identified_supports";
   const labels = { solid_support: "Appuis déjà solides", several_supports: "Plusieurs appuis", some_supports: "Quelques appuis", few_identified_supports: "Peu d'appuis identifiés" };
   return {
@@ -4668,7 +4720,7 @@ function buildSkillsReadiness(criteria = {}, skill = {}) {
     level,
     label: labels[level],
     evidence,
-    confidence: clamp(Number(skill.confidence || 0.65), 0, 1),
+    confidence: clamp(0.45 + Math.min(supportWeight, 3) * 0.15, 0, 0.9),
     wordingPolicy: "Une compétence non déclarée est non identifiée dans la boussole, jamais réputée absente."
   };
 }
@@ -4787,49 +4839,120 @@ function calculateSelectionScore(globalScore, scores = {}, details = {}) {
   return Math.round(clamp(score, 0, 100));
 }
 
+const PERSONAL_FIT_SCORING_VERSION = "personal-fit-v2";
+const PERSONAL_FIT_WEIGHTS = Object.freeze({ directionsAndActivities: 0.20, desiredSkills: 0.10, experiencedJobsRelationship: 0.05, values: 0.20, context: 0.20, dailyReality: 0.25 });
+
+function calculateDesiredSkillsScore(criteria = {}, job = {}) {
+  const wishes = criteria.desiredSkillWishes || {};
+  if (!Object.keys(wishes).length) return { score: "not_evaluated", positiveMatches: [], avoidedMatches: [] };
+  const links = new Map();
+  const add = (ids, weight, kind) => toArray(ids).forEach(id => { if (id && (!links.has(id) || links.get(id).weight < weight)) links.set(id, { id, weight, kind }); });
+  add(job.scorableSkillIds || job.matchableSkillIds || job.requiredSkills, 1, "required");
+  add([...toArray(job.optionalSkills), ...toArray(job.softSkillIds), ...toArray(job.softSkills)], 0.5, "optional");
+  add(job.knowledgeIds || job.knowledge, 0.35, "knowledge");
+  const wishWeight = { continue: 1, develop: 0.85, discover: 0.65, avoid: -1 };
+  let positive = 0, negative = 0;
+  const positiveMatches = [], avoidedMatches = [];
+  Object.entries(wishes).forEach(([skillId, wish]) => {
+    const link = links.get(skillId); if (!link || !wishWeight[wish]) return;
+    if (wish === "avoid") { negative += link.weight; avoidedMatches.push({ ...link, wish }); }
+    else { positive += link.weight * wishWeight[wish]; positiveMatches.push({ ...link, wish }); }
+  });
+  const score = clamp(50 + 50 * (1 - Math.exp(-positive / 2.5)) - 65 * (1 - Math.exp(-negative / 1.5)), 0, 100);
+  return { score: Number(score.toFixed(4)), positiveMatches, avoidedMatches, positiveWeight: Number(positive.toFixed(4)), negativeWeight: Number(negative.toFixed(4)) };
+}
+
+function experienceIntentSignal(experience = {}) {
+  const continuation = { yes: 0.7, maybe: 0.2, no: -0.8 }[experience.wantsToContinue] || 0;
+  const enjoyment = { love: 0.4, like: 0.2, neutral: 0, dislike: -0.45 }[experience.enjoymentLevel] || 0;
+  const evaluated = ["yes", "maybe", "no"].includes(experience.wantsToContinue) || ["love", "like", "neutral", "dislike"].includes(experience.enjoymentLevel);
+  return { evaluated, signal: clamp(continuation + enjoyment, -1, 1), continuation, enjoyment };
+}
+
+function weightedSkillJaccard(jobA = {}, jobB = {}) {
+  const weighted = job => {
+    const map = new Map();
+    toArray(job.scorableSkillIds || job.matchableSkillIds || job.requiredSkills).forEach(id => map.set(id, 1));
+    [...toArray(job.optionalSkills), ...toArray(job.softSkillIds), ...toArray(job.softSkills)].forEach(id => { if (!map.has(id)) map.set(id, 0.5); });
+    return map;
+  };
+  const left = weighted(jobA), right = weighted(jobB), ids = new Set([...left.keys(), ...right.keys()]);
+  let intersection = 0, union = 0;
+  ids.forEach(id => { intersection += Math.min(left.get(id) || 0, right.get(id) || 0); union += Math.max(left.get(id) || 0, right.get(id) || 0); });
+  return union ? intersection / union : 0;
+}
+
+function experienceJobSimilarity(sourceJob = {}, candidateJob = {}) {
+  if (!sourceJob?.id || !candidateJob?.id) return { similarity: 0, reason: "unresolved_experience" };
+  if (sourceJob.id === candidateJob.id || sourceJob.romeCode === candidateJob.romeCode) return { similarity: 1, reason: "same_rome_job" };
+  const explicit = toArray(sourceJob.relatedJobs || sourceJob.relatedJobIds).includes(candidateJob.id) || toArray(candidateJob.relatedJobs || candidateJob.relatedJobIds).includes(sourceJob.id);
+  const overlap = weightedSkillJaccard(sourceJob, candidateJob);
+  if (explicit) return { similarity: Math.min(0.85, Math.max(0.75, 0.75 + overlap * 0.1)), reason: "bidirectional_explicit_relation", weightedJaccard: overlap };
+  if (overlap < 0.2) return { similarity: 0, reason: "insufficient_skill_overlap", weightedJaccard: overlap };
+  let similarity = 0.75 * overlap;
+  if (String(sourceJob.romeCode || "").slice(0, 3) === String(candidateJob.romeCode || "").slice(0, 3)) similarity += 0.15;
+  if (getJobSectorProfile(sourceJob).primarySectorId === getJobSectorProfile(candidateJob).primarySectorId) similarity += 0.1;
+  return { similarity: Math.min(0.7, similarity), reason: "weighted_skill_jaccard", weightedJaccard: overlap };
+}
+
+function calculateExperiencedJobsRelationship(criteria = {}, job = {}, datasets = App.state.dataset) {
+  const contributions = [];
+  toArray(criteria.experience?.jobExperiences).forEach(experience => {
+    const intent = experienceIntentSignal(experience); if (!intent.evaluated) return;
+    const sourceJob = toArray(datasets?.jobs).find(item => item.id === experience.jobId || item.romeCode === experience.romeCode);
+    const proximity = experienceJobSimilarity(sourceJob, job); if (proximity.similarity <= 0) return;
+    contributions.push({ experience: { id: experience.id, title: experience.title, romeCode: experience.romeCode }, similarity: Number(proximity.similarity.toFixed(4)), proximityReason: proximity.reason, weightedJaccard: proximity.weightedJaccard ?? null, sourceSignal: intent.signal, weightedSignal: intent.signal * proximity.similarity });
+  });
+  if (!contributions.length) return { score: "not_evaluated", contributions: [] };
+  const weight = contributions.reduce((sum, item) => sum + item.similarity, 0);
+  const signal = weight ? contributions.reduce((sum, item) => sum + item.weightedSignal, 0) / weight : 0;
+  return { score: Number((50 + 50 * clamp(signal, -1, 1)).toFixed(4)), aggregateSignal: Number(signal.toFixed(4)), contributions };
+}
+
+function calculateValuesPersonalFitScore(criteria = {}, job = {}, details = {}) {
+  const values = Object.keys(criteria.values || {});
+  if (!values.length) return "not_evaluated";
+  const tags = unique([...toArray(job.valueTags), ...toArray(details.value?.valueTags)]);
+  const matches = values.filter(value => tagMatches(value, tags));
+  if (!matches.length) return 50;
+  const signal = matches.reduce((sum, value) => sum + profileOptionDiscriminantWeight(value, "value"), 0);
+  return Number(clamp(50 + 50 * (1 - Math.exp(-signal / 2.5)), 0, 100).toFixed(4));
+}
+
 function calculatePersonalFitMetrics(criteria = {}, job = {}, details = {}) {
   const aspirationDetails = calculateAspirationalAlignmentScore(criteria, job);
-  const rawDimensions = {
-    aspiration: aspirationDetails.score,
-    values: Number(details.value?.score) / 15 * 100,
-    context: Number(details.context?.score) / 10 * 100,
-    dailyReality: Number(details.constraint?.score) / 25 * 100
+  const hasDirections = Boolean(toArray(criteria.heartSectors).length || toArray(criteria.secondarySectors).length || toArray(criteria.supportSectors).length || toArray(criteria.education?.desiredTrainingFamilies).length || Object.keys(criteria.interests || {}).length);
+  const desiredSkills = calculateDesiredSkillsScore(criteria, job);
+  const experiencedJobsRelationship = calculateExperiencedJobsRelationship(criteria, job);
+  const components = {
+    directionsAndActivities: hasDirections ? Number(aspirationDetails.score.toFixed(4)) : "not_evaluated",
+    desiredSkills: desiredSkills.score,
+    experiencedJobsRelationship: experiencedJobsRelationship.score,
+    values: calculateValuesPersonalFitScore(criteria, job, details),
+    context: toArray(criteria.preferredWorkStyles).length || toArray(criteria.preferredEnvironments).length || !["not_specified", "any"].includes(criteria.preferredSchedule) ? Number(details.context?.contextAlignment?.score100 ?? 50) : "not_evaluated",
+    dailyReality: details.constraint?.score100 ?? "not_evaluated"
   };
-  const weights = { aspiration: 0.35, values: 0.20, context: 0.20, dailyReality: 0.25 };
-  const diagnostics = [];
-  const dimensions = Object.fromEntries(Object.entries(rawDimensions).map(([name, raw]) => {
-    if (Number.isFinite(raw)) return [name, clamp(raw, 0, 100)];
-    const inputs = name === "values" ? details.value : name === "context" ? details.context : name === "dailyReality" ? details.constraint : aspirationDetails;
-    diagnostics.push({ romeCode: job.romeCode || "unknown", dimension: name, raw, inputs });
-    if (globalThis.__BOUSSOLE_STRICT_SCORING__) throw new Error(`Score non fini pour ${job.romeCode || "unknown"}, dimension ${name}.`);
-    return [name, "not_evaluated"];
-  }));
-  const activeWeight = Object.entries(dimensions).reduce((sum, [name, value]) => sum + (value === "not_evaluated" ? 0 : weights[name]), 0);
-  const baseScore = activeWeight > 0
-    ? Object.entries(dimensions).reduce((sum, [name, value]) => sum + (value === "not_evaluated" ? 0 : value * weights[name]), 0) / activeWeight
-    : 0;
-  const exactExperience = details.exactExperience?.hasExactExperience ? details.exactExperience.experience : null;
-  const intentAdjustment = exactExperience
-    ? ({ yes: 8, no: -18 }[exactExperience.wantsToContinue] || 0) + ({ love: 6, like: 3, dislike: -8 }[exactExperience.enjoymentLevel] || 0)
-    : 0;
-  const intentReason = intentAdjustment > 0
-    ? "Vous avez indiqué aimer ce métier et souhaiter continuer à l’exercer."
-    : intentAdjustment < 0
-      ? "Vous avez indiqué ne pas souhaiter poursuivre ce métier."
-      : "";
-  const score = clamp(baseScore + intentAdjustment, 0, 100);
-  const tieBreakVector = [intentAdjustment, aspirationDetails.desiredSectorPoints, aspirationDetails.interestSignalScore, dimensions.context === "not_evaluated" ? 0 : dimensions.context].map(value => Number(Number(value).toFixed(6)));
+  const notEvaluatedComponents = Object.entries(components).filter(([, value]) => value === "not_evaluated").map(([name]) => name);
+  const activeWeight = Object.entries(PERSONAL_FIT_WEIGHTS).reduce((sum, [name, weight]) => sum + (components[name] === "not_evaluated" ? 0 : weight), 0);
+  const appliedWeights = Object.fromEntries(Object.entries(PERSONAL_FIT_WEIGHTS).map(([name, weight]) => [name, components[name] === "not_evaluated" || !activeWeight ? 0 : Number((weight / activeWeight).toFixed(6))]));
+  const raw = activeWeight ? Object.entries(components).reduce((sum, [name, value]) => sum + (value === "not_evaluated" ? 0 : value * appliedWeights[name]), 0) : 0;
+  const aspirationParts = ["directionsAndActivities", "desiredSkills", "experiencedJobsRelationship"].filter(name => components[name] !== "not_evaluated");
+  const aspirationWeight = aspirationParts.reduce((sum, name) => sum + PERSONAL_FIT_WEIGHTS[name], 0);
+  const aspiration = aspirationWeight ? aspirationParts.reduce((sum, name) => sum + components[name] * PERSONAL_FIT_WEIGHTS[name] / aspirationWeight, 0) : "not_evaluated";
+  const visibleComponents = { aspiration: aspiration === "not_evaluated" ? aspiration : Number(aspiration.toFixed(4)), values: components.values, context: components.context, dailyReality: components.dailyReality };
   return {
-    score: Math.round(clamp(score, 0, 100)),
-    tieBreakScore: Number(clamp(score, 0, 100).toFixed(6)),
-    tieBreakVector,
-    components: dimensions,
-    intentAdjustment,
-    intentReason,
+    scoringVersion: PERSONAL_FIT_SCORING_VERSION,
+    score: Number(clamp(raw, 0, 100).toFixed(1)),
+    rawScore: Number(clamp(raw, 0, 100).toFixed(6)),
+    tieBreakScore: Number(clamp(raw, 0, 100).toFixed(6)),
+    tieBreakVector: [], components: visibleComponents, detailedComponents: components,
+    configuredWeights: { ...PERSONAL_FIT_WEIGHTS }, appliedWeights, notEvaluatedComponents,
+    desiredSkills, experiencedJobsRelationship,
+    intentAdjustment: 0, intentReason: "",
     desiredSectorMatch: aspirationDetails.desiredSectorMatch,
     desiredSectorPoints: aspirationDetails.desiredSectorPoints,
     interestSignalScore: aspirationDetails.interestSignalScore,
-    diagnostics
+    diagnostics: []
   };
 }
 
@@ -5453,17 +5576,14 @@ function applyHardExclusions(criteria, job) {
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity !== "excluding") return;
     const compatibility = evaluateConstraintAgainstJob(value, job, criteria);
-    if (compatibility.status === "confirmed_incompatible") {
+    const structural = compatibility.evidenceState === "confirmed_structural_incompatibility" ||
+      (compatibility.structuralRequirement === true && compatibility.evidenceLevel === "official" && compatibility.status === "confirmed_incompatible");
+    if (structural) {
       confirmed.push(exclusion(`constraint_${value}`, compatibility.label, compatibility.category, compatibility.message));
-    } else if (compatibility.status === "unknown") {
-      unknown.push(missing(`job.${value}`, "medium", `A verifier : le corpus ne precise pas clairement ${compatibility.label.toLowerCase()} pour ce metier.`));
+    } else if (["unknown", "possible_risk", "confirmed_incompatible"].includes(compatibility.status)) {
+      unknown.push(missing(`job.${value}`, "medium", `${compatibility.label} : le contexte peut se présenter, mais son caractère indispensable n’est pas établi.`));
     }
   });
-
-  const missingRequiredCerts = toArray(job.requiredCertifications).filter(cert => !criteria.certifications.held.includes(cert));
-  if (missingRequiredCerts.length && criteria.education.trainingOpenness === "none") {
-    confirmed.push(exclusion("certification_required", "Certification obligatoire manquante.", "certification", "Une certification semble obligatoire et vous indiquez ne pas vouloir de formation pour l'instant."));
-  }
   return { confirmed, unknown };
 }
 
@@ -6820,71 +6940,72 @@ function jobMatchesKnownTrainingFamily(criteria, job) {
 }
 
 function calculateConstraintScore(criteria, job) {
-  let riskScore = 0;
-  let activeCount = 0;
-  let unknownCount = 0;
-  let confirmedCompatibleCount = 0;
-  let confirmedIncompatibleCount = 0;
-  let possibleRiskCount = 0;
-  const missingData = [];
-  const warnings = [];
-  const uncertainties = [];
-  const matchedConstraints = [];
-  const constraintEvaluations = [];
-  const effectiveCompatibility = [];
   const officialSummary = getOfficialConstraintSummary(job);
+  const familyByConstraint = {
+    nightWork: "schedule", weekendWork: "schedule", heavyLoad: "physical_load", standing: "physical_standing",
+    noise: "noise", screenWork: "screen", publicContact: "public_contact", travel: "mobility",
+    driverLicenseRequired: "mobility", personalVehicleRequired: "mobility", remoteNeeded: "remote", longTraining: "training"
+  };
+  const baseDeductions = {
+    present_characteristic: { conditional: 5, avoid: 15, excluding: 25 },
+    insufficient_for_exclusion: { conditional: 5, avoid: 15, excluding: 25 },
+    confirmed_structural_incompatibility: { conditional: 20, avoid: 40, excluding: 100 }
+  };
+  const sourceCoefficient = compatibility => {
+    const source = String(compatibility.source || "unknown");
+    if (compatibility.evidenceLevel === "official" || source.includes("official")) return 1;
+    if (compatibility.evidenceLevel === "high_confidence_mapping" || Number(compatibility.confidence || 0) >= 0.65) return 0.7;
+    if (compatibility.status === "unknown") return 0;
+    return 0.4;
+  };
+  const evidenceState = compatibility => {
+    if (compatibility.evidenceState) return compatibility.evidenceState;
+    if (compatibility.status === "confirmed_compatible") return "not_characteristic_in_rome";
+    if (compatibility.status === "unknown") return "explicit_requirement_unknown";
+    if (compatibility.structuralRequirement === true && compatibility.evidenceLevel === "official") return "confirmed_structural_incompatibility";
+    if (["confirmed_incompatible", "possible_risk"].includes(compatibility.status)) return "insufficient_for_exclusion";
+    return "explicit_requirement_unknown";
+  };
+  const familyDeductions = new Map();
+  const missingData = [], warnings = [], uncertainties = [], matchedConstraints = [], constraintEvaluations = [];
+  let activeCount = 0, unknownCount = 0, confirmedCompatibleCount = 0, confirmedIncompatibleCount = 0, possibleRiskCount = 0;
   Object.entries(criteria.constraints || {}).forEach(([value, severity]) => {
     if (severity === "open") return;
     activeCount += 1;
     const compatibility = evaluateConstraintAgainstJob(value, job, criteria);
-    const confidence = clamp(Number(compatibility.confidence || 0), 0, 1);
-    const knownCompatibility = constraintKnownCompatibility(compatibility.status, severity, value, criteria, job);
-    const effective = 50 + confidence * (knownCompatibility - 50);
-    constraintEvaluations.push({ ...compatibility, severity, knownCompatibility, effectiveCompatibility: Math.round(effective) });
-    effectiveCompatibility.push(effective);
-    if (compatibility.status === "unknown") {
+    const state = evidenceState(compatibility);
+    const coefficient = sourceCoefficient(compatibility);
+    const family = familyByConstraint[value] || value;
+    const deduction = Number(((baseDeductions[state]?.[severity] || 0) * coefficient).toFixed(4));
+    familyDeductions.set(family, Math.max(familyDeductions.get(family) || 0, deduction));
+    const evaluation = { ...compatibility, severity, evidenceState: state, sourceCoefficient: coefficient, deduction, family };
+    constraintEvaluations.push(evaluation);
+    if (state === "explicit_requirement_unknown") {
       unknownCount += 1;
-      missingData.push(missing(`job.${value}`, "medium", value === "longTraining" ? "Durée de formation non renseignée." : `${compatibility.label} : information inconnue.`));
-      uncertainties.push(compatibility.message || `${compatibility.label} : information non renseignée.`);
-      return;
-    }
-    if (compatibility.status === "possible_risk") {
-      possibleRiskCount += 1;
-      missingData.push(missing(`job.${value}`, "low", `Risque possible à vérifier : ${compatibility.label}.`));
-      uncertainties.push(compatibility.message || `${compatibility.label} : hypothèse à vérifier.`);
-      if (severity === "conditional") riskScore += 1;
-      if (severity === "avoid") riskScore += 3;
-      if (severity === "excluding") riskScore += 4;
-      return;
-    }
-    if (compatibility.status === "confirmed_incompatible") {
-      confirmedIncompatibleCount += 1;
-      // La faisabilité formation porte déjà l’impact d’une formation longue.
-      // La répéter ici fausserait le classement par une double pénalisation.
-      if (value !== "longTraining") {
-        if (severity === "avoid") riskScore += 12;
-        if (severity === "conditional") riskScore += isTerrainOrManualProfile(criteria, job) ? 2 : 5;
-        if (severity === "excluding") riskScore += 25;
-      }
-      warnings.push(compatibility.message || compatibility.label);
-    } else if (compatibility.status === "confirmed_compatible") {
+      uncertainties.push(`${compatibility.label} : à vérifier selon le poste.`);
+      missingData.push(missing(`job.${value}`, "medium", `${compatibility.label} : donnée explicite nécessaire selon le poste.`));
+    } else if (state === "not_characteristic_in_rome") {
       confirmedCompatibleCount += 1;
-      matchedConstraints.push(compatibility.message || confirmedConstraintCompatibilityLabel(value));
+      matchedConstraints.push(`${compatibility.label} : non signalé comme caractéristique dans ROME.`);
+    } else {
+      if (state === "confirmed_structural_incompatibility") confirmedIncompatibleCount += 1;
+      else possibleRiskCount += 1;
+      warnings.push(compatibility.message || compatibility.label);
     }
   });
-  const compatibilityPercent = effectiveCompatibility.length ? average(effectiveCompatibility) : 50;
-  const score = Math.round(clamp(compatibilityPercent / 4, 0, 25));
-  const constraintEvidenceConfidence = activeCount
-    ? average(constraintEvaluations.map(item => item.status === "unknown" ? 0 : item.confidence))
-    : 0;
+  const riskScore = [...familyDeductions.values()].reduce((sum, value) => sum + value, 0);
+  const score100 = activeCount ? clamp(100 - riskScore, 0, 100) : null;
+  const evidenceValues = constraintEvaluations.map(item => item.evidenceState === "explicit_requirement_unknown" ? 0 : item.evidenceState === "not_characteristic_in_rome" ? 70 : Math.round(item.sourceCoefficient * 100));
+  const constraintEvidenceConfidence = evidenceValues.length ? average(evidenceValues) : 0;
   return {
-    score,
+    score: score100 === null ? null : Number((score100 / 4).toFixed(4)),
+    score100: score100 === null ? "not_evaluated" : Number(score100.toFixed(4)),
     missingData,
     warnings,
     confirmedWarnings: warnings,
     uncertainties,
     matchedConstraints,
-    riskScore,
+    riskScore: Number(riskScore.toFixed(4)),
     compatibilityBonus: 0,
     activeCount,
     unknownCount,
@@ -6893,21 +7014,11 @@ function calculateConstraintScore(criteria, job) {
     possibleRiskCount,
     constraintEvaluations,
     officialConstraintSummary: officialSummary,
-    constraintCompatibilityScore: score,
-    constraintEvidenceConfidence,
-    confidencePenalty: unknownCount * 0.04
+    constraintCompatibilityScore: score100,
+    constraintEvidenceConfidence: Number(constraintEvidenceConfidence.toFixed(2)),
+    dailyRealityEvidenceConfidence: Number(constraintEvidenceConfidence.toFixed(2)),
+    confidencePenalty: 0
   };
-}
-
-function constraintKnownCompatibility(status, severity, value, criteria, job) {
-  if (status === "confirmed_compatible") return 100;
-  if (status === "unknown") return 50;
-  if (status === "possible_risk") return severity === "excluding" ? 35 : severity === "avoid" ? 45 : 55;
-  if (status !== "confirmed_incompatible") return 50;
-  if (value === "longTraining") return 50;
-  if (severity === "excluding") return 0;
-  if (severity === "avoid") return 30;
-  return isTerrainOrManualProfile(criteria, job) ? 65 : 55;
 }
 
 function isTerrainOrManualProfile(criteria, job = {}) {
@@ -8069,12 +8180,10 @@ function comparePersonalFitVectors(a = {}, b = {}) {
 }
 
 function comparePersonalFitCandidates(a = {}, b = {}) {
-  return Math.round(personalFitCandidateScore(b)) - Math.round(personalFitCandidateScore(a)) ||
-    Number(b.contextAlignment?.environmentScore100 ?? -1) - Number(a.contextAlignment?.environmentScore100 ?? -1) ||
-    personalFitCandidateTieBreakScore(b) - personalFitCandidateTieBreakScore(a) ||
-    Number(b.personalFitIntentAdjustment || 0) - Number(a.personalFitIntentAdjustment || 0) ||
-    Number(b.personalFitDesiredSectorPoints || 0) - Number(a.personalFitDesiredSectorPoints || 0) ||
-    Number(b.personalFitInterestSignalScore || 0) - Number(a.personalFitInterestSignalScore || 0) ||
+  const rawDifference = Number(b.personalFitScoreRaw ?? personalFitCandidateScore(b)) - Number(a.personalFitScoreRaw ?? personalFitCandidateScore(a));
+  if (Math.abs(rawDifference) > 0.05) return rawDifference;
+  return Number(b.skillsReadiness ?? -1) - Number(a.skillsReadiness ?? -1) ||
+    Number(b.feasibilityScore ?? -1) - Number(a.feasibilityScore ?? -1) ||
     String(a.title || a.job?.title || "").localeCompare(String(b.title || b.job?.title || ""), "fr") ||
     String(a.romeCode || a.job?.romeCode || a.jobId || "").localeCompare(String(b.romeCode || b.job?.romeCode || b.jobId || ""), "fr");
 }
@@ -12415,12 +12524,17 @@ function migrateProfileSkillSelections(profile, dataset = App.state.dataset) {
     report.unresolved.push({ field, value: skillSelectionId(value), label: skillSelectionLabel(value), reason: resolved.reason });
     return skillSelectionId(value);
   }).filter(Boolean));
-  const resolvedSelections = toArray(profile.skillSelections)
-    .map(selection => resolveSkillSelection(selection, dataset))
-    .filter(result => result.status === "matched")
-    .map(result => result.id);
+  const normalizedSelections = toArray(profile.skillSelections).map(selection => {
+    const resolved = resolveSkillSelection(selection, dataset);
+    if (resolved.status !== "matched") return null;
+    const legacyAxes = ({ known: ["mastered", "none"], practiced: ["practiced", "none"], develop: ["not_assessed", "develop"], avoid: ["not_assessed", "avoid"] })[selection?.state];
+    const currentLevel = ["not_assessed", "notions", "practiced", "mastered"].includes(selection?.currentLevel) ? selection.currentLevel : legacyAxes?.[0] || (selection?.level === "strong" ? "mastered" : "not_assessed");
+    const futureWish = ["none", "discover", "develop", "continue", "avoid"].includes(selection?.futureWish) ? selection.futureWish : legacyAxes?.[1] || "none";
+    return { skillId: resolved.id, label: resolved.label, currentLevel, futureWish, source: selection?.source || "user_direct", suggestedFromRomeCodes: unique(toArray(selection?.suggestedFromRomeCodes)) };
+  }).filter(Boolean);
+  const acquiredSelectionIds = normalizedSelections.filter(selection => selection.currentLevel !== "not_assessed").map(selection => selection.skillId);
   const semanticSkillIds = resolveSemanticSkillKeys(profile.semanticSkillKeys, dataset);
-  profile.skills = migrateList([...toArray(profile.skills), ...resolvedSelections, ...semanticSkillIds], "skills");
+  profile.skills = migrateList([...toArray(profile.skills), ...acquiredSelectionIds, ...semanticSkillIds], "skills");
   profile.weakSkills = migrateList(profile.weakSkills, "weakSkills").filter(id => !profile.skills.includes(id));
   profile.absentSkills = migrateList(profile.absentSkills, "absentSkills").filter(id => !profile.skills.includes(id));
   profile.avoidedSkills = migrateList(profile.avoidedSkills, "avoidedSkills").filter(id => !profile.skills.includes(id));
@@ -12434,18 +12548,21 @@ function migrateProfileSkillSelections(profile, dataset = App.state.dataset) {
     unresolved: uniqueObjectsBy(report.unresolved, item => `${item.field}:${item.value}`),
     ambiguous: uniqueObjectsBy(report.ambiguous, item => `${item.field}:${item.value}`)
   };
-  profile.skillSelections = buildProfileSkillSelections(profile, dataset);
+  profile.skillSelections = [...new Map(normalizedSelections.map(selection => [selection.skillId, selection])).values()];
   return profile.skillMigration;
 }
 
 function buildProfileSkillSelections(profile = App.state.profile, dataset = App.state.dataset) {
   const index = getSkillMigrationIndex(dataset);
+  const modern = toArray(profile?.skillSelections).filter(item => item?.skillId && (item.currentLevel || item.futureWish));
+  if (modern.length) return modern.map(item => ({ ...item }));
   return unique(toArray(profile?.skills)).map(id => {
     const skill = index.byCanonicalId.get(id) || index.byAlias.get(id);
     return {
-      id,
+      skillId: id,
       label: skill?.label || getSkillLabel(id, dataset),
-      level: "strong",
+      currentLevel: "mastered",
+      futureWish: "none",
       sourceDatasetVersion: dataset?.datasetVersion || CONFIG.version
     };
   });
@@ -13733,6 +13850,10 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   const base = { label: labels[value] || value, preferenceId: value, category: "constraint", status: "unknown", message: "", source: "unknown", confidence: 0, evidenceLevel: "unknown" };
   const official = resolveOfficialConstraintEvidence(value, job, base);
   if (official) return official;
+  const sparseRomeRiskFields = new Set(["nightWork", "weekendWork", "heavyLoad", "standing", "noise", "publicContact", "travel", "screenWork"]);
+  if (isGeneratedRomeJob(job) && sparseRomeRiskFields.has(value)) {
+    return { ...base, status: "confirmed_compatible", category: constraintCategory(value), message: `${base.label} : non signalé comme caractéristique dans la fiche ROME.`, source: "official_rome_sparse_contexts", confidence: 0.7, evidenceLevel: "official", evidenceState: "not_characteristic_in_rome" };
+  }
   if (hasExclusionHint(job, value)) {
     return { ...base, status: "possible_risk", category: "estimation", message: "Risque possible selon une règle locale ; à vérifier selon le poste.", source: "local_exclusion_hint", confidence: 0.45, evidenceLevel: "computed_medium_confidence" };
   }
@@ -13800,14 +13921,14 @@ function resolveOfficialConstraintEvidence(value, job, base) {
   const normalizedValue = normalizeText(String(signal.value));
   const explicitlyNegative = signal.value === false || ["false", "none", "never", "not_required", "absent"].includes(normalizedValue);
   if (explicitlyNegative && confidence >= 0.7) {
-    return { ...base, status: "confirmed_compatible", category: constraintCategory(value), message: confirmedConstraintCompatibilityLabel(value), source, confidence, evidenceLevel: "official", evidence: signal };
+    return { ...base, status: "confirmed_compatible", category: constraintCategory(value), message: confirmedConstraintCompatibilityLabel(value), source, confidence, evidenceLevel: "official", evidenceState: "not_characteristic_in_rome", evidence: signal };
   }
   const contextual = ["possible", "frequent_or_possible", "contextual", "sometimes"].includes(normalizedValue) || signal.contextual === true;
   if (contextual) {
-    return { ...base, status: "possible_risk", category: constraintCategory(value), message: `${signal.label || base.label} : risque possible selon les postes.`, source, confidence, evidenceLevel: "official_context", evidence: signal };
+    return { ...base, status: "possible_risk", category: constraintCategory(value), message: `${signal.label || base.label} : peut se présenter selon les postes.`, source, confidence, evidenceLevel: "official", evidenceState: "insufficient_for_exclusion", evidence: signal };
   }
   if (confidence >= 0.7) {
-    return { ...base, status: "confirmed_incompatible", category: constraintCategory(value), message: `Contrainte confirmée par un contexte ROME officiel : ${signal.label || base.label}.`, source, confidence, evidenceLevel: "official", evidence: signal };
+    return { ...base, status: "confirmed_incompatible", category: constraintCategory(value), message: `Contexte courant ou notable dans ROME : ${signal.label || base.label}.`, source, confidence, evidenceLevel: "official", evidenceState: "present_characteristic", structuralRequirement: false, evidence: signal };
   }
   return { ...base, status: "possible_risk", category: constraintCategory(value), message: `${signal.label || base.label} : risque possible, confiance encore moyenne.`, source, confidence, evidenceLevel: "computed_medium_confidence", evidence: signal };
 }
@@ -15753,7 +15874,7 @@ if (typeof window !== "undefined") {
 /* CLASSIC_ENGINE_END */
   </script>
   <script>
-    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.2","buildId":"20260824-qualifications-results-export-v1-5-2-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5-2","schemaVersion":"1.5.2","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d'aptitude aux fonctions d'animateur","type":"brevet"}],"certifications":["cert-bafa"],"unresolvedQualifications":[],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
+    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.6.0","buildId":"20260824-personal-fit-v2-persistence-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-6-0","schemaVersion":"1.6.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d'aptitude aux fonctions d'animateur","type":"brevet"}],"certifications":["cert-bafa"],"unresolvedQualifications":[],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
   </script>
   <script>
 /* RUNTIME_PROVIDER_START */
@@ -15953,7 +16074,7 @@ const BoussoleRuntimeProvider = {
         recommendedDiplomaLevel: null,
         requiredCertifications: [],
         recommendedCertifications: [],
-        relatedJobs: [],
+        relatedJobs: job.relatedJobIds || [],
         market: { status: "unknown", source: "unknown", confidence: 0 },
         marketIndicators: [],
         marketStats: this.expandMarket(marketRows.get(job.id), marche)
@@ -17079,7 +17200,7 @@ const BoussoleRuntimeProvider = {
         const profile = this.clone(this.state.profile);
         profile.driverLicenses = profile.driverLicenseBStatus === "yes" ? ["B"] : [];
         profile.skills = profile.skillSelections.filter(item => ["known", "practiced"].includes(item.state)).map(item => item.skillId);
-        profile.avoidedSkills = profile.skillSelections.filter(item => item.state === "avoid").map(item => item.skillId);
+        profile.avoidedSkills = [];
         profile.weakSkills = []; profile.absentSkills = []; profile.skillSignals = [];
         return profile;
       },
@@ -17434,7 +17555,7 @@ const BoussoleRuntimeProvider = {
       profileForEngine() {
         const profile = oldProfileForEngineV13.call(this);
         profile.skills = this.state.profile.skillSelections.filter(item => ["notions", "practiced", "mastered"].includes(item.currentLevel)).map(item => item.skillId);
-        profile.avoidedSkills = this.state.profile.skillSelections.filter(item => item.futureWish === "avoid").map(item => item.skillId);
+        profile.avoidedSkills = [];
         profile.customSkills = [];
         profile.certifications = this.state.profile.certificationSelections.map(item => item.id);
         return profile;
@@ -18102,6 +18223,215 @@ const BoussoleRuntimeProvider = {
         if (event.key === "Escape") { event.preventDefault(); this.state.qualificationMatches = []; document.getElementById("qualificationSuggestions").innerHTML = ""; event.target.setAttribute("aria-expanded", "false"); return; }
       }
       return handleKeydownV152Base.call(this, event);
+    };
+
+    // v1.6.0 : scoring personnel v2, sauvegarde révisionnée et compétences éditables depuis une fiche métier.
+    RefonteApp.config.version = "1.6.0";
+    RefonteApp.config.storageSchemaVersion = "2.0.0";
+    Object.assign(RefonteApp.state, { profileRevision: 0, saveStatus: "idle", editingJobSkillId: null, removedJobSkill: null, lastSavedProfileFingerprint: "" });
+
+    const profileForCurrentInterfaceV160Base = RefonteApp.profileForCurrentInterface;
+    RefonteApp.profileForCurrentInterface = function(raw = {}) {
+      const profile = profileForCurrentInterfaceV160Base.call(this, raw);
+      profile.schemaVersion = "1.6.0";
+      return profile;
+    };
+
+    Object.assign(RefonteApp, {
+      profileFingerprint(profile = this.state.profile) {
+        try { return JSON.stringify(profile || null); } catch (error) { return ""; }
+      },
+      storageCandidates() {
+        const rows = [];
+        const add = (key, parsed, kind) => {
+          if (!parsed || typeof parsed !== "object") return;
+          const profile = parsed.profile || parsed.data?.profile || parsed.data || (parsed.id ? parsed : null);
+          const profileExists = parsed.profileExists === false ? false : Boolean(profile && typeof profile === "object" && !Array.isArray(profile));
+          rows.push({ key, kind, envelope: parsed, profile: profileExists ? profile : null, profileExists, revision: Number.isInteger(parsed.revision) ? parsed.revision : 0, savedAt: parsed.savedAt || parsed.updatedAt || profile?.updatedAt || "" });
+        };
+        try { add(this.config.storageKey, JSON.parse(localStorage.getItem(this.config.storageKey) || "null"), "current"); } catch (error) { /* enveloppe invalide ignorée */ }
+        try { const key = typeof CONFIG !== "undefined" ? CONFIG.storageKeys?.profile : null; if (key && key !== this.config.storageKey) add(key, JSON.parse(localStorage.getItem(key) || "null"), "classic"); } catch (error) { /* clé historique invalide ignorée */ }
+        return rows.filter(row => row.profileExists || row.envelope?.profileExists === false).sort((a, b) => b.revision - a.revision || Date.parse(b.savedAt || 0) - Date.parse(a.savedAt || 0));
+      },
+      loadLocalState() {
+        let selected = null;
+        try { localStorage.setItem("__boussole_storage_test__", "1"); localStorage.removeItem("__boussole_storage_test__"); selected = this.storageCandidates()[0] || null; }
+        catch (error) { this.state.storageAvailable = false; }
+        const envelope = selected?.envelope || {};
+        const hasProfile = Boolean(selected?.profileExists && selected.profile);
+        this.state.profileMigrationSource = envelope.version ? { app: envelope.app || "boussole-pro-refonte-profile", version: envelope.version } : null;
+        this.state.profile = this.profileForCurrentInterface(this.clone(hasProfile ? selected.profile : createEmptyProfile()));
+        this.state.profileMigrationSource = null;
+        this.state.profileExists = hasProfile;
+        this.state.importedSnapshot = hasProfile && envelope.importedSnapshot ? this.clone(envelope.importedSnapshot) : null;
+        this.state.legacyImportDismissed = Boolean(envelope.legacyImportDismissed);
+        this.state.favorites = new Set(this.array(envelope.favorites));
+        this.state.mode = ["user", "companion", "debug"].includes(envelope.mode) ? envelope.mode : "user";
+        this.state.theme = envelope.theme === "dark" ? "dark" : "light";
+        this.state.profileRevision = selected?.revision || 0;
+        this.state.lastSavedAt = selected?.savedAt || null;
+        this.state.lastSavedProfileFingerprint = this.profileFingerprint(this.state.profile);
+        App.state.profile = this.state.profile;
+        App.state.displayMode = ({ user: "essential", companion: "detailed", debug: "diagnostic" })[this.state.mode];
+        if (selected && (selected.kind !== "current" || envelope.storageSchemaVersion !== this.config.storageSchemaVersion)) this.saveLocal({ force: true, source: "storage_migration" });
+      },
+      saveLocal(options = {}) {
+        const now = new Date().toISOString();
+        const fingerprint = this.profileFingerprint();
+        const profileChanged = fingerprint !== this.state.lastSavedProfileFingerprint;
+        if (profileChanged || options.forceRevision) this.state.profileRevision = Math.max(0, Number(this.state.profileRevision || 0)) + 1;
+        if (!this.state.storageAvailable) { this.state.saveStatus = "failed"; this.updateSaveLine(); return false; }
+        const envelope = {
+          app: "boussole-pro-refonte", version: this.config.version, storageSchemaVersion: this.config.storageSchemaVersion,
+          revision: this.state.profileRevision, savedAt: now, updatedAt: now, profileExists: this.state.profileExists,
+          profile: this.state.profileExists ? this.state.profile : null, importedSnapshot: this.state.profileExists ? this.state.importedSnapshot : null,
+          legacyImportDismissed: this.state.legacyImportDismissed, favorites: [...this.state.favorites], mode: this.state.mode, theme: this.state.theme,
+          lastMutationSource: options.source || "application"
+        };
+        try {
+          localStorage.setItem(this.config.storageKey, JSON.stringify(envelope));
+          const verified = JSON.parse(localStorage.getItem(this.config.storageKey) || "null");
+          const expectedSelections = this.array(envelope.profile?.skillSelections).length;
+          if (verified?.revision !== envelope.revision || verified?.savedAt !== envelope.savedAt || verified?.profile?.id !== envelope.profile?.id || this.array(verified?.profile?.skillSelections).length !== expectedSelections) throw new Error("Vérification de la sauvegarde locale impossible.");
+          this.state.lastSavedAt = now; this.state.lastSavedProfileFingerprint = fingerprint; this.state.saveStatus = "saved"; this.updateSaveLine(); return true;
+        } catch (error) {
+          this.state.storageAvailable = false; this.state.saveStatus = "failed"; this.updateSaveLine();
+          this.toast("Sauvegarde locale impossible — exportez votre profil"); return false;
+        }
+      },
+      updateProfile(mutator, source = "profile_update", options = {}) {
+        if (typeof mutator === "function") mutator(this.state.profile);
+        this.state.profile = this.profileForCurrentInterface(this.state.profile);
+        this.state.profileExists = options.profileExists ?? true;
+        App.state.profile = this.state.profile;
+        this.invalidateResults();
+        this.saveLocal({ forceRevision: true, source });
+        if (options.recalculate) this.ensureResults();
+        if (options.render !== false) this.render();
+        return this.state.profile;
+      },
+      profileChanged(options = {}) {
+        this.updateProfile(null, options.source || "interface", { render: false });
+      },
+      flushProfileSave() {
+        if (this.profileFingerprint() !== this.state.lastSavedProfileFingerprint) this.saveLocal({ forceRevision: true, source: "page_hidden" });
+      },
+      updateSaveLine() {
+        const node = document.getElementById("saveLine"); if (!node) return;
+        node.setAttribute("role", "status"); node.setAttribute("aria-live", "polite"); node.tabIndex = 0;
+        const label = this.state.saveStatus === "failed" || !this.state.storageAvailable ? "Sauvegarde locale impossible — exportez votre profil" : `Enregistré localement à ${this.lastSavedTime()}`;
+        node.innerHTML = `<span class="status-dot" aria-hidden="true"></span>${label}`;
+      },
+      lastSavedTime() {
+        if (!this.state.lastSavedAt) return "l’instant";
+        try { return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(new Date(this.state.lastSavedAt)); } catch (error) { return "l’instant"; }
+      },
+      formatPersonalScore(value) { return Number(Number(value || 0).toFixed(1)).toLocaleString("fr-FR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); },
+      simpleRankedResult(item, rank) {
+        const job = this.state.dataset.jobs.find(row => row.id === item.jobId || row.romeCode === item.romeCode) || {};
+        return { rank, title: item.title || job.title || "Métier sans intitulé", romeCode: item.romeCode || job.romeCode || "", score: Number(Number(item.personalFitScore ?? item.score ?? 0).toFixed(1)), scoreRaw: Number(Number(item.personalFitScoreRaw ?? item.personalFitScore ?? 0).toFixed(6)), scoringVersion: item.scoringVersion || PERSONAL_FIT_SCORING_VERSION, description: job.description || item.description || item.shortMission || job.mission || "Description non disponible." };
+      },
+      buildProfileResultsSnapshot() {
+        this.ensureResults(); const calculatedAt = this.state.calculatedAt || new Date().toISOString();
+        return { schemaVersion: "1.0.0", app: "boussole-pro", exportKind: "profile_results_snapshot", importable: false, exportedAt: new Date().toISOString(), calculatedAt, appVersion: this.config.version, datasetVersion: this.state.dataManifest?.datasetVersion || this.state.dataset.datasetVersion, scoringVersion: PERSONAL_FIT_SCORING_VERSION, ranking: "Accord personnel brut décroissant ; les acquis et la faisabilité départagent seulement les écarts inférieurs ou égaux à 0,05.", profile: this.clone(this.state.profile), results: this.state.results.completeList.map((item, index) => this.simpleRankedResult(item, index + 1)) };
+      },
+      resolvedJobSkills(jobId) {
+        const job = this.jobById(jobId); if (!job) return [];
+        const rows = new Map();
+        const add = (ids, kind) => this.array(ids).forEach(id => { const skill = this.state.skillIndex.find(item => item.id === id); if (skill && !rows.has(id)) rows.set(id, { id, label: skill.label, kind }); });
+        add(job.scorableSkillIds || job.matchableSkillIds || job.requiredSkills, "Essentielle"); add(job.optionalSkills, "Optionnelle"); add(job.softSkillIds || job.softSkills, "Transversale");
+        return [...rows.values()];
+      },
+      jobSkillEditorHtml(jobId) {
+        const rows = this.resolvedJobSkills(jobId);
+        if (!rows.length) return '<section class="detail-section job-skill-profile"><h3>Compétences officielles</h3><p>Compétences à relier au référentiel fermé.</p></section>';
+        return `<section class="detail-section job-skill-profile" data-job-skill-profile="${this.escape(jobId)}"><h3>Compétences officielles</h3><p class="help">Renseignez un acquis ou un souhait sans quitter cette fiche.</p><div class="job-skill-list">${rows.map(skill => this.jobSkillRowHtml(jobId, skill)).join("")}</div>${this.state.removedJobSkill?.jobId === jobId ? `<div class="job-skill-undo" role="status">Compétence retirée. <button type="button" class="button compact" data-action="undo-job-skill">Annuler</button></div>` : ""}</section>`;
+      },
+      jobSkillRowHtml(jobId, skill) {
+        const selection = this.state.profile.skillSelections.find(item => item.skillId === skill.id);
+        const editing = this.state.editingJobSkillId === skill.id;
+        const summary = selection ? `${this.skillStateLabel(selection.currentLevel)} · ${this.skillStateLabel(selection.futureWish)}` : "Non renseignée";
+        return `<div class="job-skill-profile-row" data-job-skill-row="${skill.id}"><div><strong>${this.escape(skill.label)}</strong><small>${skill.kind} · ${this.escape(summary)}</small></div>${editing ? `<div class="job-skill-editor"><label>Niveau actuel<select data-job-skill-current>${this.currentSkillOptions(selection?.currentLevel || "not_assessed")}</select></label><label>Souhait pour la suite<select data-job-skill-future>${this.futureSkillOptions(selection?.futureWish || "none")}</select></label><div class="actions"><button type="button" class="button compact primary" data-action="save-job-skill" data-job-id="${jobId}" data-skill-id="${skill.id}" ${!selection ? "disabled" : ""}>Enregistrer</button><button type="button" class="button compact" data-action="cancel-job-skill">Fermer</button></div></div>` : `<div class="actions"><button type="button" class="button compact" data-action="edit-job-skill" data-job-id="${jobId}" data-skill-id="${skill.id}">${selection ? "Modifier" : "Ajouter à Ma boussole"}</button>${selection ? `<button type="button" class="button compact" data-action="remove-job-skill" data-job-id="${jobId}" data-skill-id="${skill.id}">Retirer de Ma boussole</button>` : ""}</div>`}</div>`;
+      },
+      refreshJobSkillSection(jobId, options = {}) {
+        const current = this.dom.dialogContent.querySelector("[data-job-skill-profile]");
+        if (current) current.outerHTML = this.jobSkillEditorHtml(jobId);
+        else this.dom.dialogContent.querySelector(".dialog-body > div")?.insertAdjacentHTML("beforeend", this.jobSkillEditorHtml(jobId));
+        if (options.focusSkill) requestAnimationFrame(() => this.dom.dialogContent.querySelector(`[data-job-skill-row="${CSS.escape(options.focusSkill)}"] select`)?.focus());
+      },
+      saveJobSkill(jobId, skillId, currentLevel, futureWish) {
+        if (currentLevel === "not_assessed" && futureWish === "none") return;
+        const skill = this.state.skillIndex.find(item => item.id === skillId); if (!skill) return;
+        this.updateProfile(profile => {
+          profile.skillSelections = profile.skillSelections.filter(item => item.skillId !== skillId);
+          profile.skillSelections.push({ skillId, label: skill.label, currentLevel, futureWish, source: "user_direct", suggestedFromRomeCodes: [this.jobById(jobId)?.romeCode].filter(Boolean) });
+        }, "job_detail_skill", { render: false, recalculate: true });
+        this.state.editingJobSkillId = null; this.state.removedJobSkill = null;
+        const scrollTop = this.dom.dialog.scrollTop || this.dom.dialogContent.scrollTop || 0;
+        this.openJob(jobId, this.state.lastDialogTrigger, { restore: true, scrollTop });
+      }
+    });
+
+    const openJobV160Base = RefonteApp.openJob;
+    RefonteApp.openJob = function(jobId, trigger, options = {}) {
+      openJobV160Base.call(this, jobId, trigger, options);
+      this.refreshJobSkillSection(jobId);
+      if (this.state.profileExists) {
+        const detail = this.detailForJob(jobId);
+        const badge = [...this.dom.dialogContent.querySelectorAll(".badge.blue")].find(node => node.textContent.trim().startsWith("Accord "));
+        if (badge && detail) badge.textContent = `Accord ${this.formatPersonalScore(detail.personalFitScore)}/100 · ${this.humanize(detail.personalFitLevel || "à explorer")}`;
+      }
+    };
+    const renderBoussoleV160Base = RefonteApp.renderBoussole;
+    RefonteApp.renderBoussole = function() {
+      renderBoussoleV160Base.call(this);
+      this.updateSaveLine();
+    };
+    const compactJobRowV160Base = RefonteApp.compactJobRow;
+    RefonteApp.compactJobRow = function(item) {
+      return compactJobRowV160Base.call(this, item).replace(/Accord [\d.,]+\/100/, `Accord ${this.formatPersonalScore(item.personalFitScore)}/100`);
+    };
+    const jobCardV160Base = RefonteApp.jobCard;
+    RefonteApp.jobCard = function(item) {
+      const score = this.formatPersonalScore(item.personalFitScore);
+      return jobCardV160Base.call(this, item).replace(/<div class="score" aria-label="Accord personnel [^"]+ sur 100">[^<]*<\/div>/, `<div class="score" aria-label="Accord personnel ${score} sur 100">${score}</div>`);
+    };
+    const bindEventsV160Base = RefonteApp.bindEvents;
+    RefonteApp.bindEvents = function() {
+      bindEventsV160Base.call(this);
+      if (this.state.persistenceEventsBound) return;
+      this.state.persistenceEventsBound = true;
+      window.addEventListener("pagehide", () => this.flushProfileSave());
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") this.flushProfileSave(); });
+      window.addEventListener("storage", event => {
+        if (event.key !== this.config.storageKey || !event.newValue) return;
+        try {
+          const incoming = JSON.parse(event.newValue);
+          if (Number(incoming.revision || 0) <= Number(this.state.profileRevision || 0)) return;
+          this.state.profileRevision = incoming.revision; this.state.lastSavedAt = incoming.savedAt; this.state.profile = this.profileForCurrentInterface(incoming.profile || createEmptyProfile()); this.state.profileExists = Boolean(incoming.profileExists); this.state.lastSavedProfileFingerprint = this.profileFingerprint(); App.state.profile = this.state.profile; this.invalidateResults(); this.render(); this.announce("Une version plus récente de Ma Boussole a été reprise depuis un autre onglet.");
+        } catch (error) { /* enveloppe distante invalide ignorée */ }
+      });
+    };
+    const handleClickV160Base = RefonteApp.handleClick;
+    RefonteApp.handleClick = function(event) {
+      const action = event.target.closest("[data-action]");
+      if (action?.dataset.action === "edit-job-skill") { this.state.editingJobSkillId = action.dataset.skillId; this.refreshJobSkillSection(action.dataset.jobId, { focusSkill: action.dataset.skillId }); return; }
+      if (action?.dataset.action === "cancel-job-skill") { this.state.editingJobSkillId = null; this.refreshJobSkillSection(this.state.currentDialogJobId); return; }
+      if (action?.dataset.action === "save-job-skill") { const row = action.closest("[data-job-skill-row]"); this.saveJobSkill(action.dataset.jobId, action.dataset.skillId, row.querySelector("[data-job-skill-current]").value, row.querySelector("[data-job-skill-future]").value); return; }
+      if (action?.dataset.action === "remove-job-skill") {
+        const removed = this.state.profile.skillSelections.find(item => item.skillId === action.dataset.skillId); if (!removed) return;
+        this.state.removedJobSkill = { jobId: action.dataset.jobId, selection: this.clone(removed) };
+        this.updateProfile(profile => { profile.skillSelections = profile.skillSelections.filter(item => item.skillId !== action.dataset.skillId); }, "job_detail_skill_remove", { render: false, recalculate: true });
+        const scrollTop = this.dom.dialog.scrollTop || this.dom.dialogContent.scrollTop || 0;
+        this.openJob(action.dataset.jobId, this.state.lastDialogTrigger, { restore: true, scrollTop }); return;
+      }
+      if (action?.dataset.action === "undo-job-skill" && this.state.removedJobSkill) { const removed = this.state.removedJobSkill; this.updateProfile(profile => { profile.skillSelections = profile.skillSelections.filter(item => item.skillId !== removed.selection.skillId); profile.skillSelections.push(removed.selection); }, "job_detail_skill_undo", { render: false, recalculate: true }); this.state.removedJobSkill = null; const scrollTop = this.dom.dialog.scrollTop || this.dom.dialogContent.scrollTop || 0; this.openJob(removed.jobId, this.state.lastDialogTrigger, { restore: true, scrollTop }); return; }
+      return handleClickV160Base.call(this, event);
+    };
+    const handleChangeV160Base = RefonteApp.handleChange;
+    RefonteApp.handleChange = function(event) {
+      if (event.target.matches("[data-job-skill-current], [data-job-skill-future]")) { const row = event.target.closest("[data-job-skill-row]"); const button = row?.querySelector('[data-action="save-job-skill"]'); if (button) button.disabled = row.querySelector("[data-job-skill-current]").value === "not_assessed" && row.querySelector("[data-job-skill-future]").value === "none"; return; }
+      return handleChangeV160Base.call(this, event);
     };
 
     document.addEventListener("mouseover", event => highlightRose(event.target.closest("[data-rose-index]")));

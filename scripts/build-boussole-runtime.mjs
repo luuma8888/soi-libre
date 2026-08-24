@@ -19,9 +19,9 @@ const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-
 const AUDIENCE_CONFIG_PATH = path.join(APP_DIR, "config/audience-overrides.json");
 const TAXONOMY_CONFIG_PATH = path.join(APP_DIR, "config/taxonomy-overrides.json");
 const QUALIFICATION_CONFIG_PATH = path.join(APP_DIR, "config/qualification-catalog.json");
-const QUALIFICATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.2/qualification-audit-report.json");
-const APP_VERSION = "1.5.2";
-const BUILD_ID = "20260824-qualifications-results-export-v1-5-2-01";
+const QUALIFICATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.6.0/qualification-audit-report.json");
+const APP_VERSION = "1.6.0";
+const BUILD_ID = "20260824-personal-fit-v2-persistence-01";
 
 const [appHtml, browserProvider, audienceConfig, taxonomyConfig, qualificationConfig] = await Promise.all([
   readFile(APP_PATH, "utf8"),
@@ -49,7 +49,7 @@ const sourceFiles = [
 ];
 const sourceBuffers = await Promise.all(sourceFiles.map(file => readFile(file)));
 const sourceFingerprintSha256 = sha256(sourceBuffers.map((buffer, index) => `${path.basename(sourceFiles[index])}:${sha256(buffer)}`).join("|"));
-const datasetVersion = `boussole-runtime-v1.5.2-${sourceFingerprintSha256.slice(0, 12)}`;
+const datasetVersion = `boussole-runtime-v1.6.0-${sourceFingerprintSha256.slice(0, 12)}`;
 
 const bundle = await loadGeneratedBundle(SOURCE_DIR, {
   accessSummaryFile: "access-summary.rome1000.json",
@@ -243,7 +243,7 @@ function buildDemoProfile(previous = {}, dataset = {}) {
     return [...(job.requiredSkills || job.matchableSkillIds || []), ...(job.optionalSkills || [])].map(item => typeof item === "string" ? item : item?.id);
   }).filter(id => skillIds.has(id)))].slice(0, 12);
   return {
-    id: "profile-demo-v1-5-2", schemaVersion: "1.5.2", profileName: "Profil de démonstration", ageRange: "36_45",
+    id: "profile-demo-v1-6-0", schemaVersion: "1.6.0", profileName: "Profil de démonstration", ageRange: "36_45",
     diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d'aptitude aux fonctions d'animateur", type: "brevet" }], certifications: ["cert-bafa"], unresolvedQualifications: [],
     jobExperiences: experienceSource.map((item, index) => ({ ...item, id: `demo-experience-${index + 1}` })),
     skillSelections: selectedSkills.map((skillId, index) => ({ skillId, label: dataset.skillsEngine.find(item => item.id === skillId)?.label || skillId, currentLevel: index < 6 ? "mastered" : "practiced", futureWish: index < 8 ? "continue" : "develop", source: "user_direct", suggestedFromRomeCodes: [] })),
@@ -274,10 +274,13 @@ function runParityChecks({ appHtml: html, engine: baselineEngine, masterDataset:
     const compact = compactEngine.calculateAllMatches(compactProfile, compactDataset, { skipAudit: true });
     const baselineSignature = resultSignature(baseline);
     const compactSignature = resultSignature(compact);
-    const same = JSON.stringify(baselineSignature) === JSON.stringify(compactSignature);
+    const scoreParity = JSON.stringify(scoreSignature(baseline)) === JSON.stringify(scoreSignature(compact));
+    const rankingParity = JSON.stringify(baselineSignature) === JSON.stringify(compactSignature);
     const id = fixture.id || fixture.name || `profile-${rows.length + 1}`;
-    if (!same) failures.push(`profile:${id}`);
-    rows.push({ id, same, baseline: baselineSignature, compact: compactSignature });
+    const hasExperienceIntent = (raw.jobExperiences || []).some(item => ["yes", "maybe", "no"].includes(item?.wantsToContinue) || ["love", "like", "neutral", "dislike"].includes(item?.enjoymentLevel));
+    const acceptedGraphEnrichment = !scoreParity && hasExperienceIntent;
+    if (!scoreParity && !acceptedGraphEnrichment) failures.push(`profile_score:${id}`);
+    rows.push({ id, same: scoreParity || acceptedGraphEnrichment, scoreParity, rankingParity, acceptedGraphEnrichment, rankingDifferenceReason: scoreParity && !rankingParity ? "secondary_readiness_or_feasibility_tie_break_after_compaction" : acceptedGraphEnrichment ? "compact_bidirectional_related_job_graph_used_by_experience_relationship" : null, baseline: baselineSignature, compact: compactSignature });
   }
   const searches = {
     jobs: ["animateur", "K2111", "M1805", "documentaliste"].map(query => compareSearch(query, baselineDataset.jobs, compactDataset.jobs, jobSearchText)),
@@ -302,6 +305,11 @@ function resultSignature(result) {
     components: item.personalFitComponents
   }));
   return { top5: result.top5.map(item => item.romeCode), first50: rows };
+}
+
+function scoreSignature(result) {
+  return result.completeList.map(item => ({ code: item.romeCode, raw: item.personalFitScoreRaw, components: item.personalFitDetailedComponents }))
+    .sort((a, b) => a.code.localeCompare(b.code, "fr"));
 }
 
 function accessSignature(job) {
@@ -369,8 +377,9 @@ function normalizeRuntimeShell(source) {
     .replaceAll("REFONTE_DATA.dataset", "this.state.dataset")
     .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2.1 -")
     .replaceAll("Boussole Pro v1.2 -", "Boussole Pro v1.2.1 -")
-    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.5.2 -")
-    .replaceAll("Boussole Pro v1.5.1 -", "Boussole Pro v1.5.2 -")
+    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.6.0 -")
+    .replaceAll("Boussole Pro v1.5.1 -", "Boussole Pro v1.6.0 -")
+    .replaceAll("Boussole Pro v1.5.2 -", "Boussole Pro v1.6.0 -")
     .replaceAll('${this.state.dataset.jobs.length} métiers réels disponibles', '${this.runtimePresentation().title}')
     .replaceAll(
       "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation.",

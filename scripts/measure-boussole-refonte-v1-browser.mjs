@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
 const OFFLINE_HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-offline.html");
-const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.2");
+const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-v1.6.0");
 const CAPTURE_DIR = path.join(REPORT_DIR, "captures");
 const REPORT_PATH = path.join(REPORT_DIR, "browser-interaction-report.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
@@ -102,6 +102,21 @@ try {
   const roundTrip = await evaluate(cdp, `(() => { const before=window.__BOUSSOLE_REFONTE_TEST_API__.getProfile(); const envelope={ profile: before }; const after=window.__BOUSSOLE_REFONTE_TEST_API__.importProfileData(envelope.profile); return { equal: JSON.stringify(before) === JSON.stringify(after), profile: after }; })()`);
   assert("active_profile_import_export_import_identity", roundTrip.equal === true, roundTrip.equal);
 
+  const importedPersistence = await evaluate(cdp, `(() => {
+    localStorage.setItem("boussole_pro_profile_v1", JSON.stringify({ app:"boussole-pro-profile", revision:0, savedAt:new Date(Date.now()+60000).toISOString(), profile:{ profileName:"Ancien profil local", interests:["proteger"] } }));
+    const skill=RefonteApp.state.skillIndex[0];
+    const imported={ profileName:"Profil importé persistant", interests:["creer"], values:["service"], preferredEnvironments:["quiet"], skillSelections:[{ skillId:skill.id, label:skill.label, currentLevel:"practiced", futureWish:"develop", source:"user_direct", suggestedFromRomeCodes:[] }] };
+    window.__BOUSSOLE_REFONTE_TEST_API__.importProfileData(imported);
+    const stored=JSON.parse(localStorage.getItem(RefonteApp.config.storageKey));
+    return { skillId:skill.id, revision:stored.revision, savedAt:stored.savedAt, storageSchemaVersion:stored.storageSchemaVersion, profileName:stored.profile?.profileName, skill:stored.profile?.skillSelections?.find(row=>row.skillId===skill.id), saveLine:document.getElementById("saveLine")?.innerText || "" };
+  })()`);
+  assert("import_saved_immediately_with_revision", importedPersistence.revision > 0 && importedPersistence.savedAt && importedPersistence.storageSchemaVersion === "2.0.0" && importedPersistence.profileName === "Profil importé persistant" && importedPersistence.skill?.currentLevel === "practiced" && importedPersistence.skill?.futureWish === "develop", importedPersistence);
+  await navigate(cdp, httpUrl);
+  await waitForApi(cdp);
+  const importedAfterReload = await evaluate(cdp, `(() => { const profile=window.__BOUSSOLE_REFONTE_TEST_API__.getProfile(); const stored=JSON.parse(localStorage.getItem(RefonteApp.config.storageKey)); return { profileName:profile.profileName, skill:profile.skillSelections.find(row=>row.skillId===${JSON.stringify(importedPersistence.skillId)}), revision:stored.revision, saveLine:(()=>{ window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); return document.getElementById("saveLine")?.innerText || ""; })() }; })()`);
+  assert("import_survives_reload_and_beats_stale_profile", importedAfterReload.profileName === "Profil importé persistant" && importedAfterReload.skill?.currentLevel === "practiced" && importedAfterReload.skill?.futureWish === "develop" && importedAfterReload.revision === importedPersistence.revision, importedAfterReload);
+  assert("local_save_confirmation_visible", importedAfterReload.saveLine.startsWith("Enregistré localement à "), importedAfterReload.saveLine);
+
   const clearedProfile = await evaluate(cdp, `(() => {
     localStorage.setItem("boussole_pro_profile_v1", JSON.stringify({ app: "boussole-pro-profile", data: { profileName: "Profil classique rémanent", skills: ["skill-must-not-return"], interests: ["proteger"] } }));
     window.confirm = () => true;
@@ -144,7 +159,7 @@ try {
     await RefonteApp.importProfile(new File([JSON.stringify(snapshot)],"resultats.json",{type:"application/json"})); RefonteApp.toast=originalToast;
     return {snapshot,markdown,rejection,bytes:new TextEncoder().encode(JSON.stringify(snapshot)).length,menuButtons:document.querySelectorAll('[data-action="export-profile-results"]').length};
   })()`, true);
-  assert("results_snapshot_json_contract", exportContract.snapshot.schemaVersion === "1.0.0" && exportContract.snapshot.app === "boussole-pro" && exportContract.snapshot.exportKind === "profile_results_snapshot" && exportContract.snapshot.importable === false && exportContract.snapshot.appVersion === "1.5.2" && exportContract.snapshot.results.length === 1000 && exportContract.snapshot.results.every((row, index) => row.rank === index + 1 && row.title && /^[A-Z][0-9]{4}$/.test(row.romeCode) && Number.isFinite(row.score) && row.description), { results: exportContract.snapshot.results.length, bytes: exportContract.bytes });
+  assert("results_snapshot_json_contract", exportContract.snapshot.schemaVersion === "1.0.0" && exportContract.snapshot.app === "boussole-pro" && exportContract.snapshot.exportKind === "profile_results_snapshot" && exportContract.snapshot.importable === false && exportContract.snapshot.appVersion === "1.6.0" && exportContract.snapshot.scoringVersion === "personal-fit-v2" && exportContract.snapshot.results.length === 1000 && exportContract.snapshot.results.every((row, index) => row.rank === index + 1 && row.title && /^[A-Z][0-9]{4}$/.test(row.romeCode) && Number.isFinite(row.score) && Number.isFinite(row.scoreRaw) && row.scoringVersion === "personal-fit-v2" && row.description), { results: exportContract.snapshot.results.length, bytes: exportContract.bytes });
   assert("results_snapshot_bounded_and_clean", exportContract.bytes < 2 * 1024 * 1024 && !/undefined|null|\[object Object\]/.test(exportContract.markdown), exportContract.bytes);
   assert("results_markdown_contract", exportContract.markdown.startsWith("# Résultats Boussole Pro —") && exportContract.markdown.includes("Le classement repose sur l’accord personnel. Les compétences, le chemin d’accès et le marché n’influencent pas cet ordre.") && exportContract.markdown.includes("## Profil ayant produit ces résultats") && exportContract.markdown.includes("## Classement complet des métiers") && exportContract.markdown.includes("| Rang | Métier | Code ROME | Score | Description |") && (exportContract.markdown.match(/^\| \d+ \|/gm) || []).length === 1000, null);
   assert("results_export_menu_and_import_guard", exportContract.menuButtons === 2 && exportContract.rejection.includes("Ce fichier contient un instantané de résultats et ne peut pas être importé. Pour restaurer Ma Boussole, choisissez le fichier d’export du profil."), exportContract.rejection);
@@ -171,6 +186,23 @@ try {
   })()`);
   assert("job_dialog_fullscreen_open", dialogOpen.open && dialogOpen.title, dialogOpen);
   assert("dialog_initial_focus", dialogOpen.focusInside, dialogOpen);
+  const jobSkillEditing = await evaluate(cdp, `(() => {
+    const row=document.querySelector("#jobDialog [data-job-skill-row]"); const skillId=row?.dataset.jobSkillRow; const jobId=RefonteApp.state.currentDialogJobId;
+    row?.querySelector('[data-action="edit-job-skill"]')?.click();
+    const edited=document.querySelector('#jobDialog [data-job-skill-row="'+skillId+'"]');
+    const current=edited?.querySelector("[data-job-skill-current]"); const future=edited?.querySelector("[data-job-skill-future]");
+    if(current&&future){ current.value="practiced"; future.value="develop"; future.dispatchEvent(new Event("change",{bubbles:true})); edited.querySelector('[data-action="save-job-skill"]')?.click(); }
+    const storedAfterSave=JSON.parse(localStorage.getItem(RefonteApp.config.storageKey));
+    const saved=RefonteApp.state.profile.skillSelections.find(item=>item.skillId===skillId);
+    document.querySelector('#jobDialog [data-job-skill-row="'+skillId+'"] [data-action="remove-job-skill"]')?.click();
+    const removed=!RefonteApp.state.profile.skillSelections.some(item=>item.skillId===skillId) && Boolean(document.querySelector('#jobDialog [data-action="undo-job-skill"]'));
+    document.querySelector('#jobDialog [data-action="undo-job-skill"]')?.click();
+    const restored=RefonteApp.state.profile.skillSelections.find(item=>item.skillId===skillId);
+    const storedAfterUndo=JSON.parse(localStorage.getItem(RefonteApp.config.storageKey));
+    return {jobId,skillId,saved,removed,restored,revisionAfterSave:storedAfterSave.revision,revisionAfterUndo:storedAfterUndo.revision,storedRestored:storedAfterUndo.profile?.skillSelections?.some(item=>item.skillId===skillId),scoreText:document.querySelector("#jobDialog .badge.blue")?.innerText || ""};
+  })()`);
+  assert("job_detail_skill_add_edit_remove_undo", jobSkillEditing.skillId && jobSkillEditing.saved?.currentLevel === "practiced" && jobSkillEditing.saved?.futureWish === "develop" && jobSkillEditing.removed && jobSkillEditing.restored?.currentLevel === "practiced" && jobSkillEditing.storedRestored && jobSkillEditing.revisionAfterUndo > jobSkillEditing.revisionAfterSave, jobSkillEditing);
+  assert("personal_fit_display_has_one_decimal", /Accord \d+[,.]\d\/100/.test(jobSkillEditing.scoreText), jobSkillEditing.scoreText);
   await capture(cdp, "07-fiche-metier-bureau.png");
   const focusRestored = await evaluate(cdp, `new Promise(resolve => { document.getElementById("jobDialog").close(); requestAnimationFrame(() => requestAnimationFrame(() => resolve(document.activeElement?.matches(".top-list button") || false))); })`, true);
   assert("dialog_focus_restored", focusRestored === true, focusRestored);
@@ -298,15 +330,15 @@ try {
   const qualificationContract = await evaluate(cdp, `(() => {
     const api=window.__BOUSSOLE_REFONTE_TEST_API__;
     const migrated=api.importProfileData({profileName:"Migration qualifications",diplomaLevel:5,certificationSelections:[{id:"cert-bafa",label:"BAFA"},{id:"credential-deass",label:"DEASS"},{id:"credential-agrement",label:"Agrément"},{id:"license-d",label:"Permis D"},{id:"license-b",label:"Permis B"}]});
-    const before=api.calculate(); const signatureBefore=RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScore,row.personalFitTieBreakScore]);
-    RefonteApp.addQualification("credential-de-infirmier"); const signatureAfter=(RefonteApp.ensureResults(),RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScore,row.personalFitTieBreakScore]));
+    const before=api.calculate(); const signatureBefore=RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScoreRaw]).sort((a,b)=>a[0].localeCompare(b[0]));
+    RefonteApp.addQualification("credential-de-infirmier"); const signatureAfter=(RefonteApp.ensureResults(),RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScoreRaw]).sort((a,b)=>a[0].localeCompare(b[0])));
     api.navigate("boussole"); api.setStep(1);
     const input=document.getElementById("qualificationSearch"); input.value="orthoptiste"; input.dispatchEvent(new Event("input",{bubbles:true})); const count=document.querySelectorAll("#qualificationSuggestions [role=option]").length; input.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}));
     return {migrated,search:api.searchQualifications("caces"),count,selected:RefonteApp.state.profile.certificationSelections,unresolved:RefonteApp.state.profile.unresolvedQualifications,sameRanking:JSON.stringify(signatureBefore)===JSON.stringify(signatureAfter),title:document.getElementById("stepTitle")?.textContent,heading:[...document.querySelectorAll("h3")].some(node=>node.textContent==="Qualifications spécifiques obtenues")};
   })()`);
   assert("qualification_catalog_search_and_keyboard", qualificationContract.search.length > 0 && qualificationContract.search.length <= 8 && qualificationContract.count > 0 && qualificationContract.count <= 8 && qualificationContract.selected.some(item => item.id === "credential-de-orthoptiste" && item.type === "diplome_reglemente"), qualificationContract);
   assert("qualification_migration_is_conservative", qualificationContract.migrated.driverLicenseBStatus === "yes" && qualificationContract.migrated.certificationSelections.some(item => item.id === "cert-bafa") && qualificationContract.migrated.certificationSelections.some(item => item.id === "credential-deass") && qualificationContract.unresolved.includes("Agrément") && qualificationContract.unresolved.includes("Permis D"), qualificationContract);
-  assert("qualification_does_not_change_personal_ranking", qualificationContract.sameRanking, null);
+  assert("qualification_does_not_change_personal_scores", qualificationContract.sameRanking, null);
   assert("qualification_ui_contract", qualificationContract.title === "Formation" && qualificationContract.heading, null);
   await captureElement(cdp, ".qualification-section", "qualifications-1440.png");
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true, screenWidth: 375, screenHeight: 900 });
@@ -447,7 +479,7 @@ try {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v1_5_2_browser_interaction_accessibility_performance",
+    reportKind: "boussole_v1_6_0_browser_interaction_accessibility_performance",
     generatedAt: new Date().toISOString(),
     status: failures.length || runtimeErrors.length || consoleErrors.length ? "failed" : "passed",
     html: { path: path.relative(ROOT, HTML_PATH), bytes: html.length, sha256: sha256(html) },

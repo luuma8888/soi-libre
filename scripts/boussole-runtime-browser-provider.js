@@ -194,7 +194,7 @@ const BoussoleRuntimeProvider = {
         recommendedDiplomaLevel: null,
         requiredCertifications: [],
         recommendedCertifications: [],
-        relatedJobs: [],
+        relatedJobs: job.relatedJobIds || [],
         market: { status: "unknown", source: "unknown", confidence: 0 },
         marketIndicators: [],
         marketStats: this.expandMarket(marketRows.get(job.id), marche)
