@@ -251,12 +251,13 @@ try {
     partialPresence:RefonteApp.marketClimate({presencePercentile:0,tensionClass:null}),
     unavailable:RefonteApp.marketClimate({presencePercentile:null,tensionClass:null}),
     partialTension:RefonteApp.marketClimate({presencePercentile:null,tensionClass:4}),
+    contradictoryFallback:RefonteApp.marketClimate({availability:"partial",presencePercentile:null,tensionClass:null}),
     porteur:RefonteApp.marketClimate({presencePercentile:60,tensionClass:4}),
     niche:RefonteApp.marketClimate({presencePercentile:59.9,tensionClass:4}),
     actif:RefonteApp.marketClimate({presencePercentile:60,tensionClass:3}),
     limite:RefonteApp.marketClimate({presencePercentile:59.9,tensionClass:3})
   }))()`);
-  assert("market_climate_six_verdict_rules_and_missing_data", marketMissingStates.partialPresence.verdict === "Données partielles" && marketMissingStates.partialTension.verdict === "Données partielles" && marketMissingStates.unavailable.verdict === "Indisponible" && marketMissingStates.porteur.verdict === "Porteur" && marketMissingStates.niche.verdict === "Niche en tension" && marketMissingStates.actif.verdict === "Actif" && marketMissingStates.limite.verdict === "Limité", marketMissingStates);
+  assert("market_climate_six_verdict_rules_and_missing_data", marketMissingStates.partialPresence.verdict === "Données partielles" && marketMissingStates.partialTension.verdict === "Données partielles" && marketMissingStates.contradictoryFallback.verdict === "Données partielles" && marketMissingStates.unavailable.verdict === "Indisponible" && marketMissingStates.porteur.verdict === "Porteur" && marketMissingStates.niche.verdict === "Niche en tension" && marketMissingStates.actif.verdict === "Actif" && marketMissingStates.limite.verdict === "Limité", marketMissingStates);
 
   const modeInvariant = await evaluate(cdp, `(() => {
     const before = window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5;

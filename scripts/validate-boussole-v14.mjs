@@ -124,8 +124,8 @@ assert("forbidden_strong_relations_absent", !relatedPair("G1203", "G1206") && !r
 const activityMissing = core.jobs.filter(job => job.missingFields?.includes("activities"));
 assert("missing_activities_recomputed", activityMissing.length === core.jobs.filter(job => !job.activities?.length).length && activityMissing.length === 12, { declared: activityMissing.length, empty: core.jobs.filter(job => !job.activities?.length).length });
 const marketByCode = code => marche.jobs.find(row => row.jobId === byCode(code)?.id)?.territories;
-assert("partial_market_offers_preserved", marketByCode("A1206")?.FR?.availability === "partial" && marketByCode("A1206")?.FR?.offersCount === 230, marketByCode("A1206"));
-assert("k1204_market_reference", marketByCode("K1204")?.FR?.offersCount === 2330 && marketByCode("K1204")?.FR?.tensionLevel === "high" && marketByCode("K1204")?.["REG-76"]?.offersCount === 140 && marketByCode("K1204")?.["DEP-11"]?.tensionLevel === "very_high", marketByCode("K1204"));
+assert("partial_market_offers_preserved", marketByCode("A1206")?.FR?.availability === "partial" && marketByCode("A1206")?.FR?.offersCount === 1260, marketByCode("A1206"));
+assert("k1204_market_reference", marketByCode("K1204")?.FR?.offersCount === 2940 && marketByCode("K1204")?.FR?.tensionLevel === "high" && marketByCode("K1204")?.["REG-76"]?.offersCount === 160 && marketByCode("K1204")?.["DEP-11"]?.offersCount === 10 && marketByCode("K1204")?.["DEP-11"]?.tensionLevel === "very_high", marketByCode("K1204"));
 
 const completeIds = results.resultsViewModel?.completeList.map(row => row.jobId) || [];
 const topIds = new Set(results.resultsViewModel?.topDirections.map(row => row.representative.jobId) || []);

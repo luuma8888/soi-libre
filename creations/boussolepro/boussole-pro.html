@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <meta name="description" content="Application d’orientation Boussole Pro avec données métiers contrôlées.">
-  <title>Boussole Pro - nouvelle interface</title>
+  <title>Boussole Pro - explorer ses pistes professionnelles</title>
   <style>
     :root {
       --page: #f6f8f3;
@@ -16043,7 +16043,7 @@ const BoussoleRuntimeProvider = {
     const RefonteApp = {
       config: {
         storageKey: "luuma_boussole_pro_refonte_v1",
-        version: "1.0.0-prototype.1",
+        version: "1.5.1",
         pageSize: 12,
         resultTabs: [
           ["top", "En tête", "Les directions les plus accordées à votre boussole."],
@@ -16052,7 +16052,7 @@ const BoussoleRuntimeProvider = {
           ["skills", "Appuyés par mes acquis", "Des pistes soutenues par plusieurs appuis déjà identifiés."],
           ["exploratory", "À explorer", "Des hypothèses plus ouvertes, encore cohérentes avec votre profil."],
           ["excluded", "Écartés", "Des métiers consultables, mis à part par une limite actuelle."],
-          ["all", "Tous les métiers", "La liste complète du prototype, triable et paginée."]
+          ["all", "Tous les métiers", "La liste complète des métiers, triable et paginée."]
         ],
         steps: ["Départ", "Formation", "Contraintes", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"]
       },
@@ -16067,7 +16067,7 @@ const BoussoleRuntimeProvider = {
 
       init() {
         if (!REFONTE_DATA?.dataset?.jobs?.length) {
-          document.getElementById("mainContent").innerHTML = '<div class="view"><div class="notice error"><strong>Données du prototype absentes.</strong><p>Exécutez le générateur de la refonte avant d’ouvrir ce fichier.</p></div></div>';
+          document.getElementById("mainContent").innerHTML = '<div class="view"><div class="notice error"><strong>Données de l’application absentes.</strong><p>Exécutez le générateur de l’application avant d’ouvrir ce fichier.</p></div></div>';
           return;
         }
         this.dom.main = document.getElementById("mainContent");
@@ -16496,7 +16496,7 @@ const BoussoleRuntimeProvider = {
         const pages = Math.max(1, Math.ceil(items.length / this.config.pageSize));
         this.state.resultsPage = Math.min(this.state.resultsPage, pages);
         const visible = tab === "all" ? items.slice((this.state.resultsPage - 1) * this.config.pageSize, this.state.resultsPage * this.config.pageSize) : items.slice(0, 18);
-        container.innerHTML = `<div class="result-intro"><h3>${label}</h3><p>${description}</p></div>${tab === "all" ? `<div class="field" style="max-width:260px;margin-bottom:16px"><label for="resultSort">Trier par</label><select id="resultSort">${this.options([["fit", "Accord personnel"], ["title", "Intitulé"], ["opportunity", "Opportunités"]], this.state.resultsSort)}</select></div>` : ""}${visible.length ? (tab === "all" ? `<div class="compact-list">${visible.map(item => this.compactJobRow(item)).join("")}</div>` : `<div class="job-grid">${visible.map(item => this.jobCard(item)).join("")}</div>`) : `<div class="empty-state"><h3>Aucune piste dans cette famille</h3><p>Ce n’est pas un échec : le prototype ne force pas une piste lorsqu’elle ne remplit pas les conditions.</p></div>`}${tab === "all" ? this.pagination(this.state.resultsPage, pages, "result-page") : ""}`;
+        container.innerHTML = `<div class="result-intro"><h3>${label}</h3><p>${description}</p></div>${tab === "all" ? `<div class="field" style="max-width:260px;margin-bottom:16px"><label for="resultSort">Trier par</label><select id="resultSort">${this.options([["fit", "Accord personnel"], ["title", "Intitulé"], ["opportunity", "Opportunités"]], this.state.resultsSort)}</select></div>` : ""}${visible.length ? (tab === "all" ? `<div class="compact-list">${visible.map(item => this.compactJobRow(item)).join("")}</div>` : `<div class="job-grid">${visible.map(item => this.jobCard(item)).join("")}</div>`) : `<div class="empty-state"><h3>Aucune piste dans cette famille</h3><p>Ce n’est pas un échec : l’application ne force pas une piste lorsqu’elle ne remplit pas les conditions.</p></div>`}${tab === "all" ? this.pagination(this.state.resultsPage, pages, "result-page") : ""}`;
       },
 
       resultItems(tab) {
@@ -16602,7 +16602,7 @@ const BoussoleRuntimeProvider = {
         this.state.lastDialogContext = { view: this.state.view, scrollY: window.scrollY, resultsTab: this.state.resultsTab, resultsPage: this.state.resultsPage, explorationPage: this.state.explorationPage };
         const favorite = this.state.favorites.has(jobId);
         const score = this.state.profileExists ? `<span class="badge blue">Accord ${Math.round(detail.personalFitScore || 0)}/100 · ${this.escape(this.humanize(detail.personalFitLevel || "à explorer"))}</span>` : "";
-        this.dom.dialogContent.innerHTML = `<header class="dialog-header"><button class="button compact dialog-close" data-action="close-dialog">${this.icon("retour")} Retour</button><div class="dialog-title"><div class="job-meta">${this.escape(detail.romeCode)} · ${this.escape(detail.primaryDirectionLabel)}</div><h2 id="jobDialogTitle">${this.escape(detail.title)}</h2></div><button class="icon-button dialog-close" data-action="close-dialog" aria-label="Fermer la fiche">${this.icon("fermer")}</button></header><div class="dialog-body"><div><section class="detail-section"><div class="actions">${score}<span class="badge">${this.escape(detail.primaryDirectionLabel)}</span></div><h3 style="margin-top:16px">Mission</h3><p>${this.escape(detail.description || detail.shortMission || "Description détaillée à compléter depuis la source ROME.")}</p><div class="actions"><button class="button primary" data-action="toggle-favorite" data-job-id="${jobId}">${this.icon("coeur")} ${favorite ? "Retirer de Ma liste" : "Ajouter à Ma liste"}</button></div></section><section class="detail-section"><h3>Activités et réalité quotidienne</h3>${this.listHtml(detail.activities, "Les activités détaillées restent à vérifier dans la source métier.")}${this.dailyRealityHtml(detail.dailyReality)}</section><section class="detail-section"><h3>Chemin d’accès</h3><p><strong>${this.escape(detail.accessSummary?.accessStatusLabel || detail.accessSummary?.displayLabel || "À vérifier")}</strong></p>${this.listHtml(detail.namedRoutes || detail.accessSummary?.namedRoutes, "Les principales voies ne sont pas disponibles pour ce métier.")}</section></div><div><section class="detail-section"><h3>Pourquoi cette piste me correspond</h3>${this.state.profileExists ? this.listHtml(detail.personalFitReasons || detail.agreementReasons, "Les raisons seront précisées avec une boussole plus complète.") : '<p>Créez Ma Boussole pour afficher cette lecture personnalisée.</p>'}</section><section class="detail-section"><h3>Mes appuis actuels</h3>${this.state.profileExists ? `<p><strong>${this.escape(detail.skillsReadiness?.label || "Informations insuffisantes")}</strong></p>${this.listHtml(detail.skillsReadinessEvidence || detail.transferableSupports, "Aucun appui n’a encore été identifié dans la boussole.")}` : '<p>Non calculés sans profil.</p>'}</section><section class="detail-section"><h3>Marché par territoire</h3>${this.marketBars(detail.marketSummaryByTerritory)}${this.modeDetail(detail.marketSummaryByTerritory)}</section><section class="detail-section"><h3>Variantes et appellations</h3>${this.listHtml(this.jobById(jobId)?.appellations, "Aucune appellation supplémentaire dans le prototype.")}</section><section class="detail-section"><h3>Points à vérifier</h3>${this.listHtml(detail.pointsToVerify, "Aucun point particulier signalé dans les données disponibles.")}${this.modeSources(detail)}</section></div></div>`;
+        this.dom.dialogContent.innerHTML = `<header class="dialog-header"><button class="button compact dialog-close" data-action="close-dialog">${this.icon("retour")} Retour</button><div class="dialog-title"><div class="job-meta">${this.escape(detail.romeCode)} · ${this.escape(detail.primaryDirectionLabel)}</div><h2 id="jobDialogTitle">${this.escape(detail.title)}</h2></div><button class="icon-button dialog-close" data-action="close-dialog" aria-label="Fermer la fiche">${this.icon("fermer")}</button></header><div class="dialog-body"><div><section class="detail-section"><div class="actions">${score}<span class="badge">${this.escape(detail.primaryDirectionLabel)}</span></div><h3 style="margin-top:16px">Mission</h3><p>${this.escape(detail.description || detail.shortMission || "Description détaillée à compléter depuis la source ROME.")}</p><div class="actions"><button class="button primary" data-action="toggle-favorite" data-job-id="${jobId}">${this.icon("coeur")} ${favorite ? "Retirer de Ma liste" : "Ajouter à Ma liste"}</button></div></section><section class="detail-section"><h3>Activités et réalité quotidienne</h3>${this.listHtml(detail.activities, "Les activités détaillées restent à vérifier dans la source métier.")}${this.dailyRealityHtml(detail.dailyReality)}</section><section class="detail-section"><h3>Chemin d’accès</h3><p><strong>${this.escape(detail.accessSummary?.accessStatusLabel || detail.accessSummary?.displayLabel || "À vérifier")}</strong></p>${this.listHtml(detail.namedRoutes || detail.accessSummary?.namedRoutes, "Les principales voies ne sont pas disponibles pour ce métier.")}</section></div><div><section class="detail-section"><h3>Pourquoi cette piste me correspond</h3>${this.state.profileExists ? this.listHtml(detail.personalFitReasons || detail.agreementReasons, "Les raisons seront précisées avec une boussole plus complète.") : '<p>Créez Ma Boussole pour afficher cette lecture personnalisée.</p>'}</section><section class="detail-section"><h3>Mes appuis actuels</h3>${this.state.profileExists ? `<p><strong>${this.escape(detail.skillsReadiness?.label || "Informations insuffisantes")}</strong></p>${this.listHtml(detail.skillsReadinessEvidence || detail.transferableSupports, "Aucun appui n’a encore été identifié dans la boussole.")}` : '<p>Non calculés sans profil.</p>'}</section><section class="detail-section"><h3>Marché par territoire</h3>${this.marketBars(detail.marketSummaryByTerritory)}${this.modeDetail(detail.marketSummaryByTerritory)}</section><section class="detail-section"><h3>Variantes et appellations</h3>${this.listHtml(this.jobById(jobId)?.appellations, "Aucune appellation supplémentaire dans les données disponibles.")}</section><section class="detail-section"><h3>Points à vérifier</h3>${this.listHtml(detail.pointsToVerify, "Aucun point particulier signalé dans les données disponibles.")}${this.modeSources(detail)}</section></div></div>`;
         this.dom.dialog.showModal();
         document.body.classList.add("dialog-open");
         this.dom.dialog.querySelector(".dialog-close")?.focus();
@@ -16712,7 +16712,7 @@ const BoussoleRuntimeProvider = {
           const response = await fetch("data/generated/active-runtime.json", { cache: "no-store" });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const descriptor = await response.json();
-          this.state.dataCheck = `Paquet local détecté : ${descriptor.runtime?.runtimeReleaseId || descriptor.runtime?.runtimeBundleRevision || "identité disponible"}. Le prototype conserve son échantillon ROME100.`;
+          this.state.dataCheck = `Paquet local détecté : ${descriptor.runtime?.runtimeReleaseId || descriptor.runtime?.runtimeBundleRevision || "identité disponible"}. Les données compactes restent contrôlées avant leur activation.`;
         } catch (error) {
           this.state.dataCheck = "Paquet externe indisponible : le repli embarqué ROME100 reste pleinement utilisable.";
         }
@@ -16759,7 +16759,7 @@ const BoussoleRuntimeProvider = {
       },
       marketOpportunity(item) { return Object.values(item.marketSummaryByTerritory || {}).reduce((sum, row) => sum + ({ very_favorable: 5, favorable: 4, moderate: 3, limited: 2, zero: 1 }[row.level] || 0), 0); },
       marketLabel(level) { return ({ very_favorable: "Très favorable", favorable: "Favorable", moderate: "Modéré", limited: "Limité", zero: "Zéro observé", unknown: "À vérifier" })[level] || "À vérifier"; },
-      marketComparison(summary = {}) { return [["national", "France"], ["regional", "Région"], ["departmental", "Département"]].map(([key, label]) => `${label} : ${summary[key]?.availability === "available" ? this.marketLabel(summary[key].level) : "non disponible"}`).join(" · "); },
+      marketComparison(summary = {}) { return [["national", "France"], ["regional", "Occitanie"], ["departmental", "Aude"]].map(([key, label]) => `${label} : ${this.marketClimate(summary[key] || {}).verdict}`).join(" · "); },
       dailyRealityHtml(dailyReality) {
         if (!dailyReality || typeof dailyReality !== "object") return "";
         const confirmed = this.array(dailyReality.confirmedConstraints || dailyReality.matchedConstraints);
@@ -16779,7 +16779,7 @@ const BoussoleRuntimeProvider = {
       listHtml(items, empty) { const rows = this.array(items).filter(Boolean); return rows.length ? `<ul>${rows.slice(0, 12).map(item => { const raw = typeof item === "string" ? item : item.label || item.title || item.message || JSON.stringify(item); return `<li>${this.escape(this.referenceLabel(raw))}</li>`; }).join("")}</ul>` : `<p>${this.escape(empty)}</p>`; },
       listLabels(items) { return this.array(items).length ? this.array(items).map(item => this.humanize(item)).join(", ") : "Non précisé"; },
       referenceLabel(value) { const raw = String(value || ""); if (!raw.startsWith("skill-")) return raw; return this.state.dataset.skills.find(skill => skill.id === raw)?.label || raw.replace(/^skill-(?:rome-)?/, "").replaceAll("-", " "); },
-      humanize(value) { const labels = { meaning: "Sens", service: "Utilité", solidarity: "Solidarité", children: "Enfants", stability: "Stabilité", user: "Utilisateur", companion: "Accompagnateur", debug: "Debug", complete: "Complètes", partial: "Partielles", absent: "Non disponibles" }; return labels[value] || String(value || "À vérifier").replaceAll("_", " ").replace(/^./, char => char.toUpperCase()); },
+      humanize(value) { const labels = { meaning: "Sens", service: "Utilité", solidarity: "Solidarité", children: "Enfants", stability: "Stabilité", user: "Utilisateur", companion: "Accompagnateur", debug: "Debug", complete: "Complètes", partial: "Partielles", absent: "Non disponibles", high: "Élevée", medium: "Moyenne", low: "Faible" }; return labels[value] || String(value || "À vérifier").replaceAll("_", " ").replace(/^./, char => char.toUpperCase()); },
       formatDate(value) { if (!value) return "non enregistrée"; try { return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); } catch (error) { return "à l’instant"; } },
       updateSaveLine() { const node = document.getElementById("saveLine"); if (node) node.innerHTML = `<span class="status-dot" aria-hidden="true"></span>${this.state.storageAvailable ? `Enregistré localement ${this.formatDate(this.state.lastSavedAt)}` : "Sauvegarde locale indisponible"}`; },
       announce(message) { this.dom.live.textContent = ""; requestAnimationFrame(() => { this.dom.live.textContent = message; }); },
@@ -17722,7 +17722,9 @@ const BoussoleRuntimeProvider = {
       const tension = tensionClass === null ? null : 100 * (tensionClass - 1) / 4;
       const presenceText = presence === null ? "Présence inconnue" : presence === 0 ? "Aucune présence observée" : presence < 20 ? "Très peu présent" : presence < 40 ? "Peu présent" : presence < 60 ? "Présence modérée" : presence < 80 ? "Présent" : "Très présent";
       const tensionText = tensionClass === null ? "tension inconnue" : `tension ${{ 1: "très faible", 2: "faible", 3: "moyenne", 4: "forte", 5: "très forte" }[tensionClass]}`;
-      if (presence === null && tension === null) return { key: "indisponible", verdict: "Indisponible", popoverVerdict: "Indisponible", presence, tension, tensionClass, presenceText, tensionText };
+      if (presence === null && tension === null) return row.availability === "partial"
+        ? { key: "partiel", verdict: "Données partielles", popoverVerdict: "Données partielles", presence, tension, tensionClass, presenceText, tensionText }
+        : { key: "indisponible", verdict: "Indisponible", popoverVerdict: "Indisponible", presence, tension, tensionClass, presenceText, tensionText };
       if (presence === null || tension === null) return { key: "partiel", verdict: "Données partielles", popoverVerdict: "Données partielles", presence, tension, tensionClass, presenceText, tensionText };
       if (presence >= 60 && tension >= 60) return { key: "porteur", verdict: "Porteur", popoverVerdict: "Marché porteur", presence, tension, tensionClass, presenceText, tensionText };
       if (presence < 60 && tension >= 60) return { key: "niche", verdict: "Niche en tension", popoverVerdict: "Niche en tension", presence, tension, tensionClass, presenceText, tensionText };

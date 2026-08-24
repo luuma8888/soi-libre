@@ -645,7 +645,13 @@ function compactMarketJob(job) {
 
 function compactMarketTerritory(stats, territoryId) {
   const raw = stats[TERRITORY_KEYS[territoryId]] || {};
-  const offersCount = numberOrNull(raw.offersFranceTravail12m ?? raw.offers12m);
+  // Les signaux publiés sont calculés sur le volume total observé. Le sous-volume
+  // France Travail peut être arrondi à zéro et ne doit donc pas les contredire.
+  const rawOffersCount = numberOrNull(raw.offers12m ?? raw.offersAll12m ?? raw.offersFranceTravail12m);
+  const offersLevel = raw.absoluteOfferSignal || (rawOffersCount === 0 ? "zero" : "unknown");
+  const territorialSignal = raw.territorialOfferSignal || (rawOffersCount === 0 ? "zero_local" : "unknown");
+  const contradictoryZero = rawOffersCount === 0 && (offersLevel === "medium" || ["medium_local", "strong_local", "top_local"].includes(territorialSignal));
+  const offersCount = contradictoryZero ? null : rawOffersCount;
   const families = array(stats.fapEnrichment?.territories?.[territoryId]);
   const synthesis = synthesizeFapFamilies(families);
   const ambiguous = synthesis.status === "ambiguous";
@@ -656,12 +662,12 @@ function compactMarketTerritory(stats, territoryId) {
   const difficultyAvailable = bmo?.recruitmentDifficulty?.status === "available";
   const hasOffers = Number.isFinite(offersCount);
   const hasContext = Boolean(dares || difficultyAvailable);
-  const availability = ambiguous ? "ambiguous" : hasOffers && hasContext ? "available" : hasOffers || hasContext ? "partial" : "unavailable";
+  const availability = ambiguous ? "ambiguous" : contradictoryZero ? "partial" : hasOffers && hasContext ? "available" : hasOffers || hasContext ? "partial" : "unavailable";
   return {
     availability,
     offersCount,
-    offersLevel: raw.absoluteOfferSignal || (offersCount === 0 ? "zero" : "unknown"),
-    territorialSignal: raw.territorialOfferSignal || (offersCount === 0 ? "zero_local" : "unknown"),
+    offersLevel: contradictoryZero ? "unknown" : offersLevel,
+    territorialSignal: contradictoryZero ? "unknown" : territorialSignal,
     tensionClass: !tensionImputed && dares?.displayAsOfficialClass ? numberOrNull(dares.publishedDiscreteClass ?? dares.tension?.details?.publishedDiscreteClass) : null,
     tensionLevel: dares?.tension?.level || "unknown",
     tensionImputed,

@@ -372,7 +372,7 @@ function normalizeRuntimeShell(source) {
     .replaceAll("métiers réels embarqués", "métiers réels disponibles")
     .replaceAll("ROME100 stratifié", "ROME1000 actif")
     .replaceAll(
-      "Les 17 directions sont couvertes. Le prototype fonctionne sans connexion et n’effectue aucun appel réseau au démarrage.",
+      "Les 17 directions sont couvertes. L’application fonctionne sans connexion et n’effectue aucun appel réseau au démarrage.",
       "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation."
     )
     .replaceAll(
