@@ -412,7 +412,21 @@ try {
   assert("favorites_persist_in_state", listState.favorites.length >= 1, listState.favorites);
   assert("compare_two_jobs", listState.comparisonVisible === true, listState);
   assert("local_storage_saved", listState.storageSaved === true, listState.storageSaved);
+  const favoriteListControls = await evaluate(cdp, `(() => {
+    const ids=RefonteApp.state.results.completeList.slice(0,4).map(item=>item.jobId);
+    ids.forEach(id=>RefonteApp.state.favorites.add(id)); RefonteApp.state.compare.clear(); RefonteApp.renderList();
+    ids.forEach(id=>document.querySelector('.favorite-row [data-action="toggle-compare"][data-job-id="'+id+'"]')?.click());
+    const fourth=document.querySelector('.favorite-row [data-action="toggle-compare"][data-job-id="'+ids[3]+'"]');
+    const rows=[...document.querySelectorAll('.favorite-row')]; const openButtons=[...document.querySelectorAll('.favorite-row [data-action="open-job"]')];
+    return {selected:RefonteApp.state.compare.size,fourthChecked:Boolean(fourth?.checked),guide:document.getElementById('compareLimit')?.innerText||'',rowCompareTexts:rows.map(row=>row.querySelector('.compare-cell')?.innerText.trim()),openButtons:openButtons.length,allOpenButtonsExplicit:openButtons.every(button=>button.textContent.trim()==='Voir la fiche'),toast:document.getElementById('toast')?.innerText||''};
+  })()`);
+  assert("favorite_list_comparison_limit_and_controls", favoriteListControls.selected === 3 && favoriteListControls.fourthChecked === false && favoriteListControls.guide.includes("3/3") && favoriteListControls.rowCompareTexts.every(text => text === "") && favoriteListControls.openButtons >= 4 && favoriteListControls.allOpenButtonsExplicit && favoriteListControls.toast.includes("limitée à trois métiers"), favoriteListControls);
   await capture(cdp, "05-ma-liste-bureau.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true, screenWidth: 375, screenHeight: 900 });
+  const favoriteListMobile = await evaluate(cdp, `(() => ({overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,rows:[...document.querySelectorAll('.favorite-row')].map(row=>({width:Math.round(row.getBoundingClientRect().width),actionsWidth:Math.round(row.querySelector('.actions')?.getBoundingClientRect().width||0)})),guide:document.getElementById('compareLimit')?.innerText||''}))()`);
+  assert("favorite_list_mobile_no_overflow", favoriteListMobile.overflow <= 1 && favoriteListMobile.rows.every(row => row.width <= 347 && row.actionsWidth <= 347) && favoriteListMobile.guide.includes("3/3"), favoriteListMobile);
+  await capture(cdp, "05-ma-liste-375.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 1000 });
 
   await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.navigate("menu")`);
   await capture(cdp, "06-menu-bureau.png");

@@ -209,6 +209,14 @@
     .compact-list { display: grid; gap: 1px; border-block: 1px solid var(--line); }
     .compact-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) minmax(170px, .55fr) auto; gap: 12px; align-items: center; min-height: 58px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
     .compact-row:last-child { border-bottom: 0; }
+    .favorite-list-head { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; margin-top: 18px; padding: 8px 4px; border-block: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+    .compare-column-title { display: inline-flex; align-items: center; gap: 5px; color: var(--ink); font-weight: 800; }
+    .compare-column-title .icon { width: 17px; height: 17px; }
+    .favorite-list { border-top: 0; }
+    .favorite-row .compare-cell { display: grid; width: 44px; min-height: 44px; margin: auto; place-items: center; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); cursor: pointer; }
+    .favorite-row .compare-cell:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+    .favorite-row .compare-cell input { width: 22px; min-height: 22px; margin: 0; accent-color: var(--brand); cursor: pointer; }
+    .favorite-row .actions { flex-wrap: nowrap; }
     .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 20px; }
 
     .empty-state { padding: 34px 0; border-block: 1px solid var(--line); text-align: center; }
@@ -276,6 +284,7 @@
       .direction-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .compact-row { grid-template-columns: 72px minmax(0, 1fr) auto; }
       .compact-row .row-direction { grid-column: 2 / -1; }
+      .favorite-list-head { grid-template-columns: 72px minmax(0, 1fr); }
       .search-bar { grid-template-columns: minmax(0, 1fr) auto; }
       .search-bar .reset-search { grid-column: 1 / -1; }
       .settings-band { grid-template-columns: 1fr; gap: 8px; }
@@ -297,6 +306,9 @@
       .top-list button strong:last-child { grid-column: 2; }
       .compact-row { grid-template-columns: 64px minmax(0, 1fr); }
       .compact-row .actions { grid-column: 1 / -1; }
+      .favorite-list-head { grid-template-columns: 64px minmax(0, 1fr); }
+      .compare-column-title { display: grid; justify-items: center; gap: 1px; font-size: .7rem; }
+      .favorite-row .actions { justify-content: flex-end; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -16346,6 +16358,7 @@ const BoussoleRuntimeProvider = {
           fermer: '<path d="m6 6 12 12M18 6 6 18"/>',
           imprimer: '<path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/>',
           telecharger: '<path d="M12 3v12m0 0 5-5m-5 5-5-5"/><path d="M5 21h14"/>',
+          comparer: '<rect x="3" y="5" width="7" height="14" rx="1"/><rect x="14" y="5" width="7" height="14" rx="1"/><path d="M6 9h1M6 12h1M6 15h1M17 9h1M17 12h1M17 15h1"/>',
           lune: '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>',
           poubelle: '<path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/>'
         };
@@ -16747,7 +16760,8 @@ const BoussoleRuntimeProvider = {
 
       renderList() {
         const items = [...this.state.favorites].map(id => this.summaryForJob(id)).filter(Boolean);
-        this.dom.main.innerHTML = `<div class="view"><div class="view-heading"><div><p class="eyebrow">Sélection personnelle</p><h2>Ma liste</h2><p>Retrouvez, comparez et exportez les métiers que vous souhaitez garder en vue.</p></div>${items.length ? `<div class="actions"><button class="button" data-action="export-list">${this.icon("telecharger")} Exporter</button><button class="button" data-action="print">${this.icon("imprimer")} Imprimer</button></div>` : ""}</div>${items.length ? `<div class="compact-list">${items.map(item => `<div class="compact-row"><label class="choice"><input type="checkbox" data-action="toggle-compare" data-job-id="${item.jobId}" ${this.state.compare.has(item.jobId) ? "checked" : ""}><span>Comparer</span></label><div><strong>${this.escape(item.title)}</strong><div class="job-meta">${this.escape(item.romeCode)} · accord ${Math.round(item.personalFitScore || 0)}/100</div></div><span class="row-direction">${this.escape(item.primaryDirectionLabel)}</span><div class="actions"><button class="icon-button" data-action="open-job" data-job-id="${item.jobId}" aria-label="Voir la fiche de ${this.escape(item.title)}">${this.icon("exploration")}</button><button class="icon-button" data-action="toggle-favorite" data-job-id="${item.jobId}" aria-label="Retirer ${this.escape(item.title)} de Ma liste">${this.icon("poubelle")}</button></div></div>`).join("")}</div>${this.compareHtml()}` : '<div class="empty-state"><h3>Votre liste est vide</h3><p>Ajoutez des métiers depuis Résultats, Exploration ou une fiche métier.</p><button class="button primary" data-view-link="exploration">Explorer les métiers</button></div>'}</div>`;
+        const selectedCount = this.state.compare.size;
+        this.dom.main.innerHTML = `<div class="view"><div class="view-heading"><div><p class="eyebrow">Sélection personnelle</p><h2>Ma liste</h2><p>Retrouvez, comparez et exportez les métiers que vous souhaitez garder en vue.</p></div>${items.length ? `<div class="actions"><button class="button" data-action="export-list">${this.icon("telecharger")} Exporter</button><button class="button" data-action="print">${this.icon("imprimer")} Imprimer</button></div>` : ""}</div>${items.length ? `<div class="favorite-list-head" id="compareLimit"><span class="compare-column-title">${this.icon("comparer")} Comparer</span><span>Sélectionnez 2 ou 3 métiers · ${selectedCount}/3 sélectionné${selectedCount > 1 ? "s" : ""}.</span></div><div class="compact-list favorite-list">${items.map(item => `<div class="compact-row favorite-row"><label class="compare-cell" title="Comparer ${this.escape(item.title)}"><input type="checkbox" data-action="toggle-compare" data-job-id="${item.jobId}" aria-label="Comparer ${this.escape(item.title)}" aria-describedby="compareLimit" ${this.state.compare.has(item.jobId) ? "checked" : ""}></label><div><strong>${this.escape(item.title)}</strong><div class="job-meta">${this.escape(item.romeCode)} · accord ${this.formatPersonalScore(item.personalFitScore)}/100</div></div><span class="row-direction">${this.escape(item.primaryDirectionLabel)}</span><div class="actions"><button class="button compact" data-action="open-job" data-job-id="${item.jobId}">Voir la fiche</button><button class="icon-button" data-action="toggle-favorite" data-job-id="${item.jobId}" aria-label="Retirer ${this.escape(item.title)} de Ma liste" title="Retirer de Ma liste">${this.icon("poubelle")}</button></div></div>`).join("")}</div>${this.compareHtml()}` : '<div class="empty-state"><h3>Votre liste est vide</h3><p>Ajoutez des métiers depuis Résultats, Exploration ou une fiche métier.</p><button class="button primary" data-view-link="exploration">Explorer les métiers</button></div>'}</div>`;
       },
 
       compareHtml() {
@@ -16814,10 +16828,10 @@ const BoussoleRuntimeProvider = {
         this.toast(this.state.favorites.has(jobId) ? "Métier ajouté à Ma liste." : "Métier retiré de Ma liste.");
         trigger?.setAttribute("aria-pressed", String(this.state.favorites.has(jobId)));
       },
-      toggleCompare(jobId) {
+      toggleCompare(jobId, trigger) {
         if (this.state.compare.has(jobId)) this.state.compare.delete(jobId);
         else if (this.state.compare.size < 3) this.state.compare.add(jobId);
-        else { this.toast("La comparaison est limitée à trois métiers."); return; }
+        else { if (trigger) trigger.checked = false; this.toast("La comparaison est limitée à trois métiers."); this.announce("Maximum atteint : retirez un métier avant d’en sélectionner un autre."); return; }
         this.render();
       },
 
