@@ -415,6 +415,21 @@
       .market-climate-territories, .market-data-grid { grid-template-columns: 1fr; }
       .market-climate-territory { min-height: 54px; }
     }
+    .qualification-list { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+    .qualification-chip { display:inline-flex; align-items:center; gap:8px; padding:7px 9px; border:1px solid var(--border); border-radius:8px; background:var(--surface); }
+    .qualification-chip small { color:var(--muted); }
+    .qualification-suggestions { position:absolute; z-index:8; inset-inline:0; top:100%; max-height:260px; overflow:auto; border:1px solid var(--border); background:var(--surface); box-shadow:var(--shadow); }
+    .qualification-suggestions:empty { display:none; }
+    .qualification-suggestions button { display:block; width:100%; padding:10px 12px; border:0; border-bottom:1px solid var(--border); background:transparent; color:inherit; text-align:left; }
+    .qualification-suggestions button[aria-selected="true"], .qualification-suggestions button:hover { background:var(--brand-soft); }
+    .qualification-unresolved li { margin-block:8px; }
+    .results-export { position:relative; }
+    .results-export summary { list-style:none; cursor:pointer; }
+    .results-export summary::-webkit-details-marker { display:none; }
+    .results-export-menu { position:absolute; z-index:10; right:0; width:min(330px, calc(100vw - 32px)); padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); box-shadow:var(--shadow); }
+    .results-export-menu button { width:100%; margin-bottom:6px; text-align:left; }
+    .results-export-menu p { margin:8px 2px 2px; color:var(--muted); font-size:.88rem; }
+    @media (max-width: 600px) { .results-actions { width:100%; display:flex; flex-wrap:wrap; gap:8px; } .results-export { flex:1; } .results-export > summary { width:100%; } }
   </style>
 </head>
 <body data-theme="light">
@@ -439,7 +454,7 @@
   </main>
 
   <nav class="mobile-nav" aria-label="Navigation principale mobile" id="mobileNav"></nav>
-  <footer class="app-footer">Boussole Pro v1.5.1 - données personnelles conservées sur cet appareil.</footer>
+  <footer class="app-footer">Boussole Pro v1.5.2 - données personnelles conservées sur cet appareil.</footer>
 
   <dialog id="jobDialog" aria-labelledby="jobDialogTitle">
     <div id="jobDialogContent"></div>
@@ -4093,6 +4108,7 @@ function mapUserProfileToCriteria(profile) {
     certifications: {
       held: unique([...toArray(profile.certifications), ...toArray(profile.freeCertifications)]),
       licenses: toArray(profile.driverLicenses),
+      driverLicenseBStatus: ["yes", "no", "not_specified"].includes(profile.driverLicenseBStatus) ? profile.driverLicenseBStatus : "not_specified",
       willingToObtain: trainingOpenness === "none" ? [] : ["short_certification", allowsLongTraining(trainingOpenness) ? "long_certification" : ""].filter(Boolean)
     },
     experience: {
@@ -4121,6 +4137,7 @@ function mapUserProfileToCriteria(profile) {
       relocation: profile.mobility?.relocation || "no",
       travelAccepted: constraints.travel === "excluding" ? "none" : constraints.travel === "avoid" ? "low" : "medium",
       driverLicenses: toArray(profile.driverLicenses),
+      driverLicenseBStatus: ["yes", "no", "not_specified"].includes(profile.driverLicenseBStatus) ? profile.driverLicenseBStatus : "not_specified",
       remotePreference: constraints.remoteNeeded === "excluding" ? "essential" : "neutral"
     },
     availability: profile.availability || {},
@@ -6337,6 +6354,7 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   const trainingDuration = resolveAccessTrainingDuration(access, accessPathEvaluation.paths);
   const exactExperience = evaluateExactJobExperience(criteria, job);
   const accessRequiredCredentials = getAccessRequiredCredentialLabels(access);
+  const accessRequiredLicenses = unique(toArray(access.requiredLicenseIds));
   const requiredExams = unique([
     ...toArray(access.requiredExams),
     ...accessPathEvaluation.paths.filter(path => path.examRequired).map(path => path.examLabel || path.label)
@@ -6346,6 +6364,9 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   const recommendedCerts = unique([...toArray(job.recommendedCertifications), ...toArray(access.citedCertifications), ...accessOptionalCredentials]);
   const advantageCerts = unique([...toArray(access.advantageCertifications), ...extractAdvantageCertificationsFromAccess(job)]);
   const missingRequiredCertifications = requiredCerts.filter(certId => !hasCertificationEquivalent(held, certId));
+  const licenseChecks = accessRequiredLicenses.map(id => ({ id, status: requiredLicenseStatus(criteria, id) }));
+  const missingRequiredLicenses = licenseChecks.filter(item => item.status === "missing").map(item => item.id);
+  const unknownRequiredLicenses = licenseChecks.filter(item => item.status === "unknown").map(item => item.id);
   const heldAdvantageCertifications = advantageCerts.filter(certId => hasCertificationEquivalent(held, certId));
   const currentDiplomaLevel = Number(criteria.education?.highestLevel || 0);
   const requiredLevel = numberOrNull(job.requiredDiplomaLevel);
@@ -6372,8 +6393,13 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
   if (!evidenceAvailable) cautions.push("Conditions d’accès officielles non disponibles : évaluation neutre.");
   if (missingRequiredCertifications.length) {
     score -= criteria.education?.canDoShortTraining ? 22 : 42;
-    cautions.push(`Qualification spécifique obligatoire manquante : ${missingRequiredCertifications.join(", ")}.`);
+    cautions.push(`Qualification spécifique obligatoire manquante : ${missingRequiredCertifications.map(qualificationDisplayLabel).join(", ")}.`);
   }
+  if (missingRequiredLicenses.length) {
+    score -= 32;
+    cautions.push(`Permis obligatoire déclaré absent : ${missingRequiredLicenses.map(qualificationDisplayLabel).join(", ")}.`);
+  }
+  if (unknownRequiredLicenses.length) cautions.push(`Permis à confirmer : ${unknownRequiredLicenses.map(qualificationDisplayLabel).join(", ")}.`);
   const leadPath = accessPathEvaluation.best || accessPathEvaluation.leadPathCandidate;
   if (leadPath?.eligibilityStatus === "to_verify" || leadPath?.examStatus === "not_passed_or_unknown") {
     score = Math.min(score, 52);
@@ -6420,7 +6446,7 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     score += 6;
     reasons.push("Formation connue dans une famille proche.");
   }
-  if (missingRequiredCertifications.length) {
+  if (missingRequiredCertifications.length || missingRequiredLicenses.length) {
     score = Math.min(score, criteria.education?.canDoLongTraining ? 38 : 28);
   }
   const confidence = evidenceAvailable || pathEvidenceAvailable
@@ -6441,11 +6467,16 @@ function evaluateAccessFeasibility(criteria = {}, job = {}) {
     requirementKind: accessRequirementKind,
     mandatory,
     specificCredentialRequired: Boolean(access.specificCredentialRequired || accessRequiredCredentials.length),
-    requiredCredentialLabels: accessRequiredCredentials,
+    requiredCredentialLabels: accessRequiredCredentials.map(qualificationDisplayLabel),
+    requiredQualificationIds: accessRequiredCredentials,
+    requiredLicenseIds: accessRequiredLicenses,
     requiredExams,
     examStatus: requiredExams.length ? "not_passed_or_unknown" : "not_required",
-    optionalCredentialLabels: accessOptionalCredentials,
+    optionalCredentialLabels: accessOptionalCredentials.map(qualificationDisplayLabel),
+    optionalQualificationIds: accessOptionalCredentials,
     missingRequiredCertifications,
+    missingRequiredLicenses,
+    unknownRequiredLicenses,
     advantageCertifications: advantageCerts,
     heldAdvantageCertifications,
     exactExperience,
@@ -6497,21 +6528,36 @@ function evaluateAccessPaths(criteria = {}, rawPaths = []) {
       remainingEffortScore: 99,
       nextAction: "Choisir une voie ouverte pour la session visée"
     };
-    const missingCredentials = toArray(path.requiredCredentialLabels).filter(label => !hasCertificationEquivalent(held, label));
+    const missingCredentials = toArray(path.requiredQualificationIds).filter(id => !hasCertificationEquivalent(held, id));
+    const missingLicenses = toArray(path.requiredLicenseIds).filter(id => requiredLicenseStatus(criteria, id) === "missing");
+    const unknownLicenses = toArray(path.requiredLicenseIds).filter(id => requiredLicenseStatus(criteria, id) === "unknown");
+    missingCredentials.push(...missingLicenses);
     if (missingCredentials.length) {
+      const missingCredentialLabels = missingCredentials.map(qualificationDisplayLabel);
       const status = duration.category === "long" ? "eligible_after_long_step" : duration.category === "short" ? "eligible_after_short_step" : "eligibility_to_verify";
       return {
         ...base,
         status,
         eligibilityStatus: duration.category === "unknown" ? "to_verify" : "not_eligible_currently",
-        missingCredentials,
-        missingRequirements: missingCredentials,
-        unknownRequirements: duration.category === "unknown" ? ["Durée du parcours de qualification"] : [],
+        missingCredentials: missingCredentialLabels,
+        missingRequirements: missingCredentialLabels,
+        unknownRequirements: unique([...(duration.category === "unknown" ? ["Durée du parcours de qualification"] : []), ...unknownLicenses.map(qualificationDisplayLabel)]),
         remainingEffortScore: duration.category === "long" ? 8 : duration.category === "short" ? 4 : 6,
         reasons: [duration.category === "unknown" ? "Qualification obligatoire manquante ; durée à vérifier." : "Qualification obligatoire manquante."],
         nextAction: duration.category === "unknown" ? "Vérifier la durée et la voie d’obtention de la qualification" : "Obtenir la qualification obligatoire"
       };
     }
+    if (unknownLicenses.length) return {
+      ...base,
+      status: "eligibility_to_verify",
+      eligibilityStatus: "to_verify",
+      reasons: ["La détention du permis requis n’est pas renseignée."],
+      missingRequirements: [],
+      unknownRequirements: unknownLicenses.map(qualificationDisplayLabel),
+      remainingEffortScore: 2,
+      priorityReason: "Permis requis à confirmer.",
+      nextAction: "Confirmer la détention du permis demandé pour cette voie"
+    };
     if (path.requiredExperienceYears) {
       if (totalExperienceYears < Number(path.requiredExperienceYears)) return {
         ...base,
@@ -6593,13 +6639,13 @@ function isMandatoryAccessRequirement(access = {}) {
 
 function getAccessRequiredCredentialLabels(access = {}) {
   return unique([
-    ...toArray(access.requiredCredentialLabels)
+    ...toArray(access.requiredQualificationIds)
   ].map(normalizeCredentialLabelForMatching).filter(Boolean));
 }
 
 function getAccessOptionalCredentialLabels(access = {}) {
   return unique([
-    ...toArray(access.optionalCredentialLabels),
+    ...toArray(access.optionalQualificationIds),
     ...toArray(access.advantageCertifications)
   ].map(normalizeCredentialLabelForMatching).filter(Boolean));
 }
@@ -6636,24 +6682,33 @@ function accessLevelCategoryToDiplomaLevel(category = "") {
 
 function normalizeCertificationKey(value = "") {
   const normalized = normalizeText(value);
-  if (/deass|assistant de service social/.test(normalized)) return "credential-deass";
-  if (/orthoptiste/.test(normalized)) return "credential-de-orthoptiste";
-  if (/infirmier/.test(normalized)) return "credential-de-infirmier";
-  if (/educateur sportif|code du sport|annexe ii-1/.test(normalized)) return "credential-educateur-sportif";
-  if (/permis d/.test(normalized)) return "license-d";
-  if (/carte professionnelle/.test(normalized)) return "credential-carte-professionnelle";
-  if (/habilitation electrique|basse et haute tension|risques d origine electrique/.test(normalized)) return "credential-habilitation-electrique";
-  if (/capacite professionnelle/.test(normalized)) return "credential-capacite-professionnelle";
-  if (/\bagrement\b/.test(normalized)) return "credential-agrement";
-  if (/^cert-bafa$|bafa/.test(normalized)) return "cert-bafa";
-  if (/^cert-bafd$|bafd/.test(normalized)) return "cert-bafd";
-  if (/permis b|license-b|licence-b/.test(normalized)) return "license-b";
-  return normalized;
+  const exact = {
+    bafa: "cert-bafa", "cert-bafa": "cert-bafa", bafd: "cert-bafd", "cert-bafd": "cert-bafd",
+    deass: "credential-deass", "credential-deass": "credential-deass",
+    orthoptiste: "credential-de-orthoptiste", "credential-de-orthoptiste": "credential-de-orthoptiste",
+    infirmier: "credential-de-infirmier", "credential-de-infirmier": "credential-de-infirmier",
+    "permis b": "license-b", "license-b": "license-b"
+  };
+  return exact[normalized] || String(value || "").trim();
 }
 
 function hasCertificationEquivalent(heldSet, certId = "") {
   const key = normalizeCertificationKey(certId);
   return heldSet.has(key) || (key === "cert-bafa" && heldSet.has("bafa")) || (key === "license-b" && heldSet.has("b"));
+}
+
+function requiredLicenseStatus(criteria = {}, licenseId = "") {
+  if (licenseId === "license-b") {
+    const status = criteria.certifications?.driverLicenseBStatus || criteria.mobility?.driverLicenseBStatus || "not_specified";
+    return status === "yes" ? "held" : status === "no" ? "missing" : "unknown";
+  }
+  const code = String(licenseId).replace(/^license-/, "").toUpperCase();
+  return toArray(criteria.certifications?.licenses).includes(code) ? "held" : "unknown";
+}
+
+function qualificationDisplayLabel(id = "") {
+  if (String(id).startsWith("license-")) return `Permis ${String(id).slice(8).toUpperCase()}`;
+  return App.state.dataset?.qualifications?.find(item => item.id === id)?.label || id;
 }
 
 function calculateTrainingScore(criteria, job) {
@@ -13697,7 +13752,8 @@ function evaluateConstraintAgainstJob(value, job, criteria) {
   }
   if (value === "driverLicenseRequired") {
     if (!mobility.source || mobility.source === "unknown") return { ...base, status: "unknown", category: "permis", message: "Information officielle non disponible dans le corpus." };
-    return levelStatus(Boolean(mobility.driverLicenseRequired) && !criteria.mobility.driverLicenses.includes("B"), mobility, base, "permis", "Ce metier semble demander le permis B, absent du profil.", { explicitNegative: mobility.driverLicenseRequired === false });
+    if (mobility.driverLicenseRequired && criteria.mobility.driverLicenseBStatus === "not_specified") return { ...base, status: "unknown", category: "permis", message: "Ce métier semble demander le permis B ; sa détention reste à confirmer.", source: mobility.source, confidence: mobility.confidence || 0, evidenceLevel: "official" };
+    return levelStatus(Boolean(mobility.driverLicenseRequired) && criteria.mobility.driverLicenseBStatus === "no", mobility, base, "permis", "Ce métier semble demander le permis B, déclaré absent du profil.", { explicitNegative: mobility.driverLicenseRequired === false || criteria.mobility.driverLicenseBStatus === "yes" });
   }
   if (value === "personalVehicleRequired") {
     if (typeof mobility.personalVehicleRequired !== "boolean") return { ...base, status: "unknown", category: "mobilite", message: "Le besoin d’un véhicule personnel n’est pas documenté pour ce métier." };
@@ -15697,7 +15753,7 @@ if (typeof window !== "undefined") {
 /* CLASSIC_ENGINE_END */
   </script>
   <script>
-    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.1","buildId":"20260823-consolidation-v1-5-1-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5-1","schemaVersion":"1.5.1","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d’aptitude aux fonctions d’animateur"}],"certifications":["cert-bafa"],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
+    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.5.2","buildId":"20260824-qualifications-results-export-v1-5-2-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-5-2","schemaVersion":"1.5.2","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d'aptitude aux fonctions d'animateur","type":"brevet"}],"certifications":["cert-bafa"],"unresolvedQualifications":[],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
   </script>
   <script>
 /* RUNTIME_PROVIDER_START */
@@ -15773,6 +15829,8 @@ const BoussoleRuntimeProvider = {
     const codes = jobs.map(job => job.romeCode);
     if (core?.schemaVersion !== manifest.resourceSchemaVersion || core?.datasetVersion !== manifest.datasetVersion || core?.generatedAt !== manifest.generatedAt) throw new Error("Identité du core incohérente.");
     if (jobs.length !== 1000 || new Set(codes).size !== 1000 || codes.some(code => !/^[A-Z][0-9]{4}$/.test(code || ""))) throw new Error("Corpus core invalide.");
+    const qualificationIds = (core.qualifications || []).map(item => item.id);
+    if (!qualificationIds.length || new Set(qualificationIds).size !== qualificationIds.length) throw new Error("Catalogue des qualifications invalide.");
   },
 
   validateCompetences(data, core, manifest) {
@@ -15911,6 +15969,7 @@ const BoussoleRuntimeProvider = {
       provenance: "generated_rome",
       confidence: 0.75,
       jobs,
+      qualifications: core.qualifications || [],
       skills,
       skillsEngine: skills,
       matchableSkills: skills.filter(item => item.classification === "skill_action"),
@@ -17871,6 +17930,178 @@ const BoussoleRuntimeProvider = {
         return;
       }
       return handleClickV151Base.call(this, event);
+    };
+
+    // v1.5.2 : qualifications canoniques et instantanés de résultats non importables.
+    const profileForCurrentInterfaceV152Base = RefonteApp.profileForCurrentInterface;
+    const profileForEngineV152Base = RefonteApp.profileForEngine;
+    const renderBoussoleStepV152Base = RefonteApp.renderBoussoleStep;
+    const renderResultsV152Base = RefonteApp.renderResults;
+    const ensureResultsV152Base = RefonteApp.ensureResults;
+    const handleClickV152Base = RefonteApp.handleClick;
+    const handleInputV152Base = RefonteApp.handleInput;
+    const handleKeydownV152Base = RefonteApp.handleKeydown;
+    const importProfileV152Base = RefonteApp.importProfile;
+    const createTestApiV152Base = RefonteApp.createTestApiV11;
+    RefonteApp.config.version = "1.5.2";
+    Object.assign(RefonteApp.state, { qualificationQuery: "", qualificationMatches: [], activeQualificationOption: -1, calculatedAt: null });
+
+    Object.assign(RefonteApp, {
+      qualificationTypeLabel(type) {
+        return ({ diplome_reglemente: "Diplôme réglementé", titre: "Titre", certification: "Certification", habilitation: "Habilitation", brevet: "Brevet", carte_professionnelle: "Carte professionnelle", agrement: "Agrément" })[type] || "Qualification";
+      },
+      certificationOptions() {
+        return this.array(this.state.dataset?.qualifications).filter(item => item.selectableInProfile).map(item => ({ id: item.id, label: item.label, shortLabel: item.shortLabel, type: item.type, searchTerms: this.array(item.searchTerms) })).sort((a, b) => a.label.localeCompare(b.label, "fr"));
+      },
+      searchQualifications(query) {
+        const q = this.normalize(query); if (q.length < 2) return [];
+        return this.certificationOptions().filter(item => this.normalize([item.label, item.shortLabel, ...item.searchTerms].join(" ")).includes(q)).slice(0, 8);
+      },
+      qualificationSuggestionsHtml() {
+        return this.state.qualificationMatches.map((item, index) => `<button type="button" id="qualification-option-${index}" role="option" aria-selected="${index === this.state.activeQualificationOption}" data-action="select-qualification" data-qualification-id="${item.id}"><strong>${this.escape(item.label)}</strong><br><small>${this.escape(this.qualificationTypeLabel(item.type))}</small></button>`).join("");
+      },
+      addQualification(id) {
+        const item = this.certificationOptions().find(row => row.id === id);
+        if (!item || this.state.profile.certificationSelections.some(row => row.id === id)) return;
+        this.state.profile.certificationSelections.push({ id: item.id, label: item.label, type: item.type });
+        this.state.profile.certifications = this.state.profile.certificationSelections.map(row => row.id);
+        this.state.qualificationQuery = ""; this.state.qualificationMatches = []; this.state.activeQualificationOption = -1;
+        this.profileChanged(); this.render();
+      },
+      profileForCurrentInterface(raw = {}) {
+        const source = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+        const profile = profileForCurrentInterfaceV152Base.call(this, source);
+        const options = this.certificationOptions();
+        const byId = new Map(options.map(item => [item.id, item]));
+        const byLabel = new Map(options.flatMap(item => [item.label, item.shortLabel].filter(Boolean).map(label => [this.normalize(label), item])));
+        const selected = new Map(); const unresolved = [];
+        const genericLegacy = new Set(["credential-agrement", "credential-carte-professionnelle", "credential-educateur-sportif", "credential-habilitation-electrique", "credential-capacite-professionnelle", "license-d"]);
+        const inputs = [...this.array(source.certificationSelections), ...this.array(source.certifications), ...this.cleanLines(source.freeCertifications), ...this.cleanLines(source.unresolvedQualifications || source.unresolvedCertifications)];
+        for (const input of inputs) {
+          const rawId = typeof input === "string" ? input : input?.id;
+          const rawLabel = typeof input === "string" ? input : input?.label;
+          if (rawId === "license-b") { profile.driverLicenseBStatus = "yes"; profile.driverLicenses = ["B"]; continue; }
+          if (genericLegacy.has(rawId)) { unresolved.push(rawLabel || rawId); continue; }
+          const safeLegacy = ({ bafa: "cert-bafa", deass: "credential-deass", orthoptiste: "credential-de-orthoptiste", infirmier: "credential-de-infirmier" })[this.normalize(rawId)];
+          const found = byId.get(rawId) || byId.get(safeLegacy) || byLabel.get(this.normalize(rawLabel || ""));
+          if (found) selected.set(found.id, { id: found.id, label: found.label, type: found.type });
+          else if (rawId || rawLabel) unresolved.push(rawLabel || rawId);
+        }
+        profile.schemaVersion = "1.5.2";
+        profile.certificationSelections = [...selected.values()];
+        profile.certifications = profile.certificationSelections.map(item => item.id);
+        profile.unresolvedQualifications = [...new Set(unresolved.map(value => String(value).trim()).filter(Boolean))];
+        profile.unresolvedCertifications = []; profile.freeCertifications = [];
+        return profile;
+      },
+      profileForEngine() {
+        const profile = profileForEngineV152Base.call(this);
+        profile.certificationSelections = this.state.profile.certificationSelections.map(item => ({ id: item.id, label: item.label, type: item.type }));
+        profile.certifications = profile.certificationSelections.map(item => item.id);
+        profile.unresolvedQualifications = [];
+        return profile;
+      },
+      renderBoussoleStep(step) {
+        if (step !== 1) return renderBoussoleStepV152Base.call(this, step);
+        const p = this.state.profile;
+        const chips = p.certificationSelections.map(item => `<span class="qualification-chip"><span><strong>${this.escape(item.label)}</strong><br><small>${this.escape(this.qualificationTypeLabel(item.type))}</small></span><button type="button" class="chip-remove" data-action="remove-qualification" data-qualification-id="${item.id}" aria-label="Retirer ${this.escape(item.label)}">×</button></span>`).join("");
+        const unresolved = this.array(p.unresolvedQualifications);
+        return `<h3 id="stepTitle" tabindex="-1">Formation</h3><p class="help">Le niveau sert à estimer le chemin d’accès. Une recommandation de diplôme n’est pas une obligation.</p><section class="form-block"><div class="field"><label for="diplomaLevel">Niveau de diplôme</label><select id="diplomaLevel" data-profile-field="diplomaLevel">${this.options(this.diplomaRows(), p.diplomaLevel)}</select></div></section><section class="form-block"><fieldset><legend>Domaines déjà connus ou suivis</legend>${this.arrayChoices("trainingFamilies", this.optionRows("trainingFamilies"))}</fieldset></section><section class="form-block"><fieldset><legend>Domaines envisagés</legend>${this.arrayChoices("desiredTrainingFamilies", this.optionRows("trainingFamilies"))}</fieldset><div class="field"><label for="trainingOpenness">Ouverture à la formation</label><select id="trainingOpenness" data-profile-field="trainingOpenness">${this.options([["not_specified", "À préciser"], ["none", "Pas de formation pour le moment"], ["short", "Jusqu’à 3 mois"], ["medium", "De 3 à 12 mois"], ["long", "Un an ou plus"]], p.trainingOpenness)}</select></div></section><section class="form-block qualification-section"><h3>Qualifications spécifiques obtenues</h3><p class="help">Ajoutez ici un diplôme réglementé, un brevet, une certification, une habilitation, une carte ou un agrément précisément identifié. Le niveau général de diplôme et le permis B sont renseignés séparément.</p><div class="qualification-list">${chips}</div><div class="field combobox-wrap"><label for="qualificationSearch">Rechercher une qualification</label><input id="qualificationSearch" role="combobox" aria-autocomplete="list" aria-controls="qualificationSuggestions" aria-expanded="${Boolean(this.state.qualificationMatches.length)}" aria-activedescendant="${this.state.activeQualificationOption >= 0 ? `qualification-option-${this.state.activeQualificationOption}` : ""}" value="${this.escape(this.state.qualificationQuery)}" autocomplete="off"><div id="qualificationSuggestions" class="qualification-suggestions" role="listbox">${this.qualificationSuggestionsHtml()}</div><small>${p.certificationSelections.length} qualification${p.certificationSelections.length > 1 ? "s" : ""} sélectionnée${p.certificationSelections.length > 1 ? "s" : ""}. Une saisie libre n’est pas utilisée.</small></div></section>${unresolved.length ? `<details class="form-block qualification-unresolved" open><summary>Qualifications importées à confirmer (${unresolved.length})</summary><p class="help">Ces éléments ne sont pas utilisés tant qu’une qualification canonique n’est pas sélectionnée.</p><ul>${unresolved.map((label, index) => `<li>${this.escape(label)} <button type="button" class="button compact" data-action="search-unresolved-qualification" data-unresolved-index="${index}">Rechercher une correspondance</button> <button type="button" class="button compact" data-action="remove-unresolved-qualification" data-unresolved-index="${index}">Retirer</button></li>`).join("")}</ul></details>` : ""}`;
+      },
+      ensureResults() {
+        const hadResults = Boolean(this.state.results);
+        const result = ensureResultsV152Base.call(this);
+        if (result && !hadResults) this.state.calculatedAt = new Date().toISOString();
+        return result;
+      },
+      simpleRankedResult(item, rank) {
+        const job = this.state.dataset.jobs.find(row => row.id === item.jobId || row.romeCode === item.romeCode) || {};
+        return { rank, title: item.title || job.title || "Métier sans intitulé", romeCode: item.romeCode || job.romeCode || "", score: Math.round(Number(item.personalFitScore ?? item.score ?? 0)), description: job.description || item.description || item.shortMission || job.mission || "Description non disponible." };
+      },
+      buildProfileResultsSnapshot() {
+        this.ensureResults();
+        const calculatedAt = this.state.calculatedAt || new Date().toISOString();
+        const rows = this.state.results.completeList.map((item, index) => this.simpleRankedResult(item, index + 1));
+        return { schemaVersion: "1.0.0", app: "boussole-pro", exportKind: "profile_results_snapshot", importable: false, exportedAt: new Date().toISOString(), calculatedAt, appVersion: "1.5.2", datasetVersion: this.state.dataManifest?.datasetVersion || this.state.dataset.datasetVersion, ranking: "Accord personnel décroissant ; les autres repères n’influencent pas ce classement.", profile: this.clone(this.state.profile), results: rows };
+      },
+      profileResultsSnapshotToMarkdown(snapshot) {
+        const p = snapshot.profile; const labels = (key, values) => this.array(values).map(id => this.optionLabelV13(key, id)).join(", ") || "Non renseigné";
+        const qualificationLabels = this.array(p.certificationSelections).map(item => `${item.label} (${this.qualificationTypeLabel(item.type)})`).join(", ") || "Aucune";
+        const valueLabel = (value, rows) => new Map(rows).get(value) || "Non renseigné";
+        const lines = [`# Résultats Boussole Pro — ${p.profileName || "profil"}`, "", `- Exporté le : ${snapshot.exportedAt}`, `- Calculé le : ${snapshot.calculatedAt}`, `- Version de l’application : ${snapshot.appVersion}`, `- Version des données : ${snapshot.datasetVersion}`, "", "Le classement repose sur l’accord personnel. Les compétences, le chemin d’accès et le marché n’influencent pas cet ordre.", "", "## Profil ayant produit ces résultats", "", `- Repère : ${p.profileName || "Non renseigné"}`, `- Tranche d’âge : ${valueLabel(p.ageRange, [["18_25", "18 à 25 ans"], ["26_35", "26 à 35 ans"], ["36_45", "36 à 45 ans"], ["46_55", "46 à 55 ans"], ["56_plus", "56 ans ou plus"]])}`, `- Horizon de recherche : ${valueLabel(p.searchHorizon, [["open_exploration", "Exploration ouverte"], ["quick", "Évolution rapide"], ["transition", "Transition progressive"], ["long_term", "Projet à long terme"]])}`, `- Niveau de diplôme : ${this.diplomaLabel(p.diplomaLevel)}`, `- Diplômes archivés : ${this.array(p.archivedDiplomas).join(", ") || "Aucun"}`, `- Qualifications spécifiques : ${qualificationLabels}`, `- Qualifications importées à confirmer : ${this.array(p.unresolvedQualifications).join(", ") || "Aucune"}`, `- Permis B : ${{ yes: "Obtenu", no: "Non obtenu", not_specified: "Non renseigné" }[p.driverLicenseBStatus] || "Non renseigné"}`, `- Domaines connus : ${labels("trainingFamilies", p.trainingFamilies)}`, `- Domaines envisagés : ${labels("trainingFamilies", p.desiredTrainingFamilies)}`, `- Ouverture à la formation : ${valueLabel(p.trainingOpenness, [["none", "Pas de formation pour le moment"], ["short", "Jusqu’à 3 mois"], ["medium", "De 3 à 12 mois"], ["long", "Un an ou plus"]])}`, `- Envies : ${labels("interests", p.interests)}`, `- Valeurs : ${labels("values", p.values)}`, `- Styles de travail : ${labels("preferredWorkStyles", p.preferredWorkStyles)}`, `- Environnements : ${labels("preferredEnvironments", p.preferredEnvironments)}`, `- Domaines évités : ${labels("excludedDomains", p.excludedDomains)}`, `- Mobilité : ${p.mobility?.radiusKm == null ? "Rayon non renseigné" : `${p.mobility.radiusKm} km`} ; déménagement ${valueLabel(p.mobility?.relocation, [["no", "non"], ["maybe", "peut-être"], ["yes", "oui"]])}`, `- Rythme recherché : ${valueLabel(p.preferredSchedule, [["day", "Horaires de jour réguliers"], ["flexible", "Horaires flexibles"], ["any", "Ouvert à tous les rythmes"]])}`, `- Disponibilité : ${valueLabel(p.availability?.hoursPerWeek, [["under_10", "Moins de 10 heures"], ["10_20", "10 à 20 heures"], ["20_30", "20 à 30 heures"], ["full_time", "Temps plein"], ["variable", "Variable"]])}`, "", "### Parcours professionnel", ""];
+        if (this.array(p.jobExperiences).length) this.array(p.jobExperiences).forEach(item => lines.push(`- ${item.title}${item.romeCode ? ` (${item.romeCode})` : ""} : ${item.durationYears == null ? "durée non renseignée" : `${item.durationYears} an(s)`}, ${valueLabel(item.recency, [["old", "expérience ancienne"], ["recent", "expérience récente"], ["current", "poste actuel"]])}, maîtrise ${valueLabel(item.masteryLevel, [["beginner", "débutante"], ["autonomous", "autonome"], ["advanced", "avancée"], ["expert", "experte"]])}, vécu ${valueLabel(item.enjoymentLevel, [["dislike", "peu apprécié"], ["neutral", "neutre"], ["like", "apprécié"], ["love", "très apprécié"]])}, souhait de continuer ${valueLabel(item.wantsToContinue, [["no", "non"], ["maybe", "peut-être"], ["yes", "oui"]])}.`)); else lines.push("- Aucun métier renseigné.");
+        lines.push("", "### Compétences renseignées", "");
+        if (this.array(p.skillSelections).length) this.array(p.skillSelections).forEach(item => lines.push(`- ${item.label} : niveau ${valueLabel(item.currentLevel, [["notions", "notions"], ["practiced", "déjà pratiquée"], ["mastered", "maîtrisée"]])}, souhait ${valueLabel(item.futureWish, [["none", "aucun"], ["discover", "découvrir"], ["develop", "développer"], ["continue", "continuer"], ["avoid", "éviter"]])}.`)); else lines.push("- Aucune compétence officielle renseignée.");
+        if (this.array(p.unresolvedCustomSkills).length) lines.push(`- Compétences importées à confirmer : ${p.unresolvedCustomSkills.join(", ")}.`);
+        lines.push("", "### Contraintes déclarées", "");
+        const activeConstraints = this.array(p.constraints).filter(item => item.severity !== "open");
+        if (activeConstraints.length) activeConstraints.forEach(item => lines.push(`- ${item.label} : ${valueLabel(item.severity, [["conditional", "possible sous conditions"], ["avoid", "à éviter"], ["excluding", "impossible actuellement"]])}.`)); else lines.push("- Aucune limite particulière déclarée.");
+        lines.push("", "## Classement complet des métiers", "", "| Rang | Métier | Code ROME | Score | Description |", "|---:|---|---|---:|---|");
+        snapshot.results.forEach(row => lines.push(`| ${row.rank} | ${this.markdownCell(row.title)} | ${this.markdownCell(row.romeCode)} | ${row.score}/100 | ${this.markdownCell(row.description)} |`));
+        return lines.join("\n");
+      },
+      markdownCell(value) { return String(value ?? "").replace(/\s+/g, " ").replaceAll("|", "\\|").trim(); },
+      exportProfileResults(format) {
+        try {
+          const snapshot = this.buildProfileResultsSnapshot();
+          const date = new Date(); const pad = value => String(value).padStart(2, "0");
+          const stamp = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
+          const repere = this.normalize(this.state.profile.profileName || "profil").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "profil";
+          const base = `boussole-pro-resultats-profil-${repere}-${stamp}`;
+          if (format === "json") this.download(`${base}.json`, JSON.stringify(snapshot, null, 2), "application/json");
+          else this.download(`${base}.md`, this.profileResultsSnapshotToMarkdown(snapshot), "text/markdown");
+          this.toast(`Export ${format === "json" ? "JSON" : "Markdown"} téléchargé.`);
+          return snapshot;
+        } catch (error) {
+          this.toast(`Export impossible : ${error.message}`);
+          return null;
+        }
+      },
+      renderResults() {
+        renderResultsV152Base.call(this);
+        if (!this.state.profileExists || !this.state.results) return;
+        const heading = this.dom.main.querySelector(".view-heading"); const print = heading?.querySelector('[data-action="print"]');
+        if (!heading || !print) return;
+        const actions = document.createElement("div"); actions.className = "results-actions no-print";
+        print.replaceWith(actions); actions.append(print);
+        actions.insertAdjacentHTML("beforeend", `<details class="results-export"><summary class="button">${this.icon("telecharger")} Exporter</summary><div class="results-export-menu"><button class="button compact" data-action="export-profile-results" data-format="json">JSON — profil et classement pour analyse IA</button><button class="button compact" data-action="export-profile-results" data-format="markdown">Markdown — profil et classement lisibles</button><p>Ces fichiers contiennent votre profil et les résultats calculés. Ils restent sur votre appareil et ne peuvent pas être réimportés dans Boussole Pro.</p></div></details>`);
+      },
+      async importProfile(file) {
+        if (!file) return;
+        try {
+          const parsed = JSON.parse(await file.text());
+          if (parsed?.exportKind === "profile_results_snapshot" || parsed?.importable === false) throw new Error("Ce fichier contient un instantané de résultats et ne peut pas être importé. Pour restaurer Ma Boussole, choisissez le fichier d’export du profil.");
+        } catch (error) {
+          if (error.message.startsWith("Ce fichier contient")) { this.toast(`Import impossible : ${error.message}`); this.dom.importInput.value = ""; return; }
+        }
+        return importProfileV152Base.call(this, file);
+      },
+      createTestApiV11() {
+        const base = createTestApiV152Base.call(this);
+        return Object.freeze({ ...base, searchQualifications: query => this.searchQualifications(query), buildProfileResultsSnapshot: () => this.buildProfileResultsSnapshot(), profileResultsSnapshotToMarkdown: snapshot => this.profileResultsSnapshotToMarkdown(snapshot) });
+      }
+    });
+    RefonteApp.handleClick = function(event) {
+      const action = event.target.closest("[data-action]");
+      if (action?.dataset.action === "select-qualification") { this.addQualification(action.dataset.qualificationId); return; }
+      if (action?.dataset.action === "remove-qualification" || action?.dataset.action === "remove-certification") { const id = action.dataset.qualificationId || action.dataset.certId; this.state.profile.certificationSelections = this.state.profile.certificationSelections.filter(item => item.id !== id); this.state.profile.certifications = this.state.profile.certificationSelections.map(item => item.id); this.profileChanged(); this.render(); return; }
+      if (action?.dataset.action === "search-unresolved-qualification") { const label = this.state.profile.unresolvedQualifications[Number(action.dataset.unresolvedIndex)] || ""; this.state.qualificationQuery = label; this.state.qualificationMatches = this.searchQualifications(label); this.state.activeQualificationOption = this.state.qualificationMatches.length ? 0 : -1; this.render(); requestAnimationFrame(() => document.getElementById("qualificationSearch")?.focus()); return; }
+      if (action?.dataset.action === "remove-unresolved-qualification") { this.state.profile.unresolvedQualifications.splice(Number(action.dataset.unresolvedIndex), 1); this.profileChanged(); this.render(); return; }
+      if (action?.dataset.action === "export-profile-results") { this.exportProfileResults(action.dataset.format); action.closest("details")?.removeAttribute("open"); return; }
+      return handleClickV152Base.call(this, event);
+    };
+    RefonteApp.handleInput = function(event) {
+      if (event.target.id === "qualificationSearch") { this.state.qualificationQuery = event.target.value; this.state.qualificationMatches = this.searchQualifications(event.target.value); this.state.activeQualificationOption = this.state.qualificationMatches.length ? 0 : -1; const host = document.getElementById("qualificationSuggestions"); if (host) host.innerHTML = this.qualificationSuggestionsHtml(); event.target.setAttribute("aria-expanded", String(Boolean(this.state.qualificationMatches.length))); event.target.setAttribute("aria-activedescendant", this.state.activeQualificationOption >= 0 ? `qualification-option-${this.state.activeQualificationOption}` : ""); return; }
+      return handleInputV152Base.call(this, event);
+    };
+    RefonteApp.handleKeydown = function(event) {
+      if (event.target.id === "qualificationSearch") {
+        const matches = this.state.qualificationMatches;
+        if (["ArrowDown", "ArrowUp"].includes(event.key) && matches.length) { event.preventDefault(); const delta = event.key === "ArrowDown" ? 1 : -1; this.state.activeQualificationOption = (this.state.activeQualificationOption + delta + matches.length) % matches.length; document.querySelectorAll("#qualificationSuggestions [role=option]").forEach((node, index) => node.setAttribute("aria-selected", String(index === this.state.activeQualificationOption))); event.target.setAttribute("aria-activedescendant", `qualification-option-${this.state.activeQualificationOption}`); return; }
+        if (event.key === "Enter" && matches[this.state.activeQualificationOption]) { event.preventDefault(); this.addQualification(matches[this.state.activeQualificationOption].id); return; }
+        if (event.key === "Escape") { event.preventDefault(); this.state.qualificationMatches = []; document.getElementById("qualificationSuggestions").innerHTML = ""; event.target.setAttribute("aria-expanded", "false"); return; }
+      }
+      return handleKeydownV152Base.call(this, event);
     };
 
     document.addEventListener("mouseover", event => highlightRose(event.target.closest("[data-rose-index]")));

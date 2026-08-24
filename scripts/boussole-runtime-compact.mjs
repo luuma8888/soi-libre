@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export const RUNTIME_SCHEMA_VERSION = "1.2.0";
+export const RUNTIME_SCHEMA_VERSION = "1.3.0";
 export const RUNTIME_TERRITORIES = Object.freeze({
   FR: "France",
   "REG-76": "Occitanie",
@@ -66,7 +66,8 @@ export function buildCompactRuntime(dataset, metadata) {
   const romeDomains = buildRomeDomainDictionaries(jobs);
   const accessWarnings = buildAccessWarningDictionary(jobs);
   const relatedGraph = buildRelatedJobGraph(jobs);
-  const coreJobs = jobs.map(job => compactCoreJob(job, relatedGraph.byJobId.get(job.id) || []));
+  const qualificationProjection = metadata.qualificationProjection || { catalog: [], byJobId: new Map(), report: null };
+  const coreJobs = jobs.map(job => compactCoreJob(job, relatedGraph.byJobId.get(job.id) || [], qualificationProjection.byJobId.get(job.id)));
   const tagStatistics = buildTagStatistics(coreJobs);
 
   const core = {
@@ -74,6 +75,7 @@ export function buildCompactRuntime(dataset, metadata) {
     datasetVersion,
     generatedAt,
     sourceDate,
+    qualifications: qualificationProjection.catalog,
     jobs: coreJobs,
     tagStatistics,
     workContexts: contextDictionary.items,
@@ -107,17 +109,19 @@ export function buildCompactRuntime(dataset, metadata) {
     contextReferences: contextDictionary.references,
     accessPaths: jobs.reduce((sum, job) => sum + array(job.accessPaths || job.accessSummary?.accessPaths).length, 0),
     tagStatistics,
-    relationGraph: relatedGraph.diagnostics
+    relationGraph: relatedGraph.diagnostics,
+    qualificationAudit: qualificationProjection.report
   };
   const validation = validateCompactRuntime({ core, competences, marche }, diagnostics);
   if (validation.failures.length) throw new Error(`Projection runtime invalide : ${validation.failures.join(", ")}`);
   return { core, competences, marche, diagnostics, validation };
 }
 
-function compactCoreJob(job, relatedJobIds = []) {
+function compactCoreJob(job, relatedJobIds = [], qualificationProjection = {}) {
   const content = splitMissionAndActivities(job);
-  const accessSummary = compactAccessSummary(job.accessSummary);
-  const accessPaths = array(job.accessPaths || job.accessSummary?.accessPaths).map(compactAccessPath);
+  const accessSummary = compactAccessSummary(job.accessSummary, qualificationProjection.summary);
+  const pathProjection = new Map(array(qualificationProjection.accessPaths).map(row => [row.pathId, row]));
+  const accessPaths = array(job.accessPaths || job.accessSummary?.accessPaths).map(path => compactAccessPath(path, pathProjection.get(path.id || path.pathId)));
   const classification = {
     romeGrandDomainCode: job.romeGrandDomainCode || String(job.romeCode || "").slice(0, 1),
     romeProfessionalDomainCode: job.romeProfessionalDomainCode || String(job.romeCode || "").slice(0, 3),
@@ -383,7 +387,7 @@ function jaccardIndex(left, right) {
   return shared / new Set([...a, ...b]).size;
 }
 
-function compactAccessSummary(raw = null) {
+function compactAccessSummary(raw = null, qualificationProjection = {}) {
   if (!raw || typeof raw !== "object") return null;
   const summary = omitEmpty({
     displayLabel: raw.displayLabel,
@@ -392,8 +396,10 @@ function compactAccessSummary(raw = null) {
     minimumDiplomaLevel: numberOrNull(raw.minimumDiplomaLevel),
     maximumDiplomaLevel: numberOrNull(raw.maximumDiplomaLevel),
     specificCredentialRequired: Boolean(raw.specificCredentialRequired),
-    requiredCredentialLabels: unique(array(raw.requiredCredentialLabels)),
-    optionalCredentialLabels: unique(array(raw.optionalCredentialLabels)),
+    requiredQualificationIds: unique(array(qualificationProjection.requiredQualificationIds)),
+    optionalQualificationIds: unique(array(qualificationProjection.optionalQualificationIds)),
+    requiredLicenseIds: unique(array(qualificationProjection.requiredLicenseIds)),
+    optionalLicenseIds: unique(array(qualificationProjection.optionalLicenseIds)),
     requiredExams: unique(array(raw.requiredExams)),
     noDiplomaPossible: Boolean(raw.noDiplomaPossible),
     regulated: Boolean(raw.regulated),
@@ -408,7 +414,7 @@ function compactAccessSummary(raw = null) {
   return summary;
 }
 
-function compactAccessPath(raw = {}) {
+function compactAccessPath(raw = {}, qualificationProjection = {}) {
   return omitEmpty({
     id: raw.id || raw.pathId,
     label: raw.label,
@@ -417,7 +423,10 @@ function compactAccessPath(raw = {}) {
     examLabel: raw.examLabel,
     minimumDiplomaLevel: numberOrNull(raw.minimumDiplomaLevel),
     maximumDiplomaLevel: numberOrNull(raw.maximumDiplomaLevel),
-    requiredCredentialLabels: unique(array(raw.requiredCredentialLabels)),
+    requiredQualificationIds: unique(array(qualificationProjection.requiredQualificationIds)),
+    optionalQualificationIds: unique(array(qualificationProjection.optionalQualificationIds)),
+    requiredLicenseIds: unique(array(qualificationProjection.requiredLicenseIds)),
+    optionalLicenseIds: unique(array(qualificationProjection.optionalLicenseIds)),
     requiredExperienceYears: numberOrNull(raw.requiredExperienceYears),
     requiredExperienceScope: raw.requiredExperienceScope,
     validFrom: raw.validFrom,
@@ -795,6 +804,7 @@ export function adaptCompactRuntime({ core, competences, marche }, manifest = nu
     provenance: "generated_rome",
     confidence: 0.75,
     jobs,
+    qualifications: array(core.qualifications),
     skills,
     skillsEngine: skills,
     matchableSkills: skills.filter(item => item.classification === "skill_action"),
@@ -964,6 +974,7 @@ export function validateCompactRuntime(runtime, diagnostics = {}) {
   const items = new Map(array(competences?.items).map(item => [item.id, item]));
   const groups = new Set(array(competences?.groups).map(item => item.id));
   const contexts = new Set(array(core?.workContexts).map(item => item.id));
+  const qualificationIds = new Set(array(core?.qualifications).map(item => item.id));
   const relationJobs = new Set(array(competences?.jobs).map(item => item.jobId));
   const marketJobs = new Set(array(marche?.jobs).map(item => item.jobId));
   if (jobs.length !== 1000) failures.push("jobs_count");
@@ -982,6 +993,7 @@ export function validateCompactRuntime(runtime, diagnostics = {}) {
     }
   }
   for (const job of jobs) {
+    for (const id of [...array(job.accessSummary?.requiredQualificationIds), ...array(job.accessSummary?.optionalQualificationIds), ...array(job.accessPaths).flatMap(path => [...array(path.requiredQualificationIds), ...array(path.optionalQualificationIds)])]) if (!qualificationIds.has(id)) failures.push(`orphan_qualification:${job.id}:${id}`);
     for (const id of array(job.workContexts)) if (!contexts.has(id)) failures.push(`orphan_context:${id}`);
     for (const signal of array(job.constraints?.officialSignals)) if (signal.contextId && !contexts.has(signal.contextId)) failures.push(`orphan_signal_context:${signal.contextId}`);
     if (!Array.isArray(job.activities)) failures.push(`invalid_activities:${job.id}`);
@@ -1000,7 +1012,8 @@ export function validateCompactRuntime(runtime, diagnostics = {}) {
   const forbidden = [];
   walkKeys(runtime, key => { if (["fapEnrichment", "accessConditions", "requiredSkills", "matchableSkillIds", "scorableSkillIds"].includes(key)) forbidden.push(key); });
   if (forbidden.length) failures.push(`forbidden_runtime_keys:${unique(forbidden).join("|")}`);
-  return { status: failures.length ? "failed" : "passed", failures: unique(failures), counts: { jobs: jobs.length, skills: array(competences?.items).filter(item => item.type !== "knowledge").length, knowledge: array(competences?.items).filter(item => item.type === "knowledge").length, skillGroups: groups.size, workContexts: contexts.size } };
+  if (!qualificationIds.size) failures.push("qualification_catalog_empty");
+  return { status: failures.length ? "failed" : "passed", failures: unique(failures), counts: { jobs: jobs.length, skills: array(competences?.items).filter(item => item.type !== "knowledge").length, knowledge: array(competences?.items).filter(item => item.type === "knowledge").length, qualifications: qualificationIds.size, skillGroups: groups.size, workContexts: contexts.size } };
 }
 
 function walkKeys(value, visitor) {

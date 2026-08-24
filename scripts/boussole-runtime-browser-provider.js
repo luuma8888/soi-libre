@@ -70,6 +70,8 @@ const BoussoleRuntimeProvider = {
     const codes = jobs.map(job => job.romeCode);
     if (core?.schemaVersion !== manifest.resourceSchemaVersion || core?.datasetVersion !== manifest.datasetVersion || core?.generatedAt !== manifest.generatedAt) throw new Error("Identité du core incohérente.");
     if (jobs.length !== 1000 || new Set(codes).size !== 1000 || codes.some(code => !/^[A-Z][0-9]{4}$/.test(code || ""))) throw new Error("Corpus core invalide.");
+    const qualificationIds = (core.qualifications || []).map(item => item.id);
+    if (!qualificationIds.length || new Set(qualificationIds).size !== qualificationIds.length) throw new Error("Catalogue des qualifications invalide.");
   },
 
   validateCompetences(data, core, manifest) {
@@ -208,6 +210,7 @@ const BoussoleRuntimeProvider = {
       provenance: "generated_rome",
       confidence: 0.75,
       jobs,
+      qualifications: core.qualifications || [],
       skills,
       skillsEngine: skills,
       matchableSkills: skills.filter(item => item.classification === "skill_action"),

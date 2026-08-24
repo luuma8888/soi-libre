@@ -8,7 +8,7 @@ const ROOT = process.cwd();
 const APP_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
 const OFFLINE_APP_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-offline.html");
 const RUNTIME_DIR = path.join(ROOT, "creations/boussolepro/boussole-runtime");
-const REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1/functional-validation-report.json");
+const REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.2/functional-validation-report.json");
 const PROFILE_PATH = path.join(ROOT, "tmp/monde-pro/profils tests/boussole-pro-profil-cedric-2026-07-10.json");
 
 const [html, offlineHtml, manifest, core, competences, marche, legacyEnvelope] = await Promise.all([
@@ -174,13 +174,13 @@ assert("market_wind_visual_removed_from_source", !/Carte des vents du marché|ma
 assert("job_detail_balance_contract_in_source", html.includes("balanceJobDetailColumns") && html.includes("agreement-matrix") && html.includes("Quatre repères de l’accord personnel"), null);
 assert("related_panel_contract_in_source", html.includes("Métiers proches de «") && html.includes("openRelatedJobs") && html.includes("back-dialog-state"), null);
 assert("favorite_icon_contract_in_source", html.includes("favoriteIcon") && html.includes('fill="currentColor"'), null);
-assert("version_v1_5_1", html.includes("Boussole Pro v1.5.1"), null);
+assert("version_v1_5_2", html.includes("Boussole Pro v1.5.2"), null);
 const rankingSource = ["calculatePersonalFitMetrics", "comparePersonalFitCandidates", "diversifyTopResults"].map(name => html.match(new RegExp(`function ${name}\\([\\s\\S]*?\\n}`))?.[0] || "").join("\n");
 assert("no_fixture_overfit_in_ranking", !/Lu['’]?uma|Cedric|2026-07-10|profile-demo|G1203|M1805/.test(rankingSource), rankingSource.match(/Lu['’]?uma|Cedric|2026-07-10|profile-demo|G1203|M1805/g));
 
 const report = {
   schemaVersion: "1.0.0",
-  reportKind: "boussole_v1_5_1_functional_validation",
+  reportKind: "boussole_v1_5_2_functional_validation",
   generatedAt: new Date().toISOString(),
   status: failures.length ? "failed" : "passed",
   assertionCount: assertions.length,
@@ -192,13 +192,13 @@ const report = {
   contextComponents: Object.fromEntries(["G1203", "M1805", "L1510"].map(code => [code, resultByCode(realResults, code)?.contextAlignment || null])),
   parity: { onlineOffline: "passed", datasetVersion: manifest.datasetVersion, jobs: dataset.jobs.length },
   frozenReference: { appVersion: "1.5.0", coreSha256: "f02e3553aae2585c16a6be2390d20f6959b7c9823436fde56853dd9a8c6e4de9", competencesSha256: "20495a601eaa38001129c77a0feb74f185d64b9f1d383aa920c13ff804e6c22a", marketSha256: "9cc42115d4c5bf8b9c33e3c8ad3a6655aa0a02359204e972ffbf1eb8e6c3df5c", graphHash: "53f68f2ee907ef1e084f69a39769a490647796099cd59b67cd66581d764b29a0", genericResultsHash: "7dd49264610248d7c7e1bf13d0a88344d3c14c60e62ff40f0ee55ea20ab68fb9" },
-  current: { appVersion: "1.5.1", datasetVersion: manifest.datasetVersion },
+  current: { appVersion: "1.5.2", datasetVersion: manifest.datasetVersion },
   referenceMatrix: Object.fromEntries(["G1203", "M1805", "G1235", "K1202", "K1307", "J1304", "K1308", "K1309", "L1510"].map(code => [code, summarize(resultByCode(realResults, code))]))
 };
 await mkdir(path.dirname(REPORT_PATH), { recursive: true });
 await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, "utf8");
 console.log(JSON.stringify({ status: report.status, assertions: report.assertionCount, failures: failures.map(item => item.id), report: path.relative(ROOT, REPORT_PATH) }, null, 2));
-if (failures.length) throw new Error(`Validation de consolidation v1.5.1 échouée : ${failures.map(item => item.id).join(", ")}`);
+if (failures.length) throw new Error(`Validation de consolidation v1.5.2 échouée : ${failures.map(item => item.id).join(", ")}`);
 
 function createProfile(values = {}) {
   return engine.normalizeProfile({

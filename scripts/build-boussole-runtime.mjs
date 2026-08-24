@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { adaptCompactRuntime, buildCompactRuntime, buildTagStatistics, enrichProfileOptionTags, sha256 } from "./boussole-runtime-compact.mjs";
+import { projectQualificationAccess } from "./boussole-qualifications.mjs";
 import { loadBoussoleEngine, loadGeneratedBundle } from "./validate-boussole-v073.mjs";
 
 const ROOT = process.cwd();
@@ -17,14 +18,17 @@ const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1/
 const BROWSER_PROVIDER_PATH = path.join(ROOT, "scripts/boussole-runtime-browser-provider.js");
 const AUDIENCE_CONFIG_PATH = path.join(APP_DIR, "config/audience-overrides.json");
 const TAXONOMY_CONFIG_PATH = path.join(APP_DIR, "config/taxonomy-overrides.json");
-const APP_VERSION = "1.5.1";
-const BUILD_ID = "20260823-consolidation-v1-5-1-01";
+const QUALIFICATION_CONFIG_PATH = path.join(APP_DIR, "config/qualification-catalog.json");
+const QUALIFICATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.2/qualification-audit-report.json");
+const APP_VERSION = "1.5.2";
+const BUILD_ID = "20260824-qualifications-results-export-v1-5-2-01";
 
-const [appHtml, browserProvider, audienceConfig, taxonomyConfig] = await Promise.all([
+const [appHtml, browserProvider, audienceConfig, taxonomyConfig, qualificationConfig] = await Promise.all([
   readFile(APP_PATH, "utf8"),
   readFile(BROWSER_PROVIDER_PATH, "utf8"),
   readFile(AUDIENCE_CONFIG_PATH, "utf8").then(JSON.parse),
-  readFile(TAXONOMY_CONFIG_PATH, "utf8").then(JSON.parse)
+  readFile(TAXONOMY_CONFIG_PATH, "utf8").then(JSON.parse),
+  readFile(QUALIFICATION_CONFIG_PATH, "utf8").then(JSON.parse)
 ]);
 const previousPayload = parsePayload(appHtml);
 if (!previousPayload?.defaultProfile) throw new Error("Le profil de démonstration embarqué est absent de la coquille applicative.");
@@ -40,11 +44,12 @@ const sourceFiles = [
   path.join(MARKET_DIR, "market-national.rome.json"),
   path.join(MARKET_DIR, "market-occitanie.rome.json"),
   path.join(MARKET_DIR, "market-aude.rome.json"),
-  path.join(MARKET_DIR, "market-fap-enrichment.rome1000.json")
+  path.join(MARKET_DIR, "market-fap-enrichment.rome1000.json"),
+  QUALIFICATION_CONFIG_PATH
 ];
 const sourceBuffers = await Promise.all(sourceFiles.map(file => readFile(file)));
 const sourceFingerprintSha256 = sha256(sourceBuffers.map((buffer, index) => `${path.basename(sourceFiles[index])}:${sha256(buffer)}`).join("|"));
-const datasetVersion = `boussole-runtime-v1.5.1-${sourceFingerprintSha256.slice(0, 12)}`;
+const datasetVersion = `boussole-runtime-v1.5.2-${sourceFingerprintSha256.slice(0, 12)}`;
 
 const bundle = await loadGeneratedBundle(SOURCE_DIR, {
   accessSummaryFile: "access-summary.rome1000.json",
@@ -79,8 +84,10 @@ const directionByJobId = new Map(referenceResults.completeList.map(result => [re
 }]));
 masterDataset.jobs = masterDataset.jobs.map(job => ({ ...job, ...(directionByJobId.get(job.id) || {}) }));
 const defaultProfile = buildDemoProfile(previousPayload.defaultProfile, masterDataset);
+const qualificationProjection = projectQualificationAccess(masterDataset.jobs, qualificationConfig);
+if (qualificationProjection.report.blockingFailures.length) throw new Error(`Projection des qualifications invalide : ${qualificationProjection.report.blockingFailures.join(", ")}`);
 
-const built = buildCompactRuntime(masterDataset, { generatedAt, datasetVersion, sourceDate });
+const built = buildCompactRuntime(masterDataset, { generatedAt, datasetVersion, sourceDate, qualificationProjection });
 const filePayloads = {
   core: JSON.stringify(built.core),
   competences: JSON.stringify(built.competences),
@@ -142,7 +149,8 @@ await Promise.all([
   ...Object.entries(filePayloads).map(([key, content]) => writeFile(path.join(OUTPUT_DIR, fileNames[key]), content, "utf8")),
   writeFile(path.join(OUTPUT_DIR, "boussole-runtime-manifest.json"), JSON.stringify(manifest), "utf8"),
   writeFile(APP_PATH, onlineHtml, "utf8"),
-  writeFile(OFFLINE_PATH, offlineHtml, "utf8")
+  writeFile(OFFLINE_PATH, offlineHtml, "utf8"),
+  mkdir(path.dirname(QUALIFICATION_REPORT_PATH), { recursive: true }).then(() => writeFile(QUALIFICATION_REPORT_PATH, `${JSON.stringify(qualificationProjection.report, null, 2)}\n`, "utf8"))
 ]);
 
 const report = {
@@ -235,8 +243,8 @@ function buildDemoProfile(previous = {}, dataset = {}) {
     return [...(job.requiredSkills || job.matchableSkillIds || []), ...(job.optionalSkills || [])].map(item => typeof item === "string" ? item : item?.id);
   }).filter(id => skillIds.has(id)))].slice(0, 12);
   return {
-    id: "profile-demo-v1-5-1", schemaVersion: "1.5.1", profileName: "Profil de démonstration", ageRange: "36_45",
-    diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d’aptitude aux fonctions d’animateur" }], certifications: ["cert-bafa"],
+    id: "profile-demo-v1-5-2", schemaVersion: "1.5.2", profileName: "Profil de démonstration", ageRange: "36_45",
+    diplomaLevel: 5, diplomaScaleRevision: "runtime-v1", archivedDiplomas: [], certificationSelections: [{ id: "cert-bafa", label: "BAFA - Brevet d'aptitude aux fonctions d'animateur", type: "brevet" }], certifications: ["cert-bafa"], unresolvedQualifications: [],
     jobExperiences: experienceSource.map((item, index) => ({ ...item, id: `demo-experience-${index + 1}` })),
     skillSelections: selectedSkills.map((skillId, index) => ({ skillId, label: dataset.skillsEngine.find(item => item.id === skillId)?.label || skillId, currentLevel: index < 6 ? "mastered" : "practiced", futureWish: index < 8 ? "continue" : "develop", source: "user_direct", suggestedFromRomeCodes: [] })),
     unresolvedCustomSkills: [], customSkills: [], interests: ["aider", "transmettre", "creer", "enfants"], values: ["meaning", "service", "team", "creativity"],
@@ -291,16 +299,14 @@ function resultSignature(result) {
   const rows = result.completeList.slice(0, 50).map(item => ({
     code: item.romeCode,
     score: item.personalFitScore,
-    components: item.personalFitComponents,
-    status: item.status,
-    access: item.accessStatus
+    components: item.personalFitComponents
   }));
   return { top5: result.top5.map(item => item.romeCode), first50: rows };
 }
 
 function accessSignature(job) {
   const access = job?.accessSummary || {};
-  return { category: access.accessLevelCategory, kind: access.requirementKind, minimum: access.minimumDiplomaLevel ?? null, maximum: access.maximumDiplomaLevel ?? null, regulated: Boolean(access.regulated), mandatory: Boolean(access.mandatoryQualification), credentials: access.requiredCredentialLabels || [], exams: access.requiredExams || [], paths: (job?.accessPaths || []).map(path => path.id || path.pathId) };
+  return { category: access.accessLevelCategory, kind: access.requirementKind, minimum: access.minimumDiplomaLevel ?? null, maximum: access.maximumDiplomaLevel ?? null, regulated: Boolean(access.regulated), mandatory: Boolean(access.mandatoryQualification), exams: access.requiredExams || [], paths: (job?.accessPaths || []).map(path => path.id || path.pathId) };
 }
 
 function compareSearch(query, baseline, compact, textBuilder) {
@@ -363,7 +369,8 @@ function normalizeRuntimeShell(source) {
     .replaceAll("REFONTE_DATA.dataset", "this.state.dataset")
     .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2.1 -")
     .replaceAll("Boussole Pro v1.2 -", "Boussole Pro v1.2.1 -")
-    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.5.1 -")
+    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.5.2 -")
+    .replaceAll("Boussole Pro v1.5.1 -", "Boussole Pro v1.5.2 -")
     .replaceAll('${this.state.dataset.jobs.length} métiers réels disponibles', '${this.runtimePresentation().title}')
     .replaceAll(
       "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation.",

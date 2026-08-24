@@ -60,6 +60,16 @@ assert("related_graph_reciprocal", adapted.jobs.every(job => (job.relatedJobIds 
   return related && (related.relatedJobIds || []).includes(job.id);
 })));
 assert("related_graph_degree", adapted.jobs.every(job => (job.relatedJobIds || []).length <= 12));
+const qualificationFields = ["id", "label", "shortLabel", "type", "searchTerms", "selectableInProfile"].sort();
+const qualificationIds = new Set((runtime.core.qualifications || []).map(item => item.id));
+const qualificationLabels = (runtime.core.qualifications || []).map(item => normalize(item.label));
+assert("qualification_catalog_unique_and_compact", qualificationIds.size === runtime.core.qualifications?.length && new Set(qualificationLabels).size === runtime.core.qualifications?.length && runtime.core.qualifications.every(item => JSON.stringify(Object.keys(item).sort()) === JSON.stringify(qualificationFields)));
+assert("qualification_labels_are_canonical", runtime.core.qualifications.every(item => !/obligatoire|peut être requis|peut être un atout|selon le poste|à renouveler/i.test(item.label)));
+assert("licenses_are_not_qualifications", runtime.core.qualifications.every(item => !item.id.startsWith("license-") && !/permis [bcd]/i.test(item.label)));
+assert("raw_credential_phrases_removed", !/requiredCredentialLabels|optionalCredentialLabels/.test(texts.core));
+assert("qualification_references_resolve", runtime.core.jobs.every(job => [...(job.accessSummary?.requiredQualificationIds || []), ...(job.accessSummary?.optionalQualificationIds || []), ...(job.accessPaths || []).flatMap(path => [...(path.requiredQualificationIds || []), ...(path.optionalQualificationIds || [])])].every(id => qualificationIds.has(id))));
+assert("cards_and_agreements_stay_distinct", ["credential-carte-cnaps-surveillance", "credential-carte-cnaps-cynophile", "credential-carte-immobilier-transaction", "credential-agrement-dreets", "credential-agrement-acpr", "credential-agrement-prefectoral", "credential-agrement-departemental"].every(id => qualificationIds.has(id)));
+assert("generic_driving_phrase_never_maps_to_license_d", runtime.core.jobs.filter(job => job.romeCode === "K2110").every(job => !(job.accessSummary?.requiredLicenseIds || []).includes("license-d")));
 
 const marketRows = runtime.marche.jobs.flatMap(job => Object.entries(job.territories).map(([territoryId, value]) => ({ jobId: job.jobId, territoryId, ...value })));
 const marketExamples = {
@@ -88,7 +98,7 @@ const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
 assert("online_shell_has_no_dataset", !("dataset" in onlinePayload) && onlinePayload.embeddedRuntime === null);
-assert("app_version_v1_5_1", onlinePayload.appVersion === "1.5.1" && onlineHtml.includes("Boussole Pro v1.5.1"));
+assert("app_version_v1_5_2", onlinePayload.appVersion === "1.5.2" && onlineHtml.includes("Boussole Pro v1.5.2"));
 assert("small_demo_profile", (onlinePayload.defaultProfile?.jobExperiences || []).length <= 2 && (onlinePayload.defaultProfile?.skillSelections || []).length <= 12 && (onlinePayload.defaultProfile?.skillSelections || []).every(item => item.currentLevel && item.futureWish));
 assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "boussole-runtime/");
 assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(key =>
@@ -106,9 +116,9 @@ assert("runtime_mode_copy_explicit", [
 assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
 assert("index_exposes_both_editions", [
   'href="creations/boussolepro/boussole-pro.html"',
-  'download="boussole-pro-online-v1-5-1.html"',
+  'download="boussole-pro-online-v1-5-2.html"',
   'href="creations/boussolepro/boussole-pro-offline.html"',
-  'download="boussole-pro-offline-v1-5-1.html"'
+  'download="boussole-pro-offline-v1-5-2.html"'
 ].every(copy => indexHtml.includes(copy)));
 assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
 

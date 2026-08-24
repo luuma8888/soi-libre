@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 const HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro.html");
 const OFFLINE_HTML_PATH = path.join(ROOT, "creations/boussolepro/boussole-pro-offline.html");
-const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1");
+const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.2");
 const CAPTURE_DIR = path.join(REPORT_DIR, "captures");
 const REPORT_PATH = path.join(REPORT_DIR, "browser-interaction-report.json");
 const CHROMIUM = process.env.CHROMIUM_PATH || "/usr/bin/chromium";
@@ -127,7 +127,7 @@ try {
     cards: document.querySelectorAll(".job-card").length,
     top: window.__BOUSSOLE_REFONTE_TEST_API__.calculate().top5,
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    unnamedButtons: [...document.querySelectorAll("button")].filter(button => !(button.innerText.trim() || button.getAttribute("aria-label") || button.getAttribute("title"))).length,
+    unnamedButtons: [...document.querySelectorAll("button")].filter(button => !(button.textContent.trim() || button.getAttribute("aria-label") || button.getAttribute("title"))).length,
     duplicateIds: [...document.querySelectorAll("[id]")].map(node => node.id).filter((id, index, all) => all.indexOf(id) !== index)
   }))()`);
   assert("top5_rendered", resultUi.topCount === 5 && resultUi.top.length === 5, resultUi.top);
@@ -136,6 +136,20 @@ try {
   assert("results_no_horizontal_overflow", resultUi.overflow <= 1, resultUi.overflow);
   assert("buttons_have_accessible_names", resultUi.unnamedButtons === 0, resultUi.unnamedButtons);
   assert("no_duplicate_ids", resultUi.duplicateIds.length === 0, resultUi.duplicateIds);
+  const exportContract = await evaluate(cdp, `(async () => {
+    const api=window.__BOUSSOLE_REFONTE_TEST_API__;
+    const snapshot=api.buildProfileResultsSnapshot();
+    const markdown=api.profileResultsSnapshotToMarkdown(snapshot);
+    let rejection=""; const originalToast=RefonteApp.toast; RefonteApp.toast=message=>{rejection=message;};
+    await RefonteApp.importProfile(new File([JSON.stringify(snapshot)],"resultats.json",{type:"application/json"})); RefonteApp.toast=originalToast;
+    return {snapshot,markdown,rejection,bytes:new TextEncoder().encode(JSON.stringify(snapshot)).length,menuButtons:document.querySelectorAll('[data-action="export-profile-results"]').length};
+  })()`, true);
+  assert("results_snapshot_json_contract", exportContract.snapshot.schemaVersion === "1.0.0" && exportContract.snapshot.app === "boussole-pro" && exportContract.snapshot.exportKind === "profile_results_snapshot" && exportContract.snapshot.importable === false && exportContract.snapshot.appVersion === "1.5.2" && exportContract.snapshot.results.length === 1000 && exportContract.snapshot.results.every((row, index) => row.rank === index + 1 && row.title && /^[A-Z][0-9]{4}$/.test(row.romeCode) && Number.isFinite(row.score) && row.description), { results: exportContract.snapshot.results.length, bytes: exportContract.bytes });
+  assert("results_snapshot_bounded_and_clean", exportContract.bytes < 2 * 1024 * 1024 && !/undefined|null|\[object Object\]/.test(exportContract.markdown), exportContract.bytes);
+  assert("results_markdown_contract", exportContract.markdown.startsWith("# Résultats Boussole Pro —") && exportContract.markdown.includes("Le classement repose sur l’accord personnel. Les compétences, le chemin d’accès et le marché n’influencent pas cet ordre.") && exportContract.markdown.includes("## Profil ayant produit ces résultats") && exportContract.markdown.includes("## Classement complet des métiers") && exportContract.markdown.includes("| Rang | Métier | Code ROME | Score | Description |") && (exportContract.markdown.match(/^\| \d+ \|/gm) || []).length === 1000, null);
+  assert("results_export_menu_and_import_guard", exportContract.menuButtons === 2 && exportContract.rejection.includes("Ce fichier contient un instantané de résultats et ne peut pas être importé. Pour restaurer Ma Boussole, choisissez le fichier d’export du profil."), exportContract.rejection);
+  await evaluate(cdp, `document.querySelector(".results-export")?.setAttribute("open","")`);
+  await capture(cdp, "export-resultats-menu-1440.png");
   const v13Results = await evaluate(cdp, `(() => {
     const vm=window.__BOUSSOLE_REFONTE_TEST_API__.getViewModel();
     const topIds=vm.topDirections.map(row=>row.representative.jobId);
@@ -281,7 +295,26 @@ try {
     await capture(cdp, `etape-${String(step + 1).padStart(2, "0")}-bureau.png`);
   }
   assert("nine_locked_step_titles", JSON.stringify(stepTitles) === JSON.stringify(["Départ", "Formation", "Contraintes", "Parcours professionnel", "Compétences", "Envies", "Environnements", "Validation", "Première lecture"]), stepTitles);
-  const validationText = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.setStep(7); return document.querySelector(".summary-blocks")?.innerText || ""; })()`);
+  const qualificationContract = await evaluate(cdp, `(() => {
+    const api=window.__BOUSSOLE_REFONTE_TEST_API__;
+    const migrated=api.importProfileData({profileName:"Migration qualifications",diplomaLevel:5,certificationSelections:[{id:"cert-bafa",label:"BAFA"},{id:"credential-deass",label:"DEASS"},{id:"credential-agrement",label:"Agrément"},{id:"license-d",label:"Permis D"},{id:"license-b",label:"Permis B"}]});
+    const before=api.calculate(); const signatureBefore=RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScore,row.personalFitTieBreakScore]);
+    RefonteApp.addQualification("credential-de-infirmier"); const signatureAfter=(RefonteApp.ensureResults(),RefonteApp.state.results.completeList.map(row=>[row.romeCode,row.personalFitScore,row.personalFitTieBreakScore]));
+    api.navigate("boussole"); api.setStep(1);
+    const input=document.getElementById("qualificationSearch"); input.value="orthoptiste"; input.dispatchEvent(new Event("input",{bubbles:true})); const count=document.querySelectorAll("#qualificationSuggestions [role=option]").length; input.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}));
+    return {migrated,search:api.searchQualifications("caces"),count,selected:RefonteApp.state.profile.certificationSelections,unresolved:RefonteApp.state.profile.unresolvedQualifications,sameRanking:JSON.stringify(signatureBefore)===JSON.stringify(signatureAfter),title:document.getElementById("stepTitle")?.textContent,heading:[...document.querySelectorAll("h3")].some(node=>node.textContent==="Qualifications spécifiques obtenues")};
+  })()`);
+  assert("qualification_catalog_search_and_keyboard", qualificationContract.search.length > 0 && qualificationContract.search.length <= 8 && qualificationContract.count > 0 && qualificationContract.count <= 8 && qualificationContract.selected.some(item => item.id === "credential-de-orthoptiste" && item.type === "diplome_reglemente"), qualificationContract);
+  assert("qualification_migration_is_conservative", qualificationContract.migrated.driverLicenseBStatus === "yes" && qualificationContract.migrated.certificationSelections.some(item => item.id === "cert-bafa") && qualificationContract.migrated.certificationSelections.some(item => item.id === "credential-deass") && qualificationContract.unresolved.includes("Agrément") && qualificationContract.unresolved.includes("Permis D"), qualificationContract);
+  assert("qualification_does_not_change_personal_ranking", qualificationContract.sameRanking, null);
+  assert("qualification_ui_contract", qualificationContract.title === "Formation" && qualificationContract.heading, null);
+  await captureElement(cdp, ".qualification-section", "qualifications-1440.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true, screenWidth: 375, screenHeight: 900 });
+  await captureElement(cdp, ".qualification-section", "qualifications-375.png");
+  await evaluate(cdp, `RefonteApp.navigate("resultats"); document.querySelector(".results-export")?.setAttribute("open","")`);
+  await capture(cdp, "export-resultats-menu-375.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 1000 });
+  const validationText = await evaluate(cdp, `(() => { window.__BOUSSOLE_REFONTE_TEST_API__.navigate("boussole"); window.__BOUSSOLE_REFONTE_TEST_API__.setStep(7); return document.querySelector(".summary-blocks")?.innerText || ""; })()`);
   assert("validation_uses_human_labels", !/open_exploration|not_specified|under_10|preferred|petite_enfance|Niveau\s*:\s*\d/.test(validationText) && validationText.includes("Bac +2"), validationText.slice(0, 500));
   const completionState = await evaluate(cdp, `(() => { document.querySelector('[data-action="next-step"]').click(); document.querySelector('[data-view-link="resultats"]').click(); return { completed: RefonteApp.state.profile.completedBoussole, requested: RefonteApp.state.profile.hasRequestedResults }; })()`);
   assert("completion_and_results_request_persisted", completionState.completed === true && completionState.requested === true, completionState);
@@ -414,19 +447,21 @@ try {
 
   const report = {
     schemaVersion: "1.0.0",
-    reportKind: "boussole_v1_5_1_browser_interaction_accessibility_performance",
+    reportKind: "boussole_v1_5_2_browser_interaction_accessibility_performance",
     generatedAt: new Date().toISOString(),
     status: failures.length || runtimeErrors.length || consoleErrors.length ? "failed" : "passed",
     html: { path: path.relative(ROOT, HTML_PATH), bytes: html.length, sha256: sha256(html) },
-    browser: { chromium: CHROMIUM, desktop: "1440x1000", mobile: "390x844", httpUrl, offlineUrl: pathToFileURL(OFFLINE_HTML_PATH).href },
+    browser: { chromium: CHROMIUM, desktop: "1440x1000", mobile: "375x900", httpUrl, offlineUrl: pathToFileURL(OFFLINE_HTML_PATH).href },
     performance: { calculationMs: calculation.calculationMs, searchJobAndSkill20IterationsMs: searchPerformance, navigation: await evaluate(cdp, `(() => { const n=performance.getEntriesByType("navigation")[0]; return n ? { domContentLoadedMs: Math.round(n.domContentLoadedEventEnd), loadMs: Math.round(n.loadEventEnd) } : null; })()`) },
-    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, dialogOpen, marketAndRelations, marketCaptureMetrics, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, mobile, a11y, cachedRuntime, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists, datasetMode: offline.state.datasetMode, top5: offlineTop, marketClimate: offlineMarketClimate } },
+    scenarios: { initial, importRoundTrip: { equal: roundTrip.equal }, resultUi, exportContract: { bytes: exportContract.bytes, resultCount: exportContract.snapshot.results.length }, qualificationContract, dialogOpen, marketAndRelations, marketCaptureMetrics, modeInvariant, exploration, comboboxKeyboard, domainAndDedupe, mobile, a11y, cachedRuntime, offline: { jobs: offline.build.jobsCount, profileExists: offline.state.profileExists, datasetMode: offline.state.datasetMode, top5: offlineTop, marketClimate: offlineMarketClimate } },
     captures: (await listCaptureNames()).map(name => path.relative(ROOT, path.join(CAPTURE_DIR, name))),
     assertions,
     errors: { console: consoleErrors, runtime: runtimeErrors, network: networkErrors },
     failures: [...failures, ...runtimeErrors.map(() => "runtime_error"), ...consoleErrors.map(() => "console_error")]
   };
   await writeFile(path.join(REPORT_DIR, "boussole-pro-refonte-profil-migre-v1.2-test.json"), `${JSON.stringify({ app: "boussole-pro-refonte-profile", version: "1.2.0", exportedAt: new Date().toISOString(), source: "browser_synthetic_migration_fixture", profile: roundTrip.profile, migration: { requestedReceptionProfileAvailable: false, activeProfilePolicy: "visible_editable_fields_only" } }, null, 2)}\n`);
+  await writeFile(path.join(REPORT_DIR, "exemple-resultats-profil-demo.json"), `${JSON.stringify(exportContract.snapshot, null, 2)}\n`);
+  await writeFile(path.join(REPORT_DIR, "exemple-resultats-profil-demo.md"), `${exportContract.markdown}\n`);
   await writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ status: report.status, assertions: assertions.length, failures: report.failures, captures: report.captures.length, report: path.relative(ROOT, REPORT_PATH) }, null, 2));
   cdp.close();
