@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="application-name" content="PrintPics">
-  <meta name="version" content="v0.5.alpha">
+  <meta name="version" content="v0.6.alpha">
   <meta name="description" content="Composer des planches imprimables et recadrer des images, localement et hors ligne.">
-  <title>PrintPics v0.5.alpha — Imprimer et recadrer des images</title>
+  <title>PrintPics v0.6.alpha — Imprimer et recadrer des images</title>
   <style id="print-page-style">
     @media print {
       @page { size: 210mm 297mm; margin: 0; }
@@ -213,6 +213,9 @@
     details.advanced[open] > summary::after { content: "−"; }
     .advanced-body { padding: 0 11px 11px; }
 
+    .fixed-size-fields { margin-top: 8px; }
+    .fixed-size-summary { margin: 0; color: var(--accent); font-size: .76rem; line-height: 1.5; }
+    .page-order-overlay.fixed-size-overlay { padding: 0; }
     .profile-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .workspace-head {
@@ -402,7 +405,7 @@
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="12" height="16" rx="2"/><path d="M8 7h4M8 11h4M8 15h3"/><path d="M16 8h4v13H8v-2"/></svg>
         </div>
         <div class="brand-copy">
-          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.5.alpha</span></div>
+          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.6.alpha</span></div>
           <p class="subtitle">Préparer des images nettes, aux bonnes dimensions, sans connexion.</p>
         </div>
       </div>
@@ -448,6 +451,16 @@
               <option value="CUSTOM">Sur mesure</option></select></div>
             <button class="btn ghost swap-format-btn" id="swap-format" type="button"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m7 7-3 3 3 3M4 10h11a4 4 0 0 1 4 4v3"/><path d="m17 17 2 2 2-2"/></svg>Permuter largeur / hauteur</button>
             <div class="paired-fields custom-field-group"><div class="field"><label for="custom-width">Largeur mm</label><input id="custom-width" type="number" min="20" max="1000" step="0.1" value="210"></div><div class="field"><label for="custom-height">Hauteur mm</label><input id="custom-height" type="number" min="20" max="1000" step="0.1" value="297"></div></div>
+            <div class="field full"><div class="check-row"><input id="fixed-image-size" type="checkbox" aria-controls="fixed-size-fields"><label for="fixed-image-size">Fixer la taille des images</label></div></div>
+            <div class="field full fixed-size-fields" id="fixed-size-fields" hidden>
+              <div class="form-grid">
+                <div class="field full"><label for="image-size-preset">Format de départ</label><select id="image-size-preset"><option value="COLLECTION">Carte de collection — 63 × 88 mm</option><option value="TAROT">Carte de tarot — 70 × 120 mm</option><option value="ORACLE">Carte oracle — exemple 80 × 120 mm</option><option value="BUSINESS">Carte de visite — 85 × 55 mm</option><option value="CUSTOM">Dimensions personnalisées</option></select></div>
+                <div class="field"><label for="image-width">Largeur mm</label><input id="image-width" type="number" min="1" max="1000" step="0.1" value="63" inputmode="decimal"></div>
+                <div class="field"><label for="image-height">Hauteur mm</label><input id="image-height" type="number" min="1" max="1000" step="0.1" value="88" inputmode="decimal"></div>
+                <p class="fixed-size-summary field full" id="fixed-size-summary" role="status" aria-live="polite"></p>
+                <p class="hint field full">Ces formats sont des points de départ ajustables, notamment pour le tarot et les oracles. La grille est centrée et sa capacité calculée automatiquement. « Voir l'image entière » peut laisser des bandes blanches ; « Remplir la case » recadre aux dimensions exactes. Les repères fins des réglages avancés peuvent aider à la découpe.</p>
+              </div>
+            </div>
             <div class="field"><label for="per-page">Images par page</label><input id="per-page" type="number" min="1" max="120" step="1" value="4"></div>
             <div class="field"><label for="fit">Dans chaque case</label><select id="fit"><option value="contain">Voir l'image entière</option><option value="cover">Remplir la case</option></select></div>
             <div class="field"><label for="margin">Marge extérieure mm</label><input id="margin" type="number" min="0" max="80" step="0.5" value="5"></div>
@@ -496,7 +509,7 @@
 
         <section class="result-rail no-print" aria-label="Résumé et export">
           <div class="stats-wrap"><p class="stats-label">État du résultat</p><dl class="stats" id="stats"></dl><div class="suggestion-box" id="suggestion-box" hidden><p id="suggestion-text"></p><div class="suggestion-actions" id="suggestion-actions"></div></div></div>
-          <div class="export-wrap"><p class="stats-label">Sortie</p><div class="export-cluster"><button class="btn primary print-only" id="print" type="button">Imprimer / PDF</button><button class="btn" id="export-png" type="button">Exporter PNG sans perte</button><button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button></div><p class="export-help" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif.</p><p class="print-help print-only">Pour le PDF : échelle 100 %, aucune marge ajoutée par le navigateur.</p></div>
+          <div class="export-wrap"><p class="stats-label">Sortie</p><div class="export-cluster"><button class="btn primary print-only" id="print" type="button">Imprimer / PDF</button><button class="btn" id="export-png" type="button">Exporter PNG sans perte</button><button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button></div><p class="export-help" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif.</p><p class="print-help print-only">Pour imprimer ou créer un PDF aux bonnes dimensions : taille réelle / échelle 100 %, sans ajustement à la page ni marge ajoutée par le navigateur.</p></div>
         </section>
 
         <section class="order-list-panel no-print" id="order-list-panel" hidden aria-label="Ordre des images"><div class="order-list-head"><div><h3>Ordre des images</h3><p>Glisse-dépose pour échanger, ou utilise les flèches sur écran tactile.</p></div><button class="btn compact" id="close-order-list" type="button">Fermer</button></div><div class="order-list" id="order-list"></div></section>
@@ -512,11 +525,18 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.5.alpha",
+        version: "0.6.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
         maxCanvasDimension: 32767,
+        // Formats de départ : les jeux de tarot et d'oracle n'ont pas une taille unique.
+        imageSizePresets: {
+          COLLECTION: { width: 63, height: 88 },
+          TAROT: { width: 70, height: 120 },
+          ORACLE: { width: 80, height: 120 },
+          BUSINESS: { width: 85, height: 55 }
+        },
         paperSizes: {
           A3: { label: "A3", width: 297, height: 420 },
           A4: { label: "A4", width: 210, height: 297 },
@@ -561,6 +581,7 @@
         noReadableImage: "Aucune image lisible n'a été trouvée dans la sélection.",
         profileImported: "Réglages importés. Les images restent celles de la session actuelle.",
         profileImportError: "Le fichier JSON n'a pas pu être importé.",
+        profileReplaceConfirm: "Remplacer les réglages actuels par ceux du profil JSON ? Les images de la session seront conservées.",
         imagesCleared: "Les images ont été retirées de la session.",
         clearConfirm: "Vider toutes les images chargées dans cette session ?",
         localStorageUnavailable: "La sauvegarde locale est indisponible dans ce navigateur.",
@@ -598,6 +619,10 @@
           minShortSide: 45,
           minPrintPpi: 180,
           maxAutoCount: 48,
+          fixedImageSize: false,
+          imageSizePreset: "COLLECTION",
+          imageWidth: 63,
+          imageHeight: 88,
           perPage: 4,
           cols: 2,
           rows: 2,
@@ -684,6 +709,10 @@
             minShortSide: byId("min-short-side"),
             minPrintPpi: byId("min-print-ppi"),
             maxAutoCount: byId("max-auto-count"),
+            fixedImageSize: byId("fixed-image-size"),
+            imageSizePreset: byId("image-size-preset"),
+            imageWidth: byId("image-width"),
+            imageHeight: byId("image-height"),
             perPage: byId("per-page"),
             cols: byId("cols"),
             rows: byId("rows"),
@@ -753,6 +782,12 @@
           next.minShortSide = this.clamp(next.minShortSide, 5, 250, base.minShortSide);
           next.minPrintPpi = Math.round(this.clamp(next.minPrintPpi, 72, 600, base.minPrintPpi));
           next.maxAutoCount = Math.round(this.clamp(next.maxAutoCount, 1, 120, base.maxAutoCount));
+          next.fixedImageSize = next.fixedImageSize === true;
+          next.imageWidth = this.clamp(next.imageWidth, 1, 1000, base.imageWidth);
+          next.imageHeight = this.clamp(next.imageHeight, 1, 1000, base.imageHeight);
+          const preset = App.config.imageSizePresets[next.imageSizePreset];
+          next.imageSizePreset = preset && preset.width === next.imageWidth && preset.height === next.imageHeight
+            ? next.imageSizePreset : "CUSTOM";
           next.perPage = Math.round(this.clamp(next.perPage, 1, 120, base.perPage));
           next.cols = Math.round(this.clamp(next.cols, 1, 40, base.cols));
           next.rows = Math.round(this.clamp(next.rows, 1, 40, base.rows));
@@ -856,6 +891,34 @@
             width: Math.max(1, paper.width - (s.margin * 2)),
             height: Math.max(1, paper.height - (s.margin * 2))
           };
+        },
+
+        // Grille régulière à dimensions physiques fixes. Une rotation échange les côtés,
+        // sans agrandir les cartes. La même grille est conservée sur la dernière page.
+        getFixedSizeGrid() {
+          const s = App.state.settings;
+          const box = this.getContentBox();
+          const orientations = [[s.imageWidth, s.imageHeight]];
+          if (s.autoRotate && s.imageWidth !== s.imageHeight) orientations.push([s.imageHeight, s.imageWidth]);
+          let best = null;
+          for (const [cellW, cellH] of orientations) {
+            const cols = Math.floor((box.width + s.spacing + 1e-7) / (cellW + s.spacing));
+            const rows = Math.floor((box.height + s.spacing + 1e-7) / (cellH + s.spacing));
+            const capacity = cols * rows;
+            if (cols < 1 || rows < 1 || (best && capacity <= best.capacity)) continue;
+            const gridW = cols * cellW + (cols - 1) * s.spacing;
+            const gridH = rows * cellH + (rows - 1) * s.spacing;
+            best = {
+              cols, rows, cellW, cellH, capacity, count: capacity,
+              offsetX: (box.paper.width - gridW) / 2,
+              offsetY: (box.paper.height - gridH) / 2,
+              gridW, gridH, fixedSize: true,
+              minSide: Math.min(cellW, cellH),
+              fillRatio: capacity * cellW * cellH / (box.width * box.height),
+              score: capacity
+            };
+          }
+          return best;
         },
 
         getCropAspectForSettings(settings, image = null) {
@@ -1014,6 +1077,7 @@
 
         getPageGrid(pageImages, forceAuto = false) {
           const s = App.state.settings;
+          if (s.fixedImageSize) return this.getFixedSizeGrid();
           if (!forceAuto && s.layoutMode === "grid") {
             return this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages));
           }
@@ -1098,6 +1162,18 @@
           const s = App.state.settings;
           const imageCount = images.length;
           if (!imageCount) return null;
+          if (s.fixedImageSize) {
+            App.state.recommendation = null;
+            App.state.recommendationOptions = [];
+            const grid = this.getFixedSizeGrid();
+            if (!grid) return { warning: "Aucune image de cette taille ne tient sur la page. Réduis les dimensions ou les marges, change le format de feuille ou autorise la rotation." };
+            const quality = this.evaluatePages(images, grid.capacity, grid);
+            return {
+              modeLabel: "Taille fixe", perPage: grid.capacity, grid, quality,
+              warning: quality.minPpi < s.minPrintPpi
+                ? `Attention : au moins une image descend vers ${Math.round(quality.minPpi)} ppp imprimée. Les dimensions demandées sont conservées.` : ""
+            };
+          }
           App.state.recommendation = this.recommendPerPage(images);
 
           if (s.layoutMode === "grid") {
@@ -1151,7 +1227,7 @@
           let startIndex = 0;
           return pages.map((pageImages) => {
             const s = App.state.settings;
-            const grid = s.layoutMode === "grid"
+            const grid = s.fixedImageSize ? this.getFixedSizeGrid() : s.layoutMode === "grid"
               ? this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages))
               : this.optimizeGrid(pageImages.length, pageImages);
             const page = {
@@ -1174,7 +1250,7 @@
           if (s.spacing > Math.max(paper.width, paper.height)) {
             return "L'espacement est trop grand pour ce format papier.";
           }
-          if (s.layoutMode === "grid" && s.cols * s.rows > 160) {
+          if (!s.fixedImageSize && s.layoutMode === "grid" && s.cols * s.rows > 160) {
             return "La grille forcée est trop lourde à calculer. Réduis lignes ou colonnes.";
           }
           return "";
@@ -1200,8 +1276,8 @@
             return;
           }
 
-          App.state.pagePages = this.buildPagePages(App.state.images, Math.max(1, App.state.settings.perPage));
-          App.state.pageImages = App.state.pagePages.map((page) => page.images);
+          App.state.pagePages = [];
+          App.state.pageImages = [];
           const warning = this.validateLayout();
           if (warning) {
             App.state.canvases = [];
@@ -1224,13 +1300,13 @@
 
           const layout = this.resolveLayout(images);
           App.state.lastLayout = layout;
-          App.state.pagePages = this.buildPagePages(images, Math.max(1, layout?.perPage || App.state.settings.perPage));
-          App.state.pageImages = App.state.pagePages.map((page) => page.images);
           if (!layout || !layout.grid || layout.grid.cellW <= 0 || layout.grid.cellH <= 0) {
             App.state.canvases = [];
             return;
           }
 
+          App.state.pagePages = this.buildPagePages(images, Math.max(1, layout.perPage));
+          App.state.pageImages = App.state.pagePages.map((page) => page.images);
           const pages = App.state.pagePages;
           const paper = this.getPaperSize();
           const s = App.state.settings;
@@ -1273,15 +1349,22 @@
 
             const availableW = widthPx - (2 * marginPx) - ((grid.cols - 1) * spacingPx);
             const availableH = heightPx - (2 * marginPx) - ((grid.rows - 1) * spacingPx);
-            const cellW = availableW / grid.cols;
-            const cellH = availableH / grid.rows;
+            // Conversion continue en pixels : évite d'accumuler les arrondis par carte.
+            const pxPerMmX = widthPx / paper.width;
+            const pxPerMmY = heightPx / paper.height;
+            const cellW = grid.fixedSize ? grid.cellW * pxPerMmX : availableW / grid.cols;
+            const cellH = grid.fixedSize ? grid.cellH * pxPerMmY : availableH / grid.rows;
+            const gapX = grid.fixedSize ? s.spacing * pxPerMmX : spacingPx;
+            const gapY = grid.fixedSize ? s.spacing * pxPerMmY : spacingPx;
+            const originX = grid.fixedSize ? grid.offsetX * pxPerMmX : marginPx;
+            const originY = grid.fixedSize ? grid.offsetY * pxPerMmY : marginPx;
 
             pageImages.forEach((image, index) => {
               const col = index % grid.cols;
               const row = Math.floor(index / grid.cols);
               const cell = {
-                x: marginPx + (col * (cellW + spacingPx)),
-                y: marginPx + (row * (cellH + spacingPx)),
+                x: originX + (col * (cellW + gapX)),
+                y: originY + (row * (cellH + gapY)),
                 w: cellW,
                 h: cellH
               };
@@ -1449,6 +1532,10 @@
             minShortSide: fields.minShortSide.value,
             minPrintPpi: fields.minPrintPpi.value,
             maxAutoCount: fields.maxAutoCount.value,
+            fixedImageSize: fields.fixedImageSize.checked,
+            imageSizePreset: fields.imageSizePreset.value,
+            imageWidth: fields.imageWidth.value,
+            imageHeight: fields.imageHeight.value,
             perPage: fields.perPage.value,
             cols: fields.cols.value,
             rows: fields.rows.value,
@@ -1495,7 +1582,27 @@
               ? '<path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/>'
               : '<path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/>';
           }
-          document.querySelectorAll(".grid-setting").forEach((el) => { el.hidden = mode !== "grid"; });
+          const fixedSize = App.state.settings.fixedImageSize;
+          const fields = App.els.fields;
+          document.getElementById("fixed-size-fields").hidden = !fixedSize;
+          fields.fixedImageSize.setAttribute("aria-expanded", String(fixedSize));
+          [fields.perPage, fields.layoutMode, fields.cols, fields.rows,
+            fields.minShortSide, fields.maxAutoCount].forEach((field) => { field.disabled = fixedSize; });
+          fields.perPage.closest(".field").hidden = fixedSize;
+          fields.layoutMode.closest(".field").hidden = fixedSize;
+          fields.minShortSide.closest(".field").hidden = fixedSize;
+          fields.maxAutoCount.closest(".field").hidden = fixedSize;
+          fields.imageSizePreset.value = App.state.settings.imageSizePreset;
+          if (fixedSize) {
+            const grid = App.model.getFixedSizeGrid();
+            const s = App.state.settings;
+            document.getElementById("fixed-size-summary").textContent =
+              `${(s.imageWidth / 10).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} × ${(s.imageHeight / 10).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} cm · ` +
+              (grid ? `${grid.capacity} emplacement(s) par page · grille ${grid.cols} × ${grid.rows}` +
+                (grid.cellW !== s.imageWidth ? " · cartes tournées de 90°" : "")
+                : "Aucun emplacement : ajuste la taille, la feuille, les marges ou la rotation.");
+          }
+          document.querySelectorAll(".grid-setting").forEach((el) => { el.hidden = fixedSize || mode !== "grid"; });
           document.querySelectorAll(".custom-field-group").forEach((el) => { el.hidden = !isCustom; });
           document.querySelectorAll(".print-only").forEach((el) => { el.hidden = isCrop; });
           document.querySelectorAll(".crop-only").forEach((el) => { el.hidden = !isCrop; });
@@ -1829,7 +1936,7 @@
 
             if (canEditOrder && page?.grid) {
               const overlay = document.createElement("div");
-              overlay.className = "page-order-overlay";
+              overlay.className = "page-order-overlay no-print";
               overlay.style.setProperty("--overlay-cols", String(page.grid.cols));
               overlay.style.setProperty("--overlay-rows", String(page.grid.rows));
               const marginRatio = paper.width ? (App.state.settings.margin / paper.width) : 0;
@@ -1837,7 +1944,22 @@
               overlay.style.setProperty("--overlay-margin", `${Math.max(0, Math.round(previewWidth * marginRatio))}px`);
               overlay.style.setProperty("--overlay-gap", `${Math.max(0, Math.round(previewWidth * spacingRatio))}px`);
 
-              const slotCount = page.grid.cols * page.grid.rows;
+              if (page.grid.fixedSize) {
+                // Pourcentages relatifs à la page : tri aligné même sur un petit écran.
+                const grid = page.grid;
+                overlay.classList.add("fixed-size-overlay");
+                overlay.style.inset = "auto";
+                overlay.style.left = `${grid.offsetX / paper.width * 100}%`;
+                overlay.style.top = `${grid.offsetY / paper.height * 100}%`;
+                overlay.style.width = `${grid.gridW / paper.width * 100}%`;
+                overlay.style.height = `${grid.gridH / paper.height * 100}%`;
+                overlay.style.columnGap = `${App.state.settings.spacing / grid.gridW * 100}%`;
+                overlay.style.rowGap = `${App.state.settings.spacing / grid.gridH * 100}%`;
+              }
+              // Ne crée pas des milliers de cibles vides pour des dimensions minuscules.
+              const slotCount = page.grid.fixedSize && page.grid.capacity > 160
+                ? Math.min(page.grid.capacity, page.images.length + 1)
+                : page.grid.cols * page.grid.rows;
               for (let slotIndex = 0; slotIndex < slotCount; slotIndex += 1) {
                 overlay.appendChild(this.createPageSlot(page, index, slotIndex));
               }
@@ -1979,7 +2101,7 @@
 
         renderSuggestion() {
           const suggestion = App.state.recommendation;
-          if (!suggestion || !App.state.images.length) {
+          if (App.state.settings.fixedImageSize || !suggestion || !App.state.images.length) {
             App.els.suggestionBox.hidden = true;
             App.els.suggestionText.textContent = "";
             App.els.suggestionActions.innerHTML = "";
@@ -2074,6 +2196,13 @@
             event.target.value = "";
           });
 
+          App.els.fields.imageSizePreset.addEventListener("change", () => {
+            const preset = App.config.imageSizePresets[App.els.fields.imageSizePreset.value];
+            if (!preset) return;
+            App.els.fields.imageWidth.value = preset.width;
+            App.els.fields.imageHeight.value = preset.height;
+          });
+
           Object.values(App.els.fields).forEach((field) => {
             field.addEventListener("input", () => {
               const delay = field.type === "range" ? 40 : 280;
@@ -2096,6 +2225,7 @@
               s.orientation = s.orientation === "landscape" ? "portrait" : "landscape";
             }
             App.view.applySettingsToForm();
+            App.view.updateModeVisibility();
             App.view.updatePrintPageStyle();
             App.store.save();
             await this.regenerate();
@@ -2502,7 +2632,13 @@
               throw new Error("Profil incompatible");
             }
             const settings = parsed.settings || parsed;
-            App.state.settings = App.model.normalizeSettings({ ...App.state.settings, ...settings });
+            if (!settings || typeof settings !== "object" || Array.isArray(settings)) throw new Error("Profil invalide");
+            const incoming = App.model.normalizeSettings({ ...App.state.settings, ...settings,
+              // Un ancien profil retrouve le mode habituel, même après une session à taille fixe.
+              fixedImageSize: settings.fixedImageSize === true
+            });
+            if (!await App.view.showConfirm(App.i18n.profileReplaceConfirm)) return;
+            App.state.settings = incoming;
             App.view.applySettingsToForm();
             App.view.updateModeVisibility();
             App.view.applyTheme();
