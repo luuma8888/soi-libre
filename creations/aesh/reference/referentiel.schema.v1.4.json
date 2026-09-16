@@ -1,0 +1,893 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/aesh/referentiel.schema.v1.4.json",
+  "title": "Référentiel commun AESH — schéma V1.4",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "referential_version",
+    "language",
+    "metadata",
+    "taxonomies",
+    "particularities",
+    "mechanisms",
+    "situations",
+    "tools",
+    "recommendations",
+    "sources",
+    "semantics",
+    "curation"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.4.0"
+    },
+    "referential_version": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "const": "fr-FR"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "title",
+        "audience",
+        "description"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "taxonomies": {
+      "type": "object",
+      "required": [
+        "domains",
+        "practice_categories",
+        "contexts",
+        "regulation_states",
+        "moments",
+        "situation_groups",
+        "capabilities",
+        "environment_requirements",
+        "diversity_families"
+      ],
+      "properties": {
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "practice_categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "contexts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "regulation_states": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "moments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "situation_groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "environment_requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        },
+        "diversity_families": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy_item"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "particularities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/particularity"
+      }
+    },
+    "mechanisms": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mechanism"
+      }
+    },
+    "situations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/situation"
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tool"
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/recommendation"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "required": [
+        "regulation_states",
+        "contexts",
+        "particularity_statuses",
+        "situation_particularities",
+        "recommendation_contexts",
+        "fit_rules",
+        "practice_categories",
+        "taxonomy_statuses",
+        "diversity_families",
+        "age_constraints",
+        "provenance"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "regulation_states": {
+          "type": "object"
+        },
+        "contexts": {
+          "type": "object"
+        },
+        "particularity_statuses": {
+          "type": "object"
+        },
+        "situation_particularities": {
+          "type": "object"
+        },
+        "recommendation_contexts": {
+          "type": "object"
+        },
+        "fit_rules": {
+          "type": "object"
+        },
+        "practice_categories": {
+          "type": "object"
+        },
+        "taxonomy_statuses": {
+          "type": "object"
+        },
+        "diversity_families": {
+          "type": "object"
+        },
+        "age_constraints": {
+          "type": "object"
+        },
+        "provenance": {
+          "type": "object"
+        }
+      }
+    },
+    "curation": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "taxonomy_item": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9._-]+$"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "facet": {
+          "enum": [
+            "place",
+            "activity",
+            "moment",
+            "universal"
+          ]
+        },
+        "status": {
+          "enum": [
+            "active",
+            "reserved",
+            "deprecated"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "age_min": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "age_max": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "requires_capability_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbids_capability_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "environment_requirement_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_materials": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_consent": {
+          "type": "boolean"
+        },
+        "requires_touching_other_person": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "age_is_hard": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "particularity": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "kind"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "diagnosis_or_condition",
+            "identified_profile",
+            "functional_trait",
+            "communication_profile",
+            "sensory_profile",
+            "contextual_factor",
+            "other"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mechanism_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mechanism": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clues": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "situation": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "aliases",
+        "group_ids"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "short_label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "observable_signs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "group_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mechanism_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "particularity_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "context_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "constraints": {
+          "$ref": "#/$defs/constraints"
+        }
+      },
+      "additionalProperties": false
+    },
+    "presentation_variant": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "constraints": {
+          "$ref": "#/$defs/constraints"
+        },
+        "title_override": {
+          "type": "string"
+        },
+        "summary_override": {
+          "type": "string"
+        },
+        "instructions_override": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sample_phrases_override": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "summary",
+        "practice_category_ids",
+        "moment_ids",
+        "constraints",
+        "duration",
+        "discretion",
+        "verbal_demand",
+        "cognitive_demand",
+        "movement_level",
+        "curation_basis"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "why_it_may_help": {
+          "type": "string"
+        },
+        "adult_adjustments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "child_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sample_phrases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "presentation_variants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/presentation_variant"
+          }
+        },
+        "practice_category_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "moment_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "context_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "constraints": {
+          "$ref": "#/$defs/constraints"
+        },
+        "duration": {
+          "enum": [
+            "seconds",
+            "1_2_min",
+            "3_5_min",
+            "5_15_min",
+            "longer",
+            "variable"
+          ]
+        },
+        "discretion": {
+          "enum": [
+            "very_discreet",
+            "classroom_visible",
+            "needs_space",
+            "variable"
+          ]
+        },
+        "verbal_demand": {
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "cognitive_demand": {
+          "enum": [
+            "very_low",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "movement_level": {
+          "enum": [
+            "none",
+            "light",
+            "moderate",
+            "high"
+          ]
+        },
+        "cautions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stop_if": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "source_id",
+              "relation"
+            ],
+            "properties": {
+              "source_id": {
+                "type": "string"
+              },
+              "relation": {
+                "enum": [
+                  "supports",
+                  "inspired_by",
+                  "describes",
+                  "field_practice"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "preferred_regulation_state_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_regulation_state_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "curation_basis": {
+          "enum": [
+            "direct_source_support",
+            "source_inspired_adaptation",
+            "cross_source_field_synthesis"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "fit_rule": {
+      "type": "object",
+      "required": [
+        "effect",
+        "reason"
+      ],
+      "properties": {
+        "effect": {
+          "enum": [
+            "boost",
+            "deprioritize",
+            "exclude",
+            "context_note"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "mild",
+            "moderate",
+            "strong"
+          ]
+        },
+        "particularity_id": {
+          "type": "string"
+        },
+        "mechanism_id": {
+          "type": "string"
+        },
+        "regulation_state_id": {
+          "type": "string"
+        },
+        "context_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "particularity_id"
+          ]
+        },
+        {
+          "required": [
+            "mechanism_id"
+          ]
+        },
+        {
+          "required": [
+            "regulation_state_id"
+          ]
+        },
+        {
+          "required": [
+            "context_id"
+          ]
+        }
+      ]
+    },
+    "recommendation": {
+      "type": "object",
+      "required": [
+        "id",
+        "situation_id",
+        "tool_id",
+        "default_tier"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "situation_id": {
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        },
+        "default_tier": {
+          "enum": [
+            "first_try",
+            "good_option",
+            "alternative"
+          ]
+        },
+        "reason_short": {
+          "type": "string"
+        },
+        "mechanism_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "context_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fit_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fit_rule"
+          }
+        },
+        "diversity_family": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "preferred_regulation_state_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded_regulation_state_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "source_type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "year": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "source_type": {
+          "enum": [
+            "book",
+            "official_resource",
+            "professional_resource",
+            "research",
+            "association",
+            "field_practice",
+            "tradition",
+            "other"
+          ]
+        },
+        "approach_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -52,6 +52,7 @@ Les applications sont des invitations pratiques : écrire, clarifier, explorer, 
 | `creations/cardforge.html` | Atelier de cartes et supports imprimables. |
 | `creations/ucem-compagnon.html` | Compagnon de pratique pour Un Cours En Miracles. |
 | `creations/seve/` | Outils pédagogiques pour accompagner les valeurs et le discernement. |
+| `creations/aesh/` | Deux outils AESH : consultation Terrain et accompagnement local dans la durée. |
 | `creations/atelier_comedie_musicale.html` | Conception d'une comédie musicale. |
 | `creations/autonomie.html` | Préparation collective, ressources et organisation. |
 | `creations/lune.html` | Almanach lunaire offline. |

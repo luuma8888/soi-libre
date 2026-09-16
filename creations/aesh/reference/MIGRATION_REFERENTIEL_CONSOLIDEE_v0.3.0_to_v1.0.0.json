@@ -1,0 +1,65 @@
+{
+  "from_referential_version": "0.3.0",
+  "to_referential_version": "1.0.0",
+  "purpose": "Migration consolidée pour éviter de chaîner les migrations historiques de prototype.",
+  "id_redirects": {
+    "situations": {
+      "situation.cannot_join_peers": "situation.isolated_from_group",
+      "situation.restless_dispersed": "situation.motor_restlessness"
+    },
+    "tools": {
+      "tool.wait_without_repeating": "tool.wait_time",
+      "tool.low_demand_presence": "tool.quiet_presence",
+      "tool.peer_entry_phrase": "tool.peer_entry_script",
+      "tool.gradual_school_entry": "tool.graded_entry"
+    },
+    "recommendations": {
+      "recommendation.slow_response_latency.wait_without_repeating": "recommendation.slow_response_latency.wait_time",
+      "recommendation.cannot_speak_under_stress.low_demand_presence": "recommendation.cannot_speak_under_stress.quiet_presence",
+      "recommendation.cannot_join_peers.discreet_help": "recommendation.isolated_from_group.discreet_help",
+      "recommendation.cannot_join_peers.offer_two_choices": "recommendation.isolated_from_group.offer_two_choices",
+      "recommendation.peer_pressure_risk.peer_entry_phrase": "recommendation.peer_pressure_risk.peer_entry_script",
+      "recommendation.mocked_accent_difference.low_demand_presence": "recommendation.mocked_accent_difference.quiet_presence",
+      "recommendation.pain_distracts.low_demand_presence": "recommendation.pain_distracts.quiet_presence",
+      "recommendation.young_carer_exhausted.low_demand_presence": "recommendation.young_carer_exhausted.quiet_presence",
+      "recommendation.injustice_rumination.low_demand_presence": "recommendation.injustice_rumination.quiet_presence",
+      "recommendation.isolated_from_group.low_demand_presence": "recommendation.isolated_from_group.quiet_presence",
+      "recommendation.stuttering_pressured.wait_without_repeating": "recommendation.stuttering_pressured.wait_time",
+      "recommendation.smell_overload.low_demand_presence": "recommendation.smell_overload.quiet_presence",
+      "recommendation.self_harm_urge.low_demand_presence": "recommendation.self_harm_urge.quiet_presence",
+      "recommendation.body_comments_distress.low_demand_presence": "recommendation.body_comments_distress.quiet_presence",
+      "recommendation.bullying_group_dynamic.low_demand_presence": "recommendation.bullying_group_dynamic.quiet_presence",
+      "recommendation.no_eye_contact_but_listens.wait_without_repeating": "recommendation.no_eye_contact_but_listens.wait_time",
+      "recommendation.word_on_tip_tongue.wait_without_repeating": "recommendation.word_on_tip_tongue.wait_time",
+      "recommendation.hunger_irritability.low_demand_presence": "recommendation.hunger_irritability.quiet_presence",
+      "recommendation.friendship_breakup.low_demand_presence": "recommendation.friendship_breakup.quiet_presence",
+      "recommendation.post_crisis_shame.low_demand_presence": "recommendation.post_crisis_shame.quiet_presence",
+      "recommendation.grief_distracted.low_demand_presence": "recommendation.grief_distracted.quiet_presence",
+      "recommendation.discrimination_withdrawal.low_demand_presence": "recommendation.discrimination_withdrawal.quiet_presence",
+      "recommendation.tics_more_when_watched.low_demand_presence": "recommendation.tics_more_when_watched.quiet_presence",
+      "recommendation.low_mood_no_interest.low_demand_presence": "recommendation.low_mood_no_interest.quiet_presence",
+      "recommendation.meal_comments_trigger.low_demand_presence": "recommendation.meal_comments_trigger.quiet_presence",
+      "recommendation.online_conflict_spills_school.low_demand_presence": "recommendation.online_conflict_spills_school.quiet_presence",
+      "recommendation.social_exhaustion_after_group.low_demand_presence": "recommendation.social_exhaustion_after_group.quiet_presence",
+      "recommendation.says_i_am_bad.low_demand_presence": "recommendation.says_i_am_bad.quiet_presence",
+      "recommendation.motor_task_slow_not_understood.low_demand_presence": "recommendation.motor_task_slow_not_understood.quiet_presence",
+      "rec.cannot_find_room.ask_directions": "recommendation.cannot_find_room.ask_directions_simple",
+      "rec.new_school_codes.ask_directions": "recommendation.new_school_lost_codes.ask_directions_simple"
+    },
+    "particularities": {},
+    "mechanisms": {}
+  },
+  "structural_changes": [
+    "regulation_state_ids devient preferred_regulation_state_ids ; absence = neutre.",
+    "excluded_regulation_state_ids explicite les incompatibilités réelles.",
+    "taxonomies.contexts[].facet distingue place/activity/moment/universal.",
+    "constraints.age_is_hard distingue seuil rigide et simple repère d’âge ; V1.0 utilise false par défaut.",
+    "tool.curation_basis explicite la nature de la provenance.",
+    "La catégorie practice.spiritual_personal a été supprimée ; practice.prayer_ritual porte la prière personnelle.",
+    "Les recommendation IDs ont été normalisés sur situation + outil."
+  ],
+  "notes": [
+    "Utiliser ce fichier de préférence au chaînage des migrations de prototype.",
+    "Aucun ID V1.0 ne doit être réaffecté à un autre sens à l’avenir."
+  ]
+}
