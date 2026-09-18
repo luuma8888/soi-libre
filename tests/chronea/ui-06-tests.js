@@ -1,0 +1,8 @@
+(async()=>{
+const A=__test,P=ChroneaProject,D=ChroneaAdapters,$=s=>document.querySelector(s),results=[],assert=x=>{if(!x)throw Error('Assertion')},test=async(name,fn)=>{try{await fn();results.push({name,ok:true})}catch(error){results.push({name,ok:false,error:String(error)})}};
+await test('Phase 6 : mapping affiche erreurs et bloque confirmation',async()=>{const before=JSON.stringify(A.project),promise=A.mapCSV('nom,date\nImpossible,2023-02-29','CSV');assert($('#csvMappingDialog').open);assert($('#csvApply').disabled&&$('#csvErrors').textContent.includes('Ligne 2'));$('#csvMappingDialog').close();assert(await promise===null);assert(JSON.stringify(A.project)===before)});
+await test('Phase 6 : mapping validé puis import annulable',async()=>{const promise=A.mapCSV('nom,date\nRepère,2012-07~','CSV');assert(!$('#csvApply').disabled);$('#csvApply').click();const r=await promise,count=A.project.timelines.length;assert(A.applyImport(r,'add'));assert(A.project.timelines.length===count+1);A.undo();assert(A.project.timelines.length===count)});
+await test('Phase 6 : validation native refuse import sans mutation',()=>{const before=JSON.stringify(A.project),r={project:P.clone(A.project),assets:new Map()};r.project.timelines[0].events[0].mediaIds=['absent'];let rejected=false;try{A.applyImport(r,'replace')}catch{rejected=true}assert(rejected&&JSON.stringify(A.project)===before)});
+await test('Phase 6 : matrice de fidélité avant export',async()=>{const promise=A.confirmFidelity('csv');assert($('#fidelityDialog').open&&$('#fidelityContent').textContent.includes('Médias locaux omis'));$('#fidelityApply').click();assert(await promise)});
+return results;
+})()
