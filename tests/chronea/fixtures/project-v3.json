@@ -1,0 +1,329 @@
+{
+  "app": "Chronéa",
+  "schemaVersion": 3,
+  "kind": "project",
+  "project": {
+    "schemaVersion": 3,
+    "id": "fixture-v3",
+    "title": "Projet V3 représentatif",
+    "createdAt": "2026-09-18T00:00:00Z",
+    "updatedAt": "2026-09-18T00:00:00Z",
+    "timelines": [
+      {
+        "id": "timeline-calendar",
+        "title": "Archives",
+        "timeSystemId": "gregorian",
+        "lanes": [
+          {
+            "id": "lane-archive",
+            "name": "Archives",
+            "order": 0,
+            "visible": true,
+            "color": "#718b78"
+          }
+        ],
+        "spans": [
+          {
+            "id": "span-era",
+            "title": "Époque",
+            "temporal": {
+              "kind": "interval",
+              "start": {
+                "value": {
+                  "year": 1950
+                },
+                "precision": "year",
+                "qualifier": "exact"
+              },
+              "end": {
+                "value": {
+                  "year": 2025
+                },
+                "precision": "year",
+                "qualifier": "exact"
+              }
+            },
+            "laneId": null,
+            "color": "#cadbc8"
+          }
+        ],
+        "events": [
+          {
+            "id": "event-a",
+            "title": "Année seule",
+            "type": "Repère",
+            "summary": "Observation de démonstration",
+            "markdown": "## Notes\n\n**Une piste**\n- archive locale",
+            "temporal": {
+              "kind": "point",
+              "start": {
+                "value": {
+                  "year": 2012
+                },
+                "precision": "year",
+                "qualifier": "exact"
+              },
+              "end": null
+            },
+            "displayDate": "",
+            "laneId": "lane-archive",
+            "tags": [
+              "archive"
+            ],
+            "place": "Vallée",
+            "sourceIds": [
+              "source-carnet"
+            ],
+            "mediaIds": [
+              "media-notes"
+            ],
+            "externalIds": {},
+            "createdAt": "2026-09-18T00:00:00Z",
+            "updatedAt": "2026-09-18T00:00:00Z",
+            "color": "#718b78",
+            "links": "Archive | https://example.org"
+          },
+          {
+            "id": "event-b",
+            "title": "Début possible mars–juin",
+            "type": "Repère",
+            "summary": "Observation de démonstration",
+            "markdown": "## Notes\n\n**Une piste**\n- archive locale",
+            "temporal": {
+              "kind": "interval",
+              "start": {
+                "value": {
+                  "year": 1998
+                },
+                "precision": "year",
+                "qualifier": "exact",
+                "notBefore": {
+                  "year": 1998,
+                  "month": 3
+                },
+                "notAfter": {
+                  "year": 1998,
+                  "month": 6
+                }
+              },
+              "end": {
+                "value": {
+                  "year": 2001
+                },
+                "precision": "year",
+                "qualifier": "approximate"
+              }
+            },
+            "displayDate": "",
+            "laneId": null,
+            "tags": [
+              "archive"
+            ],
+            "place": "Vallée",
+            "sourceIds": [],
+            "mediaIds": [],
+            "externalIds": {},
+            "createdAt": "2026-09-18T00:00:00Z",
+            "updatedAt": "2026-09-18T00:00:00Z",
+            "color": "#718b78",
+            "links": "Archive | https://example.org"
+          },
+          {
+            "id": "event-c",
+            "title": "Avant 1980",
+            "type": "Repère",
+            "summary": "Observation de démonstration",
+            "markdown": "## Notes\n\n**Une piste**\n- archive locale",
+            "temporal": {
+              "kind": "openInterval",
+              "start": null,
+              "end": {
+                "value": {
+                  "year": 1980
+                },
+                "precision": "year",
+                "qualifier": "exact"
+              }
+            },
+            "displayDate": "",
+            "laneId": null,
+            "tags": [
+              "archive"
+            ],
+            "place": "Vallée",
+            "sourceIds": [],
+            "mediaIds": [],
+            "externalIds": {},
+            "createdAt": "2026-09-18T00:00:00Z",
+            "updatedAt": "2026-09-18T00:00:00Z",
+            "color": "#718b78",
+            "links": "Archive | https://example.org"
+          }
+        ],
+        "relations": [
+          {
+            "id": "relation-a-b",
+            "sourceId": "event-a",
+            "targetId": "event-b",
+            "type": "supports",
+            "direction": "directed",
+            "note": "Hypothèse à vérifier"
+          }
+        ]
+      },
+      {
+        "id": "timeline-numeric",
+        "title": "Cycles",
+        "timeSystemId": "numeric-fixture",
+        "lanes": [],
+        "spans": [],
+        "events": [
+          {
+            "id": "event-cycle",
+            "title": "Cycle 12.5",
+            "type": "Repère",
+            "summary": "Observation de démonstration",
+            "markdown": "## Notes\n\n**Une piste**\n- archive locale",
+            "temporal": {
+              "kind": "interval",
+              "start": {
+                "value": 12.5,
+                "precision": "numeric",
+                "qualifier": "exact"
+              },
+              "end": {
+                "value": 10,
+                "precision": "numeric",
+                "qualifier": "exact"
+              }
+            },
+            "displayDate": "",
+            "laneId": null,
+            "tags": [
+              "archive"
+            ],
+            "place": "Vallée",
+            "sourceIds": [],
+            "mediaIds": [],
+            "externalIds": {},
+            "createdAt": "2026-09-18T00:00:00Z",
+            "updatedAt": "2026-09-18T00:00:00Z",
+            "color": "#718b78",
+            "links": "Archive | https://example.org"
+          }
+        ],
+        "relations": []
+      },
+      {
+        "id": "timeline-imaginary",
+        "title": "Lunes",
+        "timeSystemId": "custom-fixture",
+        "lanes": [],
+        "spans": [],
+        "events": [
+          {
+            "id": "event-aube",
+            "title": "Troisième aube",
+            "type": "Repère",
+            "summary": "Observation de démonstration",
+            "markdown": "## Notes\n\n**Une piste**\n- archive locale",
+            "temporal": {
+              "kind": "point",
+              "start": {
+                "value": {
+                  "year": 2,
+                  "month": 1,
+                  "day": 3,
+                  "era": "Fondation"
+                },
+                "precision": "day",
+                "qualifier": "exact"
+              },
+              "end": null
+            },
+            "displayDate": "",
+            "laneId": null,
+            "tags": [
+              "archive"
+            ],
+            "place": "Vallée",
+            "sourceIds": [],
+            "mediaIds": [],
+            "externalIds": {},
+            "createdAt": "2026-09-18T00:00:00Z",
+            "updatedAt": "2026-09-18T00:00:00Z",
+            "color": "#718b78",
+            "links": "Archive | https://example.org"
+          }
+        ],
+        "relations": []
+      }
+    ],
+    "timeSystems": [
+      {
+        "id": "gregorian",
+        "type": "gregorian",
+        "name": "Grégorien",
+        "definition": {}
+      },
+      {
+        "id": "numeric-fixture",
+        "type": "numeric",
+        "name": "Cycles",
+        "definition": {
+          "unit": "cycle",
+          "direction": -1
+        }
+      },
+      {
+        "id": "custom-fixture",
+        "type": "customCalendar",
+        "name": "Clair",
+        "definition": {
+          "months": [
+            {
+              "name": "Aube",
+              "days": 30
+            },
+            {
+              "name": "Clair",
+              "days": 40
+            }
+          ],
+          "intercalaryDays": 2,
+          "eras": [
+            {
+              "name": "Fondation",
+              "offset": 10
+            }
+          ],
+          "displayFormat": "jour mois année ère"
+        }
+      }
+    ],
+    "media": [
+      {
+        "id": "media-notes",
+        "name": "notes.txt",
+        "mimeType": "text/plain",
+        "size": 23,
+        "storageRef": "media/media-notes",
+        "checksum": "sha256-9e1a1c7901520dfd2779f486c41af4e5a86623d8c7156396fbff210a6a4b654b",
+        "alt": "",
+        "caption": "Archive textuelle"
+      }
+    ],
+    "sources": [
+      {
+        "id": "source-carnet",
+        "title": "Carnet",
+        "citation": "Page 12",
+        "type": "note"
+      }
+    ],
+    "metadata": {}
+  },
+  "assets": {
+    "media/media-notes": "data:text/plain;base64,Tm90ZXMgZGUgZMOpbW9uc3RyYXRpb24="
+  }
+}
