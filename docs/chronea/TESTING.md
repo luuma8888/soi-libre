@@ -1,4 +1,4 @@
-# Recette de Chronéa 3.0
+# Recette de Chronéa 3.1
 
 ## Commande complète
 
@@ -14,16 +14,18 @@ Exécutions ciblées :
 python3 scripts/test-chronea-v3.py
 python3 scripts/test-chronea-ui.py
 python3 scripts/check-chronea-final.py
+python3 scripts/test-chronea-ux.py 10
 ```
 
 ## Couverture
 
 - Noyau et adaptateurs : calendrier, dates impossibles, périodes, EDTF, numérique, schéma, migrations, références, CSV, ICS, UID, TZID, JSCalendar, fusion et fixtures.
 - Stockage réel : IndexedDB, Blobs, instantanés, repli localStorage, archives ZIP, CRC, chemins dangereux, médias manquants et aller-retour natif.
-- Interface : saisies avancées, calendriers fictifs guidés, périodes de fond, focus, édition directe, tags groupés, duplication, suppression, undo/redo, graphe, imports, fidélité, SVG/PNG, TeX et champs de publication.
+- Interface : éditeur temporel unique, calendrier imaginaire graphique, ères/phases, focus, édition directe, tags groupés, duplication, suppression, undo/redo, graphe, imports, fidélité, SVG/PNG, TeX et champs de publication.
+- Lots UX : `test-chronea-ux.py N` vérifie séquentiellement les lots 1 à N et s’arrête au premier lot en échec. Le lot 10 inclut molette, curseur, minimap, boutons et pincement, formes, dates, projets, sources, calendriers, fils, ères/phases, relations et toolbar. Les résultats de chaque étape restent dans `ux-lot-NN-results.json`.
 - Conservation : légendes de médias lors d’un retrait/réouverture ; IDs, notes et direction des relations lors d’une édition, avec plus de 500 liens.
 - Recette : navigateur offline, nuit, autosauvegarde, rechargement, téléchargements réels JSON/paquet et neuf formats d’échange/rapport, récupération d’un cache corrompu et zéro exception/réseau.
-- Responsive : 1440×1000, 768×1000, 390×844, sur Récit, Échelle, Données et Relations, avec captures PNG.
+- Responsive : 1440×1000, 768×1000, 390×844, sur Récit, Échelle, Données et Relations, avec captures PNG. L’éditeur d’élément et la temporalité du projet sont aussi capturés en bureau et mobile.
 - Impression : PDF chronologie et projet via CDP, textes contrôlés par `pdftotext`, images/vectoriel et CSS dédiés.
 - Charge : 500, 1 500, 5 000, 10 000 événements ; validation, trois vues, recherche, filtre, pan, zoom, sauvegarde, relecture, taille JSON et éléments DOM.
 

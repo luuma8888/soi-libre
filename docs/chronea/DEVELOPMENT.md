@@ -14,6 +14,7 @@
 | `graph.js` | Graphe limité à un voisinage et liens orientés |
 | `adapters.js` | CSV V3, JSCalendar, capacités, rebase et fusion |
 | `publication.js` | SVG éditorial, PNG local, Markdown vers TeX |
+| `temporal-editor.js` | Formulaire progressif commun aux éléments et ères/phases, traduction vers `TemporalExpression` |
 | `app.js` | État, contrôleurs, vues, historique et transactions |
 
 Le build assemble ces sources dans **un seul script intégré**. Il n’y a ni modules externes à charger, ni compilation JS, ni dépendance applicative. Modifier les sources puis reconstruire les deux HTML générés.
@@ -26,6 +27,8 @@ python3 scripts/test-chronea.py
 ## Transactions et rendu
 
 `App.project` est le projet métier canonique. `App.prefs` contient uniquement l’interface. Une mutation clone le projet, vérifie le contrat et toutes les références, puis remplace l’état de façon atomique. Historique, import et modifications groupées suivent ce chemin. Les Blobs immuables sont référencés dans les états de l’historique sans recopier leurs octets.
+
+En usage normal, toutes les chronologies d’un projet partagent le même `timeSystemId`. Le schéma V3 garde plusieurs systèmes pour la compatibilité : un ancien projet mixte reste consultable, puis peut être séparé en projets sans convertir ses dates. `scaleCamera` est la seule fenêtre graphique de l’Échelle ; `rangeFilter` est un filtre volontaire des vues. Le zoom affiché se déduit de la caméra et du domaine complet.
 
 Récit, Texte, Médias et Données ont des pages de 200 événements ; Relations, des pages de 150 liens. Le graphe montre au plus 60 nœuds et 100 liens, avec accès à la collection exacte dans la liste. L’Échelle agrège les voisinages denses et place les libellés sur plusieurs rangées. Les objets sans ancre restent accessibles dans les vues structurées.
 
