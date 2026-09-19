@@ -3,6 +3,7 @@ import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { adaptCompactRuntime, buildCompactRuntime, buildTagStatistics, enrichProfileOptionTags, sha256 } from "./boussole-runtime-compact.mjs";
 import { projectQualificationAccess } from "./boussole-qualifications.mjs";
+import { validateRiasecReference } from "./boussole-riasec.mjs";
 import { loadBoussoleEngine, loadGeneratedBundle } from "./validate-boussole-v073.mjs";
 
 const ROOT = process.cwd();
@@ -12,6 +13,7 @@ const OFFLINE_PATH = path.join(APP_DIR, "boussole-pro-offline.html");
 const SOURCE_DIR = path.join(APP_DIR, "data/generated/rome1000-candidate");
 const MARKET_DIR = path.join(APP_DIR, "data/generated/market");
 const OUTPUT_DIR = path.join(APP_DIR, "boussole-runtime");
+const RIASEC_PATH = path.join(OUTPUT_DIR, "rome-riasec-boussole-pro-v1.1.json");
 const REPORT_DIR = path.join(ROOT, "tmp/monde-pro/boussole-runtime-v1");
 const REPORT_PATH = path.join(REPORT_DIR, "boussole-runtime-build-report.json");
 const TAG_RELATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.5.1/tag-relations-quality-report.json");
@@ -20,8 +22,8 @@ const AUDIENCE_CONFIG_PATH = path.join(APP_DIR, "config/audience-overrides.json"
 const TAXONOMY_CONFIG_PATH = path.join(APP_DIR, "config/taxonomy-overrides.json");
 const QUALIFICATION_CONFIG_PATH = path.join(APP_DIR, "config/qualification-catalog.json");
 const QUALIFICATION_REPORT_PATH = path.join(ROOT, "tmp/monde-pro/boussole-v1.6.0/qualification-audit-report.json");
-const APP_VERSION = "1.6.0";
-const BUILD_ID = "20260824-personal-fit-v2-persistence-01";
+const APP_VERSION = "1.6.1";
+const BUILD_ID = "20260919-riasec-v1-1-01";
 
 const [appHtml, browserProvider, audienceConfig, taxonomyConfig, qualificationConfig] = await Promise.all([
   readFile(APP_PATH, "utf8"),
@@ -33,7 +35,6 @@ const [appHtml, browserProvider, audienceConfig, taxonomyConfig, qualificationCo
 const previousPayload = parsePayload(appHtml);
 if (!previousPayload?.defaultProfile) throw new Error("Le profil de démonstration embarqué est absent de la coquille applicative.");
 
-const generatedAt = process.env.BOUSSOLE_RUNTIME_GENERATED_AT || new Date().toISOString();
 const sourceFiles = [
   path.join(SOURCE_DIR, "jobs.rome.json"),
   path.join(SOURCE_DIR, "skills-engine.rome.json"),
@@ -49,6 +50,8 @@ const sourceFiles = [
 ];
 const sourceBuffers = await Promise.all(sourceFiles.map(file => readFile(file)));
 const sourceFingerprintSha256 = sha256(sourceBuffers.map((buffer, index) => `${path.basename(sourceFiles[index])}:${sha256(buffer)}`).join("|"));
+const previousManifest = await readFile(path.join(OUTPUT_DIR, "boussole-runtime-manifest.json"), "utf8").then(JSON.parse).catch(() => null);
+const generatedAt = process.env.BOUSSOLE_RUNTIME_GENERATED_AT || (previousManifest?.sourceFingerprintSha256 === sourceFingerprintSha256 ? previousManifest.generatedAt : null) || new Date().toISOString();
 const datasetVersion = `boussole-runtime-v1.6.0-${sourceFingerprintSha256.slice(0, 12)}`;
 
 const bundle = await loadGeneratedBundle(SOURCE_DIR, {
@@ -88,12 +91,18 @@ const qualificationProjection = projectQualificationAccess(masterDataset.jobs, q
 if (qualificationProjection.report.blockingFailures.length) throw new Error(`Projection des qualifications invalide : ${qualificationProjection.report.blockingFailures.join(", ")}`);
 
 const built = buildCompactRuntime(masterDataset, { generatedAt, datasetVersion, sourceDate, qualificationProjection });
+const riasecText = await readFile(RIASEC_PATH, "utf8");
+const riasec = JSON.parse(riasecText);
+const riasecValidation = validateRiasecReference(riasec, built.core.jobs.map(job => job.romeCode));
+if (riasecValidation.failures.length) throw new Error(`Référentiel RIASEC invalide : ${riasecValidation.failures.slice(0, 12).join(", ")}`);
+masterDataset.riasecOccupations = riasec.occupations;
 const filePayloads = {
   core: JSON.stringify(built.core),
   competences: JSON.stringify(built.competences),
-  marche: JSON.stringify(built.marche)
+  marche: JSON.stringify(built.marche),
+  riasec: JSON.stringify(riasec)
 };
-const fileNames = { core: "boussole-core.json", competences: "boussole-competences.json", marche: "boussole-marche.json" };
+const fileNames = { core: "boussole-core.json", competences: "boussole-competences.json", marche: "boussole-marche.json", riasec: "rome-riasec-boussole-pro-v1.1.json" };
 const files = Object.fromEntries(Object.entries(filePayloads).map(([key, content]) => [key, {
   path: fileNames[key],
   sha256: sha256(content),
@@ -108,12 +117,14 @@ const manifest = {
   sourceDate,
   sourceFingerprintSha256,
   runtimeFingerprintSha256,
+  riasecEditorialRevision: riasec.editorialRevision || null,
+  riasecGeneratedAt: riasec.generatedAt || null,
   files,
   counts: built.validation.counts,
   territories: Object.keys(built.marche.territories)
 };
 
-const parity = runParityChecks({ appHtml, engine, masterDataset, runtime: built, manifest });
+const parity = runParityChecks({ appHtml, engine, masterDataset, runtime: { ...built, riasec }, manifest });
 if (parity.failures.length) {
   await mkdir(REPORT_DIR, { recursive: true });
   await writeFile(path.join(REPORT_DIR, "boussole-runtime-parity-debug.json"), `${JSON.stringify(parity, null, 2)}\n`, "utf8");
@@ -138,7 +149,7 @@ const onlineHtml = normalizeRuntimeShell(injectRuntimeProvider(
   replaceMarkedBlock(appHtml, "REFONTE_DATA", safeInlineJson(shellPayload)),
   browserProvider
 ));
-const offlinePayload = { ...shellPayload, embeddedRuntime: { manifest, core: built.core, competences: built.competences, marche: built.marche } };
+const offlinePayload = { ...shellPayload, embeddedRuntime: { manifest, core: built.core, competences: built.competences, marche: built.marche, riasec } };
 const offlineHtml = replaceMarkedBlock(onlineHtml, "REFONTE_DATA", safeInlineJson(offlinePayload));
 if (/"dataset"\s*:\s*\{/.test(parsePayloadText(onlineHtml))) throw new Error("Le HTML connecté contient encore un corpus dataset embarqué.");
 if (!offlineHtml.includes(`"datasetVersion":"${datasetVersion}"`)) throw new Error("Le HTML autonome n’embarque pas la projection validée.");
@@ -180,6 +191,7 @@ const report = {
     relationGraph: built.diagnostics.relationGraph
   },
   validation: built.validation,
+  riasec: riasecValidation,
   parity,
   privacy: "Aucun profil utilisateur réel, secret, jeton ou réponse API brute n’est inclus dans les ressources runtime."
 };
@@ -258,6 +270,7 @@ function buildDemoProfile(previous = {}, dataset = {}) {
 
 function runParityChecks({ appHtml: html, engine: baselineEngine, masterDataset: baselineDataset, runtime, manifest: runtimeManifest }) {
   const compactDataset = adaptCompactRuntime(runtime, runtimeManifest);
+  compactDataset.riasecOccupations = runtime.riasec.occupations;
   const compactEngine = loadBoussoleEngine(html);
   const profiles = baselineEngine.DIAGNOSTIC_TEST_PROFILES_V052;
   const rows = [];
@@ -377,9 +390,10 @@ function normalizeRuntimeShell(source) {
     .replaceAll("REFONTE_DATA.dataset", "this.state.dataset")
     .replaceAll("Boussole Pro v1.1 -", "Boussole Pro v1.2.1 -")
     .replaceAll("Boussole Pro v1.2 -", "Boussole Pro v1.2.1 -")
-    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.6.0 -")
-    .replaceAll("Boussole Pro v1.5.1 -", "Boussole Pro v1.6.0 -")
-    .replaceAll("Boussole Pro v1.5.2 -", "Boussole Pro v1.6.0 -")
+    .replaceAll("Boussole Pro v1.5.0 -", "Boussole Pro v1.6.1 -")
+    .replaceAll("Boussole Pro v1.5.1 -", "Boussole Pro v1.6.1 -")
+    .replaceAll("Boussole Pro v1.5.2 -", "Boussole Pro v1.6.1 -")
+    .replaceAll("Boussole Pro v1.6.0 -", "Boussole Pro v1.6.1 -")
     .replaceAll('${this.state.dataset.jobs.length} métiers réels disponibles', '${this.runtimePresentation().title}')
     .replaceAll(
       "Les 17 directions sont couvertes. Les ressources compactes sont contrôlées avant leur activation.",

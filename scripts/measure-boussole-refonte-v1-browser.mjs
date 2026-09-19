@@ -102,6 +102,33 @@ try {
   const roundTrip = await evaluate(cdp, `(() => { const before=window.__BOUSSOLE_REFONTE_TEST_API__.getProfile(); const envelope={ profile: before }; const after=window.__BOUSSOLE_REFONTE_TEST_API__.importProfileData(envelope.profile); return { equal: JSON.stringify(before) === JSON.stringify(after), profile: after }; })()`);
   assert("active_profile_import_export_import_identity", roundTrip.equal === true, roundTrip.equal);
 
+  const riasecBrowser = await evaluate(cdp, `(() => {
+    const api=window.__BOUSSOLE_REFONTE_TEST_API__;
+    api.navigate("boussole"); api.setStep(5);
+    const selects=[...document.querySelectorAll("[data-riasec-position]")];
+    ["S","A","I"].forEach((letter,index)=>{ selects[index].value=letter; selects[index].dispatchEvent(new Event("change",{bubbles:true})); });
+    const duplicateDisabled=selects[1].querySelector('option[value="S"]').disabled;
+    const save=document.querySelector('[data-action="save-riasec"]'); const enabled=!save.disabled; save.click();
+    const profile=api.getProfile(); const stored=JSON.parse(localStorage.getItem(RefonteApp.config.storageKey));
+    api.calculate(); const score=RefonteApp.state.results.completeList.find(row=>row.romeCode==="G1203")?.riasec?.scoreRaw;
+    api.openJob("rome-G1203"); const detail=document.querySelector(".riasec-detail")?.innerText || ""; document.getElementById("jobDialog").close();
+    return { controls:selects.length,duplicateDisabled,enabled,profile,revision:stored?.revision,storedRanking:stored?.profile?.assessments?.riasec?.ranking,score,detail };
+  })()`);
+  assert("riasec_ui_save_and_local_revision", riasecBrowser.controls === 3 && riasecBrowser.duplicateDisabled && riasecBrowser.enabled && riasecBrowser.profile.assessments?.riasec?.ranking?.join("") === "SAI" && riasecBrowser.storedRanking?.join("") === "SAI" && riasecBrowser.revision > 0, riasecBrowser);
+  assert("riasec_detail_and_score", Number.isFinite(riasecBrowser.score) && riasecBrowser.detail.includes("S- A- I") && riasecBrowser.detail.includes("Métier"), { score: riasecBrowser.score, detail: riasecBrowser.detail });
+  await captureElement(cdp, ".riasec-block", "riasec-saisie-1440.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 1, mobile: true, screenWidth: 375, screenHeight: 900 });
+  const riasecMobileOverflow = await evaluate(cdp, `document.documentElement.scrollWidth-document.documentElement.clientWidth`);
+  assert("riasec_mobile_no_overflow", riasecMobileOverflow <= 1, riasecMobileOverflow);
+  await captureElement(cdp, ".riasec-block", "riasec-saisie-375.png");
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false, screenWidth: 1440, screenHeight: 1000 });
+  await navigate(cdp, httpUrl); await waitForApi(cdp);
+  const riasecReload = await evaluate(cdp, `(() => { const api=window.__BOUSSOLE_REFONTE_TEST_API__; api.navigate("boussole"); api.setStep(5); const ranking=api.getProfile().assessments?.riasec?.ranking; document.querySelector('[data-action="remove-riasec"]')?.click(); const removed=!api.getProfile().assessments?.riasec; return { ranking, removed, otherAssessments:api.getProfile().assessments }; })()`);
+  assert("riasec_reload_and_remove", riasecReload.ranking?.join("") === "SAI" && riasecReload.removed, riasecReload);
+  await navigate(cdp, httpUrl); await waitForApi(cdp);
+  const riasecAfterRemoval = await evaluate(cdp, `window.__BOUSSOLE_REFONTE_TEST_API__.getProfile().assessments?.riasec || null`);
+  assert("riasec_removal_persists", riasecAfterRemoval === null, riasecAfterRemoval);
+
   const importedPersistence = await evaluate(cdp, `(() => {
     localStorage.setItem("boussole_pro_profile_v1", JSON.stringify({ app:"boussole-pro-profile", revision:0, savedAt:new Date(Date.now()+60000).toISOString(), profile:{ profileName:"Ancien profil local", interests:["proteger"] } }));
     const skill=RefonteApp.state.skillIndex[0];
@@ -159,7 +186,7 @@ try {
     await RefonteApp.importProfile(new File([JSON.stringify(snapshot)],"resultats.json",{type:"application/json"})); RefonteApp.toast=originalToast;
     return {snapshot,markdown,rejection,bytes:new TextEncoder().encode(JSON.stringify(snapshot)).length,menuButtons:document.querySelectorAll('[data-action="export-profile-results"]').length};
   })()`, true);
-  assert("results_snapshot_json_contract", exportContract.snapshot.schemaVersion === "1.0.0" && exportContract.snapshot.app === "boussole-pro" && exportContract.snapshot.exportKind === "profile_results_snapshot" && exportContract.snapshot.importable === false && exportContract.snapshot.appVersion === "1.6.0" && exportContract.snapshot.scoringVersion === "personal-fit-v2" && exportContract.snapshot.results.length === 1000 && exportContract.snapshot.results.every((row, index) => row.rank === index + 1 && row.title && /^[A-Z][0-9]{4}$/.test(row.romeCode) && Number.isFinite(row.score) && Number.isFinite(row.scoreRaw) && row.scoringVersion === "personal-fit-v2" && row.description), { results: exportContract.snapshot.results.length, bytes: exportContract.bytes });
+  assert("results_snapshot_json_contract", exportContract.snapshot.schemaVersion === "1.0.0" && exportContract.snapshot.app === "boussole-pro" && exportContract.snapshot.exportKind === "profile_results_snapshot" && exportContract.snapshot.importable === false && exportContract.snapshot.appVersion === "1.6.1" && exportContract.snapshot.scoringVersion === "personal-fit-v2" && exportContract.snapshot.results.length === 1000 && exportContract.snapshot.results.every((row, index) => row.rank === index + 1 && row.title && /^[A-Z][0-9]{4}$/.test(row.romeCode) && Number.isFinite(row.score) && Number.isFinite(row.scoreRaw) && row.scoringVersion === "personal-fit-v2" && row.description), { results: exportContract.snapshot.results.length, bytes: exportContract.bytes });
   assert("results_snapshot_bounded_and_clean", exportContract.bytes < 2 * 1024 * 1024 && !/undefined|null|\[object Object\]/.test(exportContract.markdown), exportContract.bytes);
   assert("results_markdown_contract", exportContract.markdown.startsWith("# Résultats Boussole Pro —") && exportContract.markdown.includes("Le classement repose sur l’accord personnel. Les compétences, le chemin d’accès et le marché n’influencent pas cet ordre.") && exportContract.markdown.includes("## Profil ayant produit ces résultats") && exportContract.markdown.includes("## Classement complet des métiers") && exportContract.markdown.includes("| Rang | Métier | Code ROME | Score | Description |") && (exportContract.markdown.match(/^\| \d+ \|/gm) || []).length === 1000, null);
   assert("results_export_menu_and_import_guard", exportContract.menuButtons === 2 && exportContract.rejection.includes("Ce fichier contient un instantané de résultats et ne peut pas être importé. Pour restaurer Ma Boussole, choisissez le fichier d’export du profil."), exportContract.rejection);
@@ -488,6 +515,8 @@ try {
   assert("online_offline_same_runtime_identity", offline.build.datasetVersion === initial.build.datasetVersion && offline.build.runtimeFingerprintSha256 === initial.build.runtimeFingerprintSha256, { online: initial.build, offline: offline.build });
   const offlineMarketClimate = await evaluate(cdp, `(() => { RefonteApp.navigate("resultats"); RefonteApp.state.resultsTab="top"; RefonteApp.renderResultsContent(); const labels=[...document.querySelectorAll(".job-card:first-of-type .market-climate-capsule")].map(item=>item.innerText.trim()); document.querySelector(".job-card .job-title-link")?.click(); const detailCards=document.querySelectorAll(".market-detail .market-climate-territory").length; const oldVisuals=document.querySelectorAll(".market-wind-map,.market-main-plane,.market-marker,.market-quadrant").length; document.getElementById("jobDialog").close(); return {labels,detailCards,oldVisuals}; })()`);
   assert("online_offline_same_market_climate", JSON.stringify(offlineMarketClimate.labels) === JSON.stringify(marketAndRelations.cardMarket.labels) && offlineMarketClimate.detailCards === 3 && offlineMarketClimate.oldVisuals === 0, { online: marketAndRelations.cardMarket.labels, offline: offlineMarketClimate });
+  const offlineRiasec = await evaluate(cdp, `(() => { const api=window.__BOUSSOLE_REFONTE_TEST_API__; const p=api.importProfileData(${JSON.stringify({ profileName: "RIASEC parité", assessments: { riasec: { ranking: ["S", "A", "I"], source: "manual_entry" } } })}); api.calculate(); return {ranking:p.assessments?.riasec?.ranking,score:RefonteApp.state.results.completeList.find(row=>row.romeCode==="G1203")?.riasec?.scoreRaw}; })()`);
+  assert("riasec_online_offline_parity", offlineRiasec.ranking?.join("") === "SAI" && offlineRiasec.score === riasecBrowser.score, { online: riasecBrowser.score, offline: offlineRiasec });
   await capture(cdp, "10-hors-ligne-file-mobile.png");
   await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 

@@ -47,6 +47,9 @@ jobs:
       - name: Valider le scoring personnel v2 et la persistance v1.6.0
         run: node scripts/validate-boussole-v16.mjs
 
+      - name: Valider le RIASEC et la neutralité sans résultat
+        run: node scripts/validate-boussole-riasec.mjs
+
       - name: Publier les rapports de validation
         if: always()
         uses: actions/upload-artifact@v6
@@ -61,6 +64,7 @@ jobs:
             tmp/monde-pro/boussole-v1.5.1/*.json
             tmp/monde-pro/boussole-v1.5.2/*.json
             tmp/monde-pro/boussole-v1.6.0/*.json
+            tmp/monde-pro/boussole-v1.6.1/*.json
 
       - name: Publier les fichiers générés sur la branche
         if: ${{ success() && inputs.publier_les_fichiers_generes && github.ref_type == 'branch' }}
@@ -72,6 +76,7 @@ jobs:
           git add creations/boussolepro/boussole-runtime/boussole-core.json
           git add creations/boussolepro/boussole-runtime/boussole-competences.json
           git add creations/boussolepro/boussole-runtime/boussole-marche.json
+          git add creations/boussolepro/boussole-runtime/rome-riasec-boussole-pro-v1.1.json
           git diff --cached --quiet || git commit -m "data(boussole-pro): regenerate compact runtime"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"

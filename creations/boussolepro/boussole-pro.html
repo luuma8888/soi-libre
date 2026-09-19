@@ -217,6 +217,9 @@
     .favorite-row .compare-cell:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
     .favorite-row .compare-cell input { width: 22px; min-height: 22px; margin: 0; accent-color: var(--brand); cursor: pointer; }
     .favorite-row .actions { flex-wrap: nowrap; }
+    .riasec-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .riasec-fields .field { min-width: 0; }
+    .riasec-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .pagination { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; margin-top: 20px; }
 
     .empty-state { padding: 34px 0; border-block: 1px solid var(--line); text-align: center; }
@@ -276,6 +279,7 @@
       .status-grid { grid-template-columns: 1fr; }
       .status-panel + .status-panel { border-top: 1px solid var(--line); border-left: 0; }
       .form-grid, .job-grid, .filter-content, .dialog-body { grid-template-columns: 1fr; }
+      .riasec-fields { grid-template-columns: 1fr; }
       .experience-row { grid-template-columns: minmax(0, 1fr) 80px 44px; }
       .experience-row .current-field { grid-column: 1 / -1; }
       .selected-item, .domain-job, .skill-row { grid-template-columns: 1fr; }
@@ -478,7 +482,7 @@
   </main>
 
   <nav class="mobile-nav" aria-label="Navigation principale mobile" id="mobileNav"></nav>
-  <footer class="app-footer">Boussole Pro v1.6.0 - données personnelles conservées sur cet appareil.</footer>
+  <footer class="app-footer">Boussole Pro v1.6.1 - données personnelles conservées sur cet appareil.</footer>
 
   <dialog id="jobDialog" aria-labelledby="jobDialogTitle">
     <div id="jobDialogContent"></div>
@@ -4156,6 +4160,7 @@ function mapUserProfileToCriteria(profile) {
     skills: Object.fromEntries(directSkillIds.map(id => [id, { level: toArray(profile.skills).includes(id) ? "autonomous" : "basic", confidence: toArray(profile.skills).includes(id) ? 0.8 : 0.55 }])),
     acquiredSkillLevels,
     desiredSkillWishes,
+    assessments: profile.assessments || {},
     skillSelections,
     skillEvidence,
     skillConceptEvidence: profile.skillConceptEvidence || {},
@@ -4250,6 +4255,7 @@ function buildResultJobSummary(result = {}, datasets = App.state.dataset, relate
     secondaryDirections: toArray(result.secondaryDirections),
     personalFitScore: result.personalFitScore,
     personalFitScoreRaw: result.personalFitScoreRaw,
+    riasec: result.riasec,
     scoringVersion: result.scoringVersion,
     personalFitLevel: result.personalFitLevel,
     personalFitReasons: toArray(result.personalFitReasons),
@@ -4311,6 +4317,7 @@ function buildResultsViewModel(profile = {}, resultSet = {}, datasets = App.stat
     configuredWeights: result.configuredWeights,
     appliedWeights: result.appliedWeights,
     notEvaluatedComponents: result.notEvaluatedComponents,
+    riasec: result.riasec,
     accessRoutes: result.accessSummaryV1,
     namedRoutes: toArray(result.namedRoutes || result.accessSummaryV1?.namedRoutes),
     accessEvidence: toArray(result.accessEvidence || result.accessSummaryV1?.accessEvidence),
@@ -4485,6 +4492,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
       personalFitTieBreakVector: personalFit.tieBreakVector,
       personalFitComponents: personalFit.components,
       personalFitDetailedComponents: personalFit.detailedComponents,
+      riasec: personalFit.riasec,
       configuredWeights: personalFit.configuredWeights,
       appliedWeights: personalFit.appliedWeights,
       notEvaluatedComponents: personalFit.notEvaluatedComponents,
@@ -4582,6 +4590,7 @@ function calculateMatch(criteria, job, datasets = App.state.dataset, options = {
     personalFitTieBreakVector: personalFit.tieBreakVector,
     personalFitComponents: personalFit.components,
     personalFitDetailedComponents: personalFit.detailedComponents,
+    riasec: personalFit.riasec,
     configuredWeights: personalFit.configuredWeights,
     appliedWeights: personalFit.appliedWeights,
     notEvaluatedComponents: personalFit.notEvaluatedComponents,
@@ -4853,6 +4862,35 @@ function calculateSelectionScore(globalScore, scores = {}, details = {}) {
 
 const PERSONAL_FIT_SCORING_VERSION = "personal-fit-v2";
 const PERSONAL_FIT_WEIGHTS = Object.freeze({ directionsAndActivities: 0.20, desiredSkills: 0.10, experiencedJobsRelationship: 0.05, values: 0.20, context: 0.20, dailyReality: 0.25 });
+const RIASEC_LABELS = Object.freeze({ R: "Réaliste", I: "Investigateur", A: "Artistique", S: "Social", E: "Entreprenant", C: "Conventionnel" });
+
+function normalizeRiasecRanking(value) {
+  const ranking = Array.isArray(value) ? value.map(letter => String(letter).trim().toUpperCase()) : [];
+  return ranking.length === 3 && new Set(ranking).size === 3 && ranking.every(letter => letter.length === 1 && RIASEC_LABELS[letter]) ? ranking : null;
+}
+
+function calculateRiasecAlignment(userRanking, occupationFullRanking) {
+  const user = normalizeRiasecRanking(userRanking);
+  if (!user || !Array.isArray(occupationFullRanking) || occupationFullRanking.length !== 6 || new Set(occupationFullRanking).size !== 6 || !occupationFullRanking.every(letter => RIASEC_LABELS[letter])) return "not_evaluated";
+  const userWeights = [0.5, 0.3, 0.2];
+  const occupationWeights = [1, 0.8, 0.6, 0.35, 0.15, 0];
+  const numerator = user.reduce((sum, letter, index) => sum + userWeights[index] * occupationWeights[occupationFullRanking.indexOf(letter)], 0);
+  return Number(clamp(100 * numerator / 0.86, 0, 100).toFixed(6));
+}
+
+function riasecDiagnostic(criteria = {}, job = {}) {
+  const userRanking = normalizeRiasecRanking(criteria.assessments?.riasec?.ranking);
+  const occupation = App.state.dataset?.riasecOccupations?.[job.romeCode];
+  if (!userRanking || !occupation) return { status: "not_evaluated", userRanking: userRanking || null, occupationRanking: occupation?.top3 || null, explanation: userRanking ? "Classement RIASEC non documenté pour ce métier." : "RIASEC non renseigné — aucun effet sur votre classement." };
+  const scoreRaw = calculateRiasecAlignment(userRanking, occupation.fullRanking);
+  if (scoreRaw === "not_evaluated") return { status: "not_evaluated", userRanking, occupationRanking: occupation.top3, explanation: "Classement RIASEC non exploitable pour ce métier." };
+  const sharedDominants = userRanking.filter(letter => occupation.top3.includes(letter));
+  const common = sharedDominants.map(letter => RIASEC_LABELS[letter]);
+  const explanation = sharedDominants.length === 3 && userRanking.every((letter, index) => occupation.top3[index] === letter)
+    ? "Vos trois dominantes sont présentes dans le même ordre."
+    : common.length ? `${common.length} dominante${common.length > 1 ? "s" : ""} commune${common.length > 1 ? "s" : ""} : ${common.join(" et ")}.` : "Vos dominantes apparaissent plus loin dans ce métier ; cela n'exclut pas cette piste.";
+  return { status: "evaluated", userRanking, occupationRanking: occupation.top3, scoreRaw, confidence: occupation.confidence, sharedDominants, explanation };
+}
 
 function calculateDesiredSkillsScore(criteria = {}, job = {}) {
   const wishes = criteria.desiredSkillWishes || {};
@@ -4936,8 +4974,11 @@ function calculatePersonalFitMetrics(criteria = {}, job = {}, details = {}) {
   const hasDirections = Boolean(toArray(criteria.heartSectors).length || toArray(criteria.secondarySectors).length || toArray(criteria.supportSectors).length || toArray(criteria.education?.desiredTrainingFamilies).length || Object.keys(criteria.interests || {}).length);
   const desiredSkills = calculateDesiredSkillsScore(criteria, job);
   const experiencedJobsRelationship = calculateExperiencedJobsRelationship(criteria, job);
+  const riasec = riasecDiagnostic(criteria, job);
+  const configuredWeights = riasec.status === "evaluated" ? { ...PERSONAL_FIT_WEIGHTS, directionsAndActivities: 0.15, riasecAlignment: 0.05 } : { ...PERSONAL_FIT_WEIGHTS };
   const components = {
     directionsAndActivities: hasDirections ? Number(aspirationDetails.score.toFixed(4)) : "not_evaluated",
+    ...(riasec.status === "evaluated" ? { riasecAlignment: riasec.scoreRaw } : {}),
     desiredSkills: desiredSkills.score,
     experiencedJobsRelationship: experiencedJobsRelationship.score,
     values: calculateValuesPersonalFitScore(criteria, job, details),
@@ -4945,12 +4986,19 @@ function calculatePersonalFitMetrics(criteria = {}, job = {}, details = {}) {
     dailyReality: details.constraint?.score100 ?? "not_evaluated"
   };
   const notEvaluatedComponents = Object.entries(components).filter(([, value]) => value === "not_evaluated").map(([name]) => name);
-  const activeWeight = Object.entries(PERSONAL_FIT_WEIGHTS).reduce((sum, [name, weight]) => sum + (components[name] === "not_evaluated" ? 0 : weight), 0);
-  const appliedWeights = Object.fromEntries(Object.entries(PERSONAL_FIT_WEIGHTS).map(([name, weight]) => [name, components[name] === "not_evaluated" || !activeWeight ? 0 : Number((weight / activeWeight).toFixed(6))]));
-  const raw = activeWeight ? Object.entries(components).reduce((sum, [name, value]) => sum + (value === "not_evaluated" ? 0 : value * appliedWeights[name]), 0) : 0;
-  const aspirationParts = ["directionsAndActivities", "desiredSkills", "experiencedJobsRelationship"].filter(name => components[name] !== "not_evaluated");
-  const aspirationWeight = aspirationParts.reduce((sum, name) => sum + PERSONAL_FIT_WEIGHTS[name], 0);
-  const aspiration = aspirationWeight ? aspirationParts.reduce((sum, name) => sum + components[name] * PERSONAL_FIT_WEIGHTS[name] / aspirationWeight, 0) : "not_evaluated";
+  const activeWeight = Object.entries(configuredWeights).reduce((sum, [name, weight]) => sum + (components[name] === "not_evaluated" ? 0 : weight), 0);
+  const otherActiveWeight = activeWeight - (riasec.status === "evaluated" ? 0.05 : 0);
+  const appliedWeights = Object.fromEntries(Object.entries(configuredWeights).map(([name, weight]) => {
+    if (components[name] === "not_evaluated" || !activeWeight) return [name, 0];
+    if (riasec.status !== "evaluated") return [name, Number((weight / activeWeight).toFixed(6))];
+    return [name, name === "riasecAlignment" ? 0.05 : otherActiveWeight > 0 ? Number((0.95 * weight / otherActiveWeight).toFixed(6)) : 0];
+  }));
+  const raw = riasec.status === "evaluated" && otherActiveWeight <= 0
+    ? 47.5 + riasec.scoreRaw * 0.05
+    : activeWeight ? Object.entries(components).reduce((sum, [name, value]) => sum + (value === "not_evaluated" ? 0 : value * appliedWeights[name]), 0) : 0;
+  const aspirationParts = ["directionsAndActivities", "riasecAlignment", "desiredSkills", "experiencedJobsRelationship"].filter(name => components[name] !== undefined && components[name] !== "not_evaluated");
+  const aspirationWeight = aspirationParts.reduce((sum, name) => sum + configuredWeights[name], 0);
+  const aspiration = aspirationWeight ? aspirationParts.reduce((sum, name) => sum + components[name] * configuredWeights[name] / aspirationWeight, 0) : "not_evaluated";
   const visibleComponents = { aspiration: aspiration === "not_evaluated" ? aspiration : Number(aspiration.toFixed(4)), values: components.values, context: components.context, dailyReality: components.dailyReality };
   return {
     scoringVersion: PERSONAL_FIT_SCORING_VERSION,
@@ -4958,7 +5006,7 @@ function calculatePersonalFitMetrics(criteria = {}, job = {}, details = {}) {
     rawScore: Number(clamp(raw, 0, 100).toFixed(6)),
     tieBreakScore: Number(clamp(raw, 0, 100).toFixed(6)),
     tieBreakVector: [], components: visibleComponents, detailedComponents: components,
-    configuredWeights: { ...PERSONAL_FIT_WEIGHTS }, appliedWeights, notEvaluatedComponents,
+    configuredWeights, appliedWeights, notEvaluatedComponents, riasec,
     desiredSkills, experiencedJobsRelationship,
     intentAdjustment: 0, intentReason: "",
     desiredSectorMatch: aspirationDetails.desiredSectorMatch,
@@ -12413,6 +12461,7 @@ function normalizeProfile(raw) {
   merged.softSkills = toArray(raw.softSkills);
   merged.customSkills = toArray(raw.customSkills);
   merged.externalAssessments = toArray(raw.externalAssessments);
+  merged.assessments = raw.assessments && typeof raw.assessments === "object" && !Array.isArray(raw.assessments) ? raw.assessments : {};
   merged.skillConceptEvidence = raw.skillConceptEvidence && typeof raw.skillConceptEvidence === "object" ? raw.skillConceptEvidence : {};
   merged.freeCertifications = toArray(raw.freeCertifications);
   merged.interests = toArray(raw.interests);
@@ -15886,7 +15935,7 @@ if (typeof window !== "undefined") {
 /* CLASSIC_ENGINE_END */
   </script>
   <script>
-    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.6.0","buildId":"20260824-personal-fit-v2-persistence-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-6-0","schemaVersion":"1.6.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d'aptitude aux fonctions d'animateur","type":"brevet"}],"certifications":["cert-bafa"],"unresolvedQualifications":[],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
+    const REFONTE_DATA = /* REFONTE_DATA_START */{"schemaVersion":"1.0.0","appVersion":"1.6.1","buildId":"20260919-riasec-v1-1-01","classicReference":{"commit":"bd9b54767ed143668826074e757a8e2dc46502ad","tag":"v0.8.4-classic-frozen-r1","htmlSha256":"ed3c0fbfe558f19652c6c4d754375adcde74f3eea1260e7713b078302b7bf5da","enginePolicy":"exact_classic_engine_snapshot_with_new_view_adapter"},"defaultProfile":{"id":"profile-demo-v1-6-0","schemaVersion":"1.6.0","profileName":"Profil de démonstration","ageRange":"36_45","diplomaLevel":5,"diplomaScaleRevision":"runtime-v1","archivedDiplomas":[],"certificationSelections":[{"id":"cert-bafa","label":"BAFA - Brevet d'aptitude aux fonctions d'animateur","type":"brevet"}],"certifications":["cert-bafa"],"unresolvedQualifications":[],"jobExperiences":[{"id":"demo-experience-1","jobId":"rome-G1203","romeCode":"G1203","title":"Animateur / Animatrice jeunesse","durationYears":8,"recency":"recent","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"like","wantsToContinue":"yes","source":"user_direct"},{"id":"demo-experience-2","jobId":"rome-M1805","romeCode":"M1805","title":"Développeur / Développeuse informatique","durationYears":3,"recency":"old","isCurrent":false,"masteryLevel":"autonomous","enjoymentLevel":"dislike","wantsToContinue":"no","source":"user_direct"}],"skillSelections":[{"skillId":"skill-rome-300030","label":"Concevoir et animer des activités de détente ou de loisirs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-505430","label":"Participer à la mise en place de projets éducatifs","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-103888","label":"Concevoir le programme des activités selon les spécificités du public","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-502848","label":"Adapter les activités en fonction des saisons et des événements","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405150","label":"Organiser des sorties et des séjours éducatifs, culturels","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-508092","label":"Organiser des ateliers créatifs pour divers groupes d'âge","currentLevel":"mastered","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-403342","label":"Préparer l'espace et le matériel nécessaires à la séance d'activité","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-405175","label":"Animer une séance d'activités physiques en veillant à respecter la sécurité liée à la pratique","currentLevel":"practiced","futureWish":"continue","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-113876","label":"Accompagner des groupes lors de visites guidées ou sorties en extérieur","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-489924","label":"Proposer et animer des activités de loisirs adaptées pour favoriser le développement personnel","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-500040","label":"Proposer des activités communautaires pour renforcer la cohésion","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]},{"skillId":"skill-rome-484725","label":"Favoriser l'intégration sociale des jeunes","currentLevel":"practiced","futureWish":"develop","source":"user_direct","suggestedFromRomeCodes":[]}],"unresolvedCustomSkills":[],"customSkills":[],"interests":["aider","transmettre","creer","enfants"],"values":["meaning","service","team","creativity"],"trainingFamilies":["education_animation","numerique"],"desiredTrainingFamilies":["education_animation"],"trainingOpenness":"medium","preferredWorkStyles":["relational","team","creative"],"preferredEnvironments":["children","public"],"excludedDomains":["petite_enfance"],"constraints":[],"mobility":{"radiusKm":20,"relocation":"maybe"},"driverLicenses":["B"],"driverLicenseBStatus":"yes","availability":{"hoursPerWeek":"full_time","startDate":null},"marketPreference":{"priority":"medium","goal":"balanced","territory":{"selected":"DEP-11","id":"DEP-11","type":"department","country":"FR","regionCode":"76","regionName":"Occitanie","departmentCode":"11","departmentName":"Aude","cityCode":null,"cityName":null,"radiusKm":null,"label":"Aude","sourceLevel":"departmental"}},"searchHorizon":"transition","completedBoussole":true,"hasRequestedResults":true,"createdAt":"2026-08-23T00:00:00.000Z","updatedAt":"2026-08-23T00:00:00.000Z"},"runtimeBasePath":"boussole-runtime/","embeddedRuntime":null}/* REFONTE_DATA_END */;
   </script>
   <script>
 /* RUNTIME_PROVIDER_START */
@@ -15928,13 +15977,15 @@ const BoussoleRuntimeProvider = {
     this.validateCore(core, manifest);
     const competencesPromise = this.fetchProjection(base, manifest.files.competences, forceNetwork);
     const marchePromise = this.fetchProjection(base, manifest.files.marche, forceNetwork).catch(() => null);
+    const riasecPromise = this.fetchProjection(base, manifest.files.riasec, forceNetwork);
     const competences = await competencesPromise;
+    const riasec = await riasecPromise;
     this.validateCompetences(competences, core, manifest);
     const marche = await marchePromise;
     const complete = Boolean(marche);
     const effectiveMarket = marche || this.unavailableMarket(core, manifest);
     this.validateMarket(effectiveMarket, core, manifest);
-    const bundle = { manifest, core, competences, marche: effectiveMarket, complete };
+    const bundle = { manifest, core, competences, marche: effectiveMarket, riasec, complete };
     await this.validateBundle(bundle, complete);
     return bundle;
   },
@@ -15951,7 +16002,7 @@ const BoussoleRuntimeProvider = {
   validateManifest(manifest) {
     if (manifest?.schemaVersion !== "1.0.0" || !manifest.datasetVersion || !manifest.generatedAt) throw new Error("Manifeste runtime invalide.");
     if (Number(manifest.counts?.jobs) !== 1000) throw new Error("Le manifeste ne déclare pas exactement 1 000 métiers.");
-    for (const key of ["core", "competences", "marche"]) {
+    for (const key of ["core", "competences", "marche", "riasec"]) {
       const file = manifest.files?.[key];
       if (!file?.path || !/^[a-f0-9]{64}$/.test(file.sha256 || "") || !Number.isFinite(file.bytes)) throw new Error(`Descripteur ${key} invalide.`);
     }
@@ -15988,13 +16039,23 @@ const BoussoleRuntimeProvider = {
     if (Object.keys(data.territories || {}).join("|") !== "FR|REG-76|DEP-11") throw new Error("Territoires marché incohérents.");
   },
 
+  validateRiasec(data, core) {
+    if (data?.schemaVersion !== "1.0.0" || !data.occupations || Object.keys(data.occupations).length !== 1000) throw new Error("Référentiel RIASEC invalide.");
+    const letters = "RIASEC";
+    for (const [code, row] of Object.entries(data.occupations)) {
+      const ranking = row?.fullRanking;
+      if (!/^[A-Z][0-9]{4}$/.test(code) || !Array.isArray(ranking) || ranking.length !== 6 || new Set(ranking).size !== 6 || !ranking.every(letter => letters.includes(letter)) || JSON.stringify(row.top3) !== JSON.stringify(ranking.slice(0, 3)) || !["high", "medium", "low"].includes(row.confidence) || !String(row.title || "").trim() || !Array.isArray(row.rationale) || !row.rationale.length) throw new Error(`Classement RIASEC invalide : ${code}`);
+    }
+  },
+
   async validateBundle(bundle, verifyHashes = false) {
     this.validateManifest(bundle.manifest);
     this.validateCore(bundle.core, bundle.manifest);
     this.validateCompetences(bundle.competences, bundle.core, bundle.manifest);
     this.validateMarket(bundle.marche, bundle.core, bundle.manifest);
+    this.validateRiasec(bundle.riasec, bundle.core);
     if (!verifyHashes) return;
-    for (const [key, value] of [["core", bundle.core], ["competences", bundle.competences], ["marche", bundle.marche]]) {
+    for (const [key, value] of [["core", bundle.core], ["competences", bundle.competences], ["marche", bundle.marche], ["riasec", bundle.riasec]]) {
       const text = JSON.stringify(value);
       const descriptor = bundle.manifest.files[key];
       if (new TextEncoder().encode(text).byteLength !== descriptor.bytes || await this.sha256(text) !== descriptor.sha256) throw new Error(`Cache ${key} incohérent.`);
@@ -16014,7 +16075,7 @@ const BoussoleRuntimeProvider = {
   },
 
   adapt(bundle) {
-    const { core, competences, marche, manifest } = bundle;
+    const { core, competences, marche, riasec, manifest } = bundle;
     const relations = new Map((competences.jobs || []).map(item => [item.jobId, item]));
     const marketRows = new Map((marche.jobs || []).map(item => [item.jobId, item]));
     const groups = new Map((competences.groups || []).map(item => [item.id, item.label]));
@@ -16102,6 +16163,7 @@ const BoussoleRuntimeProvider = {
       provenance: "generated_rome",
       confidence: 0.75,
       jobs,
+      riasecOccupations: riasec.occupations,
       qualifications: core.qualifications || [],
       skills,
       skillsEngine: skills,
@@ -16204,7 +16266,7 @@ const BoussoleRuntimeProvider = {
       if (!database) return;
       await new Promise((resolve, reject) => {
         const transaction = database.transaction(this.cacheStore, "readwrite");
-        transaction.objectStore(this.cacheStore).put({ manifest: bundle.manifest, core: bundle.core, competences: bundle.competences, marche: bundle.marche, complete: true }, this.cacheKey);
+        transaction.objectStore(this.cacheStore).put({ manifest: bundle.manifest, core: bundle.core, competences: bundle.competences, marche: bundle.marche, riasec: bundle.riasec, complete: true }, this.cacheKey);
         transaction.oncomplete = resolve;
         transaction.onerror = () => reject(transaction.error);
       });
@@ -18240,14 +18302,27 @@ const BoussoleRuntimeProvider = {
     };
 
     // v1.6.0 : scoring personnel v2, sauvegarde révisionnée et compétences éditables depuis une fiche métier.
-    RefonteApp.config.version = "1.6.0";
+    RefonteApp.config.version = "1.6.1";
     RefonteApp.config.storageSchemaVersion = "2.0.0";
     Object.assign(RefonteApp.state, { profileRevision: 0, saveStatus: "idle", editingJobSkillId: null, removedJobSkill: null, lastSavedProfileFingerprint: "" });
 
     const profileForCurrentInterfaceV160Base = RefonteApp.profileForCurrentInterface;
     RefonteApp.profileForCurrentInterface = function(raw = {}) {
       const profile = profileForCurrentInterfaceV160Base.call(this, raw);
-      profile.schemaVersion = "1.6.0";
+      profile.schemaVersion = "1.6.1";
+      const assessments = raw?.assessments && typeof raw.assessments === "object" && !Array.isArray(raw.assessments) ? this.clone(raw.assessments) : {};
+      let source = assessments.riasec;
+      if (!source && raw?.riasec) {
+        const legacy = raw.riasec;
+        const ranking = Array.isArray(legacy) ? legacy : typeof legacy === "string" && /^[RIASEC]{3}$/i.test(legacy) ? legacy.split("") : legacy?.ranking;
+        if (normalizeRiasecRanking(ranking)) source = { ranking, source: "legacy_import" };
+        else this.state.riasecMigrationNote = "Ancienne donnée RIASEC ambiguë ignorée dans le calcul.";
+      }
+      const ranking = normalizeRiasecRanking(source?.ranking);
+      if (source && !ranking) this.state.riasecMigrationNote = "Résultat RIASEC invalide ignoré dans le calcul.";
+      if (ranking) assessments.riasec = { ...source, schemaVersion: "1.0.0", ranking, source: source.source || "manual_entry", sourceLabel: String(source.sourceLabel || "").slice(0, 120), rawScores: source.rawScores ?? null, completedAt: source.completedAt || null, updatedAt: source.updatedAt || new Date().toISOString() };
+      else delete assessments.riasec;
+      profile.assessments = assessments;
       return profile;
     };
 
@@ -18306,7 +18381,7 @@ const BoussoleRuntimeProvider = {
           localStorage.setItem(this.config.storageKey, JSON.stringify(envelope));
           const verified = JSON.parse(localStorage.getItem(this.config.storageKey) || "null");
           const expectedSelections = this.array(envelope.profile?.skillSelections).length;
-          if (verified?.revision !== envelope.revision || verified?.savedAt !== envelope.savedAt || verified?.profile?.id !== envelope.profile?.id || this.array(verified?.profile?.skillSelections).length !== expectedSelections) throw new Error("Vérification de la sauvegarde locale impossible.");
+          if (verified?.revision !== envelope.revision || verified?.savedAt !== envelope.savedAt || verified?.profile?.id !== envelope.profile?.id || this.array(verified?.profile?.skillSelections).length !== expectedSelections || JSON.stringify(verified?.profile?.assessments?.riasec?.ranking || null) !== JSON.stringify(envelope.profile?.assessments?.riasec?.ranking || null)) throw new Error("Vérification de la sauvegarde locale impossible.");
           this.state.lastSavedAt = now; this.state.lastSavedProfileFingerprint = fingerprint; this.state.saveStatus = "saved"; this.updateSaveLine(); return true;
         } catch (error) {
           this.state.storageAvailable = false; this.state.saveStatus = "failed"; this.updateSaveLine();
@@ -18315,6 +18390,7 @@ const BoussoleRuntimeProvider = {
       },
       updateProfile(mutator, source = "profile_update", options = {}) {
         if (typeof mutator === "function") mutator(this.state.profile);
+        this.state.profile.updatedAt = new Date().toISOString();
         this.state.profile = this.profileForCurrentInterface(this.state.profile);
         this.state.profileExists = options.profileExists ?? true;
         App.state.profile = this.state.profile;
@@ -18446,6 +18522,66 @@ const BoussoleRuntimeProvider = {
     RefonteApp.handleChange = function(event) {
       if (event.target.matches("[data-job-skill-current], [data-job-skill-future]")) { const row = event.target.closest("[data-job-skill-row]"); const button = row?.querySelector('[data-action="save-job-skill"]'); if (button) button.disabled = row.querySelector("[data-job-skill-current]").value === "not_assessed" && row.querySelector("[data-job-skill-future]").value === "none"; return; }
       return handleChangeV160Base.call(this, event);
+    };
+
+    Object.assign(RefonteApp, {
+      riasecBlockHtml() {
+        const current = normalizeRiasecRanking(this.state.profile.assessments?.riasec?.ranking);
+        const draft = this.state.riasecDraft || current || ["", "", ""];
+        const labels = ["Dominante principale", "Dominante secondaire", "Dominante complémentaire"];
+        return `<section class="form-block riasec-block" aria-labelledby="riasecTitle"><h3 id="riasecTitle">Mon profil RIASEC</h3><p class="help">Saisissez les trois lettres obtenues avec le test de votre choix, dans l’ordre. Ce repère décrit des intérêts, pas des aptitudes. Aucun score numérique n’est nécessaire.</p><div class="riasec-fields">${labels.map((label, index) => `<div class="field"><label for="riasec-${index}">${label}</label><select id="riasec-${index}" data-riasec-position="${index}"><option value="">À choisir</option>${Object.entries(RIASEC_LABELS).map(([letter, name]) => `<option value="${letter}" ${draft[index] === letter ? "selected" : ""} ${draft.includes(letter) && draft[index] !== letter ? "disabled" : ""}>${letter} · ${name}</option>`).join("")}</select></div>`).join("")}</div><div class="riasec-actions"><button type="button" class="button compact primary" data-action="save-riasec" ${normalizeRiasecRanking(draft) ? "" : "disabled"}>Enregistrer le résultat</button>${current ? '<button type="button" class="button compact" data-action="remove-riasec">Supprimer le résultat</button>' : ""}</div><p class="help" id="riasecFeedback" role="status" aria-live="polite">${current ? `Résultat enregistré : ${current.join("- ")}.` : "Aucun résultat RIASEC enregistré."}</p></section>`;
+      },
+      refreshRiasecBlock() {
+        const block = document.querySelector(".riasec-block");
+        if (block) block.outerHTML = this.riasecBlockHtml();
+        this.updateSaveLine();
+      },
+      riasecDetailHtml(detail = {}) {
+        const result = detail.riasec || {};
+        const user = normalizeRiasecRanking(this.state.profile.assessments?.riasec?.ranking);
+        const occupation = this.state.dataset.riasecOccupations?.[detail.romeCode];
+        const code = occupation?.top3?.join("- ") || "Non documenté";
+        const confidence = { high: "élevée", medium: "moyenne", low: "à réviser" }[occupation?.confidence] || "non disponible";
+        return `<section class="detail-section riasec-detail"><h3 class="detail-title">Repères RIASEC</h3><p><strong>Métier :</strong> ${this.escape(code)}${user ? ` · <strong>Votre résultat :</strong> ${this.escape(user.join("- "))}` : ""}</p><p>${this.escape(result.explanation || "RIASEC non renseigné — aucun effet sur votre classement.")}</p><details><summary>Signification des lettres et source</summary><p>${Object.entries(RIASEC_LABELS).map(([letter, label]) => `${letter} : ${label}`).join(" · ")}</p><p>Classement éditorial non officiel. Confiance du classement métier : ${confidence}. Elle ne mesure pas votre confiance en vous et ne modifie pas le score.</p></details></section>`;
+      }
+    });
+    const renderBoussoleStepV161Base = RefonteApp.renderBoussoleStep;
+    RefonteApp.renderBoussoleStep = function(step) {
+      const html = renderBoussoleStepV161Base.call(this, step);
+      return step === 5 ? `${html}${this.riasecBlockHtml()}` : html;
+    };
+    const openJobV161Base = RefonteApp.openJob;
+    RefonteApp.openJob = function(jobId, trigger, options = {}) {
+      openJobV161Base.call(this, jobId, trigger, options);
+      const detail = this.detailForJob(jobId);
+      const anchor = this.dom.dialogContent.querySelector(".personalized-assessment") || this.dom.dialogContent.querySelector(".dialog-body > div:last-child > .detail-section");
+      if (detail && anchor) anchor.insertAdjacentHTML("afterend", this.riasecDetailHtml(detail));
+    };
+    const handleChangeV161Base = RefonteApp.handleChange;
+    RefonteApp.handleChange = function(event) {
+      if (!event.target.matches("[data-riasec-position]")) return handleChangeV161Base.call(this, event);
+      const selects = [...document.querySelectorAll("[data-riasec-position]")];
+      const values = selects.map(select => select.value);
+      if (values.filter(Boolean).length !== new Set(values.filter(Boolean)).size) { event.target.value = ""; values[Number(event.target.dataset.riasecPosition)] = ""; }
+      this.state.riasecDraft = values;
+      selects.forEach((select, index) => [...select.options].forEach(option => { if (option.value) option.disabled = values.includes(option.value) && values[index] !== option.value; }));
+      const save = document.querySelector('[data-action="save-riasec"]'); if (save) save.disabled = !normalizeRiasecRanking(values);
+      const feedback = document.getElementById("riasecFeedback"); if (feedback) feedback.textContent = normalizeRiasecRanking(values) ? "Résultat prêt à enregistrer." : "Choisissez trois lettres différentes avant d’enregistrer.";
+    };
+    const handleClickV161Base = RefonteApp.handleClick;
+    RefonteApp.handleClick = function(event) {
+      const action = event.target.closest("[data-action]");
+      if (action?.dataset.action === "save-riasec") {
+        const ranking = normalizeRiasecRanking([...document.querySelectorAll("[data-riasec-position]")].map(select => select.value));
+        if (!ranking) return;
+        this.updateProfile(profile => { profile.assessments ||= {}; profile.assessments.riasec = { schemaVersion: "1.0.0", ranking, source: "manual_entry", sourceLabel: "", rawScores: null, completedAt: new Date().toISOString(), updatedAt: new Date().toISOString() }; }, "riasec_save", { render: false, recalculate: true });
+        this.state.riasecDraft = null; this.refreshRiasecBlock(); this.announce(`Résultat RIASEC ${ranking.join("- ")} enregistré localement.`); return;
+      }
+      if (action?.dataset.action === "remove-riasec") {
+        this.updateProfile(profile => { if (profile.assessments) delete profile.assessments.riasec; }, "riasec_remove", { render: false, recalculate: true });
+        this.state.riasecDraft = null; this.refreshRiasecBlock(); this.announce("Résultat RIASEC supprimé. Les autres réponses sont conservées."); return;
+      }
+      return handleClickV161Base.call(this, event);
     };
 
     document.addEventListener("mouseover", event => highlightRose(event.target.closest("[data-rose-index]")));
