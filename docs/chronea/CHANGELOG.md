@@ -1,5 +1,15 @@
 # Historique Chronéa
 
+## 3.1.0 — 19 septembre 2026
+
+- Caméra graphique unique, curseur logarithmique synchronisé, zoom mobile et pincement ; filtre De / À indépendant des autres gestes.
+- Un seul contrôle Repère / Période, sans type arbitraire éditable. Éditeur de dates commun et progressif pour éléments et ères/phases, avec bornes ouvertes, précisions et fourchettes conservées.
+- Temporalité choisie pour le projet ; chronologies héritières, conversion destructive supprimée, anciens projets mixtes consultables et séparables sans fusion implicite.
+- Calendrier imaginaire édité par lignes de mois et d’ères ; références de dates préservées ou changement refusé avant écriture.
+- Sources structurées éditées séparément de la note de provenance ; fils gérés par sélection, nom, ordre, couleur et visibilité.
+- Relations affichées et créées dans le même dialogue, libellés français et direction déduite du type.
+- Publication unifiée, Apparence dans Projet, choix visuel des colonnes et actions groupées contextuelles.
+
 ## 3.0.0 — 18 septembre 2026
 
 - Projet canonique V3, schéma intégré et migrations V1/V2 sur copie.

@@ -2,6 +2,8 @@
 
 L’import détecte, parse et valide sur copie, puis affiche aperçu et rapport avant la destination et confirmation. Les mutations sont transactionnelles et annulables. Aucun format externe ne remplace le modèle canonique. Une matrice de capacités précède les exports d’échange.
 
+Dans l’interface 3.1, l’ajout ou la fusion dans un projet exige le même système temporel que celui du projet. Un fichier incompatible propose explicitement un nouveau projet ou l’annulation ; la restauration complète remplace le projet après confirmation. Les projets historiques mixtes restent lisibles sans conversion. Le moteur V3 conserve ses capacités multi-systèmes pour les migrations et les fichiers natifs.
+
 | Format | Import | Export | Fidélité et limites |
 |---|---|---|---|
 | Chronéa JSON V1/V2/V3 | Oui | V3 | Migration historique ou restitution V3 ; médias locaux inclus en enveloppe |

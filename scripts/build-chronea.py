@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'src/chronea'
 template = (SOURCE / 'index.html').read_text()
 schema = 'const CHRONEA_SCHEMA=' + json.dumps(json.loads((SOURCE / 'schema-v3.json').read_text()), ensure_ascii=False) + ';\n'
-scripts = schema + '\n'.join((SOURCE / name).read_text() for name in ['core.js', 'time.js', 'project.js', 'storage.js', 'scale.js', 'graph.js', 'adapters.js', 'publication.js', 'app.js'])
+scripts = schema + '\n'.join((SOURCE / name).read_text() for name in ['core.js', 'time.js', 'project.js', 'storage.js', 'scale.js', 'graph.js', 'adapters.js', 'publication.js', 'temporal-editor.js', 'app.js'])
 assert '</script' not in scripts.lower(), 'Une fermeture de script doit être échappée dans le JS.'
 assert template.count('<!-- CHRONEA_SCRIPTS -->') == 1
 result = template.replace('<!-- CHRONEA_SCRIPTS -->', '<script>\n' + scripts + '\n</script>')

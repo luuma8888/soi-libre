@@ -6,14 +6,16 @@ Le contrat est `src/chronea/schema-v3.json`, embarqué dans le fichier final. So
 
 - Projet : `schemaVersion:3`, `id`, `title`, horodatages, `timelines`, `timeSystems`, `media`, `sources`, `metadata`.
 - Chronologie : `id`, `title`, `timeSystemId`, `lanes`, `spans`, `events`, `relations`.
-- Événement : identité, titre/type, résumé, Markdown, temporalité, libellé facultatif, fil, tags, lieu, références de médias/sources, liens, identifiants externes, horodatages.
+- Événement : identité, titre/type historique, résumé, Markdown, temporalité, libellé facultatif, fil, tags, lieu, références de médias/sources, liens, identifiants externes, horodatages.
 - Fil : identité, nom, ordre, visibilité, couleur et description facultative.
-- Période de fond : identité, titre, temporalité, fil facultatif, couleur.
+- Ère / phase (`span` dans le modèle) : identité, titre, temporalité, fil facultatif, couleur.
 - Relation : identité, `sourceId`, `targetId`, type, direction et note. Types : proximité, causalité, dépendance, précédence, inclusion, contradiction, soutien, même sujet.
 - Source : référence partagée avec titre, citation, URL, note, type et provenance facultatifs.
 - Média : métadonnées et `storageRef`, sans octets base64 dans le projet canonique. URL distante explicite ou Blob séparé ; checksum, texte alternatif et légende.
 
 Les préférences d’écran ne sont pas des faits du projet. Un export natif produit `{app:"Chronéa",schemaVersion:3,kind:"project",project,assets}`. Les Data URL appartiennent uniquement à l’enveloppe JSON portable, jamais aux événements canoniques.
+
+La V3.1 applique un invariant produit sans changer le schéma : les nouveaux projets n’utilisent qu’un système temporel visible et leurs nouvelles chronologies héritent du même `timeSystemId`. Les anciens projets mixtes ne sont pas convertis silencieusement. `event.type` reste conservé pour les exports historiques ; l’interface déduit Repère ou Période de `temporal.kind` et place la valeur historique dans `metadata.legacyType` à la première édition. Une note de provenance libre est dans `event.metadata.provenanceNote` et ne modifie jamais `sourceIds[]`.
 
 ## Temporalité
 
