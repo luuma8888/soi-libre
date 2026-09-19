@@ -36,13 +36,15 @@ const BoussoleRuntimeProvider = {
     this.validateCore(core, manifest);
     const competencesPromise = this.fetchProjection(base, manifest.files.competences, forceNetwork);
     const marchePromise = this.fetchProjection(base, manifest.files.marche, forceNetwork).catch(() => null);
+    const riasecPromise = this.fetchProjection(base, manifest.files.riasec, forceNetwork);
     const competences = await competencesPromise;
+    const riasec = await riasecPromise;
     this.validateCompetences(competences, core, manifest);
     const marche = await marchePromise;
     const complete = Boolean(marche);
     const effectiveMarket = marche || this.unavailableMarket(core, manifest);
     this.validateMarket(effectiveMarket, core, manifest);
-    const bundle = { manifest, core, competences, marche: effectiveMarket, complete };
+    const bundle = { manifest, core, competences, marche: effectiveMarket, riasec, complete };
     await this.validateBundle(bundle, complete);
     return bundle;
   },
@@ -59,7 +61,7 @@ const BoussoleRuntimeProvider = {
   validateManifest(manifest) {
     if (manifest?.schemaVersion !== "1.0.0" || !manifest.datasetVersion || !manifest.generatedAt) throw new Error("Manifeste runtime invalide.");
     if (Number(manifest.counts?.jobs) !== 1000) throw new Error("Le manifeste ne déclare pas exactement 1 000 métiers.");
-    for (const key of ["core", "competences", "marche"]) {
+    for (const key of ["core", "competences", "marche", "riasec"]) {
       const file = manifest.files?.[key];
       if (!file?.path || !/^[a-f0-9]{64}$/.test(file.sha256 || "") || !Number.isFinite(file.bytes)) throw new Error(`Descripteur ${key} invalide.`);
     }
@@ -96,13 +98,23 @@ const BoussoleRuntimeProvider = {
     if (Object.keys(data.territories || {}).join("|") !== "FR|REG-76|DEP-11") throw new Error("Territoires marché incohérents.");
   },
 
+  validateRiasec(data, core) {
+    if (data?.schemaVersion !== "1.0.0" || !data.occupations || Object.keys(data.occupations).length !== 1000) throw new Error("Référentiel RIASEC invalide.");
+    const letters = "RIASEC";
+    for (const [code, row] of Object.entries(data.occupations)) {
+      const ranking = row?.fullRanking;
+      if (!/^[A-Z][0-9]{4}$/.test(code) || !Array.isArray(ranking) || ranking.length !== 6 || new Set(ranking).size !== 6 || !ranking.every(letter => letters.includes(letter)) || JSON.stringify(row.top3) !== JSON.stringify(ranking.slice(0, 3)) || !["high", "medium", "low"].includes(row.confidence) || !String(row.title || "").trim() || !Array.isArray(row.rationale) || !row.rationale.length) throw new Error(`Classement RIASEC invalide : ${code}`);
+    }
+  },
+
   async validateBundle(bundle, verifyHashes = false) {
     this.validateManifest(bundle.manifest);
     this.validateCore(bundle.core, bundle.manifest);
     this.validateCompetences(bundle.competences, bundle.core, bundle.manifest);
     this.validateMarket(bundle.marche, bundle.core, bundle.manifest);
+    this.validateRiasec(bundle.riasec, bundle.core);
     if (!verifyHashes) return;
-    for (const [key, value] of [["core", bundle.core], ["competences", bundle.competences], ["marche", bundle.marche]]) {
+    for (const [key, value] of [["core", bundle.core], ["competences", bundle.competences], ["marche", bundle.marche], ["riasec", bundle.riasec]]) {
       const text = JSON.stringify(value);
       const descriptor = bundle.manifest.files[key];
       if (new TextEncoder().encode(text).byteLength !== descriptor.bytes || await this.sha256(text) !== descriptor.sha256) throw new Error(`Cache ${key} incohérent.`);
@@ -122,7 +134,7 @@ const BoussoleRuntimeProvider = {
   },
 
   adapt(bundle) {
-    const { core, competences, marche, manifest } = bundle;
+    const { core, competences, marche, riasec, manifest } = bundle;
     const relations = new Map((competences.jobs || []).map(item => [item.jobId, item]));
     const marketRows = new Map((marche.jobs || []).map(item => [item.jobId, item]));
     const groups = new Map((competences.groups || []).map(item => [item.id, item.label]));
@@ -210,6 +222,7 @@ const BoussoleRuntimeProvider = {
       provenance: "generated_rome",
       confidence: 0.75,
       jobs,
+      riasecOccupations: riasec.occupations,
       qualifications: core.qualifications || [],
       skills,
       skillsEngine: skills,
@@ -312,7 +325,7 @@ const BoussoleRuntimeProvider = {
       if (!database) return;
       await new Promise((resolve, reject) => {
         const transaction = database.transaction(this.cacheStore, "readwrite");
-        transaction.objectStore(this.cacheStore).put({ manifest: bundle.manifest, core: bundle.core, competences: bundle.competences, marche: bundle.marche, complete: true }, this.cacheKey);
+        transaction.objectStore(this.cacheStore).put({ manifest: bundle.manifest, core: bundle.core, competences: bundle.competences, marche: bundle.marche, riasec: bundle.riasec, complete: true }, this.cacheKey);
         transaction.oncomplete = resolve;
         transaction.onerror = () => reject(transaction.error);
       });

@@ -80,7 +80,7 @@ const online = run(parityProfile, engine), offline = run(parityProfile, offlineE
 assert("online_offline_same_raw_scores_ranks_exclusions", JSON.stringify(online.completeList.map(item => [item.romeCode, item.personalFitScoreRaw, item.status])) === JSON.stringify(offline.completeList.map(item => [item.romeCode, item.personalFitScoreRaw, item.status])), null);
 assert("result_contract_v2", online.completeList.every(item => item.scoringVersion === "personal-fit-v2" && Number.isFinite(item.personalFitScoreRaw) && item.configuredWeights && item.appliedWeights && Array.isArray(item.notEvaluatedComponents) && Number.isFinite(item.feasibilityScore) && Number.isFinite(item.dailyRealityEvidenceConfidence)), null);
 assert("source_contracts_present", html.includes("storageSchemaVersion = \"2.0.0\"") && html.includes("updateProfile(mutator") && html.includes("Ajouter à Ma boussole") && html.includes("pagehide") && html.includes("visibilitychange"), null);
-assert("version_v1_6_0", html.includes("Boussole Pro v1.6.0") && manifest.datasetVersion.includes("v1.6.0"), manifest.datasetVersion);
+assert("version_v1_6_1", html.includes("Boussole Pro v1.6.1") && manifest.datasetVersion.includes("v1.6.0"), manifest.datasetVersion);
 
 const report = { schemaVersion: "1.0.0", reportKind: "boussole_v1_6_scoring_persistence_validation", generatedAt: new Date().toISOString(), status: failures.length ? "failed" : "passed", assertions: assertions.length, failures, referenceSkill: { job: code, skillId: targetSkillId }, distributions };
 await mkdir(path.dirname(REPORT), { recursive: true }); await writeFile(REPORT, `${JSON.stringify(report, null, 2)}\n`, "utf8");

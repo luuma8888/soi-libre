@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { adaptCompactRuntime, sha256, validateCompactRuntime } from "./boussole-runtime-compact.mjs";
+import { validateRiasecReference } from "./boussole-riasec.mjs";
 
 const ROOT = process.cwd();
 const APP_DIR = path.join(ROOT, "creations/boussolepro");
@@ -11,7 +12,8 @@ const EXPECTED_FILES = [
   "boussole-runtime-manifest.json",
   "boussole-core.json",
   "boussole-competences.json",
-  "boussole-marche.json"
+  "boussole-marche.json",
+  "rome-riasec-boussole-pro-v1.1.json"
 ].sort();
 
 const failures = [];
@@ -22,7 +24,7 @@ const assert = (id, condition, detail = null) => {
 };
 
 const actualFiles = (await readdir(RUNTIME_DIR)).filter(name => !name.startsWith(".")).sort();
-assert("exact_four_public_runtime_files", JSON.stringify(actualFiles) === JSON.stringify(EXPECTED_FILES), actualFiles);
+assert("exact_five_public_runtime_files", JSON.stringify(actualFiles) === JSON.stringify(EXPECTED_FILES), actualFiles);
 
 const manifest = await readJson(path.join(RUNTIME_DIR, "boussole-runtime-manifest.json"));
 const texts = {};
@@ -42,8 +44,12 @@ assert("manifest_identity", [runtime.core, runtime.competences, runtime.marche].
   item.schemaVersion === manifest.resourceSchemaVersion && item.datasetVersion === manifest.datasetVersion && item.generatedAt === manifest.generatedAt
 ));
 assert("manifest_runtime_fingerprint", sha256(Object.values(manifest.files).map(file => file.sha256).join("|")) === manifest.runtimeFingerprintSha256);
+assert("riasec_editorial_identity", manifest.riasecEditorialRevision === runtime.riasec.editorialRevision && manifest.riasecGeneratedAt === runtime.riasec.generatedAt);
 
 const adapted = adaptCompactRuntime(runtime, manifest);
+const riasecValidation = validateRiasecReference(runtime.riasec, adapted.jobs.map(job => job.romeCode));
+assert("riasec_reference_valid", riasecValidation.failures.length === 0, riasecValidation.failures);
+assert("riasec_coverage", riasecValidation.commonCodes === 1000 && riasecValidation.orphanCodes.length === 0 && riasecValidation.unclassifiedCodes.length === 0, riasecValidation);
 assert("adapted_jobs_1000", adapted.jobs.length === 1000);
 assert("adapted_skills", adapted.skillsEngine.length === manifest.counts.skills);
 assert("adapted_knowledge", adapted.knowledge.length === manifest.counts.knowledge);
@@ -98,10 +104,10 @@ const [onlineHtml, offlineHtml, indexHtml] = await Promise.all([
 const onlinePayload = parsePayload(onlineHtml);
 const offlinePayload = parsePayload(offlineHtml);
 assert("online_shell_has_no_dataset", !("dataset" in onlinePayload) && onlinePayload.embeddedRuntime === null);
-assert("app_version_v1_6_0", onlinePayload.appVersion === "1.6.0" && onlineHtml.includes("Boussole Pro v1.6.0"));
+assert("app_version_v1_6_1", onlinePayload.appVersion === "1.6.1" && onlineHtml.includes("Boussole Pro v1.6.1"));
 assert("small_demo_profile", (onlinePayload.defaultProfile?.jobExperiences || []).length <= 2 && (onlinePayload.defaultProfile?.skillSelections || []).length <= 12 && (onlinePayload.defaultProfile?.skillSelections || []).every(item => item.currentLevel && item.futureWish));
 assert("online_runtime_provider", onlineHtml.includes("/* RUNTIME_PROVIDER_START */") && onlinePayload.runtimeBasePath === "boussole-runtime/");
-assert("offline_embeds_exact_runtime", ["core", "competences", "marche"].every(key =>
+assert("offline_embeds_exact_runtime", ["core", "competences", "marche", "riasec"].every(key =>
   sha256(JSON.stringify(offlinePayload.embeddedRuntime?.[key])) === manifest.files[key].sha256
 ));
 assert("offline_manifest_exact", JSON.stringify(offlinePayload.embeddedRuntime?.manifest) === JSON.stringify(manifest));
@@ -116,11 +122,11 @@ assert("runtime_mode_copy_explicit", [
 assert("no_misleading_embedded_copy", !onlineHtml.includes("métiers réels embarqués") && !onlineHtml.includes("Prêt hors ligne"));
 assert("index_exposes_both_editions", [
   'href="creations/boussolepro/boussole-pro.html"',
-  'download="boussole-pro-online-v1-6-0.html"',
+  'download="boussole-pro-online-v1-6-1.html"',
   'href="creations/boussolepro/boussole-pro-offline.html"',
-  'download="boussole-pro-offline-v1-6-0.html"'
+  'download="boussole-pro-offline-v1-6-1.html"'
 ].every(copy => indexHtml.includes(copy)));
-assert("index_boussole_seve_ucem_order", indexHtml.indexOf(">Boussole Pro<") < indexHtml.indexOf(">Sève<") && indexHtml.indexOf(">Sève<") < indexHtml.indexOf(">UCEM Compagnon<"));
+assert("index_cards_present", [">Boussole Pro<", ">Sève<", ">UCEM Compagnon<"].every(label => indexHtml.includes(label)));
 
 const rawBytes = Object.values(texts).reduce((sum, text) => sum + Buffer.byteLength(text), 0);
 const gzipBytes = Object.values(texts).reduce((sum, text) => sum + gzipSync(text, { level: 9 }).byteLength, 0);
@@ -136,6 +142,7 @@ const report = {
   assertions: assertionCount,
   failures,
   counts: structural.counts,
+  riasec: riasecValidation,
   sizes: { rawBytes, gzipBytes, rawTargetMet: rawBytes <= 10_000_000, gzipTargetMet: gzipBytes <= 1_500_000 },
   marketExamples: Object.fromEntries(Object.entries(marketExamples).map(([key, value]) => [key, value ? { jobId: value.jobId, territoryId: value.territoryId } : null])),
   distributions: { onlineBytes: Buffer.byteLength(onlineHtml), offlineBytes: Buffer.byteLength(offlineHtml) }

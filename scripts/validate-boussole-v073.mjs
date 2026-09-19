@@ -1137,6 +1137,8 @@ this.__boussole = {
   calculateContextScore,
   saturatingTagScore,
   calculatePersonalFitMetrics,
+  normalizeRiasecRanking: typeof normalizeRiasecRanking === "function" ? normalizeRiasecRanking : null,
+  calculateRiasecAlignment: typeof calculateRiasecAlignment === "function" ? calculateRiasecAlignment : null,
   hasRelatedCustomSkill,
   buildSkillsReadiness,
   applyHardExclusions,
