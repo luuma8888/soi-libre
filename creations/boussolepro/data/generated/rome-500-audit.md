@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-07-13T19:06:16.483Z.
+Généré le 2026-09-01T08:27:46.112Z.
 
 ## Synthèse
 
@@ -8,17 +8,17 @@ Généré le 2026-07-13T19:06:16.483Z.
 - Métiers récupérés : 72
 - Échecs : 0
 - Coquilles code + titre : 0/72
-- Score de préparation données : 100%
+- Score de préparation données : 98%
 - Readiness globale : usable_for_validation
 
 ## Données réellement reliées aux métiers
 
 - Mappings compétences : 72/72
-- Mappings contextes : 71/72
-- Mappings appellations : 71/72
+- Mappings contextes : 69/72
+- Mappings appellations : 69/72
 - Mappings savoirs : 72/72
 - Activités : 0/72
-- Descriptions officielles : 71/72
+- Descriptions officielles : 69/72
 
 ## Endpoints et sources
 
@@ -32,19 +32,22 @@ Généré le 2026-07-13T19:06:16.483Z.
 - requiredDiplomaLevel : 72
 - recommendedDiplomaLevel : 72
 - relatedJobs : 72
-- description : 1
-- appellations : 1
-- workContexts : 1
-- accessConditions : 1
+- description : 3
+- appellations : 3
+- workContexts : 3
+- accessConditions : 3
 
 ## Marché officiel
 
-- Lignes brutes : France 437, région 429, département 382
-- Couverture corpus actif : 63/72 métier(s), sans marché 9
-- France : 63/72, zéros 7, absents 9
-- Occitanie : 63/72, zéros 48, absents 9
-- Aude : 63/72, zéros 145, absents 9
-- Codes sans statistique nationale : 9
+- Statut bundle marché : bundled_in_corpus_folder
+- Lignes brutes : France 894, région 883, département 785
+- Couverture corpus actif : 71/72 métier(s), sans marché 1
+- France : 71/72, zéros 13, absents 1
+- Occitanie : 71/72, zéros 87, absents 1
+- Aude : 71/72, zéros 331, absents 1
+- Codes sans statistique nationale : 1
+- Codes nationaux absents en Occitanie : 0
+- Codes nationaux ou régionaux absents dans l’Aude : 0
 
 ## Domaines et secteurs
 
@@ -61,9 +64,9 @@ Généré le 2026-07-13T19:06:16.483Z.
 
 ## Taille et performance
 
-- Taille totale générée : 38.55 Mo
-- Nombre de fichiers : 47
-- Plus gros fichiers : rome-raw-skills.json (20.97 Mo), knowledge.rome.json (5.13 Mo), jobs.rome.json (2.67 Mo), market/market-national.rome.json (1.76 Mo), market/market-occitanie.rome.json (1.69 Mo)
+- Taille totale générée : 499.12 Mo
+- Nombre de fichiers : 258
+- Plus gros fichiers : rome1000-candidate/jobs.rome.json (34.39 Mo), rome800-candidate/jobs.rome.json (28.11 Mo), rome1000-candidate/rome-raw-skills.json (25.5 Mo), rome800-candidate/rome-raw-skills.json (25.5 Mo), rome-raw-skills.json (20.97 Mo)
 
 ## Limite actuelle
 
@@ -71,4 +74,4 @@ Le corpus ROME 500 est techniquement chargeable, mais il ne doit pas encore êtr
 
 ## Warnings
 
-- 9 code(s) n'ont pas de ligne marché nationale dans le lot actuel.
+- 1 code(s) n'ont pas de ligne marché nationale dans le lot actuel.

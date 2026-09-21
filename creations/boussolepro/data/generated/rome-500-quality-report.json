@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-07-13T19:06:16.483Z",
+  "generatedAt": "2026-09-01T08:27:46.112Z",
   "source": "local_generated_files_audit",
   "jobsTotal": 72,
   "requestedCodesCount": 72,
@@ -10,13 +10,13 @@
   "linkedDataCoverage": {
     "mappingsTotal": 72,
     "jobsWithSkillMappings": 72,
-    "jobsWithContextMappings": 71,
-    "jobsWithAppellationMappings": 71,
+    "jobsWithContextMappings": 69,
+    "jobsWithAppellationMappings": 69,
     "jobsWithKnowledgeMappings": 72,
     "jobsWithRelatedRomeCodes": 0,
     "jobsWithActivities": 0,
-    "jobsWithOfficialDescription": 71,
-    "jobsWithAccessConditions": 71,
+    "jobsWithOfficialDescription": 69,
+    "jobsWithAccessConditions": 69,
     "jobsWithDiplomaLevel": 0
   },
   "sectorMappingCoverage": {
@@ -36,72 +36,76 @@
   "marketAvailability": {
     "source": "api_marche_travail",
     "method": "POST",
+    "marketBundleStatus": "bundled_in_corpus_folder",
+    "marketDir": "creations/boussolepro/data/generated/market",
     "bmoUsedInScore": false,
     "fapRomeUsedInScore": false,
     "rawMarketFileCoverage": {
-      "nationalRows": 437,
-      "regionalRows": 429,
-      "departmentalRows": 382
+      "nationalRows": 894,
+      "regionalRows": 883,
+      "departmentalRows": 785
     },
     "activeCorpusMarketCoverage": {
       "jobsTotal": 72,
-      "jobsWithOfficialMarket": 63,
-      "jobsWithoutMarket": 9,
-      "nationalJobsWithMarket": 63,
-      "regionalJobsWithMarket": 63,
-      "departmentalJobsWithMarket": 63
+      "jobsWithOfficialMarket": 71,
+      "jobsWithoutMarket": 1,
+      "nationalJobsWithMarket": 71,
+      "regionalJobsWithMarket": 71,
+      "departmentalJobsWithMarket": 71
     },
     "marketCoverage": {
       "rawFiles": {
-        "nationalRows": 437,
-        "regionalRows": 429,
-        "departmentalRows": 382
+        "nationalRows": 894,
+        "regionalRows": 883,
+        "departmentalRows": 785
       },
       "activeCorpus": {
         "jobsTotal": 72,
-        "jobsWithOfficialMarket": 63,
-        "jobsWithoutMarket": 9,
-        "nationalJobsWithMarket": 63,
-        "regionalJobsWithMarket": 63,
-        "departmentalJobsWithMarket": 63
+        "jobsWithOfficialMarket": 71,
+        "jobsWithoutMarket": 1,
+        "nationalJobsWithMarket": 71,
+        "regionalJobsWithMarket": 71,
+        "departmentalJobsWithMarket": 71
       }
     },
     "levelCoverage": {
       "national": {
-        "rows": 437,
-        "jobsWithOfficialMarket": 63,
-        "jobsWithZeroOffers": 7,
-        "jobsUnavailable": 9,
+        "rows": 894,
+        "jobsWithOfficialMarket": 71,
+        "jobsWithZeroOffers": 13,
+        "jobsUnavailable": 1,
         "staleRows": 0
       },
       "regional": {
-        "rows": 429,
-        "jobsWithOfficialMarket": 63,
-        "jobsWithZeroOffers": 48,
-        "jobsUnavailable": 9,
-        "staleRows": 5
+        "rows": 883,
+        "jobsWithOfficialMarket": 71,
+        "jobsWithZeroOffers": 87,
+        "jobsUnavailable": 1,
+        "staleRows": 11
       },
       "departmental": {
-        "rows": 382,
-        "jobsWithOfficialMarket": 63,
-        "jobsWithZeroOffers": 145,
-        "jobsUnavailable": 9,
-        "staleRows": 41
+        "rows": 785,
+        "jobsWithOfficialMarket": 71,
+        "jobsWithZeroOffers": 331,
+        "jobsUnavailable": 1,
+        "staleRows": 80
       }
     },
+    "unavailableByLevel": {
+      "nationalUnavailableCount": 1,
+      "nationalUnavailableCodes": [
+        "N4303"
+      ],
+      "regionalAdditionalUnavailableCount": 0,
+      "regionalAdditionalUnavailableCodes": [],
+      "departmentalAdditionalUnavailableCount": 0,
+      "departmentalAdditionalUnavailableCodes": []
+    },
     "unsupportedMarketRomeCodes": [
-      "A1503",
-      "K1103",
-      "M1403",
-      "N4303",
-      "E1307",
-      "H2502",
-      "M1704",
-      "N1202",
-      "N2203"
+      "N4303"
     ],
-    "unsupportedMarketRomeCodesCount": 9,
-    "optimizationHint": "Eviter les appels regional/departemental pour 9 code(s) indisponibles au national pendant le meme run."
+    "unsupportedMarketRomeCodesCount": 1,
+    "optimizationHint": "Eviter les appels regional/departemental pour 1 code(s) indisponibles au national pendant le meme run."
   },
   "shellJobs": {
     "count": 0,
@@ -117,10 +121,56 @@
   "matchingReadiness": {
     "usableForMatchingJobs": 72,
     "usableForMatchingRatio": 1,
-    "score": 1,
+    "score": 0.98,
     "status": "usable_for_validation"
   },
+  "accessCoverage": {
+    "jobsWithAccessSummary": 63,
+    "jobsWithSpecificCredentialRequired": 10,
+    "jobsWithStructuredAccessPaths": 1,
+    "accessPaths": 3,
+    "accessPathsWithKnownDuration": 0,
+    "accessPathsWithUnknownDuration": 3,
+    "regulatedJobsResolved": 7,
+    "regulatedJobsUnresolved": 0,
+    "contradictions": 1,
+    "downstreamInconsistenciesDetected": 0,
+    "truthCases": 17,
+    "truthFailures": 0,
+    "catalogExplanation": "Les compteurs trainings et certifications décrivent des catalogues dédiés. Une valeur nulle ne signifie pas que les conditions d’accès métier sont absentes ; celles-ci sont comptées séparément dans accessSummary."
+  },
+  "functionalEvidence": {
+    "constraints": null,
+    "sectorExclusions": null,
+    "corpusMaturity": null,
+    "cedricAudit": {
+      "constraints": null,
+      "sectors": null,
+      "access": null
+    }
+  },
+  "sourceArtifacts": [
+    {
+      "file": "creations/boussolepro/data/generated/data-quality-report.rome.json",
+      "sourceGeneratedAt": "2026-09-01T08:24:31.984Z",
+      "packagedAt": "2026-09-01T08:27:46.112Z",
+      "packagedInBuild": "20260815-classic-final-freeze-03",
+      "sourceArtifactSha256": "1f00f72e1d43df33dddc88309fa9078e627d7e4b67f14f0753f0028f4580e47e"
+    },
+    {
+      "file": "creations/boussolepro/data/generated/access-summary-quality-report.json",
+      "sourceGeneratedAt": "2026-08-01T22:36:32.333Z",
+      "packagedAt": "2026-09-01T08:27:46.112Z",
+      "packagedInBuild": "20260815-classic-final-freeze-03",
+      "sourceArtifactSha256": "e2ff056d5527899dc7622ad271faa15beee2b242bf9600b2c904d2a3e52e9006"
+    }
+  ],
   "warnings": [
-    "9 code(s) n'ont pas de ligne marché nationale dans le lot actuel."
-  ]
+    "1 code(s) n'ont pas de ligne marché nationale dans le lot actuel."
+  ],
+  "appVersion": "v0.8.4",
+  "buildId": "20260815-classic-final-freeze-03",
+  "buildDate": "2026-08-15",
+  "datasetVersion": "rome72-reference-v0.6.4",
+  "sourceArtifactSha256": "4fd07fa87455db219291c3b3422d88a48a21a5a4f9905c88aec578d21e0af080"
 }

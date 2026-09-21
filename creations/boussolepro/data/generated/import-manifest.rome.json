@@ -2,8 +2,8 @@
   "schemaVersion": "1.0.0",
   "datasetName": "Boussole Pro - corpus ROME 72 de référence",
   "datasetVersion": "rome72-reference-v0.6.4",
-  "sourceDate": "2026-07-13",
-  "importedAt": "2026-07-13T19:06:16.013Z",
+  "sourceDate": "2026-09-01",
+  "importedAt": "2026-09-01T08:27:45.534Z",
   "provenance": "generated_rome",
   "sources": [
     "france_travail_rome_generated"
@@ -162,7 +162,7 @@
   ],
   "failedCodes": [],
   "completionRate": 1,
-  "branch": "soi-libre-codex",
+  "branch": "main",
   "codeSelection": {
     "codes": [
       "A1203",
@@ -251,16 +251,28 @@
     {
       "name": "metiers_details",
       "status": "ok",
-      "count": 71,
+      "count": 69,
       "usedForDataset": true,
       "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
-      "failedCodesCount": 1,
+      "failedCodesCount": 3,
       "failedCodes": [
         {
           "code": "A1203",
           "status": "unknown",
           "message": "Detail ROME Metiers limite a code/libelle.",
-          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?code_rome=A1203"
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=A1203"
+        },
+        {
+          "code": "D1102",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=D1102"
+        },
+        {
+          "code": "H2502",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?code=H2502"
         }
       ]
     },
