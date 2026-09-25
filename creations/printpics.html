@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="application-name" content="PrintPics">
-  <meta name="version" content="v0.6.alpha">
+  <meta name="version" content="v0.7.alpha">
   <meta name="description" content="Composer des planches imprimables et recadrer des images, localement et hors ligne.">
-  <title>PrintPics v0.6.alpha — Imprimer et recadrer des images</title>
+  <title>PrintPics v0.7.alpha — Imprimer et recadrer des images</title>
   <style id="print-page-style">
     @media print {
       @page { size: 210mm 297mm; margin: 0; }
@@ -274,6 +274,7 @@
     .order-meta span { color: var(--muted); font-size: .68rem; }
     .order-actions { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
     .order-mini-btn { min-width: 30px; height: 30px; min-height: 30px; padding: 0 8px; border-radius: 8px; font-size: .72rem; }
+    .order-remove-btn { border-color: color-mix(in srgb, var(--danger), var(--border) 64%); color: var(--danger); }
 
     .preview-stage {
       position: relative; min-height: 520px; padding: 32px 18px 50px; border: 1px solid color-mix(in srgb, var(--border), transparent 10%);
@@ -292,17 +293,31 @@
     .empty-state.warning { color: var(--warning); }
 
     .page-wrapper { position: relative; max-width: min(100%, var(--preview-width, 620px)); background: #fff; box-shadow: var(--paper-shadow); }
+    .page-wrapper.has-dimensions { margin-bottom: 34px; }
     .page-wrapper.is-orderable { outline: 1px solid color-mix(in srgb, var(--accent), transparent 45%); }
     .page-visual { position: relative; }
     .page-wrapper::before { content: attr(data-page); position: absolute; left: 0; top: -24px; color: var(--muted); font-size: .7rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .page-dimension { position: absolute; z-index: 3; color: var(--accent); font-size: .66rem; font-weight: 800; pointer-events: none; }
+    .page-dimension-x { bottom: -28px; height: 18px; border-top: 1px solid currentColor; text-align: center; }
+    .page-dimension-x::before, .page-dimension-x::after { content: ""; position: absolute; top: -4px; width: 1px; height: 8px; background: currentColor; }
+    .page-dimension-x::before { left: 0; }
+    .page-dimension-x::after { right: 0; }
+    .page-dimension-x span { position: relative; top: 3px; padding: 0 4px; background: var(--surface-2); white-space: nowrap; }
+    .page-dimension-y { left: -42px; width: 28px; border-left: 1px solid currentColor; }
+    .page-dimension-y::before, .page-dimension-y::after { content: ""; position: absolute; left: -4px; width: 8px; height: 1px; background: currentColor; }
+    .page-dimension-y::before { top: 0; }
+    .page-dimension-y::after { bottom: 0; }
+    .page-dimension-y span { position: absolute; left: -2px; top: 50%; padding: 3px 2px; background: var(--surface-2); line-height: 1; white-space: nowrap; transform: translate(-50%,-50%) rotate(-90deg); }
     canvas { display: block; width: 100%; height: auto; }
-    .page-order-overlay { position: absolute; inset: 0; display: grid; gap: var(--overlay-gap,0); padding: var(--overlay-margin,0); grid-template-columns: repeat(var(--overlay-cols,1),minmax(0,1fr)); grid-template-rows: repeat(var(--overlay-rows,1),minmax(0,1fr)); pointer-events: none; }
-    .page-slot { pointer-events: auto; display: flex; flex-direction: column; justify-content: space-between; width: 100%; min-width: 0; min-height: 0; padding: 8px; border: 1px solid transparent; border-radius: 9px; background: rgba(255,255,255,.04); color: inherit; cursor: grab; text-align: left; user-select: none; }
+    .page-order-overlay { position: absolute; inset: 0; display: grid; column-gap: var(--overlay-gap-x,0); row-gap: var(--overlay-gap-y,0); padding: var(--overlay-margin,0); grid-template-columns: repeat(var(--overlay-cols,1),minmax(0,1fr)); grid-template-rows: repeat(var(--overlay-rows,1),minmax(0,1fr)); pointer-events: none; }
+    .page-slot { position: relative; pointer-events: auto; width: 100%; min-width: 0; min-height: 0; border: 1px solid transparent; border-radius: 9px; background: rgba(255,255,255,.04); color: inherit; user-select: none; }
+    .page-slot-select { display: flex; flex-direction: column; justify-content: space-between; width: 100%; height: 100%; min-width: 0; min-height: 0; padding: 8px; border: 0; border-radius: inherit; background: transparent; color: inherit; cursor: grab; text-align: left; }
     .page-slot:hover { background: color-mix(in srgb, var(--accent-soft), transparent 74%); }
     .page-slot:active { cursor: grabbing; }
     .page-slot.is-empty { border-style: dashed; color: var(--muted); }
-    .page-slot.is-selected, .page-slot.is-drop-target { border-color: var(--accent); box-shadow: var(--focus); background: color-mix(in srgb, var(--accent-soft), transparent 58%); }
-    .page-slot.is-dragging { opacity: .45; }
+    .page-slot-select.is-selected, .page-slot-select.is-drop-target { box-shadow: var(--focus); background: color-mix(in srgb, var(--accent-soft), transparent 58%); }
+    .page-slot-remove { position: absolute; top: 5px; right: 5px; z-index: 2; display: grid; place-items: center; width: 26px; min-width: 26px; height: 26px; min-height: 26px; padding: 0; border: 1px solid color-mix(in srgb, var(--danger), transparent 48%); border-radius: 8px; background: color-mix(in srgb, var(--surface), transparent 8%); color: var(--danger); font-size: 1rem; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .order-drag-source.is-dragging { opacity: .45; }
     .page-slot-top, .page-slot-bottom { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
     .page-slot-tag, .page-slot-hint { display: inline-flex; align-items: center; min-height: 20px; padding: 0 6px; border-radius: 999px; background: rgba(255,255,255,.72); font-size: .62rem; font-weight: 800; }
     .page-slot-tag { color: #286f65; letter-spacing: .03em; text-transform: uppercase; }
@@ -377,7 +392,10 @@
       .export-help { text-align: left; }
       .order-row { grid-template-columns: auto minmax(0,1fr); }
       .order-actions { grid-column: 1 / -1; justify-content: flex-start; }
-      .page-slot { padding: 5px; border-radius: 6px; }
+      .page-slot { border-radius: 6px; }
+      .page-slot-select { padding: 5px; }
+      .page-slot-remove { top: 3px; right: 3px; width: 24px; min-width: 24px; height: 24px; min-height: 24px; }
+      .page-wrapper.has-dimensions { max-width: calc(100% - 44px); margin-left: 38px; }
       .page-slot-name { font-size: .6rem; }
       .page-slot-hint { display: none; }
       .crop-caption { display: grid; gap: 2px; }
@@ -390,8 +408,8 @@
       html, body { width: auto; min-height: 0; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; }
       .no-print, .topbar, .sidebar, .workspace-head, .result-rail, .order-list-panel, .page-order-strip, .message, .modal-backdrop, .empty-state { display: none !important; }
       .app-shell, .studio, .workspace, .preview-stage, .preview-container { display: block !important; margin: 0 !important; padding: 0 !important; min-height: 0 !important; overflow: visible !important; background: #fff !important; border: 0 !important; }
-      .page-wrapper { width: var(--print-page-w) !important; height: var(--print-page-h) !important; max-width: none !important; margin: 0 !important; box-shadow: none !important; break-after: page; page-break-after: always; overflow: hidden; outline: 0 !important; }
-      .page-wrapper:last-child { break-after: auto; page-break-after: auto; }
+      .page-wrapper { width: var(--print-page-w) !important; height: var(--print-page-h) !important; max-width: none !important; margin: 0 !important; box-shadow: none !important; break-after: auto; page-break-after: auto; overflow: hidden; outline: 0 !important; }
+      .page-wrapper + .page-wrapper { break-before: page; page-break-before: always; }
       .page-wrapper::before { display: none !important; }
       canvas { width: var(--print-page-w) !important; height: var(--print-page-h) !important; max-width: none !important; }
     }
@@ -405,7 +423,7 @@
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="12" height="16" rx="2"/><path d="M8 7h4M8 11h4M8 15h3"/><path d="M16 8h4v13H8v-2"/></svg>
         </div>
         <div class="brand-copy">
-          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.6.alpha</span></div>
+          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.7.alpha</span></div>
           <p class="subtitle">Préparer des images nettes, aux bonnes dimensions, sans connexion.</p>
         </div>
       </div>
@@ -464,7 +482,8 @@
             <div class="field"><label for="per-page">Images par page</label><input id="per-page" type="number" min="1" max="120" step="1" value="4"></div>
             <div class="field"><label for="fit">Dans chaque case</label><select id="fit"><option value="contain">Voir l'image entière</option><option value="cover">Remplir la case</option></select></div>
             <div class="field"><label for="margin">Marge extérieure mm</label><input id="margin" type="number" min="0" max="80" step="0.5" value="5"></div>
-            <div class="field"><label for="spacing">Espace entre images mm</label><input id="spacing" type="number" min="0" max="80" step="0.5" value="2"></div>
+            <div class="field"><label for="spacing-horizontal">Espace horizontal mm</label><input id="spacing-horizontal" type="number" min="0" max="80" step="0.5" value="2"></div>
+            <div class="field"><label for="spacing-vertical">Espace vertical mm</label><input id="spacing-vertical" type="number" min="0" max="80" step="0.5" value="2"></div>
           </div>
           <details class="advanced"><summary>Réglages de grille et qualité</summary><div class="advanced-body"><div class="form-grid">
             <div class="field full"><label for="layout-mode">Calcul de la grille</label><select id="layout-mode"><option value="count">Optimiser automatiquement</option><option value="grid">Forcer une grille</option></select></div>
@@ -473,6 +492,7 @@
             <div class="field"><label for="min-short-side">Taille lisible min. mm</label><input id="min-short-side" type="number" min="5" max="250" step="1" value="45"></div><div class="field"><label for="max-auto-count">Maximum testé</label><input id="max-auto-count" type="number" min="1" max="120" step="1" value="48"></div>
             <div class="field full"><div class="check-row"><input id="auto-rotate" type="checkbox" checked><label for="auto-rotate">Autoriser une rotation de 90° lorsqu'elle améliore l'occupation.</label></div></div>
             <div class="field full"><div class="check-row"><input id="draw-guides" type="checkbox"><label for="draw-guides">Afficher de fins repères autour des images.</label></div></div>
+            <div class="field full"><div class="check-row"><input id="show-dimensions" type="checkbox" checked><label for="show-dimensions">Afficher les dimensions de la première image autour de chaque page.</label></div></div>
           </div><p class="hint">À 300 ppp, l'impression est déjà fine dans la plupart des cas. Monter davantage augmente rapidement la mémoire utilisée.</p></div></details>
         </section>
 
@@ -502,7 +522,7 @@
       <main class="workspace">
         <div class="workspace-head no-print">
           <div class="workspace-titleline"><span class="workspace-mode-icon" aria-hidden="true"><svg id="workspace-mode-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/></svg></span><div><h2 id="preview-title">Aperçu de la planche</h2><p id="preview-note">Ajoute des images pour lancer le calcul automatique.</p></div></div>
-          <div class="preview-toolbar-actions"><button class="btn compact order-toggle-btn is-active" id="toggle-order-edit" type="button" hidden aria-pressed="true">Masquer le tri</button><button class="btn compact" id="toggle-order-list" type="button" hidden aria-expanded="false" aria-controls="order-list-panel">Liste des images</button></div>
+          <div class="preview-toolbar-actions"><button class="btn compact order-toggle-btn is-active" id="toggle-order-edit" type="button" hidden aria-pressed="true">Masquer le tri</button><button class="btn compact" id="toggle-order-list" type="button" hidden aria-expanded="false" aria-controls="order-list-panel">Gérer la liste</button></div>
         </div>
 
         <div class="message" id="message" role="status" aria-live="polite"></div>
@@ -512,7 +532,7 @@
           <div class="export-wrap"><p class="stats-label">Sortie</p><div class="export-cluster"><button class="btn primary print-only" id="print" type="button">Imprimer / PDF</button><button class="btn" id="export-png" type="button">Exporter PNG sans perte</button><button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button></div><p class="export-help" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif.</p><p class="print-help print-only">Pour imprimer ou créer un PDF aux bonnes dimensions : taille réelle / échelle 100 %, sans ajustement à la page ni marge ajoutée par le navigateur.</p></div>
         </section>
 
-        <section class="order-list-panel no-print" id="order-list-panel" hidden aria-label="Ordre des images"><div class="order-list-head"><div><h3>Ordre des images</h3><p>Glisse-dépose pour échanger, ou utilise les flèches sur écran tactile.</p></div><button class="btn compact" id="close-order-list" type="button">Fermer</button></div><div class="order-list" id="order-list"></div></section>
+        <section class="order-list-panel no-print" id="order-list-panel" hidden aria-label="Ordre des images"><div class="order-list-head"><div><h3>Ordre et sélection des images</h3><p>Glisse-dépose pour échanger, utilise les flèches sur écran tactile ou retire une image importée par erreur.</p></div><button class="btn compact" id="close-order-list" type="button">Fermer</button></div><div class="order-list" id="order-list"></div></section>
 
         <section class="preview-stage" aria-label="Zone d'aperçu"><div class="preview-container" id="preview"></div></section>
       </main>
@@ -525,7 +545,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.6.alpha",
+        version: "0.7.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -614,7 +634,8 @@
           customWidth: 210,
           customHeight: 297,
           margin: 5,
-          spacing: 2,
+          spacingHorizontal: 2,
+          spacingVertical: 2,
           layoutMode: "count",
           minShortSide: 45,
           minPrintPpi: 180,
@@ -630,6 +651,7 @@
           dpi: 300,
           autoRotate: true,
           drawGuides: false,
+          showDimensions: true,
           cropRatio: "SCREEN_9_16",
           cropRatioWidth: 16,
           cropRatioHeight: 9,
@@ -704,7 +726,8 @@
             customWidth: byId("custom-width"),
             customHeight: byId("custom-height"),
             margin: byId("margin"),
-            spacing: byId("spacing"),
+            spacingHorizontal: byId("spacing-horizontal"),
+            spacingVertical: byId("spacing-vertical"),
             layoutMode: byId("layout-mode"),
             minShortSide: byId("min-short-side"),
             minPrintPpi: byId("min-print-ppi"),
@@ -720,6 +743,7 @@
             dpi: byId("dpi"),
             autoRotate: byId("auto-rotate"),
             drawGuides: byId("draw-guides"),
+            showDimensions: byId("show-dimensions"),
             cropRatio: byId("crop-ratio"),
             cropRatioWidth: byId("crop-ratio-width"),
             cropRatioHeight: byId("crop-ratio-height"),
@@ -777,7 +801,13 @@
           next.customWidth = this.clamp(next.customWidth, 20, 1000, base.customWidth);
           next.customHeight = this.clamp(next.customHeight, 20, 1000, base.customHeight);
           next.margin = this.clamp(next.margin, 0, 80, base.margin);
-          next.spacing = this.clamp(next.spacing, 0, 80, base.spacing);
+          // Migration des profils v0.6 : l'ancien espacement unique est repris sur les deux axes.
+          const legacySpacing = raw && raw.spacing !== undefined
+            ? this.clamp(raw.spacing, 0, 80, base.spacingHorizontal)
+            : base.spacingHorizontal;
+          next.spacingHorizontal = this.clamp(raw?.spacingHorizontal, 0, 80, legacySpacing);
+          next.spacingVertical = this.clamp(raw?.spacingVertical, 0, 80, legacySpacing);
+          delete next.spacing;
           next.layoutMode = next.layoutMode === "grid" ? "grid" : "count";
           next.minShortSide = this.clamp(next.minShortSide, 5, 250, base.minShortSide);
           next.minPrintPpi = Math.round(this.clamp(next.minPrintPpi, 72, 600, base.minPrintPpi));
@@ -795,6 +825,7 @@
           next.dpi = Math.round(this.clamp(next.dpi, 72, 600, base.dpi));
           next.autoRotate = Boolean(next.autoRotate);
           next.drawGuides = Boolean(next.drawGuides);
+          next.showDimensions = next.showDimensions !== false;
           next.orderEditMode = next.orderEditMode !== false;
           const legacyCropRatios = {
             "9:16": "SCREEN_9_16",
@@ -902,12 +933,12 @@
           if (s.autoRotate && s.imageWidth !== s.imageHeight) orientations.push([s.imageHeight, s.imageWidth]);
           let best = null;
           for (const [cellW, cellH] of orientations) {
-            const cols = Math.floor((box.width + s.spacing + 1e-7) / (cellW + s.spacing));
-            const rows = Math.floor((box.height + s.spacing + 1e-7) / (cellH + s.spacing));
+            const cols = Math.floor((box.width + s.spacingHorizontal + 1e-7) / (cellW + s.spacingHorizontal));
+            const rows = Math.floor((box.height + s.spacingVertical + 1e-7) / (cellH + s.spacingVertical));
             const capacity = cols * rows;
             if (cols < 1 || rows < 1 || (best && capacity <= best.capacity)) continue;
-            const gridW = cols * cellW + (cols - 1) * s.spacing;
-            const gridH = rows * cellH + (rows - 1) * s.spacing;
+            const gridW = cols * cellW + (cols - 1) * s.spacingHorizontal;
+            const gridH = rows * cellH + (rows - 1) * s.spacingVertical;
             best = {
               cols, rows, cellW, cellH, capacity, count: capacity,
               offsetX: (box.paper.width - gridW) / 2,
@@ -986,8 +1017,8 @@
         scoreGrid(count, cols, rows, avgAspect) {
           const s = App.state.settings;
           const box = this.getContentBox();
-          const availableW = box.width - ((cols - 1) * s.spacing);
-          const availableH = box.height - ((rows - 1) * s.spacing);
+          const availableW = box.width - ((cols - 1) * s.spacingHorizontal);
+          const availableH = box.height - ((rows - 1) * s.spacingVertical);
           if (availableW <= 0 || availableH <= 0) return null;
 
           const cellW = availableW / cols;
@@ -1056,6 +1087,23 @@
           const ppiW = pixelW / Math.max(0.01, printW / 25.4);
           const ppiH = pixelH / Math.max(0.01, printH / 25.4);
           return Math.min(ppiW, ppiH);
+        },
+
+        getPlacedImageSize(image, cellW, cellH) {
+          if (!image) return { width: cellW, height: cellH, offsetX: 0, offsetY: 0 };
+          const rotate = App.state.settings.autoRotate && this.shouldRotate(image.aspect, cellW / cellH);
+          const imageAspect = rotate ? 1 / image.aspect : image.aspect;
+          if (App.state.settings.fit === "cover") {
+            return { width: cellW, height: cellH, offsetX: 0, offsetY: 0 };
+          }
+          const width = imageAspect > cellW / cellH ? cellW : cellH * imageAspect;
+          const height = imageAspect > cellW / cellH ? cellW / imageAspect : cellH;
+          return {
+            width,
+            height,
+            offsetX: (cellW - width) / 2,
+            offsetY: (cellH - height) / 2
+          };
         },
 
         evaluateQuality(grid, images) {
@@ -1247,8 +1295,8 @@
           if (s.margin * 2 >= minPaperSide) {
             return "Les marges sont trop grandes pour ce format papier.";
           }
-          if (s.spacing > Math.max(paper.width, paper.height)) {
-            return "L'espacement est trop grand pour ce format papier.";
+          if (s.spacingHorizontal > paper.width || s.spacingVertical > paper.height) {
+            return "L'un des espacements est trop grand pour ce format papier.";
           }
           if (!s.fixedImageSize && s.layoutMode === "grid" && s.cols * s.rows > 160) {
             return "La grille forcée est trop lourde à calculer. Réduis lignes ou colonnes.";
@@ -1307,14 +1355,20 @@
 
           App.state.pagePages = this.buildPagePages(images, Math.max(1, layout.perPage));
           App.state.pageImages = App.state.pagePages.map((page) => page.images);
-          const pages = App.state.pagePages;
+          // Invariant d'impression : une page sans image n'est jamais générée ni rendue.
+          const pages = App.state.pagePages.filter((page) => page.images.length > 0);
+          App.state.pagePages = pages;
+          App.state.pageImages = pages.map((page) => page.images);
           const paper = this.getPaperSize();
           const s = App.state.settings;
           const load = this.estimateCanvasLoad(pages.length);
           const widthPx = load.widthPx;
           const heightPx = load.heightPx;
           const marginPx = this.mmToPx(s.margin, s.dpi);
-          const spacingPx = this.mmToPx(s.spacing, s.dpi);
+          // Les espacements peuvent réellement valoir zéro ; mmToPx impose au moins 1 px
+          // et ne convient donc pas ici.
+          const spacingHorizontalPx = (s.spacingHorizontal * s.dpi) / 25.4;
+          const spacingVerticalPx = (s.spacingVertical * s.dpi) / 25.4;
           const canvases = [];
 
           layout.canvasLoad = load;
@@ -1347,15 +1401,15 @@
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, widthPx, heightPx);
 
-            const availableW = widthPx - (2 * marginPx) - ((grid.cols - 1) * spacingPx);
-            const availableH = heightPx - (2 * marginPx) - ((grid.rows - 1) * spacingPx);
+            const availableW = widthPx - (2 * marginPx) - ((grid.cols - 1) * spacingHorizontalPx);
+            const availableH = heightPx - (2 * marginPx) - ((grid.rows - 1) * spacingVerticalPx);
             // Conversion continue en pixels : évite d'accumuler les arrondis par carte.
             const pxPerMmX = widthPx / paper.width;
             const pxPerMmY = heightPx / paper.height;
             const cellW = grid.fixedSize ? grid.cellW * pxPerMmX : availableW / grid.cols;
             const cellH = grid.fixedSize ? grid.cellH * pxPerMmY : availableH / grid.rows;
-            const gapX = grid.fixedSize ? s.spacing * pxPerMmX : spacingPx;
-            const gapY = grid.fixedSize ? s.spacing * pxPerMmY : spacingPx;
+            const gapX = grid.fixedSize ? s.spacingHorizontal * pxPerMmX : spacingHorizontalPx;
+            const gapY = grid.fixedSize ? s.spacingVertical * pxPerMmY : spacingVerticalPx;
             const originX = grid.fixedSize ? grid.offsetX * pxPerMmX : marginPx;
             const originY = grid.fixedSize ? grid.offsetY * pxPerMmY : marginPx;
 
@@ -1527,7 +1581,8 @@
             customWidth: fields.customWidth.value,
             customHeight: fields.customHeight.value,
             margin: fields.margin.value,
-            spacing: fields.spacing.value,
+            spacingHorizontal: fields.spacingHorizontal.value,
+            spacingVertical: fields.spacingVertical.value,
             layoutMode: fields.layoutMode.value,
             minShortSide: fields.minShortSide.value,
             minPrintPpi: fields.minPrintPpi.value,
@@ -1543,6 +1598,7 @@
             dpi: fields.dpi.value,
             autoRotate: fields.autoRotate.checked,
             drawGuides: fields.drawGuides.checked,
+            showDimensions: fields.showDimensions.checked,
             cropRatio: fields.cropRatio.value,
             cropRatioWidth: fields.cropRatioWidth.value,
             cropRatioHeight: fields.cropRatioHeight.value,
@@ -1692,20 +1748,22 @@
         },
 
         createPageSlot(page, pageIndex, slotIndex) {
-          const slot = document.createElement("button");
+          const slot = document.createElement("article");
+          const select = document.createElement("button");
           const image = page.images[slotIndex] || null;
           const targetIndex = page.startIndex + slotIndex;
           const isOccupied = Boolean(image);
 
-          slot.type = "button";
-          slot.className = `page-slot order-drag-source ${isOccupied ? "" : "is-empty"}`.trim();
-          slot.draggable = isOccupied;
-          slot.dataset.orderTarget = "true";
-          slot.dataset.pageIndex = String(pageIndex);
-          slot.dataset.slotIndex = String(slotIndex);
-          slot.dataset.targetIndex = String(targetIndex);
-          slot.dataset.imageIndex = String(targetIndex);
-          slot.dataset.occupied = String(isOccupied);
+          slot.className = `page-slot ${isOccupied ? "" : "is-empty"}`.trim();
+          select.type = "button";
+          select.className = "page-slot-select order-drag-source";
+          select.draggable = isOccupied;
+          select.dataset.orderTarget = "true";
+          select.dataset.pageIndex = String(pageIndex);
+          select.dataset.slotIndex = String(slotIndex);
+          select.dataset.targetIndex = String(targetIndex);
+          select.dataset.imageIndex = String(targetIndex);
+          select.dataset.occupied = String(isOccupied);
 
           const top = document.createElement("div");
           top.className = "page-slot-top";
@@ -1724,12 +1782,24 @@
           hint.textContent = isOccupied ? "Glisser" : "Déposer ici";
           bottom.append(name, hint);
 
-          slot.append(top, bottom);
-          slot.title = isOccupied
+          select.append(top, bottom);
+          select.title = isOccupied
             ? `Image ${targetIndex + 1} : ${image.name}`
             : `Case vide - page ${pageIndex + 1}, position ${slotIndex + 1}`;
-          slot.setAttribute("aria-label", slot.title);
-          if (App.state.selectedOrderIndex === targetIndex && isOccupied) slot.classList.add("is-selected");
+          select.setAttribute("aria-label", select.title);
+          if (App.state.selectedOrderIndex === targetIndex && isOccupied) select.classList.add("is-selected");
+          slot.appendChild(select);
+
+          if (isOccupied) {
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "page-slot-remove";
+            remove.dataset.removeImage = String(targetIndex);
+            remove.textContent = "×";
+            remove.title = `Retirer ${image.name}`;
+            remove.setAttribute("aria-label", `Retirer l'image ${targetIndex + 1} : ${image.name}`);
+            slot.appendChild(remove);
+          }
           return slot;
         },
 
@@ -1804,9 +1874,17 @@
             down.title = "Descendre";
             down.textContent = "▼";
 
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "btn order-mini-btn order-remove-btn";
+            remove.dataset.removeImage = String(index);
+            remove.setAttribute("aria-label", `Retirer l'image ${index + 1} : ${image.name}`);
+            remove.title = "Retirer cette image";
+            remove.textContent = "Retirer";
+
             up.disabled = index === 0;
             down.disabled = index === App.state.images.length - 1;
-            actions.append(drag, up, down);
+            actions.append(drag, up, down, remove);
             row.append(thumb, meta, actions);
             list.appendChild(row);
           });
@@ -1913,6 +1991,34 @@
           this.updateButtons();
         },
 
+        createPageDimensions(grid, paper, image) {
+          if (!grid || !App.state.settings.showDimensions) return [];
+          const cellOriginX = grid.fixedSize ? grid.offsetX : App.state.settings.margin;
+          const cellOriginY = grid.fixedSize ? grid.offsetY : App.state.settings.margin;
+          const placed = App.model.getPlacedImageSize(image, grid.cellW, grid.cellH);
+          const originX = cellOriginX + placed.offsetX;
+          const originY = cellOriginY + placed.offsetY;
+
+          const horizontal = document.createElement("div");
+          horizontal.className = "page-dimension page-dimension-x no-print";
+          horizontal.style.left = `${originX / paper.width * 100}%`;
+          horizontal.style.width = `${placed.width / paper.width * 100}%`;
+          horizontal.setAttribute("aria-label", `Largeur affichée de la première image : ${this.formatNumber(placed.width)} millimètres`);
+          const widthLabel = document.createElement("span");
+          widthLabel.textContent = `${this.formatNumber(placed.width)} mm`;
+          horizontal.appendChild(widthLabel);
+
+          const vertical = document.createElement("div");
+          vertical.className = "page-dimension page-dimension-y no-print";
+          vertical.style.top = `${originY / paper.height * 100}%`;
+          vertical.style.height = `${placed.height / paper.height * 100}%`;
+          vertical.setAttribute("aria-label", `Hauteur affichée de la première image : ${this.formatNumber(placed.height)} millimètres`);
+          const heightLabel = document.createElement("span");
+          heightLabel.textContent = `${this.formatNumber(placed.height)} mm`;
+          vertical.appendChild(heightLabel);
+          return [horizontal, vertical];
+        },
+
         renderCanvases() {
           const paper = App.model.getPaperSize();
           const previewWidth = paper.width >= paper.height ? 820 : 620;
@@ -1929,6 +2035,7 @@
             wrapper.style.setProperty("--preview-width", `${previewWidth}px`);
             wrapper.style.setProperty("--print-page-w", `${paper.width}mm`);
             wrapper.style.setProperty("--print-page-h", `${paper.height}mm`);
+            if (App.state.settings.showDimensions && page?.grid) wrapper.classList.add("has-dimensions");
 
             const visual = document.createElement("div");
             visual.className = "page-visual";
@@ -1940,9 +2047,11 @@
               overlay.style.setProperty("--overlay-cols", String(page.grid.cols));
               overlay.style.setProperty("--overlay-rows", String(page.grid.rows));
               const marginRatio = paper.width ? (App.state.settings.margin / paper.width) : 0;
-              const spacingRatio = paper.width ? (App.state.settings.spacing / paper.width) : 0;
+              const spacingHorizontalRatio = paper.width ? (App.state.settings.spacingHorizontal / paper.width) : 0;
+              const spacingVerticalRatio = paper.width ? (App.state.settings.spacingVertical / paper.width) : 0;
               overlay.style.setProperty("--overlay-margin", `${Math.max(0, Math.round(previewWidth * marginRatio))}px`);
-              overlay.style.setProperty("--overlay-gap", `${Math.max(0, Math.round(previewWidth * spacingRatio))}px`);
+              overlay.style.setProperty("--overlay-gap-x", `${Math.max(0, Math.round(previewWidth * spacingHorizontalRatio))}px`);
+              overlay.style.setProperty("--overlay-gap-y", `${Math.max(0, Math.round(previewWidth * spacingVerticalRatio))}px`);
 
               if (page.grid.fixedSize) {
                 // Pourcentages relatifs à la page : tri aligné même sur un petit écran.
@@ -1953,8 +2062,12 @@
                 overlay.style.top = `${grid.offsetY / paper.height * 100}%`;
                 overlay.style.width = `${grid.gridW / paper.width * 100}%`;
                 overlay.style.height = `${grid.gridH / paper.height * 100}%`;
-                overlay.style.columnGap = `${App.state.settings.spacing / grid.gridW * 100}%`;
-                overlay.style.rowGap = `${App.state.settings.spacing / grid.gridH * 100}%`;
+                // Pourcentages internes : les cases et les écarts restent alignés lorsque
+                // l'aperçu est réduit par la largeur disponible ou par un petit écran.
+                overlay.style.gridTemplateColumns = `repeat(${grid.cols}, ${grid.cellW / grid.gridW * 100}%)`;
+                overlay.style.gridTemplateRows = `repeat(${grid.rows}, ${grid.cellH / grid.gridH * 100}%)`;
+                overlay.style.columnGap = `${App.state.settings.spacingHorizontal / grid.gridW * 100}%`;
+                overlay.style.rowGap = `${App.state.settings.spacingVertical / grid.gridH * 100}%`;
               }
               // Ne crée pas des milliers de cibles vides pour des dimensions minuscules.
               const slotCount = page.grid.fixedSize && page.grid.capacity > 160
@@ -1968,6 +2081,7 @@
             }
 
             wrapper.appendChild(visual);
+            wrapper.append(...this.createPageDimensions(page?.grid, paper, page?.images?.[0]));
             App.els.preview.appendChild(wrapper);
           });
           App.els.previewNote.textContent = canEditOrder
@@ -2048,6 +2162,7 @@
             rows.push(["Images / page", String(layout.perPage)]);
             rows.push(["Grille", `${layout.grid.cols} x ${layout.grid.rows}`]);
             rows.push(["Case image", `${this.formatNumber(layout.grid.cellW)} x ${this.formatNumber(layout.grid.cellH)} mm`]);
+            rows.push(["Espacement H / V", `${this.formatNumber(App.state.settings.spacingHorizontal)} / ${this.formatNumber(App.state.settings.spacingVertical)} mm`]);
             rows.push(["Remplissage estimé", `${Math.round(layout.grid.fillRatio * 100)} %`]);
             if (layout.quality && layout.quality.minPpi) {
               rows.push(["Netteté min.", `${Math.round(layout.quality.minPpi)} ppp`]);
@@ -2386,6 +2501,15 @@
 
           container.addEventListener("click", async (event) => {
             if (!isOrderEditingEnabled()) return;
+            const removeButton = event.target.closest("button[data-remove-image]");
+            if (!removeButton || !container.contains(removeButton)) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            await this.removeImage(Number(removeButton.dataset.removeImage));
+          });
+
+          container.addEventListener("click", async (event) => {
+            if (!isOrderEditingEnabled()) return;
             const shiftButton = event.target.closest("button[data-shift][data-image-index]");
             if (!shiftButton || !container.contains(shiftButton)) return;
             const index = Number(shiftButton.dataset.imageIndex);
@@ -2559,6 +2683,17 @@
           App.view.showMessage(App.i18n.imagesCleared);
         },
 
+        async removeImage(index) {
+          if (!Number.isInteger(index) || index < 0 || index >= App.state.images.length) return;
+          const [removed] = App.state.images.splice(index, 1);
+          if (removed?.url) URL.revokeObjectURL(removed.url);
+          App.state.selectedOrderIndex = null;
+          this.clearOrderDragState();
+          await App.model.generate();
+          App.view.render();
+          App.view.showMessage(`Image retirée : ${removed?.name || `image ${index + 1}`}.`);
+        },
+
         async canvasToBlob(canvas, type, quality) {
           return new Promise((resolve, reject) => {
             canvas.toBlob((blob) => {
@@ -2633,10 +2768,13 @@
             }
             const settings = parsed.settings || parsed;
             if (!settings || typeof settings !== "object" || Array.isArray(settings)) throw new Error("Profil invalide");
-            const incoming = App.model.normalizeSettings({ ...App.state.settings, ...settings,
+            const mergedSettings = { ...App.state.settings, ...settings,
               // Un ancien profil retrouve le mode habituel, même après une session à taille fixe.
               fixedImageSize: settings.fixedImageSize === true
-            });
+            };
+            if (settings.spacing !== undefined && settings.spacingHorizontal === undefined) mergedSettings.spacingHorizontal = settings.spacing;
+            if (settings.spacing !== undefined && settings.spacingVertical === undefined) mergedSettings.spacingVertical = settings.spacing;
+            const incoming = App.model.normalizeSettings(mergedSettings);
             if (!await App.view.showConfirm(App.i18n.profileReplaceConfirm)) return;
             App.state.settings = incoming;
             App.view.applySettingsToForm();
