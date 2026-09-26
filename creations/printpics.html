@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="application-name" content="PrintPics">
-  <meta name="version" content="v0.8.alpha">
+  <meta name="version" content="v0.9.alpha">
   <meta name="description" content="Composer des planches imprimables et recadrer des images, localement et hors ligne.">
-  <title>PrintPics v0.8.alpha — Imprimer et recadrer des images</title>
+  <title>PrintPics v0.9.alpha — Imprimer et recadrer des images</title>
   <style id="print-page-style">
     @media print {
       @page { size: 210mm 297mm; margin: 0; }
@@ -416,12 +416,19 @@
     }
     @media print {
       html, body { width: auto; min-height: 0; margin: 0 !important; padding: 0 !important; background: #fff !important; color: #111 !important; }
+      body { font-size: 0; line-height: 0; }
       .no-print, .topbar, .sidebar, .workspace-head, .result-rail, .order-list-panel, .page-order-strip, .message, .modal-backdrop, .empty-state { display: none !important; }
-      .app-shell, .studio, .workspace, .preview-stage, .preview-container { display: block !important; margin: 0 !important; padding: 0 !important; min-height: 0 !important; overflow: visible !important; background: #fff !important; border: 0 !important; }
-      .page-wrapper { width: var(--print-page-w) !important; height: var(--print-page-h) !important; max-width: none !important; margin: 0 !important; box-shadow: none !important; break-after: auto; page-break-after: auto; overflow: hidden; outline: 0 !important; }
-      .page-wrapper + .page-wrapper { break-before: page; page-break-before: always; }
+      .app-shell, .studio, .workspace, .preview-stage, .preview-container { display: contents !important; }
+      .page-wrapper {
+        width: calc(var(--print-page-w) - .1mm) !important;
+        height: calc(var(--print-page-h) - .1mm) !important;
+        max-width: none !important; margin: 0 !important; box-shadow: none !important;
+        break-inside: avoid-page; page-break-inside: avoid; break-after: auto; page-break-after: auto;
+        overflow: hidden; outline: 0 !important;
+      }
+      .page-wrapper:not(:last-child) { break-after: page; page-break-after: always; }
       .page-wrapper::before { display: none !important; }
-      canvas { width: var(--print-page-w) !important; height: var(--print-page-h) !important; max-width: none !important; }
+      canvas { width: calc(var(--print-page-w) - .1mm) !important; height: calc(var(--print-page-h) - .1mm) !important; max-width: none !important; }
     }
   </style>
 </head>
@@ -433,7 +440,7 @@
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="12" height="16" rx="2"/><path d="M8 7h4M8 11h4M8 15h3"/><path d="M16 8h4v13H8v-2"/></svg>
         </div>
         <div class="brand-copy">
-          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.8.alpha</span></div>
+          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.9.alpha</span></div>
           <p class="subtitle">Préparer des images nettes, aux bonnes dimensions, sans connexion.</p>
         </div>
       </div>
@@ -486,7 +493,7 @@
                 <div class="field"><label for="image-width">Largeur mm</label><input id="image-width" type="number" min="1" max="1000" step="0.1" value="63" inputmode="decimal"></div>
                 <div class="field"><label for="image-height">Hauteur mm</label><input id="image-height" type="number" min="1" max="1000" step="0.1" value="88" inputmode="decimal"></div>
                 <p class="fixed-size-summary field full" id="fixed-size-summary" role="status" aria-live="polite"></p>
-                <p class="hint field full">Ces formats sont des points de départ ajustables, notamment pour le tarot et les oracles. La grille est centrée et sa capacité calculée automatiquement. « Voir l'image entière » peut laisser des bandes blanches ; « Remplir la case » recadre aux dimensions exactes. Les repères fins des réglages avancés peuvent aider à la découpe.</p>
+                <p class="hint field full">Ces formats sont des points de départ ajustables, notamment pour le tarot et les oracles. La capacité de la grille est calculée automatiquement. « Voir l'image entière » peut laisser des bandes blanches ; « Remplir la case » recadre aux dimensions exactes. Les repères fins des réglages avancés peuvent aider à la découpe.</p>
               </div>
             </div>
             <div class="field"><label for="per-page">Images par page</label><input id="per-page" type="number" min="1" max="120" step="1" value="4"></div>
@@ -501,7 +508,9 @@
             </div>
             <div class="field"><label for="spacing-horizontal">Espace horizontal entre colonnes mm</label><input id="spacing-horizontal" type="number" min="0" max="80" step="0.5" value="2"></div>
             <div class="field"><label for="spacing-vertical">Espace vertical entre lignes mm</label><input id="spacing-vertical" type="number" min="0" max="80" step="0.5" value="2"></div>
-            <p class="hint field full">Les espacements restent exacts, même à 0. L’espace restant agrandit uniquement les marges des bords et le rectangle d’images est centré autant que les marges minimales le permettent.</p>
+            <div class="field"><label for="block-align-horizontal">Alignement horizontal du bloc</label><select id="block-align-horizontal"><option value="start">À gauche</option><option value="center" selected>Centré</option><option value="end">À droite</option></select></div>
+            <div class="field"><label for="block-align-vertical">Alignement vertical du bloc</label><select id="block-align-vertical"><option value="start">En haut</option><option value="center" selected>Centré</option><option value="end">En bas</option></select></div>
+            <p class="hint field full">Les espacements restent exacts, même à 0. L’espace restant agrandit uniquement les marges des bords ; le rectangle d’images suit les alignements choisis tout en respectant les marges minimales.</p>
           </div>
           <details class="advanced"><summary>Réglages de grille et qualité</summary><div class="advanced-body"><div class="form-grid">
             <div class="field full"><label for="layout-mode">Calcul de la grille</label><select id="layout-mode"><option value="count">Optimiser automatiquement</option><option value="grid">Forcer une grille</option></select></div>
@@ -563,7 +572,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.8.alpha",
+        version: "0.9.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -659,6 +668,8 @@
           marginRight: 5,
           spacingHorizontal: 2,
           spacingVertical: 2,
+          blockAlignHorizontal: "center",
+          blockAlignVertical: "center",
           layoutMode: "count",
           minShortSide: 45,
           minPrintPpi: 180,
@@ -757,6 +768,8 @@
             marginRight: byId("margin-right"),
             spacingHorizontal: byId("spacing-horizontal"),
             spacingVertical: byId("spacing-vertical"),
+            blockAlignHorizontal: byId("block-align-horizontal"),
+            blockAlignVertical: byId("block-align-vertical"),
             layoutMode: byId("layout-mode"),
             minShortSide: byId("min-short-side"),
             minPrintPpi: byId("min-print-ppi"),
@@ -842,6 +855,10 @@
           next.spacingHorizontal = this.clamp(raw?.spacingHorizontal, 0, 80, legacySpacing);
           next.spacingVertical = this.clamp(raw?.spacingVertical, 0, 80, legacySpacing);
           delete next.spacing;
+          next.blockAlignHorizontal = ["start", "center", "end"].includes(raw?.blockAlignHorizontal)
+            ? raw.blockAlignHorizontal : "center";
+          next.blockAlignVertical = ["start", "center", "end"].includes(raw?.blockAlignVertical)
+            ? raw.blockAlignVertical : "center";
           next.layoutMode = next.layoutMode === "grid" ? "grid" : "count";
           next.minShortSide = this.clamp(next.minShortSide, 5, 250, base.minShortSide);
           next.minPrintPpi = Math.round(this.clamp(next.minPrintPpi, 72, 600, base.minPrintPpi));
@@ -972,14 +989,16 @@
           };
         },
 
-        centeredOrigin(total, extent, minimumStart, minimumEnd) {
+        alignedOrigin(total, extent, minimumStart, minimumEnd, alignment = "center") {
           const minimum = Math.max(0, minimumStart);
           const maximum = Math.max(minimum, total - Math.max(0, minimumEnd) - extent);
+          if (alignment === "start") return minimum;
+          if (alignment === "end") return maximum;
           return Math.min(maximum, Math.max(minimum, (total - extent) / 2));
         },
 
         // Grille régulière à dimensions physiques fixes. Une rotation échange les côtés,
-        // sans agrandir les cartes. Chaque page incomplète est ensuite recentrée.
+        // sans agrandir les cartes. Le bloc de chaque page suit l'alignement choisi.
         getFixedSizeGrid() {
           const s = App.state.settings;
           const box = this.getContentBox();
@@ -993,8 +1012,8 @@
             if (cols < 1 || rows < 1 || (best && capacity <= best.capacity)) continue;
             const gridW = cols * cellW + (cols - 1) * s.spacingHorizontal;
             const gridH = rows * cellH + (rows - 1) * s.spacingVertical;
-            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
-            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+            const offsetX = this.alignedOrigin(box.paper.width, gridW, box.margins.left, box.margins.right, s.blockAlignHorizontal);
+            const offsetY = this.alignedOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom, s.blockAlignVertical);
             best = {
               cols, rows, cellW, cellH, capacity, count: capacity,
               offsetX,
@@ -1026,8 +1045,8 @@
             const slots = cols * rows;
             const gridW = cols * base.cellW + (cols - 1) * App.state.settings.spacingHorizontal;
             const gridH = rows * base.cellH + (rows - 1) * App.state.settings.spacingVertical;
-            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
-            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+            const offsetX = this.alignedOrigin(box.paper.width, gridW, box.margins.left, box.margins.right, App.state.settings.blockAlignHorizontal);
+            const offsetY = this.alignedOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom, App.state.settings.blockAlignVertical);
             candidates.push({
               ...base,
               cols,
@@ -1066,8 +1085,8 @@
             const slots = cols * rows;
             const gridW = (cols * base.cellW) + ((cols - 1) * s.spacingHorizontal);
             const gridH = (rows * base.cellH) + ((rows - 1) * s.spacingVertical);
-            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
-            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+            const offsetX = this.alignedOrigin(box.paper.width, gridW, box.margins.left, box.margins.right, s.blockAlignHorizontal);
+            const offsetY = this.alignedOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom, s.blockAlignVertical);
             candidates.push({
               ...base,
               cols,
@@ -1175,8 +1194,8 @@
           const cellH = cellW / effectiveAspect;
           const gridW = (cols * cellW) + ((cols - 1) * s.spacingHorizontal);
           const gridH = (rows * cellH) + ((rows - 1) * s.spacingVertical);
-          const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
-          const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+          const offsetX = this.alignedOrigin(box.paper.width, gridW, box.margins.left, box.margins.right, s.blockAlignHorizontal);
+          const offsetY = this.alignedOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom, s.blockAlignVertical);
           const usedArea = Math.max(0, cellW * cellH * count);
           const totalArea = Math.max(1, box.width * box.height);
           const emptySlots = (cols * rows) - count;
@@ -1739,6 +1758,8 @@
             marginRight: fields.marginRight.value,
             spacingHorizontal: fields.spacingHorizontal.value,
             spacingVertical: fields.spacingVertical.value,
+            blockAlignHorizontal: fields.blockAlignHorizontal.value,
+            blockAlignVertical: fields.blockAlignVertical.value,
             layoutMode: fields.layoutMode.value,
             minShortSide: fields.minShortSide.value,
             minPrintPpi: fields.minPrintPpi.value,
@@ -2334,6 +2355,9 @@
             rows.push(["Espacement H / V", `${this.formatNumber(App.state.settings.spacingHorizontal)} / ${this.formatNumber(App.state.settings.spacingVertical)} mm`]);
             const margins = layout.grid.actualMargins || App.model.getMargins();
             rows.push(["Marges H / B / G / D", `${this.formatNumber(margins.top)} / ${this.formatNumber(margins.bottom)} / ${this.formatNumber(margins.left)} / ${this.formatNumber(margins.right)} mm`]);
+            const horizontalAlignments = { start: "gauche", center: "centré", end: "droite" };
+            const verticalAlignments = { start: "haut", center: "centré", end: "bas" };
+            rows.push(["Alignement du bloc", `${horizontalAlignments[App.state.settings.blockAlignHorizontal]} / ${verticalAlignments[App.state.settings.blockAlignVertical]}`]);
             rows.push(["Remplissage estimé", `${Math.round(layout.grid.fillRatio * 100)} %`]);
             if (layout.quality && layout.quality.minPpi) {
               rows.push(["Netteté min.", `${Math.round(layout.quality.minPpi)} ppp`]);
