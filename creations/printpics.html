@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="application-name" content="PrintPics">
-  <meta name="version" content="v0.7.alpha">
+  <meta name="version" content="v0.8.alpha">
   <meta name="description" content="Composer des planches imprimables et recadrer des images, localement et hors ligne.">
-  <title>PrintPics v0.7.alpha — Imprimer et recadrer des images</title>
+  <title>PrintPics v0.8.alpha — Imprimer et recadrer des images</title>
   <style id="print-page-style">
     @media print {
       @page { size: 210mm 297mm; margin: 0; }
@@ -215,7 +215,7 @@
 
     .fixed-size-fields { margin-top: 8px; }
     .fixed-size-summary { margin: 0; color: var(--accent); font-size: .76rem; line-height: 1.5; }
-    .page-order-overlay.fixed-size-overlay { padding: 0; }
+    .page-order-overlay.positioned-grid-overlay { padding: 0; }
     .profile-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .workspace-head {
@@ -423,7 +423,7 @@
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="12" height="16" rx="2"/><path d="M8 7h4M8 11h4M8 15h3"/><path d="M16 8h4v13H8v-2"/></svg>
         </div>
         <div class="brand-copy">
-          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.7.alpha</span></div>
+          <div class="brand-line"><h1>PrintPics</h1><span class="app-version" id="app-version">v0.8.alpha</span></div>
           <p class="subtitle">Préparer des images nettes, aux bonnes dimensions, sans connexion.</p>
         </div>
       </div>
@@ -480,10 +480,18 @@
               </div>
             </div>
             <div class="field"><label for="per-page">Images par page</label><input id="per-page" type="number" min="1" max="120" step="1" value="4"></div>
-            <div class="field"><label for="fit">Dans chaque case</label><select id="fit"><option value="contain">Voir l'image entière</option><option value="cover">Remplir la case</option></select></div>
-            <div class="field"><label for="margin">Marge extérieure mm</label><input id="margin" type="number" min="0" max="80" step="0.5" value="5"></div>
-            <div class="field"><label for="spacing-horizontal">Espace horizontal mm</label><input id="spacing-horizontal" type="number" min="0" max="80" step="0.5" value="2"></div>
-            <div class="field"><label for="spacing-vertical">Espace vertical mm</label><input id="spacing-vertical" type="number" min="0" max="80" step="0.5" value="2"></div>
+            <div class="field"><label for="fit">Dans chaque case</label><select id="fit"><option value="contain">Voir l’image entière — blancs possibles</option><option value="cover">Remplir la case — bord à bord</option></select><p class="hint" id="fit-help"></p></div>
+            <div class="field uniform-margin-field"><label for="margin">Marge minimale des bords mm</label><input id="margin" type="number" min="0" max="80" step="0.5" value="5"></div>
+            <div class="field full"><div class="check-row"><input id="independent-margins" type="checkbox" aria-controls="independent-margin-fields"><label for="independent-margins">Régler séparément les quatre marges des bords</label></div></div>
+            <div class="paired-fields independent-margin-fields" id="independent-margin-fields" hidden>
+              <div class="field"><label for="margin-top">Marge haute mm</label><input id="margin-top" type="number" min="0" max="80" step="0.5" value="5"></div>
+              <div class="field"><label for="margin-bottom">Marge basse mm</label><input id="margin-bottom" type="number" min="0" max="80" step="0.5" value="5"></div>
+              <div class="field"><label for="margin-left">Marge gauche mm</label><input id="margin-left" type="number" min="0" max="80" step="0.5" value="5"></div>
+              <div class="field"><label for="margin-right">Marge droite mm</label><input id="margin-right" type="number" min="0" max="80" step="0.5" value="5"></div>
+            </div>
+            <div class="field"><label for="spacing-horizontal">Espace horizontal entre colonnes mm</label><input id="spacing-horizontal" type="number" min="0" max="80" step="0.5" value="2"></div>
+            <div class="field"><label for="spacing-vertical">Espace vertical entre lignes mm</label><input id="spacing-vertical" type="number" min="0" max="80" step="0.5" value="2"></div>
+            <p class="hint field full">Les espacements restent exacts, même à 0. L’espace restant agrandit uniquement les marges des bords et le rectangle d’images est centré autant que les marges minimales le permettent.</p>
           </div>
           <details class="advanced"><summary>Réglages de grille et qualité</summary><div class="advanced-body"><div class="form-grid">
             <div class="field full"><label for="layout-mode">Calcul de la grille</label><select id="layout-mode"><option value="count">Optimiser automatiquement</option><option value="grid">Forcer une grille</option></select></div>
@@ -545,7 +553,7 @@
     const App = {
       config: {
         appName: "printpics",
-        version: "0.7.alpha",
+        version: "0.8.alpha",
         storageKey: "luuma_printpics_v1",
         memoryWarningMegaPixels: 220,
         memorySoftLimitMegaPixels: 420,
@@ -634,6 +642,11 @@
           customWidth: 210,
           customHeight: 297,
           margin: 5,
+          independentMargins: false,
+          marginTop: 5,
+          marginBottom: 5,
+          marginLeft: 5,
+          marginRight: 5,
           spacingHorizontal: 2,
           spacingVertical: 2,
           layoutMode: "count",
@@ -713,6 +726,7 @@
           clear: byId("clear"),
           swapFormat: byId("swap-format"),
           exportHelp: byId("export-help"),
+          fitHelp: byId("fit-help"),
           cropSizeHelp: byId("crop-size-help"),
           cropXValue: byId("crop-x-value"),
           cropYValue: byId("crop-y-value"),
@@ -726,6 +740,11 @@
             customWidth: byId("custom-width"),
             customHeight: byId("custom-height"),
             margin: byId("margin"),
+            independentMargins: byId("independent-margins"),
+            marginTop: byId("margin-top"),
+            marginBottom: byId("margin-bottom"),
+            marginLeft: byId("margin-left"),
+            marginRight: byId("margin-right"),
             spacingHorizontal: byId("spacing-horizontal"),
             spacingVertical: byId("spacing-vertical"),
             layoutMode: byId("layout-mode"),
@@ -801,6 +820,11 @@
           next.customWidth = this.clamp(next.customWidth, 20, 1000, base.customWidth);
           next.customHeight = this.clamp(next.customHeight, 20, 1000, base.customHeight);
           next.margin = this.clamp(next.margin, 0, 80, base.margin);
+          next.independentMargins = next.independentMargins === true;
+          next.marginTop = this.clamp(raw?.marginTop, 0, 80, next.margin);
+          next.marginBottom = this.clamp(raw?.marginBottom, 0, 80, next.margin);
+          next.marginLeft = this.clamp(raw?.marginLeft, 0, 80, next.margin);
+          next.marginRight = this.clamp(raw?.marginRight, 0, 80, next.margin);
           // Migration des profils v0.6 : l'ancien espacement unique est repris sur les deux axes.
           const legacySpacing = raw && raw.spacing !== undefined
             ? this.clamp(raw.spacing, 0, 80, base.spacingHorizontal)
@@ -915,17 +939,37 @@
         },
 
         getContentBox() {
-          const s = App.state.settings;
           const paper = this.getPaperSize();
+          const margins = this.getMargins();
           return {
             paper,
-            width: Math.max(1, paper.width - (s.margin * 2)),
-            height: Math.max(1, paper.height - (s.margin * 2))
+            margins,
+            width: Math.max(1, paper.width - margins.left - margins.right),
+            height: Math.max(1, paper.height - margins.top - margins.bottom)
           };
         },
 
+        getMargins() {
+          const s = App.state.settings;
+          if (!s.independentMargins) {
+            return { top: s.margin, bottom: s.margin, left: s.margin, right: s.margin };
+          }
+          return {
+            top: s.marginTop,
+            bottom: s.marginBottom,
+            left: s.marginLeft,
+            right: s.marginRight
+          };
+        },
+
+        centeredOrigin(total, extent, minimumStart, minimumEnd) {
+          const minimum = Math.max(0, minimumStart);
+          const maximum = Math.max(minimum, total - Math.max(0, minimumEnd) - extent);
+          return Math.min(maximum, Math.max(minimum, (total - extent) / 2));
+        },
+
         // Grille régulière à dimensions physiques fixes. Une rotation échange les côtés,
-        // sans agrandir les cartes. La même grille est conservée sur la dernière page.
+        // sans agrandir les cartes. Chaque page incomplète est ensuite recentrée.
         getFixedSizeGrid() {
           const s = App.state.settings;
           const box = this.getContentBox();
@@ -939,17 +983,104 @@
             if (cols < 1 || rows < 1 || (best && capacity <= best.capacity)) continue;
             const gridW = cols * cellW + (cols - 1) * s.spacingHorizontal;
             const gridH = rows * cellH + (rows - 1) * s.spacingVertical;
+            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
+            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
             best = {
               cols, rows, cellW, cellH, capacity, count: capacity,
-              offsetX: (box.paper.width - gridW) / 2,
-              offsetY: (box.paper.height - gridH) / 2,
+              offsetX,
+              offsetY,
               gridW, gridH, fixedSize: true,
+              rotated: cellW !== s.imageWidth || cellH !== s.imageHeight,
+              actualMargins: {
+                top: offsetY,
+                bottom: box.paper.height - offsetY - gridH,
+                left: offsetX,
+                right: box.paper.width - offsetX - gridW
+              },
               minSide: Math.min(cellW, cellH),
               fillRatio: capacity * cellW * cellH / (box.width * box.height),
               score: capacity
             };
           }
           return best;
+        },
+
+        getFixedPageGrid(count) {
+          const base = this.getFixedSizeGrid();
+          if (!base || count >= base.capacity) return base;
+          const box = this.getContentBox();
+          const candidates = [];
+          for (let cols = 1; cols <= base.cols; cols += 1) {
+            const rows = Math.ceil(count / cols);
+            if (rows < 1 || rows > base.rows) continue;
+            const slots = cols * rows;
+            const gridW = cols * base.cellW + (cols - 1) * App.state.settings.spacingHorizontal;
+            const gridH = rows * base.cellH + (rows - 1) * App.state.settings.spacingVertical;
+            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
+            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+            candidates.push({
+              ...base,
+              cols,
+              rows,
+              capacity: slots,
+              count,
+              gridW,
+              gridH,
+              offsetX,
+              offsetY,
+              actualMargins: {
+                top: offsetY,
+                bottom: box.paper.height - offsetY - gridH,
+                left: offsetX,
+                right: box.paper.width - offsetX - gridW
+              },
+              fillRatio: count * base.cellW * base.cellH / (box.width * box.height),
+              emptySlots: slots - count,
+              shapeDistance: Math.abs(Math.log((gridW / gridH) / (box.paper.width / box.paper.height)))
+            });
+          }
+          candidates.sort((a, b) => a.emptySlots - b.emptySlots || a.shapeDistance - b.shapeDistance);
+          return candidates[0] || base;
+        },
+
+        getCompactPageGrid(base, count) {
+          if (!base) return null;
+          const maxSlots = base.cols * base.rows;
+          if (count >= maxSlots) return { ...base, count };
+          const box = this.getContentBox();
+          const s = App.state.settings;
+          const candidates = [];
+          for (let cols = 1; cols <= base.cols; cols += 1) {
+            const rows = Math.ceil(count / cols);
+            if (rows < 1 || rows > base.rows) continue;
+            const slots = cols * rows;
+            const gridW = (cols * base.cellW) + ((cols - 1) * s.spacingHorizontal);
+            const gridH = (rows * base.cellH) + ((rows - 1) * s.spacingVertical);
+            const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
+            const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+            candidates.push({
+              ...base,
+              cols,
+              rows,
+              capacity: slots,
+              count,
+              gridW,
+              gridH,
+              offsetX,
+              offsetY,
+              actualMargins: {
+                top: offsetY,
+                bottom: box.paper.height - offsetY - gridH,
+                left: offsetX,
+                right: box.paper.width - offsetX - gridW
+              },
+              fillRatio: count * base.cellW * base.cellH / (box.width * box.height),
+              emptySlots: slots - count,
+              shapeDistance: Math.abs(Math.log((gridW / gridH) / (box.paper.width / box.paper.height)))
+            });
+          }
+          candidates.sort((a, b) => a.emptySlots - b.emptySlots || a.shapeDistance - b.shapeDistance);
+          return candidates[0] || { ...base, count };
         },
 
         getCropAspectForSettings(settings, image = null) {
@@ -1021,23 +1152,25 @@
           const availableH = box.height - ((rows - 1) * s.spacingVertical);
           if (availableW <= 0 || availableH <= 0) return null;
 
-          const cellW = availableW / cols;
-          const cellH = availableH / rows;
-          if (cellW <= 0 || cellH <= 0) return null;
+          const maxCellW = availableW / cols;
+          const maxCellH = availableH / rows;
+          if (maxCellW <= 0 || maxCellH <= 0) return null;
 
-          let effectiveAspect = avgAspect;
-          const cellAspect = cellW / cellH;
-          if (s.autoRotate && this.shouldRotate(avgAspect, cellAspect)) {
-            effectiveAspect = 1 / avgAspect;
-          }
-
-          const containW = effectiveAspect > cellAspect ? cellW : cellH * effectiveAspect;
-          const containH = effectiveAspect > cellAspect ? cellW / effectiveAspect : cellH;
-          const usedArea = Math.max(0, containW * containH * count);
+          // La case adopte les proportions des images au lieu d'étirer la grille jusqu'aux
+          // quatre bords. Le surplus reste ainsi autour du bloc, jamais entre ses cases.
+          const availableCellAspect = maxCellW / maxCellH;
+          const rotated = s.autoRotate && this.shouldRotate(avgAspect, availableCellAspect);
+          const effectiveAspect = Math.max(0.01, rotated ? 1 / avgAspect : avgAspect);
+          const cellW = Math.min(maxCellW, maxCellH * effectiveAspect);
+          const cellH = cellW / effectiveAspect;
+          const gridW = (cols * cellW) + ((cols - 1) * s.spacingHorizontal);
+          const gridH = (rows * cellH) + ((rows - 1) * s.spacingVertical);
+          const offsetX = this.centeredOrigin(box.paper.width, gridW, box.margins.left, box.margins.right);
+          const offsetY = this.centeredOrigin(box.paper.height, gridH, box.margins.top, box.margins.bottom);
+          const usedArea = Math.max(0, cellW * cellH * count);
           const totalArea = Math.max(1, box.width * box.height);
           const emptySlots = (cols * rows) - count;
-          const shapePenalty = Math.abs(Math.log(Math.max(0.01, cellAspect / Math.max(0.01, effectiveAspect)))) * 0.18;
-          const score = (usedArea / totalArea) - (emptySlots * 0.015) - shapePenalty;
+          const score = (usedArea / totalArea) - (emptySlots * 0.015);
 
           return {
             cols,
@@ -1045,6 +1178,18 @@
             count,
             cellW,
             cellH,
+            gridW,
+            gridH,
+            offsetX,
+            offsetY,
+            fixedSize: false,
+            rotated,
+            actualMargins: {
+              top: offsetY,
+              bottom: box.paper.height - offsetY - gridH,
+              left: offsetX,
+              right: box.paper.width - offsetX - gridW
+            },
             minSide: Math.min(cellW, cellH),
             fillRatio: usedArea / totalArea,
             score
@@ -1125,7 +1270,7 @@
 
         getPageGrid(pageImages, forceAuto = false) {
           const s = App.state.settings;
-          if (s.fixedImageSize) return this.getFixedSizeGrid();
+          if (s.fixedImageSize) return this.getFixedPageGrid(pageImages.length);
           if (!forceAuto && s.layoutMode === "grid") {
             return this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages));
           }
@@ -1138,7 +1283,9 @@
           const grids = [];
 
           pages.forEach((pageImages) => {
-            const grid = forcedGrid || this.getPageGrid(pageImages, forceAuto);
+            const grid = forcedGrid
+              ? (forcedGrid.fixedSize ? this.getFixedPageGrid(pageImages.length) : this.getCompactPageGrid(forcedGrid, pageImages.length))
+              : this.getPageGrid(pageImages, forceAuto);
             if (!grid) return;
             grids.push(grid);
             qualities.push(this.evaluateQuality(grid, pageImages));
@@ -1162,7 +1309,7 @@
           for (let count = 1; count <= maxCount; count += 1) {
             const grid = this.optimizeGrid(count, images.slice(0, count));
             if (!grid) continue;
-            const pageQuality = this.evaluatePages(images, count, null, true);
+            const pageQuality = this.evaluatePages(images, count, grid, true);
             const respectsSize = pageQuality.minSide >= s.minShortSide;
             const respectsPpi = pageQuality.minPpi >= s.minPrintPpi;
             const candidate = {
@@ -1243,7 +1390,7 @@
 
           const perPage = Math.min(imageCount, s.perPage);
           const grid = this.optimizeGrid(perPage, images.slice(0, perPage));
-          const quality = grid ? this.evaluatePages(images, perPage) : { minPpi: 0, medianPpi: 0, avgPpi: 0 };
+          const quality = grid ? this.evaluatePages(images, perPage, grid) : { minPpi: 0, medianPpi: 0, avgPpi: 0 };
           const qualityWarning = quality.minPpi && quality.minPpi < s.minPrintPpi
             ? `Attention : au moins une image descend vers ${Math.round(quality.minPpi)} ppp imprimée.`
             : "";
@@ -1270,14 +1417,14 @@
           return pages;
         },
 
-        buildPagePages(images, perPage) {
+        buildPagePages(images, perPage, baseGrid = null) {
           const pages = this.chunkImages(images, Math.max(1, perPage));
           let startIndex = 0;
           return pages.map((pageImages) => {
             const s = App.state.settings;
-            const grid = s.fixedImageSize ? this.getFixedSizeGrid() : s.layoutMode === "grid"
-              ? this.scoreGrid(pageImages.length, s.cols, s.rows, this.getImageAspectAverage(pageImages))
-              : this.optimizeGrid(pageImages.length, pageImages);
+            const grid = s.fixedImageSize
+              ? this.getFixedPageGrid(pageImages.length)
+              : this.getCompactPageGrid(baseGrid || this.getPageGrid(pageImages), pageImages.length);
             const page = {
               images: pageImages,
               grid,
@@ -1291,9 +1438,9 @@
         validateLayout() {
           const s = App.state.settings;
           const paper = this.getPaperSize();
-          const minPaperSide = Math.min(paper.width, paper.height);
-          if (s.margin * 2 >= minPaperSide) {
-            return "Les marges sont trop grandes pour ce format papier.";
+          const margins = this.getMargins();
+          if (margins.left + margins.right >= paper.width || margins.top + margins.bottom >= paper.height) {
+            return "Les marges des bords sont trop grandes pour ce format papier.";
           }
           if (s.spacingHorizontal > paper.width || s.spacingVertical > paper.height) {
             return "L'un des espacements est trop grand pour ce format papier.";
@@ -1353,7 +1500,7 @@
             return;
           }
 
-          App.state.pagePages = this.buildPagePages(images, Math.max(1, layout.perPage));
+          App.state.pagePages = this.buildPagePages(images, Math.max(1, layout.perPage), layout.grid);
           App.state.pageImages = App.state.pagePages.map((page) => page.images);
           // Invariant d'impression : une page sans image n'est jamais générée ni rendue.
           const pages = App.state.pagePages.filter((page) => page.images.length > 0);
@@ -1364,11 +1511,8 @@
           const load = this.estimateCanvasLoad(pages.length);
           const widthPx = load.widthPx;
           const heightPx = load.heightPx;
-          const marginPx = this.mmToPx(s.margin, s.dpi);
-          // Les espacements peuvent réellement valoir zéro ; mmToPx impose au moins 1 px
-          // et ne convient donc pas ici.
-          const spacingHorizontalPx = (s.spacingHorizontal * s.dpi) / 25.4;
-          const spacingVerticalPx = (s.spacingVertical * s.dpi) / 25.4;
+          const pxPerMmX = widthPx / paper.width;
+          const pxPerMmY = heightPx / paper.height;
           const canvases = [];
 
           layout.canvasLoad = load;
@@ -1401,17 +1545,14 @@
             ctx.fillStyle = "#fff";
             ctx.fillRect(0, 0, widthPx, heightPx);
 
-            const availableW = widthPx - (2 * marginPx) - ((grid.cols - 1) * spacingHorizontalPx);
-            const availableH = heightPx - (2 * marginPx) - ((grid.rows - 1) * spacingVerticalPx);
-            // Conversion continue en pixels : évite d'accumuler les arrondis par carte.
-            const pxPerMmX = widthPx / paper.width;
-            const pxPerMmY = heightPx / paper.height;
-            const cellW = grid.fixedSize ? grid.cellW * pxPerMmX : availableW / grid.cols;
-            const cellH = grid.fixedSize ? grid.cellH * pxPerMmY : availableH / grid.rows;
-            const gapX = grid.fixedSize ? s.spacingHorizontal * pxPerMmX : spacingHorizontalPx;
-            const gapY = grid.fixedSize ? s.spacingVertical * pxPerMmY : spacingVerticalPx;
-            const originX = grid.fixedSize ? grid.offsetX * pxPerMmX : marginPx;
-            const originY = grid.fixedSize ? grid.offsetY * pxPerMmY : marginPx;
+            // La géométrie calculée en millimètres est utilisée telle quelle : le surplus
+            // de place reste aux bords et ne peut pas se glisser entre deux images.
+            const cellW = grid.cellW * pxPerMmX;
+            const cellH = grid.cellH * pxPerMmY;
+            const gapX = s.spacingHorizontal * pxPerMmX;
+            const gapY = s.spacingVertical * pxPerMmY;
+            const originX = grid.offsetX * pxPerMmX;
+            const originY = grid.offsetY * pxPerMmY;
 
             pageImages.forEach((image, index) => {
               const col = index % grid.cols;
@@ -1581,6 +1722,11 @@
             customWidth: fields.customWidth.value,
             customHeight: fields.customHeight.value,
             margin: fields.margin.value,
+            independentMargins: fields.independentMargins.checked,
+            marginTop: fields.marginTop.value,
+            marginBottom: fields.marginBottom.value,
+            marginLeft: fields.marginLeft.value,
+            marginRight: fields.marginRight.value,
             spacingHorizontal: fields.spacingHorizontal.value,
             spacingVertical: fields.spacingVertical.value,
             layoutMode: fields.layoutMode.value,
@@ -1639,9 +1785,13 @@
               : '<path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="7" y="14" width="10" height="7" rx="1"/>';
           }
           const fixedSize = App.state.settings.fixedImageSize;
+          const independentMargins = App.state.settings.independentMargins;
           const fields = App.els.fields;
           document.getElementById("fixed-size-fields").hidden = !fixedSize;
           fields.fixedImageSize.setAttribute("aria-expanded", String(fixedSize));
+          fields.independentMargins.setAttribute("aria-expanded", String(independentMargins));
+          document.querySelectorAll(".uniform-margin-field").forEach((el) => { el.hidden = independentMargins; });
+          document.querySelectorAll(".independent-margin-fields").forEach((el) => { el.hidden = !independentMargins; });
           [fields.perPage, fields.layoutMode, fields.cols, fields.rows,
             fields.minShortSide, fields.maxAutoCount].forEach((field) => { field.disabled = fixedSize; });
           fields.perPage.closest(".field").hidden = fixedSize;
@@ -1655,7 +1805,7 @@
             document.getElementById("fixed-size-summary").textContent =
               `${(s.imageWidth / 10).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} × ${(s.imageHeight / 10).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} cm · ` +
               (grid ? `${grid.capacity} emplacement(s) par page · grille ${grid.cols} × ${grid.rows}` +
-                (grid.cellW !== s.imageWidth ? " · cartes tournées de 90°" : "")
+                (grid.rotated ? " · cartes tournées de 90°" : "")
                 : "Aucun emplacement : ajuste la taille, la feuille, les marges ou la rotation.");
           }
           document.querySelectorAll(".grid-setting").forEach((el) => { el.hidden = fixedSize || mode !== "grid"; });
@@ -1675,6 +1825,9 @@
           App.els.exportHelp.textContent = isCrop
             ? "Le fichier exporté contient uniquement l'image rognée : aucun cadre, aucune marge et aucun fond ajouté. Le PNG est sans perte ; le JPG est légèrement destructif."
             : "Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif. Le profil JSON contient les réglages, pas les images.";
+          App.els.fitHelp.textContent = App.state.settings.fit === "contain"
+            ? "La grille suit les proportions moyennes des images. Des blancs internes peuvent subsister si plusieurs formats différents sont mélangés."
+            : "La case est entièrement remplie ; les bords de l’image peuvent être légèrement recadrés.";
           if (isCrop) {
             App.els.cropSizeHelp.textContent = App.state.settings.cropSizeMode === "native"
               ? "Recommandé : l'image est simplement rognée. Aucun cadre, aucune marge et aucun redimensionnement."
@@ -1993,8 +2146,8 @@
 
         createPageDimensions(grid, paper, image) {
           if (!grid || !App.state.settings.showDimensions) return [];
-          const cellOriginX = grid.fixedSize ? grid.offsetX : App.state.settings.margin;
-          const cellOriginY = grid.fixedSize ? grid.offsetY : App.state.settings.margin;
+          const cellOriginX = grid.offsetX;
+          const cellOriginY = grid.offsetY;
           const placed = App.model.getPlacedImageSize(image, grid.cellW, grid.cellH);
           const originX = cellOriginX + placed.offsetX;
           const originY = cellOriginY + placed.offsetY;
@@ -2046,29 +2199,19 @@
               overlay.className = "page-order-overlay no-print";
               overlay.style.setProperty("--overlay-cols", String(page.grid.cols));
               overlay.style.setProperty("--overlay-rows", String(page.grid.rows));
-              const marginRatio = paper.width ? (App.state.settings.margin / paper.width) : 0;
-              const spacingHorizontalRatio = paper.width ? (App.state.settings.spacingHorizontal / paper.width) : 0;
-              const spacingVerticalRatio = paper.width ? (App.state.settings.spacingVertical / paper.width) : 0;
-              overlay.style.setProperty("--overlay-margin", `${Math.max(0, Math.round(previewWidth * marginRatio))}px`);
-              overlay.style.setProperty("--overlay-gap-x", `${Math.max(0, Math.round(previewWidth * spacingHorizontalRatio))}px`);
-              overlay.style.setProperty("--overlay-gap-y", `${Math.max(0, Math.round(previewWidth * spacingVerticalRatio))}px`);
-
-              if (page.grid.fixedSize) {
-                // Pourcentages relatifs à la page : tri aligné même sur un petit écran.
-                const grid = page.grid;
-                overlay.classList.add("fixed-size-overlay");
-                overlay.style.inset = "auto";
-                overlay.style.left = `${grid.offsetX / paper.width * 100}%`;
-                overlay.style.top = `${grid.offsetY / paper.height * 100}%`;
-                overlay.style.width = `${grid.gridW / paper.width * 100}%`;
-                overlay.style.height = `${grid.gridH / paper.height * 100}%`;
-                // Pourcentages internes : les cases et les écarts restent alignés lorsque
-                // l'aperçu est réduit par la largeur disponible ou par un petit écran.
-                overlay.style.gridTemplateColumns = `repeat(${grid.cols}, ${grid.cellW / grid.gridW * 100}%)`;
-                overlay.style.gridTemplateRows = `repeat(${grid.rows}, ${grid.cellH / grid.gridH * 100}%)`;
-                overlay.style.columnGap = `${App.state.settings.spacingHorizontal / grid.gridW * 100}%`;
-                overlay.style.rowGap = `${App.state.settings.spacingVertical / grid.gridH * 100}%`;
-              }
+              const grid = page.grid;
+              // La zone de tri reprend exactement le rectangle calculé pour les images.
+              overlay.classList.add("positioned-grid-overlay");
+              overlay.style.inset = "auto";
+              overlay.style.padding = "0";
+              overlay.style.left = `${grid.offsetX / paper.width * 100}%`;
+              overlay.style.top = `${grid.offsetY / paper.height * 100}%`;
+              overlay.style.width = `${grid.gridW / paper.width * 100}%`;
+              overlay.style.height = `${grid.gridH / paper.height * 100}%`;
+              overlay.style.gridTemplateColumns = `repeat(${grid.cols}, ${grid.cellW / grid.gridW * 100}%)`;
+              overlay.style.gridTemplateRows = `repeat(${grid.rows}, ${grid.cellH / grid.gridH * 100}%)`;
+              overlay.style.columnGap = `${App.state.settings.spacingHorizontal / grid.gridW * 100}%`;
+              overlay.style.rowGap = `${App.state.settings.spacingVertical / grid.gridH * 100}%`;
               // Ne crée pas des milliers de cibles vides pour des dimensions minuscules.
               const slotCount = page.grid.fixedSize && page.grid.capacity > 160
                 ? Math.min(page.grid.capacity, page.images.length + 1)
@@ -2163,6 +2306,8 @@
             rows.push(["Grille", `${layout.grid.cols} x ${layout.grid.rows}`]);
             rows.push(["Case image", `${this.formatNumber(layout.grid.cellW)} x ${this.formatNumber(layout.grid.cellH)} mm`]);
             rows.push(["Espacement H / V", `${this.formatNumber(App.state.settings.spacingHorizontal)} / ${this.formatNumber(App.state.settings.spacingVertical)} mm`]);
+            const margins = layout.grid.actualMargins || App.model.getMargins();
+            rows.push(["Marges H / B / G / D", `${this.formatNumber(margins.top)} / ${this.formatNumber(margins.bottom)} / ${this.formatNumber(margins.left)} / ${this.formatNumber(margins.right)} mm`]);
             rows.push(["Remplissage estimé", `${Math.round(layout.grid.fillRatio * 100)} %`]);
             if (layout.quality && layout.quality.minPpi) {
               rows.push(["Netteté min.", `${Math.round(layout.quality.minPpi)} ppp`]);
@@ -2316,6 +2461,15 @@
             if (!preset) return;
             App.els.fields.imageWidth.value = preset.width;
             App.els.fields.imageHeight.value = preset.height;
+          });
+
+          App.els.fields.independentMargins.addEventListener("change", () => {
+            if (!App.els.fields.independentMargins.checked || App.state.settings.independentMargins) return;
+            const uniform = App.els.fields.margin.value;
+            App.els.fields.marginTop.value = uniform;
+            App.els.fields.marginBottom.value = uniform;
+            App.els.fields.marginLeft.value = uniform;
+            App.els.fields.marginRight.value = uniform;
           });
 
           Object.values(App.els.fields).forEach((field) => {
@@ -2579,7 +2733,11 @@
           }
           App.state.selectedOrderIndex = null;
           App.state.pageImages = App.model.chunkImages(images, Math.max(1, App.state.lastLayout?.perPage || App.state.settings.perPage));
-          App.state.pagePages = App.model.buildPagePages(images, Math.max(1, App.state.lastLayout?.perPage || App.state.settings.perPage));
+          App.state.pagePages = App.model.buildPagePages(
+            images,
+            Math.max(1, App.state.lastLayout?.perPage || App.state.settings.perPage),
+            App.state.lastLayout?.grid || null
+          );
           App.view.renderOrderList();
           await this.regenerate();
         },
@@ -2770,10 +2928,15 @@
             if (!settings || typeof settings !== "object" || Array.isArray(settings)) throw new Error("Profil invalide");
             const mergedSettings = { ...App.state.settings, ...settings,
               // Un ancien profil retrouve le mode habituel, même après une session à taille fixe.
-              fixedImageSize: settings.fixedImageSize === true
+              fixedImageSize: settings.fixedImageSize === true,
+              independentMargins: settings.independentMargins === true
             };
             if (settings.spacing !== undefined && settings.spacingHorizontal === undefined) mergedSettings.spacingHorizontal = settings.spacing;
             if (settings.spacing !== undefined && settings.spacingVertical === undefined) mergedSettings.spacingVertical = settings.spacing;
+            if (settings.margin !== undefined && settings.marginTop === undefined) mergedSettings.marginTop = settings.margin;
+            if (settings.margin !== undefined && settings.marginBottom === undefined) mergedSettings.marginBottom = settings.margin;
+            if (settings.margin !== undefined && settings.marginLeft === undefined) mergedSettings.marginLeft = settings.margin;
+            if (settings.margin !== undefined && settings.marginRight === undefined) mergedSettings.marginRight = settings.margin;
             const incoming = App.model.normalizeSettings(mergedSettings);
             if (!await App.view.showConfirm(App.i18n.profileReplaceConfirm)) return;
             App.state.settings = incoming;
