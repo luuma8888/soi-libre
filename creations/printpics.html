@@ -239,7 +239,7 @@
     .message.warning { border-color: color-mix(in srgb, var(--warning), var(--border) 45%); background: var(--warning-soft); color: var(--warning); }
 
     .result-rail {
-      display: grid; grid-template-columns: minmax(320px,1fr) minmax(320px,430px); gap: 12px; align-items: start; margin-bottom: 18px;
+      display: grid; grid-template-columns: minmax(0,1fr); gap: 10px; align-items: start; margin-bottom: 18px;
     }
     .stats-wrap { min-width: 0; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
     .stats-label { margin: 0 0 8px; color: var(--muted); font-size: .69rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -252,11 +252,13 @@
     .suggestion-actions { display: flex; gap: 6px; flex-wrap: wrap; }
     .suggestion-actions .btn { min-height: 31px; padding: 5px 8px; font-size: .7rem; }
 
-    .export-cluster { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; width: 100%; }
-    .export-wrap { width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    .export-wrap { display: grid; grid-template-columns: minmax(240px,1fr) auto; align-items: center; gap: 9px 18px; width: 100%; min-width: 0; padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+    .export-wrap > .stats-label { grid-column: 1 / -1; margin-bottom: 0; }
+    .export-copy { min-width: 0; }
+    .export-cluster { display: flex; gap: 7px; flex-wrap: nowrap; justify-content: flex-end; width: auto; }
     .export-cluster .primary { min-width: 116px; }
-    .export-help { grid-column: 1 / -1; margin: -3px 0 0; color: var(--muted); font-size: .69rem; text-align: right; }
-    .print-help { margin: 6px 0 0; color: var(--muted); font-size: .69rem; }
+    .export-help { margin: 0; color: var(--muted); font-size: .69rem; text-align: left; }
+    .print-help { margin: 5px 0 0; color: var(--muted); font-size: .69rem; }
 
     .order-list-panel { display: grid; gap: 10px; margin-bottom: 18px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: var(--soft-shadow); }
     .order-list-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -358,8 +360,8 @@
     @media (max-width: 1080px) {
       .studio { grid-template-columns: minmax(310px, 360px) minmax(0,1fr); }
       .workspace { padding-inline: 16px; }
-      .export-help { text-align: left; }
       .result-rail { grid-template-columns: 1fr; }
+      .export-wrap { grid-template-columns: 1fr; }
       .export-cluster { justify-content: flex-start; max-width: none; }
     }
     @media (max-width: 820px) {
@@ -537,7 +539,7 @@
 
         <section class="result-rail no-print" aria-label="Résumé et export">
           <div class="stats-wrap"><p class="stats-label">État du résultat</p><dl class="stats" id="stats"></dl><div class="suggestion-box" id="suggestion-box" hidden><p id="suggestion-text"></p><div class="suggestion-actions" id="suggestion-actions"></div></div></div>
-          <div class="export-wrap"><p class="stats-label">Sortie</p><div class="export-cluster"><button class="btn primary print-only" id="print" type="button">Imprimer / PDF</button><button class="btn" id="export-png" type="button">Exporter PNG sans perte</button><button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button></div><p class="export-help" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif.</p><p class="print-help print-only">Pour imprimer ou créer un PDF aux bonnes dimensions : taille réelle / échelle 100 %, sans ajustement à la page ni marge ajoutée par le navigateur.</p></div>
+          <div class="export-wrap"><p class="stats-label">Sortie</p><div class="export-copy"><p class="export-help" id="export-help">Le PNG conserve sans perte tous les pixels de la planche générée. Le JPG utilise la qualité maximale, mais son format reste légèrement destructif.</p><p class="print-help print-only">Pour imprimer ou créer un PDF aux bonnes dimensions : taille réelle / échelle 100 %, sans ajustement à la page ni marge ajoutée par le navigateur.</p></div><div class="export-cluster"><button class="btn primary print-only" id="print" type="button">Imprimer / PDF</button><button class="btn" id="export-png" type="button">Exporter PNG sans perte</button><button class="btn" id="export-jpg" type="button">Exporter JPG qualité max.</button></div></div>
         </section>
 
         <section class="order-list-panel no-print" id="order-list-panel" hidden aria-label="Ordre des images"><div class="order-list-head"><div><h3>Ordre et sélection des images</h3><p>Glisse-dépose pour échanger, utilise les flèches sur écran tactile ou retire une image importée par erreur.</p></div><button class="btn compact" id="close-order-list" type="button">Fermer</button></div><div class="order-list" id="order-list"></div></section>
