@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "reportId": "quality-2026-09-01",
-  "generatedAt": "2026-09-01T08:24:31.984Z",
+  "reportId": "quality-2026-10-01",
+  "generatedAt": "2026-10-01T09:52:08.531Z",
   "branch": "main",
   "datasetVersion": "rome72-reference-v0.6.4",
   "status": "completed_with_warnings",
@@ -104,28 +104,46 @@
     {
       "name": "metiers_details",
       "status": "ok",
-      "count": 69,
+      "count": 66,
       "usedForDataset": true,
       "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier/{CODE_ROME}",
-      "failedCodesCount": 3,
+      "failedCodesCount": 6,
       "failedCodes": [
         {
-          "code": "A1203",
+          "code": "D1507",
           "status": "unknown",
           "message": "Detail ROME Metiers limite a code/libelle.",
-          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=A1203"
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=D1507"
         },
         {
-          "code": "D1102",
+          "code": "E1104",
           "status": "unknown",
           "message": "Detail ROME Metiers limite a code/libelle.",
-          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=D1102"
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeMetier=E1104"
         },
         {
-          "code": "H2502",
+          "code": "G1602",
           "status": "unknown",
           "message": "Detail ROME Metiers limite a code/libelle.",
-          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?code=H2502"
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=G1602"
+        },
+        {
+          "code": "N4101",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=N4101"
+        },
+        {
+          "code": "F1201",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?code=F1201"
+        },
+        {
+          "code": "J1304",
+          "status": "unknown",
+          "message": "Detail ROME Metiers limite a code/libelle.",
+          "endpoint": "https://api.francetravail.io/partenaire/rome-metiers/v1/metiers/metier?codeRome=J1304"
         }
       ]
     },
@@ -184,7 +202,7 @@
       "unknown": 0
     },
     "jobAppellations": {
-      "official_rome_api": 1185,
+      "official_rome_api": 1159,
       "generated_rome": 0,
       "sample_non_official": 0,
       "curated_estimated": 0,
@@ -223,7 +241,7 @@
     "generatedOfficialJobs": 72,
     "sampleJobs": 0,
     "curatedJobs": 0,
-    "generatedOfficialAppellations": 1185,
+    "generatedOfficialAppellations": 1159,
     "generatedOfficialMappings": 72
   },
   "sync": {
@@ -393,7 +411,7 @@
   },
   "summary": {
     "jobs": 72,
-    "appellations": 1185,
+    "appellations": 1159,
     "rawSkills": 35595,
     "skills": 2167,
     "filteredSkills": 2167,
@@ -402,9 +420,9 @@
     "knowledge": 14881,
     "certificationLike": 2252,
     "workContexts": 191,
-    "linkedContexts": 114,
-    "linkedAppellations": 2370,
-    "officialDescriptions": 69,
+    "linkedContexts": 111,
+    "linkedAppellations": 2318,
+    "officialDescriptions": 66,
     "trainings": 0,
     "certifications": 0,
     "mappings": 72,
@@ -418,8 +436,8 @@
     "regulatedJobsUnresolved": 0,
     "accessContradictions": 0,
     "jobsWithSkillMappings": 72,
-    "jobsWithContextMappings": 69,
-    "jobsWithAppellationMappings": 69,
+    "jobsWithContextMappings": 66,
+    "jobsWithAppellationMappings": 66,
     "marketIndicators": 0
   },
   "completeness": {
@@ -427,7 +445,7 @@
       "status": "connected",
       "count": 72,
       "expected": 72,
-      "score": 0.74,
+      "score": 0.73,
       "label": "Métiers : 72/72"
     },
     "skills": {
@@ -444,18 +462,18 @@
     "contexts": {
       "status": "connected",
       "count": 191,
-      "linkedCount": 114,
-      "jobsWithData": 69,
-      "score": 0.96,
-      "label": "Contextes : 114 liés aux 72 métiers, 191 globaux"
+      "linkedCount": 111,
+      "jobsWithData": 66,
+      "score": 0.92,
+      "label": "Contextes : 111 liés aux 72 métiers, 191 globaux"
     },
     "appellations": {
       "status": "connected",
-      "count": 1185,
-      "linkedCount": 2370,
-      "jobsWithData": 69,
-      "score": 0.96,
-      "label": "Appellations : 2370 liées aux 72 métiers"
+      "count": 1159,
+      "linkedCount": 2318,
+      "jobsWithData": 66,
+      "score": 0.92,
+      "label": "Appellations : 2318 liées aux 72 métiers"
     },
     "trainings": {
       "status": "source_not_connected",
@@ -473,9 +491,9 @@
     },
     "global": {
       "status": "usable",
-      "score": 0.92,
-      "globalCompletionScore": 0.92,
-      "label": "Complétude globale : 92%"
+      "score": 0.89,
+      "globalCompletionScore": 0.89,
+      "label": "Complétude globale : 89%"
     }
   },
   "accessCatalogExplanation": {
@@ -487,17 +505,17 @@
   "coverage": {
     "jobsWithSkillsCount": 72,
     "jobsWithSkillsRatio": 1,
-    "jobsWithContextsCount": 69,
-    "jobsWithContextsRatio": 0.96,
+    "jobsWithContextsCount": 66,
+    "jobsWithContextsRatio": 0.92,
     "linkedJobsWithSkillsCount": 72,
-    "linkedJobsWithContextsCount": 69,
-    "linkedJobsWithAppellationsCount": 69,
-    "jobsWithOfficialDescriptionCount": 69,
-    "jobsWithOfficialDescriptionRatio": 0.96,
+    "linkedJobsWithContextsCount": 66,
+    "linkedJobsWithAppellationsCount": 66,
+    "jobsWithOfficialDescriptionCount": 66,
+    "jobsWithOfficialDescriptionRatio": 0.92,
     "jobsWithActivitiesCount": 0,
     "jobsWithActivitiesRatio": 0,
-    "jobsWithAppellationsCount": 69,
-    "jobsWithAppellationsRatio": 0.96,
+    "jobsWithAppellationsCount": 66,
+    "jobsWithAppellationsRatio": 0.92,
     "jobsWithRelatedJobsCount": 0,
     "jobsWithRelatedJobsRatio": 0,
     "jobsWithDiplomaLevelCount": 0,
@@ -505,27 +523,48 @@
     "jobsWithMarketDataCount": 0,
     "jobsWithMarketDataRatio": 0
   },
-  "completenessScore": 0.92,
-  "globalCompletionScore": 0.92,
+  "completenessScore": 0.89,
+  "globalCompletionScore": 0.89,
   "missingMapping": [
     {
-      "jobId": "rome-A1203",
-      "romeCode": "A1203",
-      "title": "Agent / Agente d'entretien des espaces verts",
+      "jobId": "rome-D1507",
+      "romeCode": "D1507",
+      "title": "Employé / Employée de rayon libre-service",
       "missingSkills": false,
       "missingContexts": true
     },
     {
-      "jobId": "rome-D1102",
-      "romeCode": "D1102",
-      "title": "Boulanger / Boulangère",
+      "jobId": "rome-E1104",
+      "romeCode": "E1104",
+      "title": "Concepteur / Conceptrice de contenus multimedia",
       "missingSkills": false,
       "missingContexts": true
     },
     {
-      "jobId": "rome-H2502",
-      "romeCode": "H2502",
-      "title": "Ingénieur / Ingénieure de production",
+      "jobId": "rome-G1602",
+      "romeCode": "G1602",
+      "title": "Commis / Commise de cuisine",
+      "missingSkills": false,
+      "missingContexts": true
+    },
+    {
+      "jobId": "rome-N4101",
+      "romeCode": "N4101",
+      "title": "Conducteur / Conductrice de poids lourd",
+      "missingSkills": false,
+      "missingContexts": true
+    },
+    {
+      "jobId": "rome-F1201",
+      "romeCode": "F1201",
+      "title": "Conducteur / Conductrice de travaux du bâtiment",
+      "missingSkills": false,
+      "missingContexts": true
+    },
+    {
+      "jobId": "rome-J1304",
+      "romeCode": "J1304",
+      "title": "Auxiliaire de puériculture",
       "missingSkills": false,
       "missingContexts": true
     }
@@ -553,23 +592,23 @@
     },
     {
       "field": "description",
-      "count": 3,
-      "ratio": 0.04
+      "count": 6,
+      "ratio": 0.08
     },
     {
       "field": "appellations",
-      "count": 3,
-      "ratio": 0.04
+      "count": 6,
+      "ratio": 0.08
     },
     {
       "field": "workContexts",
-      "count": 3,
-      "ratio": 0.04
+      "count": 6,
+      "ratio": 0.08
     },
     {
       "field": "accessConditions",
-      "count": 3,
-      "ratio": 0.04
+      "count": 6,
+      "ratio": 0.08
     }
   ],
   "issues": [],
@@ -579,7 +618,7 @@
       "severity": "warning",
       "type": "optional_metiers_details_partial",
       "target": "metiers_details",
-      "message": "metiers_details partiellement exploitable : 3 code(s) sans donnée enrichie."
+      "message": "metiers_details partiellement exploitable : 6 code(s) sans donnée enrichie."
     }
   ],
   "recommendations": [

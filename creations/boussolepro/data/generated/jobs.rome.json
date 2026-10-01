@@ -29,8 +29,19 @@
         "value": "A120"
       }
     ],
-    "appellations": [],
-    "description": null,
+    "appellations": [
+      "Agent / Agente technique (espaces verts)",
+      "Adjoint / Adjointe technique (espaces verts)",
+      "Technicien / Technicienne espaces verts",
+      "Agent / Agente d'entretien des espaces verts",
+      "Jardinier municipal / Jardinière municipale",
+      "Aide jardinier / Aide jardinière",
+      "Manœuvre des espaces verts",
+      "Ouvrier / Ouvrière d'entretien des espaces verts",
+      "Ouvrier / Ouvrière des espaces verts",
+      "Agent / Agente d'entretien des parcs et jardins"
+    ],
+    "description": "L'agent d'entretien des espaces verts maintient la propreté, embellit les espaces verts, les parcs et jardins et participe à la préservation de l'environnement.\\nRéalise des opérations de plantation, de taille et d'élagage pour favoriser la croissance et la santé des végétaux\\nEffectue la tonte et le ramassage des feuilles\\nApplique les traitements phytosanitaires nécessaires pour préserver les plantes des maladies et des parasites\\nAssure la propreté des lieux en ramassant les déchets et en effectuant des travaux de nettoyage",
     "activities": [],
     "skillGroups": [
       {
@@ -319,7 +330,16 @@
       "knowledge-rome-490653",
       "knowledge-rome-522040"
     ],
-    "workContexts": [],
+    "workContexts": [
+      "ctx-rome-300783",
+      "ctx-rome-300794",
+      "ctx-rome-38055",
+      "ctx-rome-300795",
+      "ctx-rome-300806",
+      "ctx-rome-403103",
+      "ctx-rome-403104",
+      "ctx-rome-405285"
+    ],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -347,9 +367,9 @@
       }
     },
     "accessConditions": {
-      "text": null,
-      "source": "unknown",
-      "confidence": 0
+      "text": "Cet emploi est accessible sans qualification. Des formations de niveau CAP à Bac dans le domaine de l'aménagement paysager peuvent cependant en faciliter l'accès. \\nDes Certificats d'aptitude à la conduite en sécurité (CACES) peuvent être demandées pour la conduite d'engins.\\nLe permis de conduire peut également être nécessaire.",
+      "source": "official_rome_api",
+      "confidence": 0.8
     },
     "physicalConstraints": {
       "level": "medium",
@@ -423,23 +443,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.53,
+    "confidence": 0.92,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_detail_unavailable",
-      "description": "official_detail_unavailable",
+      "appellations": "official_rome_api",
+      "description": "official_rome_api",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_detail_unavailable",
+      "workContexts": "official_rome_api",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_detail_unavailable",
+      "accessConditions": "official_rome_api",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -448,7 +468,10 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown"
+      "market": "unknown",
+      "romeAppellationRefs": "official_rome_api",
+      "romeWorkContextRefs": "official_rome_api",
+      "romeWorkContextLabels": "official_rome_api"
     },
     "romeSkillLabels": {
       "required": [
@@ -903,8 +926,118 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [],
-    "romeAppellationRefs": [],
+    "romeWorkContextRefs": [
+      {
+        "officialId": "300783",
+        "label": "En extérieur",
+        "sourcePath": "$[1][0]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300794",
+        "label": "Manipulation d'un engin, équipement ou outil dangereux",
+        "sourcePath": "$[1][1]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "38055",
+        "label": "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
+        "sourcePath": "$[1][2]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300795",
+        "label": "Port et manipulation de charges lourdes ou encombrantes",
+        "sourcePath": "$[1][3]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300806",
+        "label": "Travail en journée",
+        "sourcePath": "$[1][4]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "403103",
+        "label": "Salarié secteur privé (CDI, CDD)",
+        "sourcePath": "$[1][5]",
+        "rawType": "STATUT_EMPLOI"
+      },
+      {
+        "officialId": "403104",
+        "label": "Salarié secteur public",
+        "sourcePath": "$[1][6]",
+        "rawType": "STATUT_EMPLOI"
+      },
+      {
+        "officialId": "405285",
+        "label": "Collectivités territoriales",
+        "sourcePath": "$[1][7]",
+        "rawType": "TYPE_STRUCTURE_ACCUEIL"
+      }
+    ],
+    "romeAppellationRefs": [
+      {
+        "officialId": "510746",
+        "label": "Agent / Agente technique (espaces verts)",
+        "sourcePath": "$[0][0]",
+        "rawType": null
+      },
+      {
+        "officialId": "510747",
+        "label": "Adjoint / Adjointe technique (espaces verts)",
+        "sourcePath": "$[0][1]",
+        "rawType": null
+      },
+      {
+        "officialId": "488644",
+        "label": "Technicien / Technicienne espaces verts",
+        "sourcePath": "$[0][2]",
+        "rawType": null
+      },
+      {
+        "officialId": "488643",
+        "label": "Agent / Agente d'entretien des espaces verts",
+        "sourcePath": "$[0][3]",
+        "rawType": null
+      },
+      {
+        "officialId": "488832",
+        "label": "Jardinier municipal / Jardinière municipale",
+        "sourcePath": "$[0][4]",
+        "rawType": null
+      },
+      {
+        "officialId": "38436",
+        "label": "Aide jardinier / Aide jardinière",
+        "sourcePath": "$[0][5]",
+        "rawType": null
+      },
+      {
+        "officialId": "38437",
+        "label": "Manœuvre des espaces verts",
+        "sourcePath": "$[0][6]",
+        "rawType": null
+      },
+      {
+        "officialId": "17475",
+        "label": "Ouvrier / Ouvrière d'entretien des espaces verts",
+        "sourcePath": "$[0][7]",
+        "rawType": null
+      },
+      {
+        "officialId": "17480",
+        "label": "Ouvrier / Ouvrière des espaces verts",
+        "sourcePath": "$[0][8]",
+        "rawType": null
+      },
+      {
+        "officialId": "10675",
+        "label": "Agent / Agente d'entretien des parcs et jardins",
+        "sourcePath": "$[0][9]",
+        "rawType": null
+      }
+    ],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -943,46 +1076,49 @@
       "Bac pro conduite de productions horticoles (arbres, arbustes, fruits, fleurs, légumes)",
       "Titre professionnel ouvrier paysagiste"
     ],
-    "romeWorkContextLabels": [],
+    "romeWorkContextLabels": [
+      "En extérieur",
+      "Manipulation d'un engin, équipement ou outil dangereux",
+      "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
+      "Port et manipulation de charges lourdes ou encombrantes",
+      "Travail en journée",
+      "Salarié secteur privé (CDI, CDD)",
+      "Salarié secteur public",
+      "Collectivités territoriales"
+    ],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
-        "description",
         "activities",
-        "appellations",
-        "workContexts",
-        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
-        "official_detail_unavailable",
-        "missing_description",
         "missing_activities",
-        "missing_appellations",
-        "missing_workContexts",
-        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.56,
-      "confidence": 0.53,
+      "completenessScore": 0.81,
+      "confidence": 0.92,
+      "normalizer": "normalizeOfficialRomeJob",
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": false
+        "contexts": true
       }
     },
     "missingFields": [
-      "description",
       "activities",
-      "appellations",
-      "workContexts",
-      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ]
+    ],
+    "officialDescription": {
+      "definition": "L'agent d'entretien des espaces verts maintient la propreté, embellit les espaces verts, les parcs et jardins et participe à la préservation de l'environnement.\\nRéalise des opérations de plantation, de taille et d'élagage pour favoriser la croissance et la santé des végétaux\\nEffectue la tonte et le ramassage des feuilles\\nApplique les traitements phytosanitaires nécessaires pour préserver les plantes des maladies et des parasites\\nAssure la propreté des lieux en ramassant les déchets et en effectuant des travaux de nettoyage",
+      "purpose": null,
+      "characteristicsSummary": null,
+      "source": "official_rome_api"
+    }
   },
   {
     "id": "rome-A1414",
@@ -4281,8 +4417,16 @@
         "value": "D1102"
       }
     ],
-    "appellations": [],
-    "description": null,
+    "appellations": [
+      "Boulanger-viennoisier / Boulangère-viennoisière",
+      "Boulanger-pâtissier / Boulangère-pâtissière",
+      "Ouvrier boulanger / Ouvrière boulangère",
+      "Aide-boulanger / Aide-boulangère",
+      "Boulanger / Boulangère",
+      "Boulanger-pâtissier-traiteur / Boulangère-pâtissière-traiteuse",
+      "Boulanger-traiteur / Boulangère-traiteuse"
+    ],
+    "description": "Le Boulanger, artisan essentiel de notre quotidien, transforme et valorise les matières premières pour régaler nos papilles.\\nPrépare et réalise des produits de boulangerie et de viennoiserie selon les règles d'hygiène et de sécurité alimentaires\\nConçoit de nouvelles recettes de pains et viennoiseries pour diversifier l'offre\\nGère les stocks de matières premières et commande les fournitures nécessaires\\nAssure la cuisson optimale de chaque produit pour garantir la meilleure qualité\\nPeut effectuer la vente de produits de boulangerie et viennoiserie\\nPeut gérer un commerce de détail alimentaire (boulangerie, boulangerie-pâtisserie, ...)",
     "activities": [],
     "skillGroups": [
       {
@@ -4533,7 +4677,16 @@
       "knowledge-rome-490768",
       "knowledge-rome-490766"
     ],
-    "workContexts": [],
+    "workContexts": [
+      "ctx-rome-300795",
+      "ctx-rome-300800",
+      "ctx-rome-300803",
+      "ctx-rome-23376",
+      "ctx-rome-403095",
+      "ctx-rome-403103",
+      "ctx-rome-405307",
+      "ctx-rome-300811"
+    ],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -4562,9 +4715,9 @@
       }
     },
     "accessConditions": {
-      "text": null,
-      "source": "unknown",
-      "confidence": 0
+      "text": "Cet emploi est accessible avec un CAP Boulanger ou un Brevet Professionnel Boulanger. Des spécialisations comme la Mention Complémentaire Boulangerie spécialisée ou le BTM (Brevet Technique des Métiers) Boulanger peuvent être des atouts.",
+      "source": "official_rome_api",
+      "confidence": 0.8
     },
     "physicalConstraints": {
       "level": "medium",
@@ -4634,23 +4787,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.53,
+    "confidence": 0.92,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_detail_unavailable",
-      "description": "official_detail_unavailable",
+      "appellations": "official_rome_api",
+      "description": "official_rome_api",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_detail_unavailable",
+      "workContexts": "official_rome_api",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_detail_unavailable",
+      "accessConditions": "official_rome_api",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -4659,7 +4812,10 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown"
+      "market": "unknown",
+      "romeAppellationRefs": "official_rome_api",
+      "romeWorkContextRefs": "official_rome_api",
+      "romeWorkContextLabels": "official_rome_api"
     },
     "romeSkillLabels": {
       "required": [
@@ -5056,8 +5212,100 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [],
-    "romeAppellationRefs": [],
+    "romeWorkContextRefs": [
+      {
+        "officialId": "300795",
+        "label": "Port et manipulation de charges lourdes ou encombrantes",
+        "sourcePath": "$[1][0]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300800",
+        "label": "Station debout prolongée",
+        "sourcePath": "$[1][1]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300803",
+        "label": "Travail de nuit",
+        "sourcePath": "$[1][2]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "23376",
+        "label": "Travail les week-ends et jours fériés",
+        "sourcePath": "$[1][3]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "403095",
+        "label": "Travail selon un rythme irrégulier et des pics d'activité",
+        "sourcePath": "$[1][4]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "403103",
+        "label": "Salarié secteur privé (CDI, CDD)",
+        "sourcePath": "$[1][5]",
+        "rawType": "STATUT_EMPLOI"
+      },
+      {
+        "officialId": "405307",
+        "label": "Commerce de proximité",
+        "sourcePath": "$[1][6]",
+        "rawType": "TYPE_STRUCTURE_ACCUEIL"
+      },
+      {
+        "officialId": "300811",
+        "label": "Etablissement de restauration collective",
+        "sourcePath": "$[1][7]",
+        "rawType": "TYPE_STRUCTURE_ACCUEIL"
+      }
+    ],
+    "romeAppellationRefs": [
+      {
+        "officialId": "38444",
+        "label": "Boulanger-viennoisier / Boulangère-viennoisière",
+        "sourcePath": "$[0][0]",
+        "rawType": null
+      },
+      {
+        "officialId": "11574",
+        "label": "Boulanger-pâtissier / Boulangère-pâtissière",
+        "sourcePath": "$[0][1]",
+        "rawType": null
+      },
+      {
+        "officialId": "17407",
+        "label": "Ouvrier boulanger / Ouvrière boulangère",
+        "sourcePath": "$[0][2]",
+        "rawType": null
+      },
+      {
+        "officialId": "10868",
+        "label": "Aide-boulanger / Aide-boulangère",
+        "sourcePath": "$[0][3]",
+        "rawType": null
+      },
+      {
+        "officialId": "11573",
+        "label": "Boulanger / Boulangère",
+        "sourcePath": "$[0][4]",
+        "rawType": null
+      },
+      {
+        "officialId": "11575",
+        "label": "Boulanger-pâtissier-traiteur / Boulangère-pâtissière-traiteuse",
+        "sourcePath": "$[0][5]",
+        "rawType": null
+      },
+      {
+        "officialId": "11576",
+        "label": "Boulanger-traiteur / Boulangère-traiteuse",
+        "sourcePath": "$[0][6]",
+        "rawType": null
+      }
+    ],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -5091,46 +5339,49 @@
       "Certificat de spécialisation boulangerie spécialisée",
       "Boulanger (BM)"
     ],
-    "romeWorkContextLabels": [],
+    "romeWorkContextLabels": [
+      "Port et manipulation de charges lourdes ou encombrantes",
+      "Station debout prolongée",
+      "Travail de nuit",
+      "Travail les week-ends et jours fériés",
+      "Travail selon un rythme irrégulier et des pics d'activité",
+      "Salarié secteur privé (CDI, CDD)",
+      "Commerce de proximité",
+      "Etablissement de restauration collective"
+    ],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
-        "description",
         "activities",
-        "appellations",
-        "workContexts",
-        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
-        "official_detail_unavailable",
-        "missing_description",
         "missing_activities",
-        "missing_appellations",
-        "missing_workContexts",
-        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.56,
-      "confidence": 0.53,
+      "completenessScore": 0.81,
+      "confidence": 0.92,
+      "normalizer": "normalizeOfficialRomeJob",
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": false
+        "contexts": true
       }
     },
     "missingFields": [
-      "description",
       "activities",
-      "appellations",
-      "workContexts",
-      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ]
+    ],
+    "officialDescription": {
+      "definition": "Le Boulanger, artisan essentiel de notre quotidien, transforme et valorise les matières premières pour régaler nos papilles.\\nPrépare et réalise des produits de boulangerie et de viennoiserie selon les règles d'hygiène et de sécurité alimentaires\\nConçoit de nouvelles recettes de pains et viennoiseries pour diversifier l'offre\\nGère les stocks de matières premières et commande les fournitures nécessaires\\nAssure la cuisson optimale de chaque produit pour garantir la meilleure qualité\\nPeut effectuer la vente de produits de boulangerie et viennoiserie\\nPeut gérer un commerce de détail alimentaire (boulangerie, boulangerie-pâtisserie, ...)",
+      "purpose": null,
+      "characteristicsSummary": null,
+      "source": "official_rome_api"
+    }
   },
   {
     "id": "rome-D1214",
@@ -7229,43 +7480,8 @@
         "value": "D1507"
       }
     ],
-    "appellations": [
-      "Employé / Employée de rayon équipement de la personne",
-      "Employé / Employée de rayon téléphonie",
-      "Employé / Employée de rayon hygiène et parfumerie",
-      "Employé / Employée de rayon textile",
-      "Employé / Employée de rayon informatique",
-      "Employé / Employée de rayon jardinerie et animalerie",
-      "Employé / Employée de rayon jouets",
-      "Employé / Employée de rayon produits alimentaires",
-      "Employé / Employée de rayon produits alimentaires hors produits frais",
-      "Employé / Employée de rayon produits frais",
-      "Employé / Employée de rayon produits traiteur",
-      "Employé / Employée de rayon surgelés",
-      "Employé / Employée de rayon crèmerie fromagerie",
-      "Employé / Employée de rayon fruits et légumes",
-      "Employé / Employée de rayon liquides",
-      "Employé / Employée de rayon produits non alimentaires",
-      "Employé / Employée de rayon photo image et son",
-      "Employé / Employée de rayon bazar",
-      "Employé / Employée de rayon bricolage",
-      "Employé / Employée de rayon électroménager",
-      "Employé / Employée de rayon équipement de la maison",
-      "Employé / Employée de rayon sport",
-      "Employé / Employée de rayon librairie papeterie",
-      "Employé / Employée de rayon produits culturels",
-      "Employé / Employée de rayon puériculture",
-      "Employé / Employée de rayon poissonnerie",
-      "Employé / Employée de rayon boulangerie et pâtisserie",
-      "Employé / Employée de rayon épicerie",
-      "Employé / Employée de rayon boucherie et charcuterie",
-      "Employé / Employée de rayon libre-service",
-      "Employé / Employée en approvisionnement de rayon",
-      "Employé polyvalent / Employée polyvalente de libre-service",
-      "Employé / Employée de libre-service",
-      "Employé / Employée de rayon"
-    ],
-    "description": "L'Employé de rayon libre-service est en charge de la présentation, la mise en rayon des produits et la gestion de l'espace de vente dans un magasin.\\nApprovisionne et organise les produits en rayon selon la politique du magasin\\nVeille à la propreté et à l'ordre de son espace de travail pour garantir un environnement agréable\\nContrôle les dates de péremption, la signalétique des prix et retire les produits non conformes\\nRenseigne et oriente les clients dans le magasin pour faciliter leurs achats\\nParticipe aux inventaires et à la gestion des stocks pour optimiser la disponibilité des produits\\nPeut effectuer des opérations de caisse et contribuer à l'accueil des clients",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -7562,20 +7778,7 @@
       "knowledge-rome-489607",
       "knowledge-rome-514003"
     ],
-    "workContexts": [
-      "ctx-rome-403020",
-      "ctx-rome-300787",
-      "ctx-rome-300795",
-      "ctx-rome-300800",
-      "ctx-rome-300801",
-      "ctx-rome-300806",
-      "ctx-rome-23376",
-      "ctx-rome-490503",
-      "ctx-rome-403101",
-      "ctx-rome-403103",
-      "ctx-rome-405307",
-      "ctx-rome-405348"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -7605,9 +7808,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible sans qualification particulière, mais un CAP Employé de commerce multi-spécialités serait un plus.\\nUn certificat d'aptitude à la conduite en sécurité-CACES- peut être requis.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "medium",
@@ -7684,23 +7887,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -7709,10 +7912,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -8163,286 +8363,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "403020",
-        "label": "En contact avec du public",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300787",
-        "label": "En zone frigorifique",
-        "sourcePath": "$[1][1]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300795",
-        "label": "Port et manipulation de charges lourdes ou encombrantes",
-        "sourcePath": "$[1][2]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300800",
-        "label": "Station debout prolongée",
-        "sourcePath": "$[1][3]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300801",
-        "label": "Travail répétitif ou cadence imposée",
-        "sourcePath": "$[1][4]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300806",
-        "label": "Travail en journée",
-        "sourcePath": "$[1][5]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "23376",
-        "label": "Travail les week-ends et jours fériés",
-        "sourcePath": "$[1][6]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "490503",
-        "label": "Clientèle de particuliers",
-        "sourcePath": "$[1][7]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "403101",
-        "label": "Intérim",
-        "sourcePath": "$[1][8]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403103",
-        "label": "Salarié secteur privé (CDI, CDD)",
-        "sourcePath": "$[1][9]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "405307",
-        "label": "Commerce de proximité",
-        "sourcePath": "$[1][10]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      },
-      {
-        "officialId": "405348",
-        "label": "Entreprises et milieux professionnels",
-        "sourcePath": "$[1][11]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "38107",
-        "label": "Employé / Employée de rayon équipement de la personne",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      },
-      {
-        "officialId": "38108",
-        "label": "Employé / Employée de rayon téléphonie",
-        "sourcePath": "$[0][1]",
-        "rawType": null
-      },
-      {
-        "officialId": "38109",
-        "label": "Employé / Employée de rayon hygiène et parfumerie",
-        "sourcePath": "$[0][2]",
-        "rawType": null
-      },
-      {
-        "officialId": "38110",
-        "label": "Employé / Employée de rayon textile",
-        "sourcePath": "$[0][3]",
-        "rawType": null
-      },
-      {
-        "officialId": "38111",
-        "label": "Employé / Employée de rayon informatique",
-        "sourcePath": "$[0][4]",
-        "rawType": null
-      },
-      {
-        "officialId": "38112",
-        "label": "Employé / Employée de rayon jardinerie et animalerie",
-        "sourcePath": "$[0][5]",
-        "rawType": null
-      },
-      {
-        "officialId": "38113",
-        "label": "Employé / Employée de rayon jouets",
-        "sourcePath": "$[0][6]",
-        "rawType": null
-      },
-      {
-        "officialId": "38114",
-        "label": "Employé / Employée de rayon produits alimentaires",
-        "sourcePath": "$[0][7]",
-        "rawType": null
-      },
-      {
-        "officialId": "38115",
-        "label": "Employé / Employée de rayon produits alimentaires hors produits frais",
-        "sourcePath": "$[0][8]",
-        "rawType": null
-      },
-      {
-        "officialId": "38116",
-        "label": "Employé / Employée de rayon produits frais",
-        "sourcePath": "$[0][9]",
-        "rawType": null
-      },
-      {
-        "officialId": "38119",
-        "label": "Employé / Employée de rayon produits traiteur",
-        "sourcePath": "$[0][10]",
-        "rawType": null
-      },
-      {
-        "officialId": "38121",
-        "label": "Employé / Employée de rayon surgelés",
-        "sourcePath": "$[0][11]",
-        "rawType": null
-      },
-      {
-        "officialId": "38122",
-        "label": "Employé / Employée de rayon crèmerie fromagerie",
-        "sourcePath": "$[0][12]",
-        "rawType": null
-      },
-      {
-        "officialId": "38124",
-        "label": "Employé / Employée de rayon fruits et légumes",
-        "sourcePath": "$[0][13]",
-        "rawType": null
-      },
-      {
-        "officialId": "38125",
-        "label": "Employé / Employée de rayon liquides",
-        "sourcePath": "$[0][14]",
-        "rawType": null
-      },
-      {
-        "officialId": "38097",
-        "label": "Employé / Employée de rayon produits non alimentaires",
-        "sourcePath": "$[0][15]",
-        "rawType": null
-      },
-      {
-        "officialId": "38099",
-        "label": "Employé / Employée de rayon photo image et son",
-        "sourcePath": "$[0][16]",
-        "rawType": null
-      },
-      {
-        "officialId": "38100",
-        "label": "Employé / Employée de rayon bazar",
-        "sourcePath": "$[0][17]",
-        "rawType": null
-      },
-      {
-        "officialId": "38102",
-        "label": "Employé / Employée de rayon bricolage",
-        "sourcePath": "$[0][18]",
-        "rawType": null
-      },
-      {
-        "officialId": "38103",
-        "label": "Employé / Employée de rayon électroménager",
-        "sourcePath": "$[0][19]",
-        "rawType": null
-      },
-      {
-        "officialId": "38105",
-        "label": "Employé / Employée de rayon équipement de la maison",
-        "sourcePath": "$[0][20]",
-        "rawType": null
-      },
-      {
-        "officialId": "38106",
-        "label": "Employé / Employée de rayon sport",
-        "sourcePath": "$[0][21]",
-        "rawType": null
-      },
-      {
-        "officialId": "38098",
-        "label": "Employé / Employée de rayon librairie papeterie",
-        "sourcePath": "$[0][22]",
-        "rawType": null
-      },
-      {
-        "officialId": "38101",
-        "label": "Employé / Employée de rayon produits culturels",
-        "sourcePath": "$[0][23]",
-        "rawType": null
-      },
-      {
-        "officialId": "38104",
-        "label": "Employé / Employée de rayon puériculture",
-        "sourcePath": "$[0][24]",
-        "rawType": null
-      },
-      {
-        "officialId": "38117",
-        "label": "Employé / Employée de rayon poissonnerie",
-        "sourcePath": "$[0][25]",
-        "rawType": null
-      },
-      {
-        "officialId": "38120",
-        "label": "Employé / Employée de rayon boulangerie et pâtisserie",
-        "sourcePath": "$[0][26]",
-        "rawType": null
-      },
-      {
-        "officialId": "38123",
-        "label": "Employé / Employée de rayon épicerie",
-        "sourcePath": "$[0][27]",
-        "rawType": null
-      },
-      {
-        "officialId": "38118",
-        "label": "Employé / Employée de rayon boucherie et charcuterie",
-        "sourcePath": "$[0][28]",
-        "rawType": null
-      },
-      {
-        "officialId": "14779",
-        "label": "Employé / Employée de rayon libre-service",
-        "sourcePath": "$[0][29]",
-        "rawType": null
-      },
-      {
-        "officialId": "14802",
-        "label": "Employé / Employée en approvisionnement de rayon",
-        "sourcePath": "$[0][30]",
-        "rawType": null
-      },
-      {
-        "officialId": "14811",
-        "label": "Employé polyvalent / Employée polyvalente de libre-service",
-        "sourcePath": "$[0][31]",
-        "rawType": null
-      },
-      {
-        "officialId": "14769",
-        "label": "Employé / Employée de libre-service",
-        "sourcePath": "$[0][32]",
-        "rawType": null
-      },
-      {
-        "officialId": "14778",
-        "label": "Employé / Employée de rayon",
-        "sourcePath": "$[0][33]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -8478,53 +8400,46 @@
       "CAP équipier polyvalent du commerce",
       "Bac pro technicien conseil vente en animalerie"
     ],
-    "romeWorkContextLabels": [
-      "En contact avec du public",
-      "En zone frigorifique",
-      "Port et manipulation de charges lourdes ou encombrantes",
-      "Station debout prolongée",
-      "Travail répétitif ou cadence imposée",
-      "Travail en journée",
-      "Travail les week-ends et jours fériés",
-      "Clientèle de particuliers",
-      "Intérim",
-      "Salarié secteur privé (CDI, CDD)",
-      "Commerce de proximité",
-      "Entreprises et milieux professionnels"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "L'Employé de rayon libre-service est en charge de la présentation, la mise en rayon des produits et la gestion de l'espace de vente dans un magasin.\\nApprovisionne et organise les produits en rayon selon la politique du magasin\\nVeille à la propreté et à l'ordre de son espace de travail pour garantir un environnement agréable\\nContrôle les dates de péremption, la signalétique des prix et retire les produits non conformes\\nRenseigne et oriente les clients dans le magasin pour faciliter leurs achats\\nParticipe aux inventaires et à la gestion des stocks pour optimiser la disponibilité des produits\\nPeut effectuer des opérations de caisse et contribuer à l'accueil des clients",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-E1103",
@@ -9773,19 +9688,8 @@
         "value": "E1104"
       }
     ],
-    "appellations": [
-      "Vlogueur / Vlogueuse",
-      "Concepteur / Conceptrice d'émissions web",
-      "Blogueur / Blogueuse vidéo",
-      "Blogueur / Blogueuse",
-      "Vidéoblogueur / Vidéoblogueuse",
-      "Concepteur / Conceptrice de contenus multimedia",
-      "Concepteur réalisateur / Conceptrice réalisatrice communication",
-      "Réalisateur / Réalisatrice multimédia",
-      "Concepteur / Conceptrice artistique communication multimédia",
-      "Concepteur / Conceptrice multimédia"
-    ],
-    "description": "Le Concepteur de contenus multimédia crée, développe et intègre des éléments visuels, sonores et interactifs pour des supports numériques tels que des sites web, des applications, des jeux ou des vidéos.\\nConçoit et réalise des contenus multimédia adaptés aux besoins des clients ou du public cible\\nCollabore avec des équipes multidisciplinaires pour développer des projets de communication visuelle et interactive\\nUtilise des logiciels de création graphique, vidéo et audio pour produire des contenus de haute qualité\\nAssure la mise à jour et l'optimisation des contenus existants pour améliorer l'engagement utilisateur\\nPeut gérer des projets de A à Z, de la conception initiale à la livraison finale\\nPeut former et superviser des équipes moins expérimentées dans la création de contenus multimédia",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -10044,20 +9948,7 @@
       "knowledge-rome-514277",
       "knowledge-rome-515296"
     ],
-    "workContexts": [
-      "ctx-rome-300779",
-      "ctx-rome-300799",
-      "ctx-rome-403025",
-      "ctx-rome-403107",
-      "ctx-rome-300805",
-      "ctx-rome-403095",
-      "ctx-rome-490504",
-      "ctx-rome-300821",
-      "ctx-rome-403103",
-      "ctx-rome-403106",
-      "ctx-rome-510973",
-      "ctx-rome-405348"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "unknown",
       "physical": {
@@ -10082,9 +9973,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible avec une formation de niveau Bac +2 à Bac +5 en communication multimédia, arts numériques, création numérique, design graphique ou métiers du multimédia et de l'internet. Les compétences en conception de contenu pour le web et les médias numériques sont essentielles.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "unknown",
@@ -10150,23 +10041,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "unknown",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -10175,10 +10066,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -10558,142 +10446,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "300779",
-        "label": "Déplacements professionnels",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300799",
-        "label": "Possibilité de télétravail",
-        "sourcePath": "$[1][1]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "403025",
-        "label": "Station assise prolongée",
-        "sourcePath": "$[1][2]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "403107",
-        "label": "Travail en mode projet",
-        "sourcePath": "$[1][3]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300805",
-        "label": "Travail en horaires décalés",
-        "sourcePath": "$[1][4]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "403095",
-        "label": "Travail selon un rythme irrégulier et des pics d'activité",
-        "sourcePath": "$[1][5]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "490504",
-        "label": "Clientèle de professionnels",
-        "sourcePath": "$[1][6]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "300821",
-        "label": "Clientèle d'entreprises",
-        "sourcePath": "$[1][7]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "403103",
-        "label": "Salarié secteur privé (CDI, CDD)",
-        "sourcePath": "$[1][8]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403106",
-        "label": "Travailleur indépendant",
-        "sourcePath": "$[1][9]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "510973",
-        "label": "Entreprises de médias",
-        "sourcePath": "$[1][10]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      },
-      {
-        "officialId": "405348",
-        "label": "Entreprises et milieux professionnels",
-        "sourcePath": "$[1][11]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "509630",
-        "label": "Vlogueur / Vlogueuse",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      },
-      {
-        "officialId": "509629",
-        "label": "Concepteur / Conceptrice d'émissions web",
-        "sourcePath": "$[0][1]",
-        "rawType": null
-      },
-      {
-        "officialId": "509633",
-        "label": "Blogueur / Blogueuse vidéo",
-        "sourcePath": "$[0][2]",
-        "rawType": null
-      },
-      {
-        "officialId": "509631",
-        "label": "Blogueur / Blogueuse",
-        "sourcePath": "$[0][3]",
-        "rawType": null
-      },
-      {
-        "officialId": "509632",
-        "label": "Vidéoblogueur / Vidéoblogueuse",
-        "sourcePath": "$[0][4]",
-        "rawType": null
-      },
-      {
-        "officialId": "404425",
-        "label": "Concepteur / Conceptrice de contenus multimedia",
-        "sourcePath": "$[0][5]",
-        "rawType": null
-      },
-      {
-        "officialId": "12835",
-        "label": "Concepteur réalisateur / Conceptrice réalisatrice communication",
-        "sourcePath": "$[0][6]",
-        "rawType": null
-      },
-      {
-        "officialId": "18310",
-        "label": "Réalisateur / Réalisatrice multimédia",
-        "sourcePath": "$[0][7]",
-        "rawType": null
-      },
-      {
-        "officialId": "12811",
-        "label": "Concepteur / Conceptrice artistique communication multimédia",
-        "sourcePath": "$[0][8]",
-        "rawType": null
-      },
-      {
-        "officialId": "12833",
-        "label": "Concepteur / Conceptrice multimédia",
-        "sourcePath": "$[0][9]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -10723,52 +10477,45 @@
       "Designer graphique",
       "Concepteur designer graphique"
     ],
-    "romeWorkContextLabels": [
-      "Déplacements professionnels",
-      "Possibilité de télétravail",
-      "Station assise prolongée",
-      "Travail en mode projet",
-      "Travail en horaires décalés",
-      "Travail selon un rythme irrégulier et des pics d'activité",
-      "Clientèle de professionnels",
-      "Clientèle d'entreprises",
-      "Salarié secteur privé (CDI, CDD)",
-      "Travailleur indépendant",
-      "Entreprises de médias",
-      "Entreprises et milieux professionnels"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "Le Concepteur de contenus multimédia crée, développe et intègre des éléments visuels, sonores et interactifs pour des supports numériques tels que des sites web, des applications, des jeux ou des vidéos.\\nConçoit et réalise des contenus multimédia adaptés aux besoins des clients ou du public cible\\nCollabore avec des équipes multidisciplinaires pour développer des projets de communication visuelle et interactive\\nUtilise des logiciels de création graphique, vidéo et audio pour produire des contenus de haute qualité\\nAssure la mise à jour et l'optimisation des contenus existants pour améliorer l'engagement utilisateur\\nPeut gérer des projets de A à Z, de la conception initiale à la livraison finale\\nPeut former et superviser des équipes moins expérimentées dans la création de contenus multimédia",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-E1205",
@@ -16855,14 +16602,8 @@
         "value": "G160"
       }
     ],
-    "appellations": [
-      "Commis / Commise de cuisine",
-      "Commis de cuisine tournant / Commise de cuisine tournante",
-      "Agent / Agente de cuisine",
-      "Aide de cuisine",
-      "Commis pâtissier / Commise pâtissière de restaurant"
-    ],
-    "description": "Le Commis de cuisine, un acteur essentiel dans la préparation des mets et la production en cuisine.\\nAssiste les cuisiniers, chefs de partie dans la préparation des plats\\nPrépare les ingrédients nécessaires à la confection des recettes\\nMaintient la propreté des plans de travail, des ustensiles de cuisine et des locaux\\nParticipe à la réception et au stockage des marchandises\\nApplique les normes d'hygiène et de sécurité sanitaire des aliments\\nParticipe à l'envoi des plats pendant le service",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -17125,19 +16866,7 @@
       "knowledge-rome-489720",
       "knowledge-rome-515186"
     ],
-    "workContexts": [
-      "ctx-rome-403020",
-      "ctx-rome-300789",
-      "ctx-rome-38055",
-      "ctx-rome-300795",
-      "ctx-rome-300800",
-      "ctx-rome-300805",
-      "ctx-rome-23376",
-      "ctx-rome-403103",
-      "ctx-rome-403104",
-      "ctx-rome-489571",
-      "ctx-rome-489572"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -17168,9 +16897,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible avec un diplôme de niveau CAP à Bac en hôtellerie-restauration, option cuisine.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "medium",
@@ -17248,23 +16977,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -17273,10 +17002,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -17681,106 +17407,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "403020",
-        "label": "En contact avec du public",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300789",
-        "label": "Exposition à de hautes températures",
-        "sourcePath": "$[1][1]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "38055",
-        "label": "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
-        "sourcePath": "$[1][2]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300795",
-        "label": "Port et manipulation de charges lourdes ou encombrantes",
-        "sourcePath": "$[1][3]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300800",
-        "label": "Station debout prolongée",
-        "sourcePath": "$[1][4]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300805",
-        "label": "Travail en horaires décalés",
-        "sourcePath": "$[1][5]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "23376",
-        "label": "Travail les week-ends et jours fériés",
-        "sourcePath": "$[1][6]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "403103",
-        "label": "Salarié secteur privé (CDI, CDD)",
-        "sourcePath": "$[1][7]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403104",
-        "label": "Salarié secteur public",
-        "sourcePath": "$[1][8]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "489571",
-        "label": "Bar, Brasserie",
-        "sourcePath": "$[1][9]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      },
-      {
-        "officialId": "489572",
-        "label": "Etablissement de restauration traditionnelle",
-        "sourcePath": "$[1][10]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "12756",
-        "label": "Commis / Commise de cuisine",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      },
-      {
-        "officialId": "12758",
-        "label": "Commis de cuisine tournant / Commise de cuisine tournante",
-        "sourcePath": "$[0][1]",
-        "rawType": null
-      },
-      {
-        "officialId": "10427",
-        "label": "Agent / Agente de cuisine",
-        "sourcePath": "$[0][2]",
-        "rawType": null
-      },
-      {
-        "officialId": "10826",
-        "label": "Aide de cuisine",
-        "sourcePath": "$[0][3]",
-        "rawType": null
-      },
-      {
-        "officialId": "12765",
-        "label": "Commis pâtissier / Commise pâtissière de restaurant",
-        "sourcePath": "$[0][4]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -17813,52 +17441,46 @@
       "Commis de cuisine",
       "Titre professionnel commis de cuisine"
     ],
-    "romeWorkContextLabels": [
-      "En contact avec du public",
-      "Exposition à de hautes températures",
-      "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
-      "Port et manipulation de charges lourdes ou encombrantes",
-      "Station debout prolongée",
-      "Travail en horaires décalés",
-      "Travail les week-ends et jours fériés",
-      "Salarié secteur privé (CDI, CDD)",
-      "Salarié secteur public",
-      "Bar, Brasserie",
-      "Etablissement de restauration traditionnelle"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "Le Commis de cuisine, un acteur essentiel dans la préparation des mets et la production en cuisine.\\nAssiste les cuisiniers, chefs de partie dans la préparation des plats\\nPrépare les ingrédients nécessaires à la confection des recettes\\nMaintient la propreté des plans de travail, des ustensiles de cuisine et des locaux\\nParticipe à la réception et au stockage des marchandises\\nApplique les normes d'hygiène et de sécurité sanitaire des aliments\\nParticipe à l'envoi des plats pendant le service",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-G1803",
@@ -57546,20 +57168,8 @@
         "value": "N4101"
       }
     ],
-    "appellations": [
-      "Routier / Routière",
-      "Conducteur routier / Conductrice routière",
-      "Conducteur routier national / Conductrice routière nationale",
-      "Conducteur collecteur / Conductrice collectrice de lait",
-      "Conducteur routier / Conductrice routière de transport de marchandises",
-      "Transporteur routier / Transporteuse routière",
-      "Chauffeur / Chauffeuse de poids lourd",
-      "Conducteur / Conductrice de poids lourd",
-      "Camionneur / Camionneuse",
-      "Chauffeur routier / Chauffeuse routière",
-      "Conducteur routier régional / Conductrice routière régionale"
-    ],
-    "description": "Le conducteur de poids lourds conduit, en sécurité un véhicule du groupe lourd (véhicule porteur) nécessitant les permis C ou C1, de façon autonome et optimisée dans le contexte commercial de l'entreprise, pour acheminer d'un point d'enlèvement à un point de livraison des marchandises en courte ou longue distance. \\nParticipe à la protection de l'environnement en adoptant les principes d'écoconduite\\nRespecte les délais, la réglementation en vigueur notamment en matière de temps de conduite et de repos, la réglementation routière, la sécurité et les procédures de l'entreprise\\nPrépare et organise sa mission\\nContrôle l'état de fonctionnement du véhicule et de ses équipements, la présence et la validité des documents obligatoires et signale toute anomalie\\nPeut charger et décharger les marchandises ou superviser les opérations de manutention tout en veillant à leur sécurité et à leur intégrité\\nRenseigne ou fait renseigner les documents de transport\\nMaintient une communication régulière avec le service exploitation pour signaler tout incident\\nReprésente l'image de marque de l'entreprise dans ses relations avec les expéditeurs et destinataires",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -57864,23 +57474,7 @@
       "knowledge-rome-491606",
       "knowledge-rome-491605"
     ],
-    "workContexts": [
-      "ctx-rome-300779",
-      "ctx-rome-38055",
-      "ctx-rome-403025",
-      "ctx-rome-490468",
-      "ctx-rome-300803",
-      "ctx-rome-300805",
-      "ctx-rome-300806",
-      "ctx-rome-23374",
-      "ctx-rome-23378",
-      "ctx-rome-300816",
-      "ctx-rome-300817",
-      "ctx-rome-23381",
-      "ctx-rome-403101",
-      "ctx-rome-403103",
-      "ctx-rome-403106"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -57910,9 +57504,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible à tous les niveaux de qualification. Cependant le permis C ou C1 est obligatoire ainsi qu'une formation initiale minimum obligatoire (FIMO) renouvelée tous les 5 ans, la formation continue obligatoire (FCO) ou un diplôme ou titre professionnel du secteur. Des formations spécifiques comme le Certificat d'Aptitude à la Conduite En Sécurité (CACES), le Certificat de formation ADR pour le transport de matières dangereuses peuvent être nécessaires mais ne sont pas obligatoires.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "medium",
@@ -57983,23 +57577,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -58008,10 +57602,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -58537,166 +58128,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "300779",
-        "label": "Déplacements professionnels",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "38055",
-        "label": "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
-        "sourcePath": "$[1][1]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "403025",
-        "label": "Station assise prolongée",
-        "sourcePath": "$[1][2]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "490468",
-        "label": "Travail en autonomie et en situation isolée",
-        "sourcePath": "$[1][3]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300803",
-        "label": "Travail de nuit",
-        "sourcePath": "$[1][4]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300805",
-        "label": "Travail en horaires décalés",
-        "sourcePath": "$[1][5]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300806",
-        "label": "Travail en journée",
-        "sourcePath": "$[1][6]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "23374",
-        "label": "Travail le samedi",
-        "sourcePath": "$[1][7]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "23378",
-        "label": "Zone départementale",
-        "sourcePath": "$[1][8]",
-        "rawType": "LIEU_ET_DEPLACEMENT"
-      },
-      {
-        "officialId": "300816",
-        "label": "Zone internationale",
-        "sourcePath": "$[1][9]",
-        "rawType": "LIEU_ET_DEPLACEMENT"
-      },
-      {
-        "officialId": "300817",
-        "label": "Zone nationale",
-        "sourcePath": "$[1][10]",
-        "rawType": "LIEU_ET_DEPLACEMENT"
-      },
-      {
-        "officialId": "23381",
-        "label": "Zone régionale",
-        "sourcePath": "$[1][11]",
-        "rawType": "LIEU_ET_DEPLACEMENT"
-      },
-      {
-        "officialId": "403101",
-        "label": "Intérim",
-        "sourcePath": "$[1][12]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403103",
-        "label": "Salarié secteur privé (CDI, CDD)",
-        "sourcePath": "$[1][13]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403106",
-        "label": "Travailleur indépendant",
-        "sourcePath": "$[1][14]",
-        "rawType": "STATUT_EMPLOI"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "19291",
-        "label": "Routier / Routière",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      },
-      {
-        "officialId": "13323",
-        "label": "Conducteur routier / Conductrice routière",
-        "sourcePath": "$[0][1]",
-        "rawType": null
-      },
-      {
-        "officialId": "13326",
-        "label": "Conducteur routier national / Conductrice routière nationale",
-        "sourcePath": "$[0][2]",
-        "rawType": null
-      },
-      {
-        "officialId": "12859",
-        "label": "Conducteur collecteur / Conductrice collectrice de lait",
-        "sourcePath": "$[0][3]",
-        "rawType": null
-      },
-      {
-        "officialId": "13324",
-        "label": "Conducteur routier / Conductrice routière de transport de marchandises",
-        "sourcePath": "$[0][4]",
-        "rawType": null
-      },
-      {
-        "officialId": "489102",
-        "label": "Transporteur routier / Transporteuse routière",
-        "sourcePath": "$[0][5]",
-        "rawType": null
-      },
-      {
-        "officialId": "11989",
-        "label": "Chauffeur / Chauffeuse de poids lourd",
-        "sourcePath": "$[0][6]",
-        "rawType": null
-      },
-      {
-        "officialId": "13132",
-        "label": "Conducteur / Conductrice de poids lourd",
-        "sourcePath": "$[0][7]",
-        "rawType": null
-      },
-      {
-        "officialId": "11660",
-        "label": "Camionneur / Camionneuse",
-        "sourcePath": "$[0][8]",
-        "rawType": null
-      },
-      {
-        "officialId": "11996",
-        "label": "Chauffeur routier / Chauffeuse routière",
-        "sourcePath": "$[0][9]",
-        "rawType": null
-      },
-      {
-        "officialId": "13327",
-        "label": "Conducteur routier régional / Conductrice routière régionale",
-        "sourcePath": "$[0][10]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -58748,56 +58181,46 @@
       "Certificat de formation de conducteur ADR - spécialisation citernes restreinte GPL (habilitation)",
       "Certificat de formation de conducteur ADR - spécialisation citernes (habilitation)"
     ],
-    "romeWorkContextLabels": [
-      "Déplacements professionnels",
-      "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
-      "Station assise prolongée",
-      "Travail en autonomie et en situation isolée",
-      "Travail de nuit",
-      "Travail en horaires décalés",
-      "Travail en journée",
-      "Travail le samedi",
-      "Zone départementale",
-      "Zone internationale",
-      "Zone nationale",
-      "Zone régionale",
-      "Intérim",
-      "Salarié secteur privé (CDI, CDD)",
-      "Travailleur indépendant"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "Le conducteur de poids lourds conduit, en sécurité un véhicule du groupe lourd (véhicule porteur) nécessitant les permis C ou C1, de façon autonome et optimisée dans le contexte commercial de l'entreprise, pour acheminer d'un point d'enlèvement à un point de livraison des marchandises en courte ou longue distance. \\nParticipe à la protection de l'environnement en adoptant les principes d'écoconduite\\nRespecte les délais, la réglementation en vigueur notamment en matière de temps de conduite et de repos, la réglementation routière, la sécurité et les procédures de l'entreprise\\nPrépare et organise sa mission\\nContrôle l'état de fonctionnement du véhicule et de ses équipements, la présence et la validité des documents obligatoires et signale toute anomalie\\nPeut charger et décharger les marchandises ou superviser les opérations de manutention tout en veillant à leur sécurité et à leur intégrité\\nRenseigne ou fait renseigner les documents de transport\\nMaintient une communication régulière avec le service exploitation pour signaler tout incident\\nReprésente l'image de marque de l'entreprise dans ses relations avec les expéditeurs et destinataires",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-N4105",
@@ -69288,27 +68711,8 @@
         "value": "F1201"
       }
     ],
-    "appellations": [
-      "Surveillant / Surveillante de travaux du BTP",
-      "Conducteur / Conductrice d'opérations tous corps d'état (COP)",
-      "Responsable des travaux hospitalier",
-      "Conducteur / Conductrice de travaux tous corps d'état",
-      "Conducteur / Conductrice du bâtiment",
-      "Conducteur / Conductrice de travaux de génie climatique",
-      "Coordinateur / Coordinatrice de travaux en rénovation énergétique",
-      "Conducteur / Conductrice de travaux en rénovation énergétique",
-      "Coordinateur / Coordinatrice de travaux TCE",
-      "Conducteur / Conductrice de travaux du BTP",
-      "Conducteur / Conductrice de travaux en électricité",
-      "Conducteur principal / Conductrice principale de travaux",
-      "Conducteur / Conductrice de travaux",
-      "Conducteur / Conductrice de travaux du bâtiment",
-      "Conducteur / Conductrice de travaux en constructions métalliques",
-      "Conducteur / Conductrice de travaux gros œuvre",
-      "Conducteur / Conductrice de travaux ports maritimes et voies navigables",
-      "Conducteur / Conductrice de travaux second œuvre"
-    ],
-    "description": "Le Conducteur de travaux du bâtiment supervise un ou plusieurs chantiers, de construction ou de rénovation, dont ils coordonne l'organisation, la qualité et la sécurité jusqu'à l'achèvement des travaux.\\nDéfinit et organise les moyens de production (équipes, matériels, matériaux)\\nPlanifie et supervise les différentes étapes du chantier\\nCoordonne le travail des équipes et des sous-traitants\\nAssure le respect des normes de sécurité et des réglementations en vigueur\\nOptimise les coûts et les délais de réalisation des travaux\\nManage une ou plusieurs équipes et gère la communication entre les différents intervenants du projet\\nContrôle la qualité des travaux réalisés",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -69689,19 +69093,7 @@
       "knowledge-rome-522061",
       "knowledge-rome-522083"
     ],
-    "workContexts": [
-      "ctx-rome-300779",
-      "ctx-rome-403093",
-      "ctx-rome-403962",
-      "ctx-rome-300806",
-      "ctx-rome-490503",
-      "ctx-rome-300821",
-      "ctx-rome-513553",
-      "ctx-rome-403103",
-      "ctx-rome-403104",
-      "ctx-rome-405285",
-      "ctx-rome-405348"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -69730,9 +69122,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible avec un diplôme de niveau Bac + 5 dans le domaine du bâtiment ou avec une formation de niveau Bac +2 et une expérience professionnelle dans le domaine.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "medium",
@@ -69809,23 +69201,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -69834,10 +69226,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -70371,184 +69760,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "300779",
-        "label": "Déplacements professionnels",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "403093",
-        "label": "En bureau d'études",
-        "sourcePath": "$[1][1]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "403962",
-        "label": "Sur chantier",
-        "sourcePath": "$[1][2]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300806",
-        "label": "Travail en journée",
-        "sourcePath": "$[1][3]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "490503",
-        "label": "Clientèle de particuliers",
-        "sourcePath": "$[1][4]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "300821",
-        "label": "Clientèle d'entreprises",
-        "sourcePath": "$[1][5]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "513553",
-        "label": "Clientèle d'organismes publics",
-        "sourcePath": "$[1][6]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "403103",
-        "label": "Salarié secteur privé (CDI, CDD)",
-        "sourcePath": "$[1][7]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "403104",
-        "label": "Salarié secteur public",
-        "sourcePath": "$[1][8]",
-        "rawType": "STATUT_EMPLOI"
-      },
-      {
-        "officialId": "405285",
-        "label": "Collectivités territoriales",
-        "sourcePath": "$[1][9]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      },
-      {
-        "officialId": "405348",
-        "label": "Entreprises et milieux professionnels",
-        "sourcePath": "$[1][10]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "509613",
-        "label": "Surveillant / Surveillante de travaux du BTP",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      },
-      {
-        "officialId": "509615",
-        "label": "Conducteur / Conductrice d'opérations tous corps d'état (COP)",
-        "sourcePath": "$[0][1]",
-        "rawType": null
-      },
-      {
-        "officialId": "509614",
-        "label": "Responsable des travaux hospitalier",
-        "sourcePath": "$[0][2]",
-        "rawType": null
-      },
-      {
-        "officialId": "13222",
-        "label": "Conducteur / Conductrice de travaux tous corps d'état",
-        "sourcePath": "$[0][3]",
-        "rawType": null
-      },
-      {
-        "officialId": "13290",
-        "label": "Conducteur / Conductrice du bâtiment",
-        "sourcePath": "$[0][4]",
-        "rawType": null
-      },
-      {
-        "officialId": "38332",
-        "label": "Conducteur / Conductrice de travaux de génie climatique",
-        "sourcePath": "$[0][5]",
-        "rawType": null
-      },
-      {
-        "officialId": "404391",
-        "label": "Coordinateur / Coordinatrice de travaux en rénovation énergétique",
-        "sourcePath": "$[0][6]",
-        "rawType": null
-      },
-      {
-        "officialId": "39000",
-        "label": "Conducteur / Conductrice de travaux en rénovation énergétique",
-        "sourcePath": "$[0][7]",
-        "rawType": null
-      },
-      {
-        "officialId": "403715",
-        "label": "Coordinateur / Coordinatrice de travaux TCE",
-        "sourcePath": "$[0][8]",
-        "rawType": null
-      },
-      {
-        "officialId": "13211",
-        "label": "Conducteur / Conductrice de travaux du BTP",
-        "sourcePath": "$[0][9]",
-        "rawType": null
-      },
-      {
-        "officialId": "13213",
-        "label": "Conducteur / Conductrice de travaux en électricité",
-        "sourcePath": "$[0][10]",
-        "rawType": null
-      },
-      {
-        "officialId": "13219",
-        "label": "Conducteur principal / Conductrice principale de travaux",
-        "sourcePath": "$[0][11]",
-        "rawType": null
-      },
-      {
-        "officialId": "13209",
-        "label": "Conducteur / Conductrice de travaux",
-        "sourcePath": "$[0][12]",
-        "rawType": null
-      },
-      {
-        "officialId": "13210",
-        "label": "Conducteur / Conductrice de travaux du bâtiment",
-        "sourcePath": "$[0][13]",
-        "rawType": null
-      },
-      {
-        "officialId": "13212",
-        "label": "Conducteur / Conductrice de travaux en constructions métalliques",
-        "sourcePath": "$[0][14]",
-        "rawType": null
-      },
-      {
-        "officialId": "13215",
-        "label": "Conducteur / Conductrice de travaux gros œuvre",
-        "sourcePath": "$[0][15]",
-        "rawType": null
-      },
-      {
-        "officialId": "13218",
-        "label": "Conducteur / Conductrice de travaux ports maritimes et voies navigables",
-        "sourcePath": "$[0][16]",
-        "rawType": null
-      },
-      {
-        "officialId": "13221",
-        "label": "Conducteur / Conductrice de travaux second œuvre",
-        "sourcePath": "$[0][17]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -70585,52 +69798,46 @@
       "Titre professionnel conducteur de travaux aménagement finitions",
       "Titre professionnel conducteur de travaux du bâtiment et du génie civil"
     ],
-    "romeWorkContextLabels": [
-      "Déplacements professionnels",
-      "En bureau d'études",
-      "Sur chantier",
-      "Travail en journée",
-      "Clientèle de particuliers",
-      "Clientèle d'entreprises",
-      "Clientèle d'organismes publics",
-      "Salarié secteur privé (CDI, CDD)",
-      "Salarié secteur public",
-      "Collectivités territoriales",
-      "Entreprises et milieux professionnels"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "Le Conducteur de travaux du bâtiment supervise un ou plusieurs chantiers, de construction ou de rénovation, dont ils coordonne l'organisation, la qualité et la sécurité jusqu'à l'achèvement des travaux.\\nDéfinit et organise les moyens de production (équipes, matériels, matériaux)\\nPlanifie et supervise les différentes étapes du chantier\\nCoordonne le travail des équipes et des sous-traitants\\nAssure le respect des normes de sécurité et des réglementations en vigueur\\nOptimise les coûts et les délais de réalisation des travaux\\nManage une ou plusieurs équipes et gère la communication entre les différents intervenants du projet\\nContrôle la qualité des travaux réalisés",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-F1302",
@@ -76164,8 +75371,45 @@
         "value": "H2502"
       }
     ],
-    "appellations": [],
-    "description": null,
+    "appellations": [
+      "Ingénieur industriel / Ingénieure industrielle",
+      "Responsable industriel / Responsable industrielle",
+      "Responsable d'unité de production",
+      "Responsable exploitation hydroélectrique",
+      "Responsable d'unité de production industrielle",
+      "Responsable d'exploitation",
+      "Ingénieur / Ingénieure armement de production",
+      "Ingénieur / Ingénieure chef de ligne process de production",
+      "Ingénieur / Ingénieure chimiste de production",
+      "Ingénieur électricien / Ingénieure électricienne de production",
+      "Ingénieur / Ingénieure responsable d'atelier de production",
+      "Ingénieur / Ingénieure en électronique de production",
+      "Ingénieur / Ingénieure en mécanique de production",
+      "Ingénieur / Ingénieure en processus en production",
+      "Ingénieur / Ingénieure énergie de production",
+      "Ingénieur / Ingénieure agronome de production",
+      "Ingénieur / Ingénieure produit en production",
+      "Responsable d'exploitation de fluides",
+      "Ingénieur / Ingénieure automobile de production",
+      "Ingénieur mécanicien / Ingénieure mécanicienne de production",
+      "Ingénieur / Ingénieure process de production",
+      "Ingénieur / Ingénieure responsable d'îlot de production",
+      "Pharmacien / Pharmacienne de production industrielle",
+      "Chef / Cheffe de produit en production industrielle",
+      "Ingénieur / Ingénieure biochimiste de production",
+      "Ingénieur / Ingénieure chef d'atelier de production",
+      "Ingénieur / Ingénieure chef de chaîne de production",
+      "Ingénieur / Ingénieure chef de ligne de production",
+      "Ingénieur / Ingénieure chef d'îlot de production",
+      "Ingénieur électromécanicien / Ingénieure électromécanicienne de production",
+      "Ingénieur électronicien / Ingénieure électronicienne de production",
+      "Ingénieur / Ingénieure en chaudronnerie de production",
+      "Ingénieur / Ingénieure en électromécanique de production",
+      "Ingénieur / Ingénieure de production",
+      "Ingénieur / Ingénieure aéronautique de production",
+      "Ingénieur / Ingénieure en procédés en production"
+    ],
+    "description": "L' Ingénieur de production organise, optimise et supervise les moyens et procédés de fabrication afin d'assurer la production de biens ou de produits dans le respect des impératifs de sécurité, d'environnement, de qualité, de coûts, de délais et de quantité.\\nPeut piloter l'ensemble du processus de production, de l'approvisionnement à l'expédition des produits finis\\nPeut encadrer une équipe ou un service et en gérer le budget",
     "activities": [],
     "skillGroups": [
       {
@@ -76494,7 +75738,19 @@
       "knowledge-rome-477946",
       "knowledge-rome-476804"
     ],
-    "workContexts": [],
+    "workContexts": [
+      "ctx-rome-23382",
+      "ctx-rome-489918",
+      "ctx-rome-38055",
+      "ctx-rome-300804",
+      "ctx-rome-403095",
+      "ctx-rome-300806",
+      "ctx-rome-126450",
+      "ctx-rome-23381",
+      "ctx-rome-403103",
+      "ctx-rome-403106",
+      "ctx-rome-512382"
+    ],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -76521,9 +75777,9 @@
       }
     },
     "accessConditions": {
-      "text": null,
-      "source": "unknown",
-      "confidence": 0
+      "text": "Ce métier est accessible avec un niveau Bac + 2 à Bac + 5 BTS DUT ou Master professionnel, diplôme d'ingénieur dans les secteurs techniques (mécanique, électronique, chimie, ....), complété par une expérience professionnelle en production.\\nLa pratique de l'anglais est requise.\\nLa maîtrise de l'outil informatique (progiciels de gestion de données) peut être requise.",
+      "source": "official_rome_api",
+      "confidence": 0.8
     },
     "physicalConstraints": {
       "level": "medium",
@@ -76597,23 +75853,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.53,
+    "confidence": 0.92,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_detail_unavailable",
-      "description": "official_detail_unavailable",
+      "appellations": "official_rome_api",
+      "description": "official_rome_api",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_detail_unavailable",
+      "workContexts": "official_rome_api",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_detail_unavailable",
+      "accessConditions": "official_rome_api",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -76622,7 +75878,10 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown"
+      "market": "unknown",
+      "romeAppellationRefs": "official_rome_api",
+      "romeWorkContextRefs": "official_rome_api",
+      "romeWorkContextLabels": "official_rome_api"
     },
     "romeSkillLabels": {
       "required": [
@@ -77095,8 +76354,292 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [],
-    "romeAppellationRefs": [],
+    "romeWorkContextRefs": [
+      {
+        "officialId": "23382",
+        "label": "En ligne ou ilot de production",
+        "sourcePath": "$[1][0]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "489918",
+        "label": "En milieu industriel",
+        "sourcePath": "$[1][1]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "38055",
+        "label": "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
+        "sourcePath": "$[1][2]",
+        "rawType": "CONDITIONS_TRAVAIL"
+      },
+      {
+        "officialId": "300804",
+        "label": "Travail en astreinte",
+        "sourcePath": "$[1][3]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "403095",
+        "label": "Travail selon un rythme irrégulier et des pics d'activité",
+        "sourcePath": "$[1][4]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "300806",
+        "label": "Travail en journée",
+        "sourcePath": "$[1][5]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "126450",
+        "label": "Travail posté (2x8, 3x8, 5x8, etc.)",
+        "sourcePath": "$[1][6]",
+        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
+      },
+      {
+        "officialId": "23381",
+        "label": "Zone régionale",
+        "sourcePath": "$[1][7]",
+        "rawType": "LIEU_ET_DEPLACEMENT"
+      },
+      {
+        "officialId": "403103",
+        "label": "Salarié secteur privé (CDI, CDD)",
+        "sourcePath": "$[1][8]",
+        "rawType": "STATUT_EMPLOI"
+      },
+      {
+        "officialId": "403106",
+        "label": "Travailleur indépendant",
+        "sourcePath": "$[1][9]",
+        "rawType": "STATUT_EMPLOI"
+      },
+      {
+        "officialId": "512382",
+        "label": "Entreprise industrielle",
+        "sourcePath": "$[1][10]",
+        "rawType": "TYPE_STRUCTURE_ACCUEIL"
+      }
+    ],
+    "romeAppellationRefs": [
+      {
+        "officialId": "521815",
+        "label": "Ingénieur industriel / Ingénieure industrielle",
+        "sourcePath": "$[0][0]",
+        "rawType": null
+      },
+      {
+        "officialId": "521854",
+        "label": "Responsable industriel / Responsable industrielle",
+        "sourcePath": "$[0][1]",
+        "rawType": null
+      },
+      {
+        "officialId": "521844",
+        "label": "Responsable d'unité de production",
+        "sourcePath": "$[0][2]",
+        "rawType": null
+      },
+      {
+        "officialId": "19076",
+        "label": "Responsable exploitation hydroélectrique",
+        "sourcePath": "$[0][3]",
+        "rawType": null
+      },
+      {
+        "officialId": "19048",
+        "label": "Responsable d'unité de production industrielle",
+        "sourcePath": "$[0][4]",
+        "rawType": null
+      },
+      {
+        "officialId": "18972",
+        "label": "Responsable d'exploitation",
+        "sourcePath": "$[0][5]",
+        "rawType": null
+      },
+      {
+        "officialId": "15585",
+        "label": "Ingénieur / Ingénieure armement de production",
+        "sourcePath": "$[0][6]",
+        "rawType": null
+      },
+      {
+        "officialId": "15610",
+        "label": "Ingénieur / Ingénieure chef de ligne process de production",
+        "sourcePath": "$[0][7]",
+        "rawType": null
+      },
+      {
+        "officialId": "15612",
+        "label": "Ingénieur / Ingénieure chimiste de production",
+        "sourcePath": "$[0][8]",
+        "rawType": null
+      },
+      {
+        "officialId": "15728",
+        "label": "Ingénieur électricien / Ingénieure électricienne de production",
+        "sourcePath": "$[0][9]",
+        "rawType": null
+      },
+      {
+        "officialId": "15876",
+        "label": "Ingénieur / Ingénieure responsable d'atelier de production",
+        "sourcePath": "$[0][10]",
+        "rawType": null
+      },
+      {
+        "officialId": "15756",
+        "label": "Ingénieur / Ingénieure en électronique de production",
+        "sourcePath": "$[0][11]",
+        "rawType": null
+      },
+      {
+        "officialId": "15769",
+        "label": "Ingénieur / Ingénieure en mécanique de production",
+        "sourcePath": "$[0][12]",
+        "rawType": null
+      },
+      {
+        "officialId": "15779",
+        "label": "Ingénieur / Ingénieure en processus en production",
+        "sourcePath": "$[0][13]",
+        "rawType": null
+      },
+      {
+        "officialId": "15794",
+        "label": "Ingénieur / Ingénieure énergie de production",
+        "sourcePath": "$[0][14]",
+        "rawType": null
+      },
+      {
+        "officialId": "15578",
+        "label": "Ingénieur / Ingénieure agronome de production",
+        "sourcePath": "$[0][15]",
+        "rawType": null
+      },
+      {
+        "officialId": "15866",
+        "label": "Ingénieur / Ingénieure produit en production",
+        "sourcePath": "$[0][16]",
+        "rawType": null
+      },
+      {
+        "officialId": "18976",
+        "label": "Responsable d'exploitation de fluides",
+        "sourcePath": "$[0][17]",
+        "rawType": null
+      },
+      {
+        "officialId": "15589",
+        "label": "Ingénieur / Ingénieure automobile de production",
+        "sourcePath": "$[0][18]",
+        "rawType": null
+      },
+      {
+        "officialId": "15830",
+        "label": "Ingénieur mécanicien / Ingénieure mécanicienne de production",
+        "sourcePath": "$[0][19]",
+        "rawType": null
+      },
+      {
+        "officialId": "15862",
+        "label": "Ingénieur / Ingénieure process de production",
+        "sourcePath": "$[0][20]",
+        "rawType": null
+      },
+      {
+        "officialId": "15877",
+        "label": "Ingénieur / Ingénieure responsable d'îlot de production",
+        "sourcePath": "$[0][21]",
+        "rawType": null
+      },
+      {
+        "officialId": "17684",
+        "label": "Pharmacien / Pharmacienne de production industrielle",
+        "sourcePath": "$[0][22]",
+        "rawType": null
+      },
+      {
+        "officialId": "12224",
+        "label": "Chef / Cheffe de produit en production industrielle",
+        "sourcePath": "$[0][23]",
+        "rawType": null
+      },
+      {
+        "officialId": "15592",
+        "label": "Ingénieur / Ingénieure biochimiste de production",
+        "sourcePath": "$[0][24]",
+        "rawType": null
+      },
+      {
+        "officialId": "15605",
+        "label": "Ingénieur / Ingénieure chef d'atelier de production",
+        "sourcePath": "$[0][25]",
+        "rawType": null
+      },
+      {
+        "officialId": "15608",
+        "label": "Ingénieur / Ingénieure chef de chaîne de production",
+        "sourcePath": "$[0][26]",
+        "rawType": null
+      },
+      {
+        "officialId": "15609",
+        "label": "Ingénieur / Ingénieure chef de ligne de production",
+        "sourcePath": "$[0][27]",
+        "rawType": null
+      },
+      {
+        "officialId": "15611",
+        "label": "Ingénieur / Ingénieure chef d'îlot de production",
+        "sourcePath": "$[0][28]",
+        "rawType": null
+      },
+      {
+        "officialId": "15730",
+        "label": "Ingénieur électromécanicien / Ingénieure électromécanicienne de production",
+        "sourcePath": "$[0][29]",
+        "rawType": null
+      },
+      {
+        "officialId": "15733",
+        "label": "Ingénieur électronicien / Ingénieure électronicienne de production",
+        "sourcePath": "$[0][30]",
+        "rawType": null
+      },
+      {
+        "officialId": "15748",
+        "label": "Ingénieur / Ingénieure en chaudronnerie de production",
+        "sourcePath": "$[0][31]",
+        "rawType": null
+      },
+      {
+        "officialId": "15755",
+        "label": "Ingénieur / Ingénieure en électromécanique de production",
+        "sourcePath": "$[0][32]",
+        "rawType": null
+      },
+      {
+        "officialId": "15658",
+        "label": "Ingénieur / Ingénieure de production",
+        "sourcePath": "$[0][33]",
+        "rawType": null
+      },
+      {
+        "officialId": "15574",
+        "label": "Ingénieur / Ingénieure aéronautique de production",
+        "sourcePath": "$[0][34]",
+        "rawType": null
+      },
+      {
+        "officialId": "15777",
+        "label": "Ingénieur / Ingénieure en procédés en production",
+        "sourcePath": "$[0][35]",
+        "rawType": null
+      }
+    ],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -77131,46 +76674,52 @@
       "Documentation technique des opérations",
       "Utilisation de logiciels de gestion de production"
     ],
-    "romeWorkContextLabels": [],
+    "romeWorkContextLabels": [
+      "En ligne ou ilot de production",
+      "En milieu industriel",
+      "Port d'équipement de protection individuelle (EPI) : gants, chaussures, casque, protections auditives",
+      "Travail en astreinte",
+      "Travail selon un rythme irrégulier et des pics d'activité",
+      "Travail en journée",
+      "Travail posté (2x8, 3x8, 5x8, etc.)",
+      "Zone régionale",
+      "Salarié secteur privé (CDI, CDD)",
+      "Travailleur indépendant",
+      "Entreprise industrielle"
+    ],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
-        "description",
         "activities",
-        "appellations",
-        "workContexts",
-        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
-        "official_detail_unavailable",
-        "missing_description",
         "missing_activities",
-        "missing_appellations",
-        "missing_workContexts",
-        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.56,
-      "confidence": 0.53,
+      "completenessScore": 0.81,
+      "confidence": 0.92,
+      "normalizer": "normalizeOfficialRomeJob",
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": false
+        "contexts": true
       }
     },
     "missingFields": [
-      "description",
       "activities",
-      "appellations",
-      "workContexts",
-      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ]
+    ],
+    "officialDescription": {
+      "definition": "L' Ingénieur de production organise, optimise et supervise les moyens et procédés de fabrication afin d'assurer la production de biens ou de produits dans le respect des impératifs de sécurité, d'environnement, de qualité, de coûts, de délais et de quantité.\\nPeut piloter l'ensemble du processus de production, de l'approvisionnement à l'expédition des produits finis\\nPeut encadrer une équipe ou un service et en gérer le budget",
+      "purpose": null,
+      "characteristicsSummary": null,
+      "source": "official_rome_api"
+    }
   },
   {
     "id": "rome-J1304",
@@ -77202,10 +76751,8 @@
         "value": "J1304"
       }
     ],
-    "appellations": [
-      "Auxiliaire de puériculture"
-    ],
-    "description": "Un auxiliaire de puériculture est un professionnel du secteur médico-social spécialisé dans les soins et l'assistance aux jeunes enfants, jusqu'à l'adolescence.\\nRéalise la prise en charge d'enfants de la naissance à quinze ans, les guide dans les gestes de la vie quotidienne et effectue, en collaboration avec l'équipe infirmière, des soins d'hygiène et de confort\\nPeut élaborer et mettre en œuvre des projets éducatifs, des activités artistiques et d'éveil des jeunes enfants au sein d'une équipe\\nRédige et met à jour le dossier de l'enfant",
+    "appellations": [],
+    "description": null,
     "activities": [],
     "skillGroups": [
       {
@@ -77400,18 +76947,7 @@
       "knowledge-rome-103918",
       "knowledge-rome-404123"
     ],
-    "workContexts": [
-      "ctx-rome-300800",
-      "ctx-rome-300803",
-      "ctx-rome-300804",
-      "ctx-rome-300805",
-      "ctx-rome-23376",
-      "ctx-rome-300808",
-      "ctx-rome-300825",
-      "ctx-rome-300830",
-      "ctx-rome-300810",
-      "ctx-rome-38126"
-    ],
+    "workContexts": [],
     "constraints": {
       "source": "computed_low_confidence",
       "physical": {
@@ -77440,9 +76976,9 @@
       }
     },
     "accessConditions": {
-      "text": "Cet emploi est accessible avec un diplôme d'Etat, obligatoire pour exercer. \\nDes vaccinations prévues par le Code de Santé Publique sont exigées.",
-      "source": "official_rome_api",
-      "confidence": 0.8
+      "text": null,
+      "source": "unknown",
+      "confidence": 0
     },
     "physicalConstraints": {
       "level": "medium",
@@ -77513,23 +77049,23 @@
     ],
     "source": "official_rome_api",
     "provenance": "generated_rome",
-    "confidence": 0.92,
+    "confidence": 0.53,
     "fieldSources": {
       "id": "official_rome_api",
       "romeCode": "official_rome_api",
       "title": "official_rome_api",
       "domain": "official_rome_api",
       "family": "computed",
-      "appellations": "official_rome_api",
-      "description": "official_rome_api",
+      "appellations": "official_detail_unavailable",
+      "description": "official_detail_unavailable",
       "activities": "not_available_in_connected_sources",
       "requiredSkills": "official_rome_api",
       "optionalSkills": "unknown",
       "softSkills": "official_rome_api",
       "knowledge": "official_rome_api",
-      "workContexts": "official_rome_api",
+      "workContexts": "official_detail_unavailable",
       "constraints": "computed_low_confidence",
-      "accessConditions": "official_rome_api",
+      "accessConditions": "official_detail_unavailable",
       "requiredDiplomaLevel": "not_available_in_connected_sources",
       "recommendedDiplomaLevel": "not_available_in_connected_sources",
       "requiredCertifications": "not_available_in_connected_sources",
@@ -77538,10 +77074,7 @@
       "transitionTags": "computed",
       "interestTags": "computed",
       "valueTags": "computed",
-      "market": "unknown",
-      "romeAppellationRefs": "official_rome_api",
-      "romeWorkContextRefs": "official_rome_api",
-      "romeWorkContextLabels": "official_rome_api"
+      "market": "unknown"
     },
     "romeSkillLabels": {
       "required": [
@@ -77797,76 +77330,8 @@
         "rawType": "SAVOIR"
       }
     ],
-    "romeWorkContextRefs": [
-      {
-        "officialId": "300800",
-        "label": "Station debout prolongée",
-        "sourcePath": "$[1][0]",
-        "rawType": "CONDITIONS_TRAVAIL"
-      },
-      {
-        "officialId": "300803",
-        "label": "Travail de nuit",
-        "sourcePath": "$[1][1]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300804",
-        "label": "Travail en astreinte",
-        "sourcePath": "$[1][2]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300805",
-        "label": "Travail en horaires décalés",
-        "sourcePath": "$[1][3]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "23376",
-        "label": "Travail les week-ends et jours fériés",
-        "sourcePath": "$[1][4]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300808",
-        "label": "Travail par roulement",
-        "sourcePath": "$[1][5]",
-        "rawType": "HORAIRE_ET_DUREE_TRAVAIL"
-      },
-      {
-        "officialId": "300825",
-        "label": "Enfants",
-        "sourcePath": "$[1][6]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "300830",
-        "label": "Familles",
-        "sourcePath": "$[1][7]",
-        "rawType": "TYPE_BENEFICIAIRE"
-      },
-      {
-        "officialId": "300810",
-        "label": "Crèche, halte-garderie",
-        "sourcePath": "$[1][8]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      },
-      {
-        "officialId": "38126",
-        "label": "Etablissement de santé",
-        "sourcePath": "$[1][9]",
-        "rawType": "TYPE_STRUCTURE_ACCUEIL"
-      }
-    ],
-    "romeAppellationRefs": [
-      {
-        "officialId": "11448",
-        "label": "Auxiliaire de puériculture",
-        "sourcePath": "$[0][0]",
-        "rawType": null
-      }
-    ],
+    "romeWorkContextRefs": [],
+    "romeAppellationRefs": [],
     "romeCertificationRefs": {
       "required": [],
       "recommended": []
@@ -77887,51 +77352,46 @@
       "Techniques d'éveil de l'enfant",
       "Diplôme d'Etat d'auxiliaire de puériculture"
     ],
-    "romeWorkContextLabels": [
-      "Station debout prolongée",
-      "Travail de nuit",
-      "Travail en astreinte",
-      "Travail en horaires décalés",
-      "Travail les week-ends et jours fériés",
-      "Travail par roulement",
-      "Enfants",
-      "Familles",
-      "Crèche, halte-garderie",
-      "Etablissement de santé"
-    ],
+    "romeWorkContextLabels": [],
     "dataQuality": {
       "status": "generated_partial",
       "missingFields": [
+        "description",
         "activities",
+        "appellations",
+        "workContexts",
+        "accessConditions",
         "requiredDiplomaLevel",
         "recommendedDiplomaLevel"
       ],
       "warnings": [
         "official_rome_generated",
         "computed_constraints_to_verify",
+        "official_detail_unavailable",
+        "missing_description",
         "missing_activities",
+        "missing_appellations",
+        "missing_workContexts",
+        "missing_accessConditions",
         "missing_requiredDiplomaLevel",
         "missing_recommendedDiplomaLevel"
       ],
-      "completenessScore": 0.81,
-      "confidence": 0.92,
-      "normalizer": "normalizeOfficialRomeJob",
+      "completenessScore": 0.56,
+      "confidence": 0.53,
       "relationIndexesAvailable": {
         "skills": true,
-        "contexts": true
+        "contexts": false
       }
     },
     "missingFields": [
+      "description",
       "activities",
+      "appellations",
+      "workContexts",
+      "accessConditions",
       "requiredDiplomaLevel",
       "recommendedDiplomaLevel"
-    ],
-    "officialDescription": {
-      "definition": "Un auxiliaire de puériculture est un professionnel du secteur médico-social spécialisé dans les soins et l'assistance aux jeunes enfants, jusqu'à l'adolescence.\\nRéalise la prise en charge d'enfants de la naissance à quinze ans, les guide dans les gestes de la vie quotidienne et effectue, en collaboration avec l'équipe infirmière, des soins d'hygiène et de confort\\nPeut élaborer et mettre en œuvre des projets éducatifs, des activités artistiques et d'éveil des jeunes enfants au sein d'une équipe\\nRédige et met à jour le dossier de l'enfant",
-      "purpose": null,
-      "characteristicsSummary": null,
-      "source": "official_rome_api"
-    }
+    ]
   },
   {
     "id": "rome-K2204",

@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-09-01T08:27:46.112Z.
+Généré le 2026-10-01T09:55:21.715Z.
 
 ## Synthèse
 
@@ -8,17 +8,17 @@ Généré le 2026-09-01T08:27:46.112Z.
 - Métiers récupérés : 72
 - Échecs : 0
 - Coquilles code + titre : 0/72
-- Score de préparation données : 98%
+- Score de préparation données : 97%
 - Readiness globale : usable_for_validation
 
 ## Données réellement reliées aux métiers
 
 - Mappings compétences : 72/72
-- Mappings contextes : 69/72
-- Mappings appellations : 69/72
+- Mappings contextes : 66/72
+- Mappings appellations : 66/72
 - Mappings savoirs : 72/72
 - Activités : 0/72
-- Descriptions officielles : 69/72
+- Descriptions officielles : 66/72
 
 ## Endpoints et sources
 
@@ -32,10 +32,10 @@ Généré le 2026-09-01T08:27:46.112Z.
 - requiredDiplomaLevel : 72
 - recommendedDiplomaLevel : 72
 - relatedJobs : 72
-- description : 3
-- appellations : 3
-- workContexts : 3
-- accessConditions : 3
+- description : 6
+- appellations : 6
+- workContexts : 6
+- accessConditions : 6
 
 ## Marché officiel
 
@@ -64,7 +64,7 @@ Généré le 2026-09-01T08:27:46.112Z.
 
 ## Taille et performance
 
-- Taille totale générée : 499.12 Mo
+- Taille totale générée : 499.16 Mo
 - Nombre de fichiers : 258
 - Plus gros fichiers : rome1000-candidate/jobs.rome.json (34.39 Mo), rome800-candidate/jobs.rome.json (28.11 Mo), rome1000-candidate/rome-raw-skills.json (25.5 Mo), rome800-candidate/rome-raw-skills.json (25.5 Mo), rome-raw-skills.json (20.97 Mo)
 
