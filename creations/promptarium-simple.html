@@ -6,9 +6,9 @@
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#3f7467">
   <meta name="application-name" content="Promptarium simple">
-  <meta name="version" content="v1.7.0">
+  <meta name="version" content="v1.8.0">
   <meta name="description" content="Bibliothèque locale et autonome pour écrire, classer, retrouver et exporter simplement ses prompts.">
-  <title>Promptarium simple v1.7.0</title>
+  <title>Promptarium simple v1.8.0</title>
   <style>
     :root {
       --bg: #f3f0e9;
@@ -202,8 +202,13 @@
     .prompt-card:hover { transform: translateY(-2px); border-color: var(--line-strong); box-shadow: var(--shadow-md); }
     .prompt-card.kind-conversation { border-top: 4px solid color-mix(in srgb, var(--warm) 62%, var(--line)); }
     .card-thumb { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; border: 0; border-bottom: 1px solid var(--line); background: linear-gradient(145deg, var(--accent-soft), var(--warm-soft)); color: var(--accent-strong); }
-    .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .26s ease; }
+    .card-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .26s ease; }
     .prompt-card:hover .card-thumb img { transform: scale(1.015); }
+    .library-grid.whole-thumbnails .card-thumb img { object-fit: contain; transform: none; }
+    /* One shared preview, outside the cards, preserves the complete image. */
+    .thumbnail-hover-preview { position: fixed; z-index: 45; width: min(320px, calc(100vw - 24px)); margin: 0; padding: 10px; border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-lg); pointer-events: none; }
+    .thumbnail-hover-preview img { display: block; width: 100%; height: min(440px, 60vh); object-fit: contain; border-radius: 8px; background: var(--surface-2); }
+    .thumbnail-hover-preview figcaption { margin-top: 7px; color: var(--text); font-size: .82rem; font-weight: 750; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
     .card-thumb span:not(.thumb-size-badge) { padding: 20px; font-weight: 800; text-align: center; }
     .thumb-size-badge { position: absolute; right: 9px; bottom: 9px; padding: 4px 7px; border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--surface) 90%, transparent); color: var(--danger); font-size: .68rem; font-weight: 850; box-shadow: var(--shadow-sm); }
     .card-body { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 15px; }
@@ -219,7 +224,9 @@
     .chip.kind { background: var(--warm-soft); color: color-mix(in srgb, var(--warm) 82%, var(--text)); }
     .chip.tag { background: var(--surface-2); color: var(--text-soft); }
     .card-meta { margin-top: auto; color: var(--text-soft); font-size: .72rem; }
-    .card-actions { display: grid; grid-template-columns: 1.15fr .85fr; gap: 7px; }
+    .card-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .card-actions .icon-action { display: grid; place-items: center; min-height: 42px; padding: 8px; }
+    .icon-action svg { width: 20px; height: 20px; pointer-events: none; }
     .library-grid.compact-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
     .library-grid.compact-grid .prompt-card { border-radius: 15px; }
     .library-grid.compact-grid .card-thumb { aspect-ratio: 1 / 1; }
@@ -259,7 +266,7 @@
     .check-pill input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
     .new-category-row { display: grid; grid-template-columns: 1fr auto; gap: 7px; margin-top: 8px; }
     .thumb-editor { display: grid; gap: 10px; padding: 10px; border: 1px dashed var(--line-strong); border-radius: 14px; background: var(--surface); }
-    .thumb-preview, .thumb-placeholder { width: 100%; aspect-ratio: 16/10; border-radius: 10px; border: 1px solid var(--line); background: linear-gradient(145deg, var(--accent-soft), var(--warm-soft)); object-fit: cover; }
+    .thumb-preview, .thumb-placeholder { width: 100%; aspect-ratio: 16/10; border-radius: 10px; border: 1px solid var(--line); background: linear-gradient(145deg, var(--accent-soft), var(--warm-soft)); object-fit: contain; }
     .thumb-placeholder { display: grid; place-items: center; color: var(--accent-strong); font-weight: 780; }
     .thumb-controls { display: grid; gap: 8px; }
     .form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 18px clamp(22px, 4vw, 34px); border-top: 1px solid var(--line); background: var(--surface-2); }
@@ -391,7 +398,7 @@
     .utility-action { width:100%; padding:9px 10px; border:0; border-radius:8px; background:transparent; text-align:left; font-weight:700; }
     .utility-action:hover { background:var(--surface-2); }
     .shortcut-hint { margin-top:5px; padding:8px 10px 4px; border-top:1px solid var(--line); color:var(--text-soft); font-size:.72rem; }
-    .library-commandbar { display:grid; grid-template-columns:minmax(260px,1fr) auto auto auto auto; align-items:center; gap:8px; margin-bottom:12px; }
+    .library-commandbar { display:grid; grid-template-columns:minmax(200px,1fr) auto auto auto auto auto; align-items:center; gap:8px; margin-bottom:12px; }
     .command-search { min-width:0; }
     .command-search input { min-height:42px; background:var(--surface); }
     .result-pill { padding:5px 9px; border-radius:999px; background:var(--surface-2); color:var(--text-soft); font-size:.8rem; font-weight:760; white-space:nowrap; }
@@ -435,6 +442,7 @@
       .library-commandbar { grid-template-columns:minmax(0,1fr) auto auto; }
       .compact-select { grid-column:1 / -1; order:5; }
       .compact-select select { flex:1; width:100%; }
+      #thumbnailFitButton { grid-column:1 / -1; }
       #selectionModeButton { display:none; }
       .library-workspace { grid-template-columns:1fr; }
       .library-tools { position:static; order:0; }
@@ -502,9 +510,9 @@
 <body>
   <main class="app">
     <header class="topbar no-print">
-      <div class="brand" aria-label="Promptarium simple v1.7.0">
+      <div class="brand" aria-label="Promptarium simple v1.8.0">
         <div class="brand-mark" aria-hidden="true" title="Promptarium simple"></div>
-        <h1>Promptarium <span class="brand-variant">simple</span><span class="app-version">v1.7.0</span></h1>
+        <h1>Promptarium <span class="brand-variant">simple</span><span class="app-version">v1.8.0</span></h1>
       </div>
       <nav class="tabs" role="tablist" aria-label="Navigation principale">
         <button class="tab" id="libraryTab" type="button" role="tab" tabindex="0" aria-selected="true" aria-controls="libraryView">Bibliothèque <span id="tabCount"></span></button>
@@ -532,6 +540,7 @@
         <label class="compact-select"><span>Trier</span><select id="sortSelect"><option value="updated-desc">Modifiés</option><option value="created-desc">Ajoutés</option><option value="title-asc">Titre A → Z</option><option value="title-desc">Titre Z → A</option></select></label>
         <button class="button small" id="selectionModeButton" type="button" aria-pressed="false">Sélectionner</button>
         <button class="button small" id="viewModeButton" type="button" aria-pressed="false">Vue vignettes</button>
+        <button class="button small" id="thumbnailFitButton" type="button" aria-pressed="false" title="Afficher les images entières sans recadrage">Images entières</button>
       </div>
 
       <div class="library-workspace">
@@ -539,7 +548,7 @@
           <summary class="filter-summary"><span>Filtres</span><span class="active-filter-count" id="activeFilterCount"></span></summary>
           <div class="tool-grid">
             <label>Catégorie<select id="categoryFilter"><option value="">Toutes</option></select></label>
-            <label>Type<select id="typeFilter"><option value="">Tous</option><option value="image">Images</option><option value="conversation">Conversations</option></select></label>
+            <label>Type<select id="typeFilter"><option value="">Tous</option><option value="image">Images</option><option value="image-with-thumbnail">Images avec vignette</option><option value="conversation">Conversations</option></select></label>
             <label>Tag<select id="tagFilter"><option value="">Tous</option></select></label>
           </div>
           <div class="summary-actions one-column">
@@ -597,7 +606,7 @@
           <section class="panel settings-card"><h3>Export ciblé</h3><p class="hint">Crée un fichier ne contenant qu’une catégorie, un tag, ou leur intersection.</p><div class="backup-row"><label>Catégorie<select id="exportCategorySelect"><option value="">Toutes les catégories</option></select></label><label>Tag<select id="exportTagSelect"><option value="">Tous les tags</option></select></label><button class="button primary" id="exportSelectionButton" type="button">Exporter</button></div></section>
           <section class="panel settings-card wide"><h3>Gérer les catégories</h3><p class="hint">« Retirer » enlève le classement mais conserve les prompts. « Suppr. prompts » efface également les prompts concernés après confirmation.</p><div class="new-category-row"><label class="visually-hidden" for="settingsNewCategory">Nouvelle catégorie</label><input id="settingsNewCategory" autocomplete="off" placeholder="Nouvelle catégorie"><button class="button soft" id="settingsAddCategoryButton" type="button">Ajouter</button></div><div class="manager-list" id="categoryManager"></div></section>
           <section class="panel settings-card wide"><h3>Gérer les tags</h3><p class="hint">Renomme ou supprime les mots-clés utilisés pour affiner les recherches.</p><div class="new-category-row"><label class="visually-hidden" for="settingsNewTag">Nouveau tag</label><input id="settingsNewTag" autocomplete="off" placeholder="Nouveau tag"><button class="button soft" id="settingsAddTagButton" type="button">Ajouter</button></div><div class="manager-list" id="tagManager"></div></section>
-          <section class="panel settings-card"><h3>Vignettes</h3><p class="hint">Les images sont converties en JPEG base64 réduit avant stockage local.</p><div class="settings-grid"><label>Taille maximale : <span class="range-value" id="thumbnailSizeValue">250 px</span><input id="thumbnailSizeInput" type="range" min="50" max="500" step="10"></label><label>Qualité JPEG : <span class="range-value" id="thumbnailQualityValue">82 %</span><input id="thumbnailQualityInput" type="range" min="60" max="95" step="1"></label></div></section>
+          <section class="panel settings-card"><h3>Vignettes</h3><p class="hint">Survole une vignette ou place le focus clavier dessus pour voir l’image entière. Échap ferme l’aperçu. Sur mobile, touche le titre pour ouvrir la fiche et son image. Le bouton « Images entières » de la bibliothèque désactive le recadrage dans les cartes.</p><p class="hint">Les images sont converties en JPEG base64 réduit avant stockage local ; l’agrandissement reste limité par leur résolution.</p><div class="settings-grid"><label>Taille maximale : <span class="range-value" id="thumbnailSizeValue">250 px</span><input id="thumbnailSizeInput" type="range" min="50" max="500" step="10"></label><label>Qualité JPEG : <span class="range-value" id="thumbnailQualityValue">82 %</span><input id="thumbnailQualityInput" type="range" min="60" max="95" step="1"></label></div></section>
           <section class="panel settings-card"><h3>Stockage local</h3><p class="hint" id="storageStatus">Calcul en cours…</p><div class="storage-meter" aria-hidden="true"><span id="storageMeterFill"></span></div><p class="hint">Indicateur préventif : les quotas exacts varient selon le navigateur.</p></section>
           <section class="panel settings-card danger-card"><h3>Réinitialiser</h3><p class="hint">Efface toute la bibliothèque stockée dans ce navigateur. Une confirmation est demandée.</p><div class="backup-actions"><button class="button danger" id="resetButton" type="button">Tout effacer</button></div></section>
         </div>
@@ -607,10 +616,11 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <figure class="thumbnail-hover-preview no-print" id="thumbnailHoverPreview" aria-hidden="true" hidden><img id="thumbnailHoverImage" alt=""><figcaption id="thumbnailHoverCaption"></figcaption></figure>
 
   <dialog class="detail-dialog" id="detailDialog" aria-labelledby="detailTitle">
     <div class="dialog-scroll"><img class="detail-thumb" id="detailThumbnail" alt="" hidden><h2 id="detailTitle"></h2><div class="chips" id="detailChips"></div><div class="detail-note" id="detailNote" hidden></div><pre class="detail-prompt" id="detailPrompt"></pre><p class="hint" id="detailMeta"></p></div>
-    <menu><button class="button" id="detailCloseButton" type="button">Fermer</button><button class="button" id="detailEditButton" type="button">Modifier</button><button class="button danger" id="detailDeleteButton" type="button">Supprimer</button><button class="button primary" id="detailCopyButton" type="button">Copier le prompt</button></menu>
+    <menu><button class="button" id="detailCloseButton" type="button">Fermer</button><button class="button" id="detailEditButton" type="button">Modifier</button><button class="button danger" id="detailDeleteButton" type="button">Supprimer</button><button class="button" id="detailDownloadButton" type="button">Télécharger en .txt</button><button class="button primary" id="detailCopyButton" type="button">Copier le prompt</button></menu>
   </dialog>
 
   <dialog class="thumbnail-dialog" id="thumbnailDialog" aria-labelledby="thumbnailDialogTitle"><h2 id="thumbnailDialogTitle">Changer la vignette</h2><div class="thumbnail-dialog-body"><div class="thumbnail-dialog-preview" id="thumbnailDialogPreview">Aucune vignette</div><label for="thumbnailDialogFile">Choisir une nouvelle image</label><input id="thumbnailDialogFile" type="file" accept="image/*"><p class="hint">L’image sera réduite avant sa sauvegarde locale.</p></div><menu><button class="button" id="thumbnailDialogCancel" type="button">Annuler</button><button class="button danger" id="thumbnailDialogRemove" type="button">Retirer</button><button class="button primary" id="thumbnailDialogSave" type="button">Enregistrer</button></menu></dialog>
@@ -626,7 +636,7 @@
 
       // CONFIG
       const APP_NAME = "promptarium-simple";
-      const APP_VERSION = "1.7.0";
+      const APP_VERSION = "1.8.0";
       const STORAGE_KEY = "luuma_promptarium_simple_v1";
       const DRAFT_KEY = STORAGE_KEY + "_draft_v1_7";
       const DEFAULT_THUMBNAIL_SIZE = 250;
@@ -645,6 +655,7 @@
         settings: {
           theme: "light",
           libraryViewMode: "detail",
+          thumbnailFit: "cover",
           thumbnailMaxSize: DEFAULT_THUMBNAIL_SIZE,
           thumbnailQuality: DEFAULT_THUMBNAIL_QUALITY
         },
@@ -714,6 +725,10 @@
         activeFilterCount: $("#activeFilterCount"),
         selectionModeButton: $("#selectionModeButton"),
         viewModeButton: $("#viewModeButton"),
+        thumbnailFitButton: $("#thumbnailFitButton"),
+        thumbnailHoverPreview: $("#thumbnailHoverPreview"),
+        thumbnailHoverImage: $("#thumbnailHoverImage"),
+        thumbnailHoverCaption: $("#thumbnailHoverCaption"),
         clearFiltersButton: $("#clearFiltersButton"),
         bulkTools: $("#bulkTools"),
         selectionCount: $("#selectionCount"),
@@ -759,6 +774,7 @@
         detailEditButton: $("#detailEditButton"),
         detailDeleteButton: $("#detailDeleteButton"),
         detailCopyButton: $("#detailCopyButton"),
+        detailDownloadButton: $("#detailDownloadButton"),
         thumbnailDialog: $("#thumbnailDialog"),
         thumbnailDialogTitle: $("#thumbnailDialogTitle"),
         thumbnailDialogPreview: $("#thumbnailDialogPreview"),
@@ -832,6 +848,7 @@
         return {
           theme: settings?.theme === "dark" ? "dark" : "light",
           libraryViewMode: settings?.libraryViewMode === "compact" ? "compact" : "detail",
+          thumbnailFit: settings?.thumbnailFit === "contain" ? "contain" : "cover",
           thumbnailMaxSize: clampNumber(
             Number(rawThumbnailSize),
             MIN_THUMBNAIL_SIZE,
@@ -992,6 +1009,7 @@
 
       // VIEW
       function switchView(view, options = {}) {
+        hideThumbnailPreview();
         const editorActive = view === "editor";
         const libraryActive = view === "library";
         const settingsActive = view === "settings";
@@ -1229,9 +1247,12 @@
           const matchesCategory = categoryValue === UNCATEGORIZED_VALUE
             ? item.categories.length === 0
             : !category || item.categories.some((value) => normalize(value) === category);
+          const matchesKind = kind === "image-with-thumbnail"
+            ? item.kind === "image" && Boolean(item.thumbnail)
+            : !kind || item.kind === kind;
           return (!query || haystack.includes(query))
             && matchesCategory
-            && (!kind || item.kind === kind)
+            && matchesKind
             && (!tag || item.tags.some((value) => normalize(value) === tag));
         });
 
@@ -1252,6 +1273,7 @@
       }
 
       function renderLibrary() {
+        hideThumbnailPreview();
         renderActiveFilterCount();
         const items = filteredPrompts();
         renderLibraryViewMode();
@@ -1271,6 +1293,13 @@
 
       function renderLibraryViewMode() {
         const compact = isCompactView();
+        const wholeImages = state.settings.thumbnailFit === "contain";
+        refs.libraryGrid.classList.toggle("whole-thumbnails", wholeImages);
+        refs.thumbnailFitButton.setAttribute("aria-pressed", String(wholeImages));
+        refs.thumbnailFitButton.textContent = wholeImages ? "Images entières ✓" : "Images entières";
+        refs.thumbnailFitButton.title = wholeImages
+          ? "Revenir aux images recadrées pour remplir le cadre"
+          : "Afficher les images entières sans recadrage";
         refs.libraryGrid.classList.toggle("compact-grid", compact);
         refs.viewModeButton.textContent = compact ? "Vue complète" : "Vue vignettes";
         refs.viewModeButton.setAttribute("aria-pressed", String(compact));
@@ -1286,6 +1315,38 @@
         state.settings.libraryViewMode = isCompactView() ? "detail" : "compact";
         renderLibrary();
         persist(state.settings.libraryViewMode === "compact" ? "Vue vignettes activée." : "Vue complète activée.");
+      }
+
+      function toggleThumbnailFit() {
+        state.settings.thumbnailFit = state.settings.thumbnailFit === "contain" ? "cover" : "contain";
+        hideThumbnailPreview();
+        renderLibraryViewMode();
+        persist(state.settings.thumbnailFit === "contain" ? "Images entières, sans recadrage." : "Images recadrées pour remplir le cadre.");
+      }
+
+      // A single preview uses delegated events and never changes keyboard focus.
+      function showThumbnailPreview(thumb) {
+        const image = thumb?.querySelector("img");
+        if (!image || refs.libraryView.hidden || document.querySelector("dialog[open]")) return;
+        refs.thumbnailHoverImage.src = image.src;
+        refs.thumbnailHoverCaption.textContent = thumb.closest(".prompt-card")?.querySelector(".title-button")?.textContent || "Vignette";
+        refs.thumbnailHoverPreview.hidden = false;
+        const anchor = thumb.getBoundingClientRect();
+        const preview = refs.thumbnailHoverPreview.getBoundingClientRect();
+        const margin = 12;
+        const gap = 14;
+        const rightSpace = window.innerWidth - anchor.right - margin;
+        const leftSpace = anchor.left - margin;
+        const left = rightSpace >= preview.width || rightSpace >= leftSpace
+          ? anchor.right + gap
+          : anchor.left - preview.width - gap;
+        refs.thumbnailHoverPreview.style.left = `${Math.max(margin, Math.min(left, window.innerWidth - preview.width - margin))}px`;
+        refs.thumbnailHoverPreview.style.top = `${Math.max(margin, Math.min(anchor.top, window.innerHeight - preview.height - margin))}px`;
+      }
+
+      function hideThumbnailPreview() {
+        refs.thumbnailHoverPreview.hidden = true;
+        refs.thumbnailHoverImage.removeAttribute("src");
       }
 
       function renderBulkTools() {
@@ -1396,8 +1457,9 @@
         const actions = document.createElement("div");
         actions.className = "card-actions no-print";
         actions.append(
-          actionButton("Copier", "copy", item.id, "button primary small copy-action"),
-          actionButton("Modifier", "edit", item.id, "button small")
+          iconActionButton("Copier le prompt", "copy", item.id, "button primary small copy-action"),
+          iconActionButton("Télécharger le prompt en .txt", "download", item.id, "button small"),
+          iconActionButton("Modifier le prompt", "edit", item.id, "button small")
         );
         body.append(selectLabel, title, excerpt);
         if (item.note) body.append(note);
@@ -1485,6 +1547,32 @@
         return button;
       }
 
+      function iconActionButton(label, action, id, className) {
+        const paths = {
+          copy: ["M9 9h11v11H9z", "M5 15H4V4h11v1"],
+          download: ["M12 3v12", "m7 10 5 5 5-5", "M4 16v5h16v-5"],
+          edit: ["m16 3 5 5-12 12-6 1 1-6Z", "m14 5 5 5"]
+        };
+        const button = actionButton("", action, id, `${className} icon-action`);
+        button.title = label;
+        button.setAttribute("aria-label", label);
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-width", "1.8");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+        paths[action].forEach((d) => {
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", d);
+          svg.append(path);
+        });
+        button.append(svg);
+        return button;
+      }
+
       function renderThumbnail() {
         const isImage = selectedKind() === "image";
         refs.thumbnailField.hidden = !isImage;
@@ -1543,6 +1631,7 @@
       }
 
       function showPromptDetail(id) {
+        hideThumbnailPreview();
         const item = state.prompts.find((prompt) => prompt.id === id);
         if (!item) return;
         detailPromptId = item.id;
@@ -1574,6 +1663,7 @@
       }
 
       function openThumbnailDialog(id) {
+        hideThumbnailPreview();
         const item = state.prompts.find((prompt) => prompt.id === id);
         if (!item || item.kind !== "image") return;
         thumbnailPromptId = item.id;
@@ -2091,6 +2181,18 @@
         }
       }
 
+      function downloadPrompt(id) {
+        const item = state.prompts.find((prompt) => prompt.id === id);
+        if (!item) return;
+        try {
+          download(item.content, `${safeFilename(item.title)}.txt`, "text/plain;charset=utf-8");
+          toast("Prompt téléchargé en fichier texte.");
+        } catch (error) {
+          console.warn("Téléchargement impossible.", error);
+          toast("Téléchargement impossible dans ce navigateur.");
+        }
+      }
+
       async function loadThumbnail(file) {
         if (selectedKind() !== "image") return;
         if (!file || !file.type.startsWith("image/")) {
@@ -2217,6 +2319,7 @@
           settings: {
             theme: state.settings.theme,
             libraryViewMode: libraryViewMode(),
+            thumbnailFit: state.settings.thumbnailFit,
             density: "comfortable",
             thumbnailMaxSize: thumbnailMaxSize(),
             thumbnailQuality: thumbnailQuality()
@@ -2388,6 +2491,7 @@
         const hasSupportedSetting = [
           "theme",
           "libraryViewMode",
+          "thumbnailFit",
           "thumbnailMaxSize",
           "thumbnailSize",
           "thumbnailQuality",
@@ -2707,6 +2811,22 @@
       refs.quickExportButton.addEventListener("click", () => { exportJSON(); refs.utilityMenu?.removeAttribute("open"); });
       refs.selectionModeButton.addEventListener("click", toggleSelectionMode);
       refs.viewModeButton.addEventListener("click", toggleLibraryViewMode);
+      refs.thumbnailFitButton.addEventListener("click", toggleThumbnailFit);
+      refs.libraryGrid.addEventListener("pointerover", (event) => {
+        if (event.pointerType === "touch" || !window.matchMedia("(any-hover: hover)").matches) return;
+        const thumb = event.target.closest(".card-thumb");
+        if (thumb && !thumb.contains(event.relatedTarget)) showThumbnailPreview(thumb);
+      });
+      refs.libraryGrid.addEventListener("pointerout", (event) => {
+        const thumb = event.target.closest(".card-thumb");
+        if (thumb && !thumb.contains(event.relatedTarget)) hideThumbnailPreview();
+      });
+      refs.libraryGrid.addEventListener("focusin", (event) => {
+        const thumb = event.target.closest(".card-thumb");
+        if (thumb && thumb.matches(":focus-visible")) showThumbnailPreview(thumb);
+      });
+      refs.libraryGrid.addEventListener("focusout", hideThumbnailPreview);
+      window.addEventListener("scroll", hideThumbnailPreview, { passive: true, capture: true });
       refs.clearFiltersButton.addEventListener("click", clearFilters);
       refs.clearSelectionButton.addEventListener("click", clearPromptSelection);
       refs.bulkAddCategoryButton.addEventListener("click", () => applyBulkCategory("add"));
@@ -2731,6 +2851,7 @@
         }
         if (action === "clear-filters") clearFilters();
         if (action === "copy") copyPrompt(id);
+        if (action === "download") downloadPrompt(id);
         if (action === "view") showPromptDetail(id);
         if (action === "thumbnail") openThumbnailDialog(id);
         if (action === "edit") editPrompt(id);
@@ -2816,6 +2937,7 @@
       });
       refs.detailCloseButton.addEventListener("click", closePromptDetail);
       refs.detailCopyButton.addEventListener("click", () => copyPrompt(detailPromptId));
+      refs.detailDownloadButton.addEventListener("click", () => downloadPrompt(detailPromptId));
       refs.detailEditButton.addEventListener("click", () => {
         const id = detailPromptId;
         closePromptDetail();
@@ -2855,6 +2977,7 @@
       });
 
       document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") hideThumbnailPreview();
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
           event.preventDefault();
           requestView("library", { focusSearch: true });
@@ -2871,7 +2994,7 @@
         event.preventDefault();
         event.returnValue = "";
       });
-      window.addEventListener("resize", () => syncFilterOpenForViewport());
+      window.addEventListener("resize", () => { hideThumbnailPreview(); syncFilterOpenForViewport(); });
 
       // INITIALIZATION
       syncFilterOpenForViewport(true);
