@@ -1,6 +1,6 @@
 # Audit Boussole Pro - corpus ROME
 
-Généré le 2026-10-01T09:55:21.715Z.
+Généré le 2026-11-01T10:14:45.356Z.
 
 ## Synthèse
 
@@ -8,17 +8,17 @@ Généré le 2026-10-01T09:55:21.715Z.
 - Métiers récupérés : 72
 - Échecs : 0
 - Coquilles code + titre : 0/72
-- Score de préparation données : 97%
+- Score de préparation données : 100%
 - Readiness globale : usable_for_validation
 
 ## Données réellement reliées aux métiers
 
 - Mappings compétences : 72/72
-- Mappings contextes : 66/72
-- Mappings appellations : 66/72
+- Mappings contextes : 71/72
+- Mappings appellations : 71/72
 - Mappings savoirs : 72/72
 - Activités : 0/72
-- Descriptions officielles : 66/72
+- Descriptions officielles : 71/72
 
 ## Endpoints et sources
 
@@ -32,10 +32,10 @@ Généré le 2026-10-01T09:55:21.715Z.
 - requiredDiplomaLevel : 72
 - recommendedDiplomaLevel : 72
 - relatedJobs : 72
-- description : 6
-- appellations : 6
-- workContexts : 6
-- accessConditions : 6
+- description : 1
+- appellations : 1
+- workContexts : 1
+- accessConditions : 1
 
 ## Marché officiel
 
@@ -57,16 +57,16 @@ Généré le 2026-10-01T09:55:21.715Z.
 
 ## Référentiel brut compétences
 
-- Entrées brutes : 35595
+- Entrées brutes : 35787
 - Doublons d'identifiants : 0
 - Identifiants manquants : 0
-- Checksum : `81987e003329a52a8558eb15ce6aa5f9acaf072344235f0adf040dc275eba534`
+- Checksum : `66483b18a2c12e8c9f5bee18b88e8e8733f1c8f6bf9825cd8c6d23794c9da0ba`
 
 ## Taille et performance
 
-- Taille totale générée : 499.16 Mo
+- Taille totale générée : 499.3 Mo
 - Nombre de fichiers : 258
-- Plus gros fichiers : rome1000-candidate/jobs.rome.json (34.39 Mo), rome800-candidate/jobs.rome.json (28.11 Mo), rome1000-candidate/rome-raw-skills.json (25.5 Mo), rome800-candidate/rome-raw-skills.json (25.5 Mo), rome-raw-skills.json (20.97 Mo)
+- Plus gros fichiers : rome1000-candidate/jobs.rome.json (34.39 Mo), rome800-candidate/jobs.rome.json (28.11 Mo), rome1000-candidate/rome-raw-skills.json (25.5 Mo), rome800-candidate/rome-raw-skills.json (25.5 Mo), rome-raw-skills.json (21.1 Mo)
 
 ## Limite actuelle
 
