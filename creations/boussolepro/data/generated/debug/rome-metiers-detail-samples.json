@@ -3844,7 +3844,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 97
+                "frequence": 98
               },
               {
                 "competence": {
@@ -3880,7 +3880,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 93
+                "frequence": 96
               },
               {
                 "competence": {
@@ -3892,7 +3892,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 99
+                "frequence": 98
               }
             ]
           },
@@ -3915,7 +3915,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 99
               },
               {
                 "competence": {
@@ -3939,7 +3939,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 99
               },
               {
                 "competence": {
@@ -3951,7 +3951,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 98
               },
               {
                 "competence": {
@@ -4057,6 +4057,42 @@
                     "codeOgr"
                   ]
                 },
+                "frequence": 98
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 98
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
+                "frequence": 98
+              },
+              {
+                "competence": {
+                  "type": "object",
+                  "keys": [
+                    "type",
+                    "code",
+                    "libelle",
+                    "codeOgr"
+                  ]
+                },
                 "frequence": 97
               },
               {
@@ -4069,43 +4105,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 98
-              },
-              {
-                "competence": {
-                  "type": "object",
-                  "keys": [
-                    "type",
-                    "code",
-                    "libelle",
-                    "codeOgr"
-                  ]
-                },
-                "frequence": 98
-              },
-              {
-                "competence": {
-                  "type": "object",
-                  "keys": [
-                    "type",
-                    "code",
-                    "libelle",
-                    "codeOgr"
-                  ]
-                },
                 "frequence": 96
-              },
-              {
-                "competence": {
-                  "type": "object",
-                  "keys": [
-                    "type",
-                    "code",
-                    "libelle",
-                    "codeOgr"
-                  ]
-                },
-                "frequence": 95
               }
             ]
           }
@@ -4549,7 +4549,7 @@
         {
           "path": "$.appellations[0].competencesCles",
           "type": "array",
-          "arrayLength": 4
+          "arrayLength": 3
         },
         {
           "path": "$.appellations[0].competencesCles[0]",
@@ -4663,44 +4663,6 @@
         },
         {
           "path": "$.appellations[0].competencesCles[2].frequence",
-          "type": "number"
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3]",
-          "type": "object",
-          "childKeys": [
-            "competence",
-            "frequence"
-          ]
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].competence",
-          "type": "object",
-          "childKeys": [
-            "type",
-            "code",
-            "libelle",
-            "codeOgr"
-          ]
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].competence.type",
-          "type": "string"
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].competence.code",
-          "type": "string"
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].competence.libelle",
-          "type": "string"
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].competence.codeOgr",
-          "type": "string"
-        },
-        {
-          "path": "$.appellations[0].competencesCles[3].frequence",
           "type": "number"
         },
         {
@@ -5707,6 +5669,44 @@
         {
           "path": "$.centresInteretsLies[1].centreInteret.code",
           "type": "string"
+        },
+        {
+          "path": "$.centresInteretsLies[1].centreInteret.libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.centresInteretsLies[1].principal",
+          "type": "boolean"
+        },
+        {
+          "path": "$.secteursActivites",
+          "type": "array",
+          "arrayLength": 2
+        },
+        {
+          "path": "$.secteursActivites[0]",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle",
+            "secteurActivite"
+          ]
+        },
+        {
+          "path": "$.secteursActivites[0].code",
+          "type": "string"
+        },
+        {
+          "path": "$.secteursActivites[0].libelle",
+          "type": "string"
+        },
+        {
+          "path": "$.secteursActivites[0].secteurActivite",
+          "type": "object",
+          "childKeys": [
+            "code",
+            "libelle"
+          ]
         }
       ],
       "detectedFields": {
@@ -5763,16 +5763,6 @@
           },
           {
             "path": "$.appellations[0].competencesCles[2].competence.codeOgr",
-            "key": "codeOgr",
-            "type": "string"
-          },
-          {
-            "path": "$.appellations[0].competencesCles[3].competence.code",
-            "key": "code",
-            "type": "string"
-          },
-          {
-            "path": "$.appellations[0].competencesCles[3].competence.codeOgr",
             "key": "codeOgr",
             "type": "string"
           },
@@ -6010,6 +6000,16 @@
             "path": "$.appellations[6].competencesCles[2].competence.code",
             "key": "code",
             "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[2].competence.codeOgr",
+            "key": "codeOgr",
+            "type": "string"
+          },
+          {
+            "path": "$.appellations[6].competencesCles[3].competence.code",
+            "key": "code",
+            "type": "string"
           }
         ],
         "title": [
@@ -6050,11 +6050,6 @@
           },
           {
             "path": "$.appellations[0].competencesCles[2].competence.libelle",
-            "key": "libelle",
-            "type": "string"
-          },
-          {
-            "path": "$.appellations[0].competencesCles[3].competence.libelle",
             "key": "libelle",
             "type": "string"
           },
@@ -6312,6 +6307,11 @@
             "path": "$.competencesMobilisees[0].libelle",
             "key": "libelle",
             "type": "string"
+          },
+          {
+            "path": "$.competencesMobilisees[1].libelle",
+            "key": "libelle",
+            "type": "string"
           }
         ],
         "description": [
@@ -6335,7 +6335,7 @@
             "path": "$.appellations[0].competencesCles",
             "key": "competencesCles",
             "type": "array",
-            "arrayLength": 4
+            "arrayLength": 3
           },
           {
             "path": "$.appellations[1].competencesCles",
@@ -6457,7 +6457,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 97
+                "frequence": 92
               },
               {
                 "competence": {
@@ -6469,7 +6469,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 76
               },
               {
                 "competence": {
@@ -6481,19 +6481,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 93
-              },
-              {
-                "competence": {
-                  "type": "object",
-                  "keys": [
-                    "type",
-                    "code",
-                    "libelle",
-                    "codeOgr"
-                  ]
-                },
-                "frequence": 73
+                "frequence": 87
               }
             ]
           },
@@ -6527,7 +6515,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 84
+                "frequence": 95
               },
               {
                 "competence": {
@@ -6539,7 +6527,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 93
+                "frequence": 76
               },
               {
                 "competence": {
@@ -6551,7 +6539,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 76
               }
             ]
           },
@@ -6573,7 +6561,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 97
+                "frequence": 100
               },
               {
                 "competence": {
@@ -6585,7 +6573,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 100
               },
               {
                 "competence": {
@@ -6597,7 +6585,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 93
+                "frequence": 100
               }
             ]
           },
@@ -6619,7 +6607,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 97
+                "frequence": 95
               },
               {
                 "competence": {
@@ -6631,7 +6619,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 82
               },
               {
                 "competence": {
@@ -6643,7 +6631,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 93
+                "frequence": 88
               }
             ]
           },
@@ -6677,7 +6665,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 82
+                "frequence": 95
               },
               {
                 "competence": {
@@ -6689,7 +6677,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 96
+                "frequence": 80
               },
               {
                 "competence": {
@@ -6701,7 +6689,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 76
               }
             ]
           },
@@ -6723,7 +6711,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 91
+                "frequence": 92
               },
               {
                 "competence": {
@@ -6747,7 +6735,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 91
+                "frequence": 93
               },
               {
                 "competence": {
@@ -6781,7 +6769,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 91
+                "frequence": 94
               },
               {
                 "competence": {
@@ -6793,7 +6781,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 79
+                "frequence": 94
               },
               {
                 "competence": {
@@ -6805,7 +6793,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 88
+                "frequence": 61
               },
               {
                 "competence": {
@@ -6817,7 +6805,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 86
+                "frequence": 76
               }
             ]
           },
@@ -9216,7 +9204,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 89
               },
               {
                 "competence": {
@@ -9228,7 +9216,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 87
               }
             ]
           },
@@ -9254,7 +9242,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 100
+                "frequence": 88
               },
               {
                 "competence": {
@@ -9266,7 +9254,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 96
+                "frequence": 88
               }
             ]
           },
@@ -9292,7 +9280,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 81
+                "frequence": 93
               },
               {
                 "competence": {
@@ -9304,7 +9292,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 81
+                "frequence": 93
               }
             ]
           },
@@ -9328,7 +9316,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 83
+                "frequence": 84
               },
               {
                 "competence": {
@@ -9412,7 +9400,7 @@
                     "codeOgr"
                   ]
                 },
-                "frequence": 67
+                "frequence": 80
               }
             ]
           },
